@@ -1,0 +1,15 @@
+name: santha_api
+description: Santha REST client (Dio) — auth, device binding, token refresh. Models mirror apps/backend/openapi.json.
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.8.0
+
+dependencies:
+  dio: ^5.8.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^6.0.0

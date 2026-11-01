@@ -1,0 +1,3 @@
+tags:
+  golden:
+    description: Pixel comparisons against test/goldens. Regenerate with `melos run golden:update` on Linux.

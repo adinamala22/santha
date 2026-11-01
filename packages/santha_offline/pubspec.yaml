@@ -1,0 +1,8 @@
+name: santha_offline
+description: Drift DB + sync queue + conflict rules (built in M3/M5).
+version: 0.1.0
+publish_to: none
+resolution: workspace
+
+environment:
+  sdk: ^3.8.0
