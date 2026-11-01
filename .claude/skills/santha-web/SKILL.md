@@ -36,4 +36,4 @@ Next.js 15 App Router · TypeScript · Tailwind with `design/tokens/tailwind.tok
 - Polygon editor: draw/edit, validate non-overlap within a city, versions with effective dates.
 
 ## Quality
-Playwright e2e for login, approve merchant, reassign order, issue refund; axe checks; visual regression on landing; `pnpm lint typecheck test` in CI.
+Playwright e2e for login, approve merchant, reassign order, issue refund, run against the fake backend (`pnpm dev:fake`) so they need no Docker; axe checks; visual regression on landing; `pnpm lint typecheck test` in CI.

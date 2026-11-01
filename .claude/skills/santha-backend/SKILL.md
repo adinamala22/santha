@@ -14,8 +14,9 @@ src/
   modules/<module>/
     <module>.module.ts  controller(s)  service(s)  repository.ts  dto/ (zod schemas → OpenAPI)  events/ (publishers, handlers)  jobs/ (BullMQ processors)  <module>.spec.ts
   infra/ (prisma, redis, typesense, s3, mailer, providers/{razorpay,maps,kyc,msg91,whatsapp,threepl} with interface + sandbox + mock)
+  dev/ seed-data.ts (demo data shared by prisma/seed.ts and fake mode), fake-main.ts
 prisma/ schema.prisma  migrations/  seed.ts
-test/ e2e/  mocks/
+test/ e2e/  mocks/  fake/ (harness.ts + m<N>-<topic>.fake.spec.ts per milestone)  integration/
 ```
 
 ## Rules
@@ -42,8 +43,19 @@ test/ e2e/  mocks/
 - `settlement/computeMerchantPayout(orders, config)`; `settlement/computeRiderPay(assignment, config)`; reconciliation matcher.
 - `refunds/decide(issue, order, trustScore, rules)` → auto|manual, amount, destination.
 
-## Testing
-Unit for pure functions (≥90% on pricing, state machine, dispatch, settlement, refunds) · integration with Testcontainers (Postgres+PostGIS, Redis) for repositories, outbox, webhooks · e2e happy paths: place → accept(self) → deliver; place → accept(rider) → offer → deliver; cancel paths; refund flow. CI must pass before merge.
+## Fake service (DATA_STORE=memory) — required in every milestone
+`pnpm dev:fake` runs the real API with in-memory storage, no Docker (ADR-005). It must keep working as the backend grows, so **every milestone ships its fake service and its automated fake-mode tests, or it is not done**:
+1. **Every storage port gets two implementations.** Repositories are abstract classes (see `identity-kyc/identity.repository.ts`). Next to the Prisma implementation, add `in-memory-<name>.repository.ts` in the same module folder (in `src/`, never in `test/`). Bind it in the module with a factory on `env.DATA_STORE` (see `identity-kyc.module.ts`). Emulate transactions the way `InMemoryIdentityRepository` does: serialised, snapshot and restore on throw, events delivered only after commit.
+2. **Other infrastructure gets fakes too.** Redis-backed things (rate limits, idempotency keys, caches) get an in-process version. External providers (Razorpay, KYC, maps, MSG91, WhatsApp, 3PL) use their `mock` implementation; fake mode forces mocks. Geo queries get a simple in-memory fallback, e.g. point-in-polygon on the seeded micro-market polygons and haversine distance. Timers and queues run in-process or are triggered explicitly in tests.
+3. **Demo data.** Add the milestone's demo records (micro-markets, merchants, items, addresses…) to `src/dev/seed-data.ts`. Both `prisma/seed.ts` and the in-memory stores load from it, so fake mode and the real stack have identical data.
+4. **Automated fake-mode acceptance tests.** Add `test/fake/m<N>-<topic>.fake.spec.ts` using `bootFakeApp()` from `test/fake/harness.ts`. It boots the real `AppModule` with `DATA_STORE=memory` (no overrides) and drives the API over HTTP. Cover every acceptance check of the milestone that does not need PostGIS precision, real money movement or device hardware. Cover the error paths too (validation, illegal transitions, auth/roles, idempotency replays). Name tests after the acceptance check they prove.
+5. **Same behaviour, two stores.** Repository behaviour that both implementations must share (uniqueness, compare-and-swap, ordering, rollback) goes in a contract spec. Run it against the in-memory store in `test:unit` and against Prisma in `test:int`, so the fake cannot drift from Postgres.
+6. **Run it:** `pnpm --filter backend test:fake` locally; the `fake-mode acceptance` CI job runs it on every PR. `pnpm --filter backend test` runs unit + fake together.
 
-## Seed (`pnpm --filter backend seed`)
-Nellore city; micro-markets Magunta Layout, Dargamitta, Balaji Nagar, Vedayapalem (approximate polygons, hours, fee rules, COD on for retail ≤ ₹1,500); 12 merchants across the four supply types with ~200 items; 3 riders; 2 consumers with addresses; config version 1; flags.
+Fake mode never replaces Testcontainers for PostGIS, order-transaction concurrency, outbox and webhooks. Those keep their integration tests.
+
+## Testing
+Unit for pure functions (≥90% on pricing, state machine, dispatch, settlement, refunds) · fake-mode acceptance per milestone (`test/fake`, above) · integration with Testcontainers (Postgres+PostGIS, Redis) for repositories, outbox, webhooks · e2e happy paths: place → accept(self) → deliver; place → accept(rider) → offer → deliver; cancel paths; refund flow (in fake mode, and against the real stack in integration). CI must pass before merge.
+
+## Seed (`pnpm --filter backend seed`, and the fake store at boot)
+Data lives in `src/dev/seed-data.ts`. Nellore city; micro-markets Magunta Layout, Dargamitta, Balaji Nagar, Vedayapalem (approximate polygons, hours, fee rules, COD on for retail ≤ ₹1,500); 12 merchants across the four supply types with ~200 items; 3 riders; 2 consumers with addresses; config version 1; flags.

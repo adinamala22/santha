@@ -6,14 +6,15 @@ description: Local development, environments, CI/CD, infrastructure as code, sec
 # Santha DevOps
 
 ## Local
-`docker compose up -d` → Postgres 16 + PostGIS (5432), Redis (6379), Typesense (8108), MinIO (9000/9001), Mailpit (8025). `pnpm i && pnpm --filter backend prisma migrate dev && pnpm --filter backend seed && pnpm dev`. Flutter: `melos bootstrap && melos run dev:consumer`. Web: `pnpm --filter web dev`.
+`docker compose up -d` → Postgres 16 + PostGIS (5432), Redis (6379), Typesense (8108), RustFS S3 (9000/9001, ADR-003), Mailpit (8025). `pnpm i && pnpm --filter backend prisma migrate dev && pnpm --filter backend seed && pnpm dev`. Flutter: `melos bootstrap && melos run dev:consumer`. Web: `pnpm --filter web dev`.
+No Docker: `pnpm dev:fake` runs the backend with `DATA_STORE=memory` (in-memory stores + demo seed, mock providers, OTP `123456`) plus web; refused outside `APP_ENV=dev` (ADR-005).
 `.env.example` documents every variable; copy to `.env` (git-ignored). Providers default to `mock` locally.
 
 ## Environments
 dev (shared cloud, small) · staging (prod replica, sandboxes, internal app tracks) · production (Multi-AZ, blue/green). All in AWS ap-south-1. Resource names `santha-{env}-{component}`; tags `env`, `component`, `cost-centre`.
 
 ## Pipelines (.github/workflows)
-- `backend.yml`: lint → typecheck → unit → integration (Testcontainers) → build image → push ECR → deploy staging (ECS blue/green) → smoke → manual approval → prod. Migrations run as a pre-deploy ECS task; only backward-compatible migrations.
+- `backend.yml`: lint → typecheck → unit → fake-mode acceptance (`test:fake`, no Docker) → integration (Testcontainers) → build image → push ECR → deploy staging (ECS blue/green) → smoke → manual approval → prod. Migrations run as a pre-deploy ECS task; only backward-compatible migrations.
 - `web.yml`: lint → typecheck → unit → Playwright → build → deploy (Vercel-style on ECS or Amplify; decide at M0 and record ADR).
 - `flutter.yml`: `melos run analyze test` → build per flavor → Firebase Test Lab (low-end profile) → fastlane `beta` to Play internal / TestFlight; `release` on tag with staged rollout.
 - `infra.yml`: terraform fmt/validate/plan on PR, apply on main with approval.

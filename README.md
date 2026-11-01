@@ -73,6 +73,7 @@ Indian mobile number signs in with code `123456` (new numbers get the role of th
 ## Checks (what CI runs)
 ```bash
 pnpm lint && pnpm typecheck && pnpm test   # backend, web, shared-types
+pnpm --filter backend test:fake            # fake-mode acceptance per milestone (DATA_STORE=memory, no Docker)
 pnpm --filter backend test:int             # Testcontainers: real Postgres/PostGIS + Redis (needs Docker)
 pnpm openapi:gen                           # regenerate OpenAPI → shared-types / santha_api (CI fails if stale)
 melos run analyze && melos run test        # Flutter

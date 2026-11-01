@@ -14,7 +14,8 @@ Rules:
 1. A module owns its tables. Other modules read them only through the owning module's service or by consuming its events. No cross-module Prisma queries.
 2. Modules talk synchronously only through exported services with explicit interfaces; everything else is a domain event (see `references/events.md`).
 3. Events are written to the `outbox` table in the same transaction as the state change and relayed to BullMQ. Consumers are idempotent (dedupe on event id).
-4. Config (micro-market polygons, fees, SLAs, rider pay, promo budgets, flags) lives in `analytics-config` with `effective_from/effective_to`; code reads config, never hard-codes a fee or an SLA.
+4. Storage is behind a repository port per module with two implementations: Prisma (real) and in-memory (local fake mode, `DATA_STORE=memory`, ADR-005). A module is not done until both exist and its fake-mode acceptance tests pass (see santha-backend "Fake service").
+5. Config (micro-market polygons, fees, SLAs, rider pay, promo budgets, flags) lives in `analytics-config` with `effective_from/effective_to`; code reads config, never hard-codes a fee or an SLA.
 
 ## Invariants
 - **Money:** integer paise; totals recomputed from lines + fee rows; GST per rules; settlement derived from Order + Fulfilment + Payment + Refund and reconciled to the aggregator to the paise.
@@ -35,5 +36,5 @@ REST JSON under `/v1`, OpenAPI generated from NestJS decorators and published to
 Only on evidence: Kafka when event volume or multi-city needs it; extract dispatch when CPU/latency bound; dedicated Typesense cluster on index size; read replicas on DB read load. Keep the seams clean now so this is cheap later.
 
 ## Working with this skill
-- New feature → identify owning module, its events in/out, its config keys, its audit events, its tests. Write that as a 10-line design note in the PR description before coding.
+- New feature → identify owning module, its events in/out, its config keys, its audit events, its tests (unit, fake-mode acceptance, integration). Write that as a 10-line design note in the PR description before coding.
 - If a request conflicts with an invariant, stop and explain the conflict; propose an alternative that keeps the invariant.
