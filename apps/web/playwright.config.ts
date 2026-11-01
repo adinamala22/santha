@@ -26,7 +26,7 @@ export default defineConfig({
   },
   webServer: [
     {
-      command: 'pnpm --filter backend dev:fake',
+      command: 'pnpm --filter backend start:fake', // no --watch: it needs a .env file to exist
       url: `${backend}/v1/health/ready`,
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,

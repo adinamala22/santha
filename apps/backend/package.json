@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node --watch --env-file-if-exists=../../.env -r @swc-node/register src/main.ts",
     "dev:fake": "node --watch --env-file-if-exists=../../.env -r @swc-node/register src/dev/fake-main.ts",
+    "start:fake": "node --env-file-if-exists=../../.env -r @swc-node/register src/dev/fake-main.ts",
     "worker": "node --env-file-if-exists=../../.env -r @swc-node/register src/worker.ts",
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/main.js",

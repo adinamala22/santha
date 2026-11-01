@@ -27,6 +27,7 @@ describe('M1 on Postgres/PostGIS + Redis', () => {
   let app: INestApplication;
   let prisma: PrismaService;
   const http = () => request(app.getHttpServer());
+  const savedEnv = { ...process.env };
   const auth = (s: { accessToken: string; deviceId: string }) => ({ Authorization: `Bearer ${s.accessToken}`, 'X-Device-Id': s.deviceId });
 
   beforeAll(async () => {
@@ -64,6 +65,7 @@ describe('M1 on Postgres/PostGIS + Redis', () => {
   afterAll(async () => {
     await app?.close();
     await Promise.all([pg?.stop(), redis?.stop()]);
+    process.env = savedEnv; // integration files share one process; do not leak relaxed OTP limits
   });
 
   let ops: { accessToken: string; deviceId: string; user: { id: string } };
