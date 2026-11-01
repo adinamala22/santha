@@ -21,23 +21,46 @@ describe('LoginForm', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('moves to the OTP step on success', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ challengeId: 'c1' }), { status: 200 })));
+  it('moves to the OTP step on success and says where the code went', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ challengeId: 'c1', phoneMasked: '+9190******00' }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
     render(<LoginForm copy={copy} />);
     await userEvent.type(screen.getByLabelText(copy.email), 'priya@santha.in');
     await userEvent.type(screen.getByLabelText(copy.password), 'secret-pass');
     await userEvent.click(screen.getByRole('button', { name: copy.continue }));
     expect(await screen.findByRole('heading', { name: copy.otpTitle })).toBeInTheDocument();
     expect(screen.getByLabelText(copy.otpLabel)).toHaveAttribute('autocomplete', 'one-time-code');
+    expect(screen.getByText('Code sent to +9190******00.')).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith('/api/ops/login', expect.objectContaining({ method: 'POST' }));
   });
 
-  it('shows a human message when the backend endpoint is not there yet', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{}', { status: 404 })));
+  it('shows the same message for a wrong password and an unknown email', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ error: { code: 'INVALID_CREDENTIALS' } }), { status: 401 })),
+    );
     render(<LoginForm copy={copy} />);
     await userEvent.type(screen.getByLabelText(copy.email), 'priya@santha.in');
     await userEvent.type(screen.getByLabelText(copy.password), 'secret-pass');
     await userEvent.click(screen.getByRole('button', { name: copy.continue }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errors.unavailable);
+    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errors.credentials);
+  });
+
+  it('reports a wrong code and stays on the OTP step', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi
+        .fn()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ challengeId: 'c1' }), { status: 200 }))
+        .mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 'OTP_INVALID' } }), { status: 400 })),
+    );
+    render(<LoginForm copy={copy} />);
+    await userEvent.type(screen.getByLabelText(copy.email), 'priya@santha.in');
+    await userEvent.type(screen.getByLabelText(copy.password), 'secret-pass');
+    await userEvent.click(screen.getByRole('button', { name: copy.continue }));
+    await userEvent.type(await screen.findByLabelText(copy.otpLabel), '000000');
+    await userEvent.click(screen.getByRole('button', { name: copy.verify }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(copy.errors.otpWrong);
   });
 });
 

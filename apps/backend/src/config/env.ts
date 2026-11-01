@@ -102,7 +102,9 @@ export type Env = z.infer<typeof EnvSchema>;
 export const workersEnabled = (env: Env): boolean => env.RUN_WORKERS && env.DATA_STORE === 'postgres';
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
-  const result = EnvSchema.safeParse(source);
+  // `KEY=` in a .env file means "not set" (the .env.example lists optional keys with empty values).
+  const cleaned = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== undefined && v.trim() !== ''));
+  const result = EnvSchema.safeParse(cleaned);
   if (!result.success) {
     const lines = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);
     throw new Error(`Invalid environment configuration:\n${lines.join('\n')}`);

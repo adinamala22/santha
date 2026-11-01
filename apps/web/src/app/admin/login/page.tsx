@@ -6,7 +6,8 @@ import { LoginForm } from './login-form';
 export const metadata: Metadata = { title: 'Ops sign in', robots: { index: false, follow: false } };
 
 /** Matches design/mockups/admin-login-desktop.png. */
-export default function AdminLoginPage() {
+export default async function AdminLoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
+  const { next } = await searchParams;
   const copy = t('en').admin;
   return (
     <div className="grid min-h-screen bg-indigo lg:grid-cols-2">
@@ -20,7 +21,7 @@ export default function AdminLoginPage() {
       </section>
       <main className="flex items-center justify-center px-6 py-12">
         <div className="w-full max-w-[660px] rounded-xl bg-white p-10 shadow-sheet sm:p-14">
-          <LoginForm copy={copy} />
+          <LoginForm copy={copy} next={next} />
         </div>
       </main>
     </div>

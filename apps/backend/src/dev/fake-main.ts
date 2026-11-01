@@ -7,10 +7,10 @@
 process.env.DATA_STORE = 'memory';
 process.env.APP_ENV ??= 'dev';
 process.env.OTP_PROVIDER = 'mock'; // never call a real SMS provider from fake mode
-process.env.MOCK_OTP_CODE ??= '123456';
+process.env.MOCK_OTP_CODE ||= '123456';
 process.env.KYC_PROVIDER = 'mock'; // never call a real KYC provider from fake mode
 // Dev-only defaults so fake mode works without a .env file.
-process.env.JWT_ACCESS_SECRET ??= 'fake-mode-dev-only-access-secret';
-process.env.JWT_REFRESH_SECRET ??= 'fake-mode-dev-only-refresh-secret';
+process.env.JWT_ACCESS_SECRET ||= 'fake-mode-dev-only-access-secret';
+process.env.JWT_REFRESH_SECRET ||= 'fake-mode-dev-only-refresh-secret';
 
 void import('../main');
