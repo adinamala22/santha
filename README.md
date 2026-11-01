@@ -38,7 +38,17 @@ pnpm dev                                  # backend :4000 (+ workers) and web :3
 ```
 - API docs: http://localhost:4000/docs · health: `/v1/health`, readiness: `/v1/health/ready`
 - Landing: http://localhost:3000 · Ops sign-in UI: http://localhost:3000/admin/login
-- Mailpit: http://localhost:8025 · MinIO console: http://localhost:9001
+- Mailpit: http://localhost:8025 · S3 console (RustFS): http://localhost:9001
+
+### Fake mode (no Docker)
+```bash
+pnpm i
+pnpm dev:fake                             # backend :4000 with in-memory data + web :3000
+```
+The backend runs with `DATA_STORE=memory`: no Postgres, Redis or Docker; the demo users below are preloaded,
+the OTP code is always `123456`, and domain events are written to the API log instead of the queue. Everything
+resets when the backend restarts. Use it for UI work and quick device testing; anything touching maps,
+serviceability or order transactions needs the real stack above. Fake mode is refused outside `APP_ENV=dev`.
 
 ### Flutter apps
 ```bash
@@ -50,7 +60,15 @@ Physical device: `flutter run --flavor dev -t lib/main_dev.dart --dart-define=AP
 (the dev flavor already allows cleartext HTTP; stg/prod do not).
 
 **Signing in locally:** with `OTP_PROVIDER=mock` and `MOCK_OTP_CODE=123456` (the `.env.example` defaults) any valid
-Indian mobile number signs in with code `123456`. Without `MOCK_OTP_CODE`, the code is printed in the API log.
+Indian mobile number signs in with code `123456` (new numbers get the role of the app they sign in from). Without
+`MOCK_OTP_CODE`, the code is printed in the API log. Seeded demo users (same in fake mode and after `seed`):
+
+| Role | Numbers |
+|---|---|
+| Consumer | 9000000001, 9000000002 |
+| Rider | 9000000101 – 9000000103 |
+| Merchant owner | 9000000201 – 9000000212 |
+| Ops admin | 9000000900 |
 
 ## Checks (what CI runs)
 ```bash
@@ -61,8 +79,7 @@ melos run analyze && melos run test        # Flutter
 melos run golden:update                    # regenerate santha_ui goldens (on Linux, to match CI)
 ```
 Goldens are compared on Linux only (CI); on Windows/macOS they are skipped because font anti-aliasing differs.
-```bash
-```
 
 ## Decisions
-See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting).
+See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting, ADR-003 local object storage, ADR-004 separate apps,
+ADR-005 in-memory fake mode).

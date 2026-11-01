@@ -5,6 +5,7 @@
   "engines": { "node": ">=22" },
   "scripts": {
     "dev": "pnpm --parallel --filter backend --filter web dev",
+    "dev:fake": "pnpm --parallel --filter backend --filter web dev:fake",
     "build": "pnpm -r build",
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",

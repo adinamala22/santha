@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseEnv } from './env';
+import { parseEnv, workersEnabled } from './env';
 
 const base = {
   DATABASE_URL: 'postgresql://u:p@localhost:5432/db',
@@ -16,7 +16,15 @@ describe('parseEnv', () => {
   });
 
   it('fails with a readable message on missing values', () => {
-    expect(() => parseEnv({})).toThrow(/DATABASE_URL/);
+    expect(() => parseEnv({})).toThrow(/JWT_ACCESS_SECRET/);
+    expect(() => parseEnv({ ...base, DATABASE_URL: undefined })).toThrow(/DATABASE_URL: required when DATA_STORE=postgres/);
+  });
+
+  it('memory store needs no database or redis, and only in dev', () => {
+    const noInfra = { ...base, DATABASE_URL: undefined, REDIS_URL: undefined };
+    const env = parseEnv({ ...noInfra, DATA_STORE: 'memory' });
+    expect(env).toMatchObject({ DATA_STORE: 'memory', DATABASE_URL: '', REDIS_URL: '' });
+    expect(() => parseEnv({ ...base, DATA_STORE: 'memory', APP_ENV: 'staging' })).toThrow(/memory store is for local dev only/);
   });
 
   it('forbids mock OTP and weak secrets in production', () => {
@@ -29,5 +37,10 @@ describe('parseEnv', () => {
 
   it('parses boolean flags', () => {
     expect(parseEnv({ ...base, RUN_WORKERS: 'false' }).RUN_WORKERS).toBe(false);
+  });
+
+  it('never runs workers in memory mode', () => {
+    expect(workersEnabled(parseEnv(base))).toBe(true);
+    expect(workersEnabled(parseEnv({ ...base, DATA_STORE: 'memory' }))).toBe(false);
   });
 });

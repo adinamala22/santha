@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import { ENV } from '../../config/config.module';
-import type { Env } from '../../config/env';
+import { type Env, workersEnabled } from '../../config/env';
 import { PrismaService } from '../prisma/prisma.service';
 import { redisConnectionOptions } from '../queues/queues';
 import type { DomainEvent } from './domain-event';
@@ -20,7 +20,7 @@ export class EventsWorker implements OnApplicationBootstrap, OnApplicationShutdo
   ) {}
 
   onApplicationBootstrap(): void {
-    if (!this.env.RUN_WORKERS) return;
+    if (!workersEnabled(this.env)) return;
     this.worker = new Worker<DomainEvent>('events', (job) => this.process(job), {
       connection: redisConnectionOptions(this.env.REDIS_URL),
       concurrency: 8,
