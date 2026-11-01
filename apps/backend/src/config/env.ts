@@ -16,8 +16,14 @@ export const EnvSchema = z
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
 
-    DATABASE_URL: z.string().url(),
-    REDIS_URL: z.string().url(),
+    /**
+     * `postgres` (default): Postgres + PostGIS and Redis from docker-compose.
+     * `memory`: local fake mode — in-memory stores loaded with the demo seed, no Docker needed,
+     * data lost on restart. Dev only; refused for staging/production.
+     */
+    DATA_STORE: z.enum(['postgres', 'memory']).default('postgres'),
+    DATABASE_URL: z.string().url().optional(),
+    REDIS_URL: z.string().url().optional(),
 
     JWT_ACCESS_SECRET: z.string().min(8),
     JWT_REFRESH_SECRET: z.string().min(8),
@@ -52,9 +58,21 @@ export const EnvSchema = z
     }
     if (env.OTP_PROVIDER === 'msg91' && (!env.MSG91_AUTH_KEY || !env.MSG91_TEMPLATE_ID))
       ctx.addIssue({ code: 'custom', path: ['MSG91_AUTH_KEY'], message: 'MSG91_AUTH_KEY and MSG91_TEMPLATE_ID required' });
-  });
+    if (env.DATA_STORE === 'memory') {
+      if (env.APP_ENV !== 'dev')
+        ctx.addIssue({ code: 'custom', path: ['DATA_STORE'], message: 'memory store is for local dev only (APP_ENV=dev)' });
+    } else {
+      for (const k of ['DATABASE_URL', 'REDIS_URL'] as const)
+        if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: `required when DATA_STORE=postgres` });
+    }
+  })
+  // Downstream code always gets strings; in memory mode they are empty and never used.
+  .transform((env) => ({ ...env, DATABASE_URL: env.DATABASE_URL ?? '', REDIS_URL: env.REDIS_URL ?? '' }));
 
 export type Env = z.infer<typeof EnvSchema>;
+
+/** Background workers (outbox relay, queue consumers) need Postgres + Redis; off in memory mode. */
+export const workersEnabled = (env: Env): boolean => env.RUN_WORKERS && env.DATA_STORE === 'postgres';
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
   const result = EnvSchema.safeParse(source);

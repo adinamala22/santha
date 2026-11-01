@@ -4,6 +4,15 @@ Work through the milestones in order. Each milestone has (1) the goal, (2) a pro
 
 Golden rule: **do not start a milestone until the previous one's acceptance checks pass.** Scope is the PRD's P0 list; Phase 2 items are parked.
 
+**Standing acceptance check for every milestone (M1 onward, M0 included retroactively): fake service + automation.** Alongside the milestone's Prisma code, Claude must:
+- add the in-memory implementation of every new repository port and fakes for any new Redis, queue or provider dependency;
+- add the milestone's demo data to `apps/backend/src/dev/seed-data.ts`;
+- write `apps/backend/test/fake/m<N>-<topic>.fake.spec.ts`, which automates that milestone's acceptance checks over HTTP against `DATA_STORE=memory` (harness: `test/fake/harness.ts`), including error paths;
+- keep `pnpm --filter backend test:fake` and the CI job "fake-mode acceptance" green;
+- confirm the milestone's new app and web screens work end to end against `pnpm dev:fake`.
+
+Checks that need PostGIS precision, real payments or device hardware stay on the real stack, staging and Testcontainers. Rules are in the santha-backend skill, "Fake service"; the decision is ADR-005.
+
 ---
 
 ## M0 — Repository foundations
@@ -103,4 +112,4 @@ Order-again and personalised modules; merchant daily digest; rider tips; wallet 
 1. "Read CLAUDE.md and the skills relevant to this milestone."
 2. Paste the milestone prompt (or the part you are doing today).
 3. Ask for a short design note (owning module, events in/out, config keys, audit, tests) before code when the task touches orders, money or dispatch.
-4. Review the PR against the acceptance checks; ask Claude to add missing tests or Telugu strings rather than accepting partial work.
+4. Review the PR against the acceptance checks, including the standing fake-service check; ask Claude to add missing tests, fake-mode coverage or Telugu strings rather than accepting partial work.

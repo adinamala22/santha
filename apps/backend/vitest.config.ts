@@ -19,6 +19,16 @@ export default defineConfig({
       {
         plugins,
         test: {
+          // Fake-mode acceptance: real AppModule with DATA_STORE=memory, no Docker (one file per milestone).
+          name: 'fake',
+          include: ['test/fake/**/*.fake.spec.ts'],
+          environment: 'node',
+          setupFiles: ['test/setup-env.ts'],
+        },
+      },
+      {
+        plugins,
+        test: {
           name: 'integration',
           include: ['test/integration/**/*.int.spec.ts'],
           environment: 'node',

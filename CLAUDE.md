@@ -42,13 +42,14 @@ docs             PRD, BRD, tech plan, diagrams, wireframes
 - Phone numbers are masked between parties. Exact addresses are revealed to merchants only after acceptance and to riders only after assignment.
 - No secrets in the repo. `.env.example` lists variables; real values live in AWS Secrets Manager / local `.env` (git-ignored).
 - Feature flags (PostHog) for anything risky or per-micro-market.
-- Definition of done: acceptance criteria met on staging, tests added, analytics events emitted and listed in `docs/events.md`, en+te strings, accessibility labels, error/empty/loading states, logs + metrics, docs updated.
+- Every backend storage port has a Prisma and an in-memory implementation; the fake service (`pnpm dev:fake`, `DATA_STORE=memory`) must run each milestone's features with demo data from `apps/backend/src/dev/seed-data.ts` (ADR-005, santha-backend "Fake service").
+- Definition of done: acceptance criteria met on staging, tests added, fake service updated with automated fake-mode acceptance tests (`test/fake/m<N>-*.fake.spec.ts`, green in `pnpm --filter backend test:fake` and CI), analytics events emitted and listed in `docs/events.md`, en+te strings, accessibility labels, error/empty/loading states, logs + metrics, docs updated.
 
 ## How to work in this repo
 - Small, reviewable commits with conventional messages (`feat(orders): …`, `fix(dispatch): …`). One milestone step per PR where possible.
 - Before writing code for a surface, open that surface's skill and the relevant mockup/wireframe. Match the mockup; ask only when the mockup and PRD disagree.
 - When a decision is not covered by the docs, choose the simplest option consistent with the architecture skill and record it in `docs/decisions/ADR-nnn.md` (one paragraph is fine).
-- Run the local stack with `docker compose up -d` (Postgres/PostGIS, Redis, Typesense, MinIO, Mailpit). Seed data: `pnpm --filter backend seed` creates Nellore micro-markets, 12 demo merchants, 3 riders and 2 test consumers.
+- Run the local stack with `docker compose up -d` (Postgres/PostGIS, Redis, Typesense, RustFS S3, Mailpit), or without Docker via `pnpm dev:fake` (in-memory backend + demo data). Seed data: `pnpm --filter backend seed` creates Nellore micro-markets, 12 demo merchants, 3 riders and 2 test consumers.
 - Never call live payment, KYC or SMS providers from dev/test; use their sandboxes or the local mocks in `apps/backend/test/mocks`.
 
 ## Phase boundaries

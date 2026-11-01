@@ -1,6 +1,6 @@
 import { Inject, Injectable, Logger, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import { ENV } from '../../config/config.module';
-import type { Env } from '../../config/env';
+import { type Env, workersEnabled } from '../../config/env';
 import { QueuesService } from '../queues/queues.service';
 import { ClaimedEvent, OutboxStore, PublishResult } from './outbox.store';
 
@@ -9,7 +9,7 @@ export const RELAY_BATCH_SIZE = 100;
 /**
  * Polls the outbox and publishes events to the BullMQ `events` queue. jobId = event_id, so a
  * crash between publish and commit cannot create a duplicate job; consumers dedupe anyway.
- * Runs only when RUN_WORKERS=true.
+ * Runs only when RUN_WORKERS=true and DATA_STORE=postgres.
  */
 @Injectable()
 export class OutboxRelayService implements OnApplicationBootstrap, OnApplicationShutdown {
@@ -25,7 +25,7 @@ export class OutboxRelayService implements OnApplicationBootstrap, OnApplication
   ) {}
 
   onApplicationBootstrap(): void {
-    if (!this.env.RUN_WORKERS) return;
+    if (!workersEnabled(this.env)) return;
     this.logger.log(`Outbox relay started (poll ${this.env.OUTBOX_POLL_MS} ms)`);
     this.schedule(0);
   }

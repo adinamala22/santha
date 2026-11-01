@@ -39,4 +39,4 @@ Rider features: onboarding, shift, offers, job, proof, earnings.
 - Analytics: emit events listed in `docs/events.md` (client section) with `micro_market_id`.
 
 ## Testing & release
-Unit (domain), widget (screens with fake repos), golden (santha_ui), integration (Patrol) for: place order, merchant accept + self-deliver, rider accept + deliver. CI: `melos run analyze test`, Firebase Test Lab on a low-end device profile. Release via fastlane lanes `beta` (internal/TestFlight) and `release` (staged rollout 10/50/100).
+Unit (domain), widget (screens with fake repos), device testing against the fake backend (`pnpm dev:fake`, demo users, OTP 123456; each milestone's new screens must work end to end against it), golden (santha_ui), integration (Patrol) for: place order, merchant accept + self-deliver, rider accept + deliver. CI: `melos run analyze test`, Firebase Test Lab on a low-end device profile. Release via fastlane lanes `beta` (internal/TestFlight) and `release` (staged rollout 10/50/100).

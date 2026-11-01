@@ -26,12 +26,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter backend lint
       - run: pnpm --filter backend typecheck
-      - run: pnpm --filter backend test
+      - run: pnpm --filter backend test:unit
       - name: OpenAPI and shared-types are up to date
         run: |
           pnpm openapi:gen
           git diff --exit-code -- apps/backend/openapi.json packages/shared-types packages/santha_api/openapi.json
       - run: pnpm --filter @santha/shared-types typecheck
+
+  fake:
+    name: fake-mode acceptance (DATA_STORE=memory · no Docker)
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter backend test:fake
 
   integration:
     name: integration (Testcontainers · Postgres+PostGIS · Redis)

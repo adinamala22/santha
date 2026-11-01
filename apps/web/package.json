@@ -7,6 +7,7 @@
     "predev": "node scripts/sync-brand.mjs",
     "prebuild": "node scripts/sync-brand.mjs",
     "dev": "next dev -p 3000",
+    "dev:fake": "pnpm run dev",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "eslint .",

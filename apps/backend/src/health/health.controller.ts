@@ -5,6 +5,8 @@ import type { Redis } from 'ioredis';
 import { createZodDto, ZodResponse } from 'nestjs-zod';
 import { z } from 'zod';
 import { Public } from '../common/auth/decorators';
+import { ENV } from '../config/config.module';
+import type { Env } from '../config/env';
 import { PrismaService } from '../infra/prisma/prisma.service';
 import { REDIS } from '../infra/redis/redis.module';
 
@@ -36,6 +38,7 @@ export class HealthController {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(REDIS) private readonly redis: Redis,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   /** Liveness: the process is up. Never touches dependencies. */
@@ -49,6 +52,10 @@ export class HealthController {
   @Get('ready')
   @ZodResponse({ type: ReadinessDto })
   async ready(@Res({ passthrough: true }) res: Response) {
+    if (this.env.DATA_STORE === 'memory') {
+      const fake = { ok: true, latencyMs: 0, detail: 'in-memory fake (DATA_STORE=memory)' };
+      return { status: 'ok' as const, checks: { postgres: fake, redis: fake } };
+    }
     const [postgres, redis] = await Promise.all([
       timed(async () => {
         const rows = await this.prisma.$queryRaw<Array<{ v: string }>>`SELECT postgis_lib_version() AS v`;

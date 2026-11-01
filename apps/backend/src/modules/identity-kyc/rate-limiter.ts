@@ -12,6 +12,27 @@ export abstract class RateLimiter {
   abstract hit(key: string, limit: number, windowSec: number): Promise<RateLimitResult>;
 }
 
+/** Same fixed-window semantics as RedisRateLimiter, held in process memory (DATA_STORE=memory). */
+export class MemoryRateLimiter extends RateLimiter {
+  private readonly windows = new Map<string, { count: number; resetAt: number }>();
+
+  constructor(private readonly now: () => number = Date.now) {
+    super();
+  }
+
+  async hit(key: string, limit: number, windowSec: number): Promise<RateLimitResult> {
+    const t = this.now();
+    let w = this.windows.get(key);
+    if (!w || w.resetAt <= t) {
+      w = { count: 0, resetAt: t + windowSec * 1000 };
+      this.windows.set(key, w);
+    }
+    w.count += 1;
+    const allowed = w.count <= limit;
+    return { allowed, retryAfterSec: allowed ? 0 : Math.max(Math.ceil((w.resetAt - t) / 1000), 1) };
+  }
+}
+
 @Injectable()
 export class RedisRateLimiter extends RateLimiter {
   constructor(@Inject(REDIS) private readonly redis: Redis) {
