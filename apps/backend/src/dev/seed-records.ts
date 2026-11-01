@@ -1,0 +1,104 @@
+import { everyDay } from '../common/hours';
+import type { MerchantRecord, StaffRecord } from '../modules/merchant-catalogue/domain/merchant';
+import { gstinCheckChar } from '../modules/identity-kyc/domain/kyc-formats';
+import type { KycCheckInput } from '../modules/identity-kyc/kyc.repository';
+import { SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
+
+export interface SeedMerchantRecords {
+  merchants: MerchantRecord[];
+  staff: StaffRecord[];
+}
+
+const DAY = 24 * 3600 * 1000;
+
+function kycCheck(kind: SeedKycKind, n: number, at: Date): KycCheckInput {
+  const v = seedKycValues(n);
+  const base = {
+    kind,
+    status: 'verified' as const,
+    valueMasked: null as string | null,
+    valuePublic: null as string | null,
+    nameOnRecord: null as string | null,
+    provider: 'mock',
+    providerRef: `seed-${kind}-${n}`,
+    failureReason: null,
+    details: null as Record<string, unknown> | null,
+    verifiedAt: at,
+  };
+  switch (kind) {
+    case 'pan':
+      return { ...base, valueMasked: v.panMasked, nameOnRecord: `DEMO OWNER ${n}` };
+    case 'aadhaar':
+      return { ...base, valueMasked: v.aadhaarMasked, nameOnRecord: `DEMO OWNER ${n}` };
+    case 'gstin':
+      return { ...base, valuePublic: v.gstin + gstinCheckChar(v.gstin), nameOnRecord: 'DEMO TRADERS', details: { status: 'Active' } };
+    case 'gst_exemption':
+      return { ...base, provider: 'self-declaration', providerRef: null, details: { reason: 'Turnover below the GST threshold' } };
+    case 'fssai':
+      return { ...base, valuePublic: v.fssai, nameOnRecord: 'DEMO FOOD BUSINESS', details: { kind: 'registration', validUpto: '2028-03-31' } };
+    case 'bank':
+      return { ...base, valueMasked: v.bankMasked, nameOnRecord: `DEMO OWNER ${n}`, details: { ifsc: v.ifsc } };
+    case 'drug_licence':
+      return { ...base, status: 'pending', provider: 'manual-review', providerRef: null, valuePublic: v.drugLicence, verifiedAt: null };
+  }
+}
+
+/** Demo KYC checks for the seeded merchants (keyed by their fixed ids) — seeded by identity-kyc. */
+export function buildSeedKyc(): Array<{ merchantId: string; check: KycCheckInput }> {
+  const t0 = SEED_EFFECTIVE_FROM.getTime();
+  return SEED_MERCHANTS.flatMap((s, i) => {
+    const n = Number(s.ownerPhone.slice(-3));
+    return s.kyc.map((k) => ({ merchantId: s.id, check: kycCheck(k, n, new Date(t0 + i * DAY)) }));
+  });
+}
+
+/**
+ * Builds the 12 demo merchants (SEED_MERCHANTS) as records. Used by the in-memory store at boot
+ * and by `prisma/seed.ts`, so fake mode and Postgres start identical.
+ */
+export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>): SeedMerchantRecords {
+  const out: SeedMerchantRecords = { merchants: [], staff: [] };
+  const t0 = SEED_EFFECTIVE_FROM.getTime();
+  SEED_MERCHANTS.forEach((s, i) => {
+    const n = Number(s.ownerPhone.slice(-3));
+    const market = SEED_MICRO_MARKETS.find((m) => m.slug === s.microMarketSlug)!;
+    const microMarketId = marketIdBySlug.get(s.microMarketSlug);
+    if (!microMarketId) throw new Error(`Seed micro-market ${s.microMarketSlug} missing`);
+    const created = new Date(t0 + i * DAY);
+    const submitted = s.status === 'draft' ? null : new Date(t0 + (20 + i) * DAY);
+    const live = s.status === 'live';
+    out.merchants.push({
+      id: s.id,
+      ownerUserId: seedUserId(s.ownerPhone),
+      microMarketId,
+      type: s.type,
+      sellsFood: s.sellsFood,
+      category: s.category,
+      name: s.name,
+      nameTe: s.nameTe,
+      description: s.description,
+      addressLine: s.addressLine,
+      landmark: null,
+      pincode: '524004',
+      location: { lat: market.centre.lat + s.offset.lat, lng: market.centre.lng + s.offset.lng },
+      radiusM: s.radiusM,
+      hours: everyDay(s.hours.open, s.hours.close),
+      movPaise: s.movPaise,
+      defaultFulfilment: s.defaultFulfilment,
+      returnPolicy: s.returnPolicy ?? null,
+      hygieneDeclaredAt: s.type === 'home_kitchen' && s.status !== 'draft' ? created : null,
+      status: s.status,
+      submittedAt: submitted,
+      decidedAt: live ? new Date(t0 + (22 + i) * DAY) : null,
+      decidedBy: live ? seedUserId('+919000000900') : null,
+      rejectionCode: null,
+      rejectionNote: null,
+      liveAt: live ? new Date(t0 + (23 + i) * DAY) : null,
+      createdAt: created,
+      updatedAt: created,
+    });
+    for (const st of s.staff ?? [])
+      out.staff.push({ id: `20000000-0000-4000-8000-000000000${n}`, merchantId: s.id, name: st.name, phone: st.phone, active: true, createdAt: created });
+  });
+  return out;
+}

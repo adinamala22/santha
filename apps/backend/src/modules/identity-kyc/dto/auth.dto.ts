@@ -63,6 +63,21 @@ export const AuthSessionSchema = TokenPairSchema.extend({
 });
 export class AuthSessionDto extends createZodDto(AuthSessionSchema) {}
 
+export const OpsLoginSchema = z.object({
+  email: z.email().max(200),
+  password: z.string().min(8).max(200),
+  deviceId,
+});
+export class OpsLoginDto extends createZodDto(OpsLoginSchema) {}
+
+export const OpsChallengeSchema = OtpChallengeSchema.extend({
+  phoneMasked: z.string().describe('Where the second-factor code was sent'),
+});
+export class OpsChallengeDto extends createZodDto(OpsChallengeSchema) {}
+
+export const OpsVerifySchema = z.object({ challengeId: z.uuid(), code: z.string().regex(/^\d{6}$/), deviceId });
+export class OpsVerifyDto extends createZodDto(OpsVerifySchema) {}
+
 export const RefreshSchema = z
   .object({ refreshToken: z.string().min(10).max(512), deviceId });
 export class RefreshDto extends createZodDto(RefreshSchema) {}

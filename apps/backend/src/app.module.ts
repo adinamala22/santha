@@ -8,6 +8,7 @@ import { LOG_REDACT_PATHS } from './common/pii';
 import { ConfigModule } from './config/config.module';
 import { parseEnv } from './config/env';
 import { HealthController } from './health/health.controller';
+import { AuditModule } from './infra/audit/audit.module';
 import { OutboxModule } from './infra/outbox/outbox.module';
 import { PrismaModule } from './infra/prisma/prisma.module';
 import { QueuesModule } from './infra/queues/queues.module';
@@ -51,6 +52,7 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     RedisModule,
     QueuesModule,
     OutboxModule,
+    AuditModule,
     IdentityKycModule,
     MerchantCatalogueModule,
     SearchDiscoveryModule,

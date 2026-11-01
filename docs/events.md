@@ -6,4 +6,6 @@ merchant: onboarding_step_completed · kyc_result · catalogue_item_created(meth
 rider: online_toggled · offer_shown · offer_accepted · offer_declined · arrived_store · waiting_time · picked_up · delivered(verification) · earnings_viewed
 Add new events here in the same PR that emits them.
 
-Emitted as of M0 (server): user.registered · user.role_granted (identity-kyc, via outbox). Client analytics (PostHog) is wired with the first feature screens in M1/M3.
+Emitted as of M0 (server): user.registered · user.role_granted (identity-kyc, via outbox).
+Emitted as of M1 (server): config.micro_market_changed (analytics-config) · merchant.created · merchant.submitted · merchant.approved · merchant.rejected · merchant.went_live · merchant.staff_added (merchant-catalogue) · merchant.kyc_updated (identity-kyc KycService). Every ops action also writes an audit_events row (GET /v1/ops/audit).
+Client (merchant app, M1): onboarding_step_completed(step) · kyc_result(kind, status) — sent to PostHog once the SDK is wired (see ADR-006).

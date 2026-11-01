@@ -32,6 +32,11 @@ export class TokenService {
     return this.env.JWT_REFRESH_TTL_SEC;
   }
 
+  /** Ops console sessions are short (8 h by default); app sessions last JWT_REFRESH_TTL_SEC. */
+  refreshTtlFor(app: AppId): number {
+    return app === 'web_admin' ? this.env.OPS_REFRESH_TTL_SEC : this.env.JWT_REFRESH_TTL_SEC;
+  }
+
   /** Pepper for hashing refresh secrets and OTP codes at rest. */
   get pepper(): string {
     return this.env.JWT_REFRESH_SECRET;

@@ -65,6 +65,8 @@ export abstract class IdentityRepository {
   abstract incrementAttempts(id: string): Promise<number>;
   abstract lastChallengeAt(phone: string): Promise<Date | null>;
   abstract findUserById(id: string): Promise<UserRecord | null>;
+  /** Ops console login: the account with this (lower-case) email and its password hash. */
+  abstract findOpsAccount(email: string): Promise<{ user: UserRecord; passwordHash: string | null } | null>;
   abstract findSession(id: string): Promise<SessionRecord | null>;
   /** Compare-and-swap rotation; false if the session changed concurrently. */
   abstract rotateSession(id: string, expectedHash: string, newHash: string, expiresAt: Date, now: Date): Promise<boolean>;
@@ -182,6 +184,13 @@ export class PrismaIdentityRepository extends IdentityRepository {
   async findUserById(id: string): Promise<UserRecord | null> {
     const u = await this.prisma.user.findUnique({ where: { id }, select: userSelect });
     return u ? toUser(u) : null;
+  }
+
+  async findOpsAccount(email: string): Promise<{ user: UserRecord; passwordHash: string | null } | null> {
+    const u = await this.prisma.user.findUnique({ where: { email }, select: { ...userSelect, passwordHash: true } });
+    if (!u) return null;
+    const { passwordHash, ...rest } = u;
+    return { user: toUser(rest), passwordHash };
   }
 
   async findSession(id: string): Promise<SessionRecord | null> {

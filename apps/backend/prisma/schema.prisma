@@ -46,11 +46,14 @@ enum Platform {
 }
 
 model User {
-  id        String     @id @default(uuid()) @db.Uuid
-  phone     String     @unique // E.164, +91XXXXXXXXXX
-  name      String?
-  locale    String     @default("en")
-  status    UserStatus @default(active)
+  id           String     @id @default(uuid()) @db.Uuid
+  phone        String     @unique // E.164, +91XXXXXXXXXX
+  name         String?
+  locale       String     @default("en")
+  status       UserStatus @default(active)
+  /// Ops console accounts only: email + password, then OTP to `phone` as second factor.
+  email        String?    @unique
+  passwordHash String?    @map("password_hash")
   createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -127,6 +130,183 @@ model OtpChallenge {
 
   @@index([phone, createdAt])
   @@map("otp_challenges")
+}
+
+enum KycSubject {
+  merchant
+  rider
+}
+
+enum KycKind {
+  pan
+  aadhaar
+  gstin
+  gst_exemption
+  fssai
+  bank
+  drug_licence
+}
+
+enum KycStatus {
+  pending // e.g. Aadhaar OTP sent, waiting for the code
+  verified
+  failed
+}
+
+/// One verification per (subject, kind); re-running a check replaces the row.
+/// PAN, Aadhaar and bank numbers are never stored in full — only masked values and provider references.
+/// GSTIN, FSSAI and drug-licence numbers are public business identifiers and are stored in full.
+model KycCheck {
+  id            String     @id @default(uuid()) @db.Uuid
+  subjectType   KycSubject @map("subject_type")
+  subjectId     String     @map("subject_id") @db.Uuid
+  kind          KycKind
+  status        KycStatus
+  valueMasked   String?    @map("value_masked")
+  valuePublic   String?    @map("value_public")
+  nameOnRecord  String?    @map("name_on_record")
+  provider      String
+  providerRef   String?    @map("provider_ref")
+  failureReason String?    @map("failure_reason")
+  details       Json?
+  verifiedAt    DateTime?  @map("verified_at") @db.Timestamptz(6)
+  createdAt     DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([subjectType, subjectId, kind])
+  @@map("kyc_checks")
+}
+
+// ───────────── analytics-config ─────────────
+
+model City {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  name      String
+  nameTe    String   @map("name_te")
+  state     String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  microMarkets MicroMarket[]
+
+  @@map("cities")
+}
+
+model MicroMarket {
+  id        String   @id @default(uuid()) @db.Uuid
+  cityId    String   @map("city_id") @db.Uuid
+  slug      String   @unique
+  name      String
+  nameTe    String   @map("name_te")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  city     City                 @relation(fields: [cityId], references: [id])
+  versions MicroMarketVersion[]
+
+  @@index([cityId])
+  @@map("micro_markets")
+}
+
+/// Versioned configuration: exactly one version is effective at any instant
+/// (effective_from <= t < effective_to, effective_to null = open-ended). Never updated in place
+/// except to close the previous version when a new one is added, so past orders can be re-priced.
+model MicroMarketVersion {
+  id            String                                    @id @default(uuid()) @db.Uuid
+  microMarketId String                                    @map("micro_market_id") @db.Uuid
+  version       Int
+  effectiveFrom DateTime                                  @map("effective_from") @db.Timestamptz(6)
+  effectiveTo   DateTime?                                 @map("effective_to") @db.Timestamptz(6)
+  /// Always set (enforced by the service); nullable only because Prisma cannot write geography.
+  polygon       Unsupported("geography(Polygon, 4326)")?
+  hours         Json
+  fees          Json
+  cod           Json
+  sla           Json
+  riderPay      Json                                      @map("rider_pay")
+  note          String?
+  createdBy     String?                                   @map("created_by") @db.Uuid
+  createdAt     DateTime                                  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  microMarket MicroMarket @relation(fields: [microMarketId], references: [id], onDelete: Cascade)
+
+  @@unique([microMarketId, version])
+  @@index([microMarketId, effectiveFrom])
+  @@map("micro_market_versions")
+}
+
+// ───────────── merchant-catalogue ─────────────
+
+enum MerchantType {
+  retail
+  fashion
+  home_business
+  home_kitchen
+}
+
+enum MerchantStatus {
+  draft
+  submitted
+  approved
+  rejected
+  live
+}
+
+enum FulfilmentMode {
+  self
+  rider
+}
+
+model Merchant {
+  id                String                                  @id @default(uuid()) @db.Uuid
+  ownerUserId       String                                  @unique @map("owner_user_id") @db.Uuid // MVP: one store per owner
+  microMarketId     String?                                 @map("micro_market_id") @db.Uuid
+  type              MerchantType
+  sellsFood         Boolean                                 @default(false) @map("sells_food")
+  category          String?
+  name              String
+  nameTe            String?                                 @map("name_te")
+  description       String?
+  addressLine       String?                                 @map("address_line")
+  landmark          String?
+  pincode           String?
+  location          Unsupported("geography(Point, 4326)")?
+  radiusM           Int                                     @default(3000) @map("radius_m")
+  hours             Json?
+  movPaise          Int                                     @default(0) @map("mov_paise")
+  defaultFulfilment FulfilmentMode                          @default(rider) @map("default_fulfilment")
+  returnPolicy      String?                                 @map("return_policy")
+  hygieneDeclaredAt DateTime?                               @map("hygiene_declared_at") @db.Timestamptz(6)
+  status            MerchantStatus                          @default(draft)
+  submittedAt       DateTime?                               @map("submitted_at") @db.Timestamptz(6)
+  decidedAt         DateTime?                               @map("decided_at") @db.Timestamptz(6)
+  decidedBy         String?                                 @map("decided_by") @db.Uuid
+  rejectionCode     String?                                 @map("rejection_code")
+  rejectionNote     String?                                 @map("rejection_note")
+  liveAt            DateTime?                               @map("live_at") @db.Timestamptz(6)
+  createdAt         DateTime                                @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                                @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  staff MerchantStaff[]
+
+  @@index([status, submittedAt])
+  @@index([microMarketId, status])
+  @@map("merchants")
+}
+
+/// Store staff who can self-deliver (they get a tracking link per job, M6).
+model MerchantStaff {
+  id         String   @id @default(uuid()) @db.Uuid
+  merchantId String   @map("merchant_id") @db.Uuid
+  name       String
+  phone      String
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@unique([merchantId, phone])
+  @@map("merchant_staff")
 }
 
 // ───────────── platform (shared infrastructure, owned by src/infra) ─────────────

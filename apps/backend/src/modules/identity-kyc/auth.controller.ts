@@ -12,6 +12,9 @@ import {
   OtpChallengeDto,
   OtpRequestDto,
   OtpVerifyDto,
+  OpsChallengeDto,
+  OpsLoginDto,
+  OpsVerifyDto,
   RefreshDto,
   TokenPairDto,
 } from './dto/auth.dto';
@@ -41,6 +44,23 @@ export class AuthController {
   @ZodResponse({ status: 200, type: AuthSessionDto, description: 'Signed in' })
   async verifyOtp(@Body() body: OtpVerifyDto) {
     const r = await this.auth.verifyOtp(body);
+    return { ...r, user: toMe(r.user) };
+  }
+
+  /** Ops console step 1: email + password → OTP to the account phone. */
+  @Public()
+  @Post('ops/login')
+  @ZodResponse({ status: 200, type: OpsChallengeDto, description: 'Password accepted; second-factor code sent' })
+  opsLogin(@Body() body: OpsLoginDto, @Req() req: Request) {
+    return this.auth.opsLogin({ ...body, ip: req.ip ?? 'unknown' });
+  }
+
+  /** Ops console step 2: the OTP → web_admin session. */
+  @Public()
+  @Post('ops/verify')
+  @ZodResponse({ status: 200, type: AuthSessionDto, description: 'Signed in to the ops console' })
+  async opsVerify(@Body() body: OpsVerifyDto) {
+    const r = await this.auth.opsVerify(body);
     return { ...r, user: toMe(r.user) };
   }
 
