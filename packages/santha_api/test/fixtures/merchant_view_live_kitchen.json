@@ -1,0 +1,189 @@
+{
+  "merchant": {
+    "id": "10000000-0000-4000-8000-000000000210",
+    "type": "home_kitchen",
+    "sellsFood": true,
+    "category": null,
+    "name": "Saraswathi's Kitchen",
+    "nameTe": "సరస్వతి కిచెన్",
+    "description": "Nellore chepala pulusu, pappu and daily meals.",
+    "addressLine": "12-4, Dargamitta Temple Street",
+    "landmark": null,
+    "pincode": "524004",
+    "location": {
+      "lat": 14.457500000000001,
+      "lng": 80.001
+    },
+    "radiusM": 4000,
+    "hours": {
+      "mon": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "tue": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "wed": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "thu": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "fri": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "sat": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ],
+      "sun": [
+        {
+          "open": "11:00",
+          "close": "21:00"
+        }
+      ]
+    },
+    "movPaise": 14900,
+    "defaultFulfilment": "rider",
+    "returnPolicy": null,
+    "hygieneDeclaredAt": "2026-01-09T18:30:00.000Z",
+    "status": "live",
+    "submittedAt": "2026-01-29T18:30:00.000Z",
+    "decidedAt": "2026-01-31T18:30:00.000Z",
+    "rejectionCode": null,
+    "rejectionNote": null,
+    "liveAt": "2026-02-01T18:30:00.000Z",
+    "createdAt": "2026-01-09T18:30:00.000Z"
+  },
+  "microMarket": {
+    "id": "959a3142-9f3b-40c2-96a5-72c0e1c035c1",
+    "slug": "dargamitta",
+    "name": "Dargamitta",
+    "nameTe": "దర్గామిట్ట"
+  },
+  "staff": [],
+  "kyc": [
+    {
+      "kind": "aadhaar",
+      "status": "verified",
+      "valueMasked": "XXXX XXXX 4210",
+      "valuePublic": null,
+      "nameOnRecord": "DEMO OWNER 210",
+      "provider": "mock",
+      "failureReason": null,
+      "details": null,
+      "verifiedAt": "2026-01-09T18:30:00.000Z",
+      "updatedAt": "2026-11-01T16:58:55.799Z"
+    },
+    {
+      "kind": "bank",
+      "status": "verified",
+      "valueMasked": "•••• 7210",
+      "valuePublic": null,
+      "nameOnRecord": "DEMO OWNER 210",
+      "provider": "mock",
+      "failureReason": null,
+      "details": {
+        "ifsc": "SBIN0001234"
+      },
+      "verifiedAt": "2026-01-09T18:30:00.000Z",
+      "updatedAt": "2026-11-01T16:58:55.799Z"
+    },
+    {
+      "kind": "fssai",
+      "status": "verified",
+      "valueMasked": null,
+      "valuePublic": "10190000000210",
+      "nameOnRecord": "DEMO FOOD BUSINESS",
+      "provider": "mock",
+      "failureReason": null,
+      "details": {
+        "kind": "registration",
+        "validUpto": "2028-03-31"
+      },
+      "verifiedAt": "2026-01-09T18:30:00.000Z",
+      "updatedAt": "2026-11-01T16:58:55.805Z"
+    },
+    {
+      "kind": "gst_exemption",
+      "status": "verified",
+      "valueMasked": null,
+      "valuePublic": null,
+      "nameOnRecord": null,
+      "provider": "self-declaration",
+      "failureReason": null,
+      "details": {
+        "reason": "Turnover below the GST threshold"
+      },
+      "verifiedAt": "2026-01-09T18:30:00.000Z",
+      "updatedAt": "2026-11-01T16:58:55.799Z"
+    },
+    {
+      "kind": "pan",
+      "status": "verified",
+      "valueMasked": "AB******0K",
+      "valuePublic": null,
+      "nameOnRecord": "DEMO OWNER 210",
+      "provider": "mock",
+      "failureReason": null,
+      "details": null,
+      "verifiedAt": "2026-01-09T18:30:00.000Z",
+      "updatedAt": "2026-11-01T16:58:55.799Z"
+    }
+  ],
+  "checklist": [
+    {
+      "key": "business",
+      "done": true
+    },
+    {
+      "key": "location",
+      "done": true
+    },
+    {
+      "key": "hours",
+      "done": true
+    },
+    {
+      "key": "pan",
+      "done": true
+    },
+    {
+      "key": "aadhaar",
+      "done": true
+    },
+    {
+      "key": "gst",
+      "done": true
+    },
+    {
+      "key": "fssai",
+      "done": true
+    },
+    {
+      "key": "bank",
+      "done": true
+    },
+    {
+      "key": "hygiene",
+      "done": true
+    }
+  ],
+  "canSubmit": false
+}

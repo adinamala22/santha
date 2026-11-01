@@ -5,7 +5,8 @@ import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../features/auth/presentation/login_page.dart';
-import '../features/home/presentation/home_page.dart';
+import '../features/onboarding/presentation/onboarding_gate.dart';
+import '../features/onboarding/presentation/steps.dart';
 
 abstract final class Routes {
   static const splash = '/splash';
@@ -13,7 +14,7 @@ abstract final class Routes {
   static const home = '/';
 }
 
-/// Auth-aware router: restoring → splash, signed out → login, signed in → home.
+/// Auth-aware router: restoring → splash, signed out → login, signed in → onboarding (M1 home).
 final routerProvider = Provider<GoRouter>((ref) {
   final auth = ValueNotifier<AuthState>(ref.read(authControllerProvider));
   ref.listen(authControllerProvider, (_, next) => auth.value = next);
@@ -33,7 +34,8 @@ final routerProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(path: Routes.splash, builder: (context, state) => const _Splash()),
       GoRoute(path: Routes.login, builder: (context, state) => const LoginPage()),
-      GoRoute(path: Routes.home, builder: (context, state) => const HomePage()),
+      GoRoute(path: Routes.home, builder: (context, state) => const OnboardingGate()),
+      GoRoute(path: '/onboarding/:step', builder: (context, state) => StepRouter(step: state.pathParameters['step']!)),
     ],
   );
 });
