@@ -1,0 +1,177 @@
+// Santha — single Prisma schema. Module ownership is noted per model; only the owning
+// module's repository may query a model (see .claude/skills/santha-architecture).
+// Money = Int paise. Timestamps = timestamptz. Geo = PostGIS geography via raw SQL (src/infra/prisma/geo.ts).
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis, pgcrypto]
+}
+
+// ───────────── identity-kyc ─────────────
+
+enum UserStatus {
+  active
+  blocked
+  deleted
+}
+
+enum Role {
+  consumer
+  merchant
+  merchant_staff
+  rider
+  admin
+  ops
+  finance
+  support
+}
+
+enum AppId {
+  consumer
+  merchant
+  rider
+  web_admin
+}
+
+enum Platform {
+  android
+  ios
+  web
+}
+
+model User {
+  id        String     @id @default(uuid()) @db.Uuid
+  phone     String     @unique // E.164, +91XXXXXXXXXX
+  name      String?
+  locale    String     @default("en")
+  status    UserStatus @default(active)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  roles    UserRole[]
+  devices  Device[]
+  sessions Session[]
+
+  @@map("users")
+}
+
+model UserRole {
+  userId    String   @map("user_id") @db.Uuid
+  role      Role
+  grantedBy String?  @map("granted_by") @db.Uuid // null = self-service signup
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, role])
+  @@map("user_roles")
+}
+
+/// A physical install of one of our apps, bound to a user. Tokens are bound to a device.
+model Device {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  deviceId   String   @map("device_id") // client-generated install id, stored in secure storage
+  app        AppId
+  platform   Platform
+  appVersion String?  @map("app_version")
+  pushToken  String?  @map("push_token")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at") @db.Timestamptz(6)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessions Session[]
+
+  @@unique([userId, deviceId, app])
+  @@index([deviceId])
+  @@map("devices")
+}
+
+/// One refresh-token session per device login. The refresh secret rotates on every refresh;
+/// presenting the previous secret again is treated as token theft and revokes the session.
+model Session {
+  id              String    @id @default(uuid()) @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  deviceRowId     String    @map("device_row_id") @db.Uuid
+  refreshHash     String    @map("refresh_hash")
+  prevRefreshHash String?   @map("prev_refresh_hash")
+  expiresAt       DateTime  @map("expires_at") @db.Timestamptz(6)
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
+  revokedReason   String?   @map("revoked_reason")
+  lastRefreshedAt DateTime? @map("last_refreshed_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  device Device @relation(fields: [deviceRowId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model OtpChallenge {
+  id         String    @id @default(uuid()) @db.Uuid
+  phone      String
+  deviceId   String    @map("device_id")
+  app        AppId
+  codeHash   String    @map("code_hash")
+  attempts   Int       @default(0)
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  consumedAt DateTime? @map("consumed_at") @db.Timestamptz(6)
+  createdAt  DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([phone, createdAt])
+  @@map("otp_challenges")
+}
+
+// ───────────── platform (shared infrastructure, owned by src/infra) ─────────────
+
+/// Transactional outbox. Written in the same transaction as the state change; relayed to BullMQ `events`.
+model OutboxEvent {
+  id            String    @id @db.Uuid // = event_id
+  type          String // e.g. user.registered
+  aggregateType String    @map("aggregate_type")
+  aggregateId   String    @map("aggregate_id")
+  microMarketId String?   @map("micro_market_id") @db.Uuid
+  payload       Json
+  occurredAt    DateTime  @map("occurred_at") @db.Timestamptz(6)
+  publishedAt   DateTime? @map("published_at") @db.Timestamptz(6)
+  attempts      Int       @default(0)
+  lastError     String?   @map("last_error")
+
+  @@index([publishedAt, occurredAt])
+  @@map("outbox")
+}
+
+/// Consumer-side dedupe: one row per (event, consumer) once handled.
+model ProcessedEvent {
+  eventId     String   @map("event_id") @db.Uuid
+  consumer    String
+  processedAt DateTime @default(now()) @map("processed_at") @db.Timestamptz(6)
+
+  @@id([eventId, consumer])
+  @@map("processed_events")
+}
+
+/// Every ops mutation writes one of these (entity, action, actor, before, after).
+model AuditEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  entity        String
+  entityId      String   @map("entity_id")
+  action        String
+  actorId       String?  @map("actor_id") @db.Uuid
+  microMarketId String?  @map("micro_market_id") @db.Uuid
+  before        Json?
+  after         Json?
+  requestId     String?  @map("request_id")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([entity, entityId])
+  @@index([actorId, createdAt])
+  @@map("audit_events")
+}

@@ -1,0 +1,56 @@
+{
+  "@@locale": "en",
+  "appName": "Santha",
+  "loginTagline": "The whole town, one app.",
+  "loginSubtitle": "Enter your mobile number. We'll send you a one-time code.",
+  "homeWelcome": "Welcome to Santha",
+  "homeComingSoon": "Shops, home kitchens and home businesses near you are on their way.",
+  "switchLanguage": "తెలుగు",
+  "@switchLanguage": {
+    "description": "Label of the button that switches to the other language"
+  },
+  "loginTitle": "Sign in",
+  "phoneLabel": "Mobile number",
+  "phoneHint": "98765 43210",
+  "sendCode": "Send code",
+  "codeTitle": "Enter the code",
+  "codeSubtitle": "We sent a 6-digit code to {phone}",
+  "@codeSubtitle": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "codeLabel": "6-digit code",
+  "verify": "Verify and continue",
+  "resend": "Resend code",
+  "resendIn": "Resend in {countdown}",
+  "@resendIn": {
+    "placeholders": {
+      "countdown": {
+        "type": "String"
+      }
+    }
+  },
+  "changeNumber": "Change number",
+  "errorInvalidPhone": "Enter a valid 10-digit mobile number.",
+  "errorInvalidCode": "Enter the 6-digit code.",
+  "errorWrongCode": "That code is not right. Please check and try again.",
+  "errorExpired": "That code has expired. Request a new one.",
+  "errorTooManyAttempts": "Too many wrong attempts. Request a new code.",
+  "errorRateLimited": "Too many requests. Please wait a little and try again.",
+  "errorBlocked": "This account is not active. Please contact support.",
+  "errorNetwork": "No internet connection. Check and try again.",
+  "errorGeneric": "Something went wrong. Please try again.",
+  "sessionExpired": "You were signed out. Please sign in again.",
+  "signedInAs": "Signed in as {phone}",
+  "@signedInAs": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "signOut": "Sign out"
+}

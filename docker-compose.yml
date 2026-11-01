@@ -1,0 +1,36 @@
+# Santha local development stack. Usage: docker compose up -d
+services:
+  postgres:
+    restart: unless-stopped
+    image: postgis/postgis:16-3.4
+    environment: { POSTGRES_USER: santha, POSTGRES_PASSWORD: santha, POSTGRES_DB: santha }
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U santha"], interval: 5s, retries: 10 }
+  redis:
+    restart: unless-stopped
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+  typesense:
+    restart: unless-stopped
+    image: typesense/typesense:27.1
+    command: ["--data-dir", "/data", "--api-key", "dev-typesense-key", "--enable-cors"]
+    ports: ["8108:8108"]
+    volumes: ["tsdata:/data"]
+  # S3-compatible object storage. MinIO no longer publishes images (see docs/decisions/ADR-003);
+  # RustFS is a drop-in replacement on the same ports (API 9000, console 9001). Service name kept as
+  # `minio` so S3_ENDPOINT and docs stay unchanged.
+  minio:
+    restart: unless-stopped
+    image: rustfs/rustfs:latest
+    environment:
+      RUSTFS_ACCESS_KEY: santha
+      RUSTFS_SECRET_KEY: santha-dev-only
+      RUSTFS_CONSOLE_ENABLE: "true"
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+  mailpit:
+    restart: unless-stopped
+    image: axllent/mailpit
+    ports: ["8025:8025", "1025:1025"]
+volumes: { pgdata: {}, tsdata: {}, miniodata: {} }

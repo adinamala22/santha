@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "types": ["node"],
+    "noUncheckedIndexedAccess": true
+  },
+  "include": ["src", "scripts", "prisma", "test", "vitest.config.ts"]
+}

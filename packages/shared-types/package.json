@@ -1,0 +1,23 @@
+{
+  "name": "@santha/shared-types",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types generated from the backend OpenAPI document (apps/backend → openapi.json). Do not edit src/api.ts by hand.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./openapi.json": "./openapi.json"
+  },
+  "scripts": {
+    "gen": "openapi-typescript openapi.json -o src/api.ts",
+    "check:fresh": "openapi-typescript openapi.json -o src/api.ts && git diff --exit-code -- src/api.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "test": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "~5.7"
+  }
+}

@@ -1,0 +1,19 @@
+@import './styles/tokens.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: var(--font-poppins), var(--s-font-ui);
+}
+:lang(te) {
+  font-family: var(--font-telugu), var(--s-font-telugu);
+  line-height: 1.6;
+}
+
+@layer components {
+  .s-focus {
+    @apply focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-marigold;
+  }
+}

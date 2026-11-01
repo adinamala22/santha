@@ -1,0 +1,35 @@
+import swc from 'unplugin-swc';
+import { defineConfig } from 'vitest/config';
+
+// SWC is needed so Nest's decorator metadata (DI by type) is emitted under Vitest.
+const plugins = [swc.vite({ module: { type: 'es6' } })];
+
+export default defineConfig({
+  test: {
+    projects: [
+      {
+        plugins,
+        test: {
+          name: 'unit',
+          include: ['src/**/*.spec.ts', 'test/e2e/**/*.spec.ts'],
+          environment: 'node',
+          setupFiles: ['test/setup-env.ts'],
+        },
+      },
+      {
+        plugins,
+        test: {
+          name: 'integration',
+          include: ['test/integration/**/*.int.spec.ts'],
+          environment: 'node',
+          setupFiles: ['test/setup-env.ts'],
+          testTimeout: 120_000,
+          hookTimeout: 180_000,
+          pool: 'forks',
+          poolOptions: { forks: { singleFork: true } },
+        },
+      },
+    ],
+    coverage: { provider: 'v8', include: ['src/**/*.ts'] },
+  },
+});

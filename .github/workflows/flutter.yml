@@ -1,0 +1,43 @@
+name: flutter
+
+on:
+  pull_request:
+    paths: [apps/consumer/**, apps/merchant/**, apps/rider/**, packages/santha_*/**, design/tokens/**, pubspec.yaml, analysis_options.yaml, .github/workflows/flutter.yml]
+  push:
+    branches: [main]
+    paths: [apps/consumer/**, apps/merchant/**, apps/rider/**, packages/santha_*/**, design/tokens/**, pubspec.yaml, analysis_options.yaml, .github/workflows/flutter.yml]
+  workflow_dispatch:
+    inputs:
+      update_goldens:
+        description: Regenerate santha_ui goldens on the CI renderer and upload them as an artifact
+        type: boolean
+        default: false
+
+concurrency:
+  group: flutter-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: melos analyze · test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - run: dart pub global activate melos
+      - run: melos bootstrap
+      - name: Update goldens (manual run only)
+        if: ${{ inputs.update_goldens }}
+        run: melos run golden:update
+      - uses: actions/upload-artifact@v4
+        if: ${{ inputs.update_goldens }}
+        with: { name: santha-ui-goldens, path: packages/santha_ui/test/goldens/ }
+      - run: melos run analyze
+      - run: melos run test
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: golden-failures, path: "**/test/**/failures/", if-no-files-found: ignore }

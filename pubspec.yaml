@@ -1,0 +1,54 @@
+# Dart/Flutter workspace root (pub workspaces + melos 7). The Node workspace is package.json/pnpm.
+name: santha_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.8.0
+
+workspace:
+  - apps/consumer
+  - apps/merchant
+  - apps/rider
+  - packages/santha_ui
+  - packages/santha_api
+  - packages/santha_core
+  - packages/santha_offline
+  - packages/santha_maps
+
+dev_dependencies:
+  melos: ^7.1.0
+  flutter_lints: ^6.0.0
+
+melos:
+  repository: https://github.com/santha/santha
+  scripts:
+    analyze:
+      description: Static analysis for every Flutter package (fails on infos).
+      exec: flutter analyze --no-pub --fatal-infos
+    test:
+      description: Unit, widget and golden tests in every package that has a test/ folder.
+      exec: flutter test --no-pub
+      packageFilters:
+        dirExists: test
+    golden:update:
+      description: Regenerate golden images (run on Linux/CI so they match the CI renderer).
+      exec: flutter test --no-pub --update-goldens --tags golden
+      packageFilters:
+        scope: santha_ui
+    l10n:
+      description: Regenerate AppLocalizations from the ARB files.
+      exec: flutter gen-l10n
+      packageFilters:
+        fileExists: l10n.yaml
+    dev:consumer:
+      run: cd apps/consumer && flutter run --flavor dev -t lib/main_dev.dart
+    dev:merchant:
+      run: cd apps/merchant && flutter run --flavor dev -t lib/main_dev.dart
+    dev:rider:
+      run: cd apps/rider && flutter run --flavor dev -t lib/main_dev.dart
+    platforms:
+      description: One-time - generate missing android/ios platform files (keeps our flavor gradle + manifests).
+      run: >-
+        cd apps/consumer && flutter create --no-pub --platforms=android,ios --org app.santha --project-name consumer . &&
+        cd ../merchant && flutter create --no-pub --platforms=android,ios --org app.santha --project-name merchant . &&
+        cd ../rider && flutter create --no-pub --platforms=android,ios --org app.santha --project-name rider .
