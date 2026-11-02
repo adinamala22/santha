@@ -26,7 +26,7 @@ export abstract class MemoryStore<S extends object> {
     this.state = initial;
   }
 
-  protected runTx<T>(fn: (fx: MemoryTxEffects) => Promise<T>): Promise<T> {
+  protected async runTx<T>(fn: (fx: MemoryTxEffects) => Promise<T>): Promise<T> {
     const run = this.lock.then(async () => {
       const snapshot = structuredClone(this.state);
       const events: DomainEvent[] = [];
@@ -39,14 +39,18 @@ export abstract class MemoryStore<S extends object> {
         const result = await fn(fx);
         this.sinks?.publish(events);
         this.sinks?.record(audits);
-        return result;
+        return { result, events };
       } catch (err) {
         this.state = snapshot;
         throw err;
       }
     });
     this.lock = run.catch(() => undefined);
-    return run;
+    const { result, events } = await run;
+    // Like the outbox relay: consumers run after commit and outside the store lock, so a handler
+    // may start its own transaction. Awaited so fake-mode tests see consumers' effects at once.
+    await this.sinks?.deliver(events);
+    return result;
   }
 
   protected clone<T>(v: T): T {

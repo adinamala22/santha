@@ -49,7 +49,7 @@ type Row = Merchant & { lat: number | null; lng: number | null };
 const SELECT = Prisma.sql`m.id::text, m.owner_user_id::text, m.micro_market_id::text, m.type::text, m.sells_food, m.category,
   m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.hours, m.mov_paise,
   m.default_fulfilment::text, m.return_policy, m.hygiene_declared_at, m.status::text, m.submitted_at, m.decided_at,
-  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.created_at, m.updated_at,
+  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
   ST_Y(m.location::geometry) AS lat, ST_X(m.location::geometry) AS lng`;
 
 const toRecord = (r: Row): MerchantRecord => ({
@@ -79,6 +79,7 @@ const toRecord = (r: Row): MerchantRecord => ({
   rejectionCode: r.rejectionCode,
   rejectionNote: r.rejectionNote,
   liveAt: r.liveAt,
+  photoIds: r.photoIds,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
 });
@@ -110,6 +111,7 @@ interface RawRow {
   rejection_code: string | null;
   rejection_note: string | null;
   live_at: Date | null;
+  photo_ids: string[];
   created_at: Date;
   updated_at: Date;
   lat: number | null;
@@ -143,6 +145,7 @@ const fromRaw = (r: RawRow): MerchantRecord =>
     rejectionCode: r.rejection_code,
     rejectionNote: r.rejection_note,
     liveAt: r.live_at,
+    photoIds: r.photo_ids ?? [],
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     lat: r.lat,
@@ -322,6 +325,7 @@ class MerchantStore extends MemoryStore<MemState> {
             rejectionCode: null,
             rejectionNote: null,
             liveAt: null,
+            photoIds: [],
             createdAt: now,
             updatedAt: now,
           };

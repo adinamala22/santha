@@ -4,6 +4,7 @@ import { WeeklyHoursSchema } from '../../../common/hours';
 import {
   CodRulesSchema,
   FeeRulesSchema,
+  DiscoverySchema,
   MicroMarketConfigSchema,
   PolygonSchema,
   RiderPaySchema,
@@ -44,6 +45,7 @@ export const VersionSchema = z.object({
   cod: CodRulesSchema,
   sla: SlaSchema,
   riderPay: RiderPaySchema,
+  discovery: DiscoverySchema,
   note: z.string().nullable(),
   createdBy: z.string().nullable(),
   createdAt: iso,
@@ -106,6 +108,7 @@ export const toVersionDto = (v: VersionRecord) => ({
   cod: v.cod,
   sla: v.sla,
   riderPay: v.riderPay,
+  discovery: v.discovery,
   note: v.note,
   createdBy: v.createdBy,
   createdAt: v.createdAt.toISOString(),

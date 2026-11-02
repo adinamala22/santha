@@ -4,6 +4,7 @@ import { WeeklyHoursSchema } from '../../../common/hours';
 import { maskPhone } from '../../../common/pii';
 import type { KycCheckRecord } from '../../identity-kyc/kyc.service';
 import { REJECTION_CODES, RETAIL_CATEGORIES } from '../domain/merchant';
+import type { MediaView } from '../media.service';
 import type { MerchantView } from '../merchants.service';
 
 const merchantType = z.enum(['retail', 'fashion', 'home_business', 'home_kitchen']);
@@ -105,6 +106,17 @@ export const MerchantSchema = z.object({
   createdAt: iso,
 });
 
+export const MediaSchema = z.object({
+  id: z.uuid(),
+  purpose: z.enum(['item', 'store']),
+  status: z.enum(['uploading', 'pending_review', 'approved', 'rejected']),
+  rejectReason: z.string().nullable(),
+  thumbUrl: z.string().nullable().describe('Absolute URL, or a path starting with / to resolve against the API base (fake mode)'),
+  mediumUrl: z.string().nullable(),
+  createdAt: iso,
+});
+export const toMediaDto = (m: MediaView) => ({ ...m, createdAt: m.createdAt.toISOString() });
+
 export const MerchantViewSchema = z.object({
   merchant: MerchantSchema,
   microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable(),
@@ -112,6 +124,7 @@ export const MerchantViewSchema = z.object({
   kyc: z.array(KycCheckSchema),
   checklist: z.array(z.object({ key: z.string(), done: z.boolean() })),
   canSubmit: z.boolean(),
+  photos: z.array(MediaSchema),
 });
 export class MerchantViewDto extends createZodDto(MerchantViewSchema) {}
 export class MerchantListDto extends createZodDto(z.object({ items: z.array(MerchantViewSchema) })) {}
@@ -177,5 +190,6 @@ export const toViewDto = (v: MerchantView) => {
     kyc: v.kyc.map(toKycDto),
     checklist: v.checklist,
     canSubmit: (m.status === 'draft' || m.status === 'rejected') && v.checklist.every((i) => i.done),
+    photos: v.photos.map(toMediaDto),
   };
 };

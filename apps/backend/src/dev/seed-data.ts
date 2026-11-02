@@ -191,3 +191,6 @@ export const seedKycValues = (n: number) => ({
   fssai: `1${String(20190000000000 + n).slice(-13)}`,
   drugLicence: `AP/NLR/20B/${10000 + n}`,
 });
+
+/** Fixed id of a seeded merchant's store photo (media row), e.g. owner …201 → …-000000000201. */
+export const seedStorePhotoId = (n: number) => `30000000-0000-4000-8000-000000000${n}`;

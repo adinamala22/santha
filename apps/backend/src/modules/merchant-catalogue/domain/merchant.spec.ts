@@ -29,6 +29,7 @@ const base: MerchantRecord = {
   rejectionCode: null,
   rejectionNote: null,
   liveAt: null,
+  photoIds: ["media-1"],
   createdAt: new Date(),
   updatedAt: new Date(),
 };

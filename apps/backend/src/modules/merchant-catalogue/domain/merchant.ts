@@ -31,6 +31,8 @@ export interface MerchantRecord {
   rejectionCode: string | null;
   rejectionNote: string | null;
   liveAt: Date | null;
+  /** Store photos (media ids in display order); consumers see the approved ones. */
+  photoIds: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -96,6 +98,7 @@ export type ChecklistKey =
   | 'business'
   | 'location'
   | 'hours'
+  | 'photos'
   | 'pan'
   | 'aadhaar'
   | 'gst'
@@ -125,6 +128,7 @@ export function checklist(m: MerchantRecord, kyc: KycLike[]): ChecklistItem[] {
     { key: 'business', done: m.name.trim().length >= 2 },
     { key: 'location', done: !!m.location && !!m.microMarketId && !!m.addressLine },
     { key: 'hours', done: !!m.hours && Object.values(m.hours).some((d) => d.length > 0) },
+    { key: 'photos', done: m.photoIds.length > 0 },
     { key: 'pan', done: verified('pan') },
     { key: 'aadhaar', done: verified('aadhaar') },
     { key: 'gst', done: verified('gstin') || verified('gst_exemption') },

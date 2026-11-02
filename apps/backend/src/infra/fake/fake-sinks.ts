@@ -17,6 +17,16 @@ export class FakeSinks {
   private readonly logger = new Logger('FakeStore');
   readonly events: DomainEvent[] = [];
   readonly audits: StoredAudit[] = [];
+  private dispatcher: ((events: DomainEvent[]) => Promise<void>) | undefined;
+
+  /** Fake mode: the in-process event dispatcher (stands in for outbox relay + BullMQ). */
+  setDispatcher(fn: (events: DomainEvent[]) => Promise<void>): void {
+    this.dispatcher = fn;
+  }
+
+  async deliver(events: DomainEvent[]): Promise<void> {
+    if (events.length && this.dispatcher) await this.dispatcher(events);
+  }
 
   publish(events: DomainEvent[]): void {
     for (const e of events) {

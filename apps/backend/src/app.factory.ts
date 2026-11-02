@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 import { INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import type { NestExpressApplication } from '@nestjs/platform-express';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
@@ -18,6 +19,9 @@ export function configureApp(app: INestApplication): void {
     exposedHeaders: ['x-request-id'],
   });
   app.enableShutdownHooks();
+  // Fake mode receives image uploads itself (MemoryObjectStorage presigned URLs → PUT /v1/dev/uploads).
+  if (env.DATA_STORE === 'memory')
+    (app as NestExpressApplication).useBodyParser('raw', { type: ['image/*', 'application/octet-stream'], limit: env.MAX_UPLOAD_BYTES });
 }
 
 export function buildOpenApi(app: INestApplication): OpenAPIObject {

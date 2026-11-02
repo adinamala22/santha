@@ -3,10 +3,11 @@ import type { Tx } from '../prisma/prisma.service';
 import type { DomainEvent } from './domain-event';
 
 /**
- * Handler for a domain event. Runs inside a transaction together with the dedupe insert into
- * `processed_events`, so DB side-effects happen exactly once per (event, consumer).
+ * Handler for a domain event. With Postgres it runs inside a transaction together with the dedupe
+ * insert into `processed_events`, so DB side-effects happen exactly once per (event, consumer).
+ * In fake mode (DATA_STORE=memory) `tx` is null and handlers use their in-memory stores.
  */
-export type EventHandler = (event: DomainEvent, tx: Tx) => Promise<void>;
+export type EventHandler = (event: DomainEvent, tx: Tx | null) => Promise<void>;
 
 export interface Registration {
   type: string;

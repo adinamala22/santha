@@ -6,7 +6,7 @@ import type { NewEvent } from '../../infra/outbox/domain-event';
 import { appendToOutbox } from '../../infra/outbox/outbox.writer';
 import { point } from '../../infra/prisma/geo';
 import { PrismaService, type Tx } from '../../infra/prisma/prisma.service';
-import type { MicroMarketConfig } from './domain/micro-market-config';
+import { DiscoverySchema, type MicroMarketConfig } from './domain/micro-market-config';
 
 export interface CityRecord {
   id: string;
@@ -104,13 +104,14 @@ interface VersionRow {
   cod: MicroMarketConfig['cod'];
   sla: MicroMarketConfig['sla'];
   rider_pay: MicroMarketConfig['riderPay'];
+  discovery: unknown;
   note: string | null;
   created_by: string | null;
   created_at: Date;
 }
 
 const VERSION_COLUMNS = Prisma.sql`v.id::text, v.micro_market_id::text, v.version, v.effective_from, v.effective_to,
-  ST_AsGeoJSON(v.polygon, 7)::json AS polygon, v.hours, v.fees, v.cod, v.sla, v.rider_pay, v.note,
+  ST_AsGeoJSON(v.polygon, 7)::json AS polygon, v.hours, v.fees, v.cod, v.sla, v.rider_pay, v.discovery, v.note,
   v.created_by::text, v.created_at`;
 
 const MARKET_COLUMNS = Prisma.sql`m.id::text AS m_id, m.city_id::text AS m_city_id, m.slug AS m_slug, m.name AS m_name,
@@ -138,6 +139,7 @@ const toVersion = (r: VersionRow): VersionRecord => ({
   cod: r.cod,
   sla: r.sla,
   riderPay: r.rider_pay,
+  discovery: DiscoverySchema.parse(r.discovery ?? {}),
   note: r.note,
   createdBy: r.created_by,
   createdAt: r.created_at,
@@ -178,10 +180,10 @@ class PrismaMicroMarketTx implements MicroMarketTx {
     const json = (x: unknown) => JSON.stringify(x);
     const rows = await this.tx.$queryRaw<VersionRow[]>`
       INSERT INTO micro_market_versions AS v
-        (id, micro_market_id, version, effective_from, polygon, hours, fees, cod, sla, rider_pay, note, created_by)
+        (id, micro_market_id, version, effective_from, polygon, hours, fees, cod, sla, rider_pay, discovery, note, created_by)
       VALUES (gen_random_uuid(), ${v.microMarketId}::uuid, ${v.version}, ${v.effectiveFrom}, ${geo(roundPolygon(v.polygon))},
         ${json(v.hours)}::jsonb, ${json(v.fees)}::jsonb, ${json(v.cod)}::jsonb, ${json(v.sla)}::jsonb,
-        ${json(v.riderPay)}::jsonb, ${v.note}, ${v.createdBy}::uuid)
+        ${json(v.riderPay)}::jsonb, ${json(v.discovery)}::jsonb, ${v.note}, ${v.createdBy}::uuid)
       RETURNING ${VERSION_COLUMNS}`;
     return toVersion(rows[0]!);
   }
