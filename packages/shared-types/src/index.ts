@@ -92,3 +92,15 @@ export type OpsDelivery = Schemas['OpsDeliveryDto_Output'];
 export type JobView = Schemas['JobViewDto_Output'];
 export type Tracking = Schemas['TrackingDto_Output'];
 export type MerchantDelivery = Schemas['MerchantDeliveryDto_Output'];
+
+// M7 — money
+export type SettlementRun = Schemas['RunDto_Output'];
+export type SettlementRunList = Schemas['RunListDto_Output'];
+export type Payout = Schemas['PayoutDto_Output'];
+export type PayoutList = Schemas['PayoutListDto_Output'];
+export type Refund = Schemas['RefundDto_Output'];
+export type RefundList = Schemas['RefundListDto_Output'];
+export type ReconList = Schemas['ReconListDto_Output'];
+export type Dispute = Schemas['DisputeDto_Output'];
+export type DisputeList = Schemas['DisputeListDto_Output'];
+export type OpsIssueList = Schemas['OpsIssueListDto_Output'];

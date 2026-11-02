@@ -21,6 +21,8 @@ export interface RiderRecord {
   offersAccepted: number;
   onlineSince: Date | null;
   onlineMinToday: number;
+  /** weekly (default) | daily payouts (M7). */
+  payoutCadence: string;
   lastSeenAt: Date | null;
   createdAt: Date;
 }
@@ -318,6 +320,7 @@ export class InMemoryDispatchRepository extends DispatchRepository {
       ? { ...cur, name: r.name }
       : {
           vehicle: 'bike',
+          payoutCadence: 'weekly',
           zones: [],
           online: false,
           rating: null,

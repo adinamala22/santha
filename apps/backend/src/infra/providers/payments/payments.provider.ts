@@ -40,6 +40,15 @@ export abstract class PaymentsProvider {
 
   abstract createOrder(input: { amountPaise: number; receipt: string; notes: Record<string, string> }): Promise<ProviderOrder>;
 
+  /** Refund (part of) a captured payment to the customer's source (M7). */
+  abstract refund(input: { providerPaymentId: string; amountPaise: number; receipt: string }): Promise<{ ok: true; ref: string } | { ok: false; error: string }>;
+
+  /** Razorpay Route transfer to a linked account (store or rider payout, M7). */
+  abstract transfer(input: { account: string; amountPaise: number; reference: string }): Promise<{ ok: true; ref: string } | { ok: false; error: string }>;
+
+  /** The aggregator's settlement report for an IST day (reconciliation, M7). */
+  abstract settlementReport(date: string): Promise<Array<{ providerPaymentId: string; amountPaise: number; feePaise: number }>>;
+
   /** Checkout success callback: HMAC-SHA256(order_id|payment_id, key secret). */
   verifyPaymentSignature(p: { providerOrderId: string; providerPaymentId: string; signature: string }): boolean {
     return safeEqualHex(hmacHex(this.keySecret, `${p.providerOrderId}|${p.providerPaymentId}`), p.signature);
@@ -100,9 +109,44 @@ export class RazorpayProvider extends PaymentsProvider {
       throw new DomainError('PROVIDER_UNAVAILABLE', 'Online payment is not available right now. Try again or choose cash on delivery.');
     }
   }
+
+  private async call<T>(path: string, init: { method: string; body?: unknown }): Promise<{ ok: boolean; status: number; data: T }> {
+    const res = await fetch(`https://api.razorpay.com/v1${path}`, {
+      method: init.method,
+      headers: { 'Content-Type': 'application/json', Authorization: `Basic ${Buffer.from(`${this.keyId}:${this.keySecret}`).toString('base64')}` },
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      signal: AbortSignal.timeout(15_000),
+    });
+    return { ok: res.ok, status: res.status, data: (await res.json().catch(() => ({}))) as T };
+  }
+
+  async refund(input: { providerPaymentId: string; amountPaise: number; receipt: string }) {
+    try {
+      const r = await this.call<{ id?: string; error?: { description?: string } }>(`/payments/${input.providerPaymentId}/refund`, { method: 'POST', body: { amount: input.amountPaise, receipt: input.receipt, speed: 'normal' } });
+      return r.ok && r.data.id ? { ok: true as const, ref: r.data.id } : { ok: false as const, error: r.data.error?.description ?? `status ${r.status}` };
+    } catch (err) {
+      return { ok: false as const, error: (err as Error).message };
+    }
+  }
+
+  async transfer(input: { account: string; amountPaise: number; reference: string }) {
+    try {
+      const r = await this.call<{ id?: string; error?: { description?: string } }>('/transfers', { method: 'POST', body: { account: input.account, amount: input.amountPaise, currency: 'INR', notes: { reference: input.reference } } });
+      return r.ok && r.data.id ? { ok: true as const, ref: r.data.id } : { ok: false as const, error: r.data.error?.description ?? `status ${r.status}` };
+    } catch (err) {
+      return { ok: false as const, error: (err as Error).message };
+    }
+  }
+
+  async settlementReport(date: string) {
+    const [y, m, d] = date.split('-').map(Number);
+    const r = await this.call<{ items?: Array<{ type?: string; entity_id?: string; amount?: number; fee?: number }> }>(`/settlements/recon/combined?year=${y}&month=${m}&day=${d}`, { method: 'GET' });
+    return (r.data.items ?? []).filter((i) => i.type === 'payment' && i.entity_id).map((i) => ({ providerPaymentId: i.entity_id!, amountPaise: i.amount ?? 0, feePaise: i.fee ?? 0 }));
+  }
 }
 
 /** Fixed secrets so tests and the dev "pay" endpoint can sign like Razorpay does. Never used in production. */
+
 export const MOCK_KEY_SECRET = 'mock_razorpay_key_secret';
 export const MOCK_WEBHOOK_SECRET = 'mock_razorpay_webhook_secret';
 
@@ -120,6 +164,31 @@ export class MockPaymentsProvider extends PaymentsProvider {
       throw new DomainError('PROVIDER_UNAVAILABLE', 'Online payment is not available right now. Try again or choose cash on delivery.');
     }
     return { providerOrderId: `order_mock_${randomBytes(7).toString('hex')}`, amountPaise: input.amountPaise, currency: 'INR' };
+  }
+
+  readonly refunds: Array<{ providerPaymentId: string; amountPaise: number }> = [];
+  readonly transfers: Array<{ account: string; amountPaise: number; reference: string }> = [];
+  /** Test hook: what the aggregator report says (null = mirror captured payments exactly). */
+  report: Array<{ providerPaymentId: string; amountPaise: number; feePaise: number }> | null = null;
+  /** Test hook: fail the next transfer. */
+  failNextTransfer = false;
+
+  async refund(input: { providerPaymentId: string; amountPaise: number }) {
+    this.refunds.push({ providerPaymentId: input.providerPaymentId, amountPaise: input.amountPaise });
+    return { ok: true as const, ref: `rfnd_mock_${randomBytes(6).toString('hex')}` };
+  }
+
+  async transfer(input: { account: string; amountPaise: number; reference: string }) {
+    if (this.failNextTransfer) {
+      this.failNextTransfer = false;
+      return { ok: false as const, error: 'Linked account not activated (mock)' };
+    }
+    this.transfers.push(input);
+    return { ok: true as const, ref: `trf_mock_${randomBytes(6).toString('hex')}` };
+  }
+
+  async settlementReport() {
+    return this.report ?? [];
   }
 
   /** What Razorpay's checkout would return for a successful payment (dev/test only). */

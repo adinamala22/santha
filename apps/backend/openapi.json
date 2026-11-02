@@ -5355,6 +5355,1035 @@
           "ops"
         ]
       }
+    },
+    "/v1/merchants/me/payouts": {
+      "get": {
+        "operationId": "MerchantMoneyController_payouts",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Daily payouts, newest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/payouts/{id}": {
+      "get": {
+        "operationId": "MerchantMoneyController_payoutDetail",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/payouts/{id}/statement.pdf": {
+      "get": {
+        "operationId": "MerchantMoneyController_statementPdf",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/payouts/{id}/statement.csv": {
+      "get": {
+        "operationId": "MerchantMoneyController_statementCsv",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/refunds": {
+      "get": {
+        "operationId": "MerchantMoneyController_refunds",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Refunds charged to the store in the last 30 days (disputable for 48 h)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/disputes": {
+      "post": {
+        "operationId": "MerchantMoneyController_openDispute",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpenDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "422 DISPUTE_WINDOW_CLOSED after 48 h; 409 ALREADY_EXISTS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisputeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      },
+      "get": {
+        "operationId": "MerchantMoneyController_disputes",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisputeListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/riders/me/payouts": {
+      "get": {
+        "operationId": "RiderMoneyController_payouts",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/ops/settlements": {
+      "get": {
+        "operationId": "OpsMoneyController_runs",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/settlements/run": {
+      "post": {
+        "operationId": "OpsMoneyController_run",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RunSettlementDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Runs (or returns) the settlement for an IST date; idempotent per period",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RunDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/settlements/{id}/payouts": {
+      "get": {
+        "operationId": "OpsMoneyController_runPayouts",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/settlements/{id}/payouts.csv": {
+      "get": {
+        "operationId": "OpsMoneyController_runCsv",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/payouts/{id}": {
+      "get": {
+        "operationId": "OpsMoneyController_payoutDetail",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/payouts/{id}/statement.pdf": {
+      "get": {
+        "operationId": "OpsMoneyController_payoutPdf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/payouts/{id}/retry": {
+      "post": {
+        "operationId": "OpsMoneyController_retry",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PayoutDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/refunds": {
+      "get": {
+        "operationId": "OpsMoneyController_refunds",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "processed",
+                "rejected",
+                "failed",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "open = pending or awaiting a second approval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/refunds/{id}/approve": {
+      "post": {
+        "operationId": "OpsMoneyController_approve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "409 FOUR_EYES_REQUIRED (same person twice); 403 APPROVAL_LIMIT (ops above ₹2,000)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/refunds/{id}/reject": {
+      "post": {
+        "operationId": "OpsMoneyController_reject",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectRefundDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RefundDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/recon": {
+      "get": {
+        "operationId": "OpsMoneyController_recon",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/recon/run": {
+      "post": {
+        "operationId": "OpsMoneyController_reconRun",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconRunDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconRunResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/recon/{id}/resolve": {
+      "post": {
+        "operationId": "OpsMoneyController_reconResolve",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveReconDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/disputes": {
+      "get": {
+        "operationId": "OpsMoneyController_disputes",
+        "parameters": [
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "accepted",
+                "rejected",
+                "all"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisputeListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/disputes/{id}/resolve": {
+      "post": {
+        "operationId": "OpsMoneyController_resolveDispute",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveDisputeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DisputeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/orders/{id}/issues": {
+      "post": {
+        "operationId": "IssuesController_report",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReportIssueDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Decided at once: auto_resolved (refunded to the wallet), pending_review, return_pickup or rejected. 422 ISSUE_WINDOW_CLOSED; 409 ALREADY_EXISTS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      },
+      "get": {
+        "operationId": "IssuesController_list",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IssueListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/v1/orders/{id}/rating": {
+      "post": {
+        "operationId": "IssuesController_rate",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RateDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Once per delivered order; 409 ALREADY_EXISTS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RatingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/v1/ops/issues": {
+      "get": {
+        "operationId": "OpsIssuesController_list",
+        "parameters": [
+          {
+            "name": "status",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsIssueListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
     }
   },
   "info": {
@@ -6616,6 +7645,24 @@
                           "type": "number",
                           "minimum": 0,
                           "maximum": 30
+                        },
+                        "gstOnCommissionPercent": {
+                          "default": 18,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 28
+                        },
+                        "tcsPercent": {
+                          "default": 0.5,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 5
+                        },
+                        "tdsPercent": {
+                          "default": 0.1,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 5
                         }
                       },
                       "required": [
@@ -6629,7 +7676,10 @@
                         "gstOnFeesPercent",
                         "gstCookedFoodPercent",
                         "commissionSelfPercent",
-                        "commissionRiderPercent"
+                        "commissionRiderPercent",
+                        "gstOnCommissionPercent",
+                        "tcsPercent",
+                        "tdsPercent"
                       ],
                       "additionalProperties": false
                     },
@@ -7237,6 +8287,24 @@
                     "type": "number",
                     "minimum": 0,
                     "maximum": 30
+                  },
+                  "gstOnCommissionPercent": {
+                    "default": 18,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 28
+                  },
+                  "tcsPercent": {
+                    "default": 0.5,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
+                  },
+                  "tdsPercent": {
+                    "default": 0.1,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
                   }
                 },
                 "required": [
@@ -7250,7 +8318,10 @@
                   "gstOnFeesPercent",
                   "gstCookedFoodPercent",
                   "commissionSelfPercent",
-                  "commissionRiderPercent"
+                  "commissionRiderPercent",
+                  "gstOnCommissionPercent",
+                  "tcsPercent",
+                  "tdsPercent"
                 ],
                 "additionalProperties": false
               },
@@ -7817,6 +8888,24 @@
                       "type": "number",
                       "minimum": 0,
                       "maximum": 30
+                    },
+                    "gstOnCommissionPercent": {
+                      "default": 18,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 28
+                    },
+                    "tcsPercent": {
+                      "default": 0.5,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 5
+                    },
+                    "tdsPercent": {
+                      "default": 0.1,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 5
                     }
                   },
                   "required": [
@@ -7830,7 +8919,10 @@
                     "gstOnFeesPercent",
                     "gstCookedFoodPercent",
                     "commissionSelfPercent",
-                    "commissionRiderPercent"
+                    "commissionRiderPercent",
+                    "gstOnCommissionPercent",
+                    "tcsPercent",
+                    "tdsPercent"
                   ],
                   "additionalProperties": false
                 },
@@ -8403,6 +9495,24 @@
                     "type": "number",
                     "minimum": 0,
                     "maximum": 30
+                  },
+                  "gstOnCommissionPercent": {
+                    "default": 18,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 28
+                  },
+                  "tcsPercent": {
+                    "default": 0.5,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
+                  },
+                  "tdsPercent": {
+                    "default": 0.1,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
                   }
                 },
                 "required": [
@@ -8945,6 +10055,24 @@
                     "type": "number",
                     "minimum": 0,
                     "maximum": 30
+                  },
+                  "gstOnCommissionPercent": {
+                    "default": 18,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 28
+                  },
+                  "tcsPercent": {
+                    "default": 0.5,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
+                  },
+                  "tdsPercent": {
+                    "default": 0.1,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 5
                   }
                 },
                 "required": [
@@ -9510,6 +10638,24 @@
                 "type": "number",
                 "minimum": 0,
                 "maximum": 30
+              },
+              "gstOnCommissionPercent": {
+                "default": 18,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 28
+              },
+              "tcsPercent": {
+                "default": 0.5,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
+              },
+              "tdsPercent": {
+                "default": 0.1,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 5
               }
             },
             "required": [
@@ -9523,7 +10669,10 @@
               "gstOnFeesPercent",
               "gstCookedFoodPercent",
               "commissionSelfPercent",
-              "commissionRiderPercent"
+              "commissionRiderPercent",
+              "gstOnCommissionPercent",
+              "tcsPercent",
+              "tdsPercent"
             ],
             "additionalProperties": false
           },
@@ -21266,6 +22415,1626 @@
           "promisedAt",
           "etaAt",
           "store"
+        ],
+        "additionalProperties": false
+      },
+      "PayoutListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "runId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "partyType": {
+                  "type": "string",
+                  "enum": [
+                    "merchant",
+                    "rider"
+                  ]
+                },
+                "partyId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "partyName": {
+                  "type": "string"
+                },
+                "periodStart": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "periodEnd": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "grossPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "netPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "tcsPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "tdsPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "transferred",
+                    "failed",
+                    "on_hold"
+                  ]
+                },
+                "transferRef": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "failureReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "hasStatement": {
+                  "type": "boolean"
+                },
+                "totals": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                },
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": [
+                        "string",
+                        "number",
+                        "null"
+                      ]
+                    }
+                  }
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "transferredAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "runId",
+                "partyType",
+                "partyId",
+                "partyName",
+                "periodStart",
+                "periodEnd",
+                "grossPaise",
+                "netPaise",
+                "tcsPaise",
+                "tdsPaise",
+                "status",
+                "transferRef",
+                "failureReason",
+                "hasStatement",
+                "totals",
+                "lines",
+                "createdAt",
+                "transferredAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "PayoutDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "runId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "partyType": {
+            "type": "string",
+            "enum": [
+              "merchant",
+              "rider"
+            ]
+          },
+          "partyId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "partyName": {
+            "type": "string"
+          },
+          "periodStart": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "periodEnd": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "grossPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "netPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tcsPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tdsPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "transferred",
+              "failed",
+              "on_hold"
+            ]
+          },
+          "transferRef": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failureReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "hasStatement": {
+            "type": "boolean"
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": {
+                "type": [
+                  "string",
+                  "number",
+                  "null"
+                ]
+              }
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "transferredAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "runId",
+          "partyType",
+          "partyId",
+          "partyName",
+          "periodStart",
+          "periodEnd",
+          "grossPaise",
+          "netPaise",
+          "tcsPaise",
+          "tdsPaise",
+          "status",
+          "transferRef",
+          "failureReason",
+          "hasStatement",
+          "totals",
+          "lines",
+          "createdAt",
+          "transferredAt"
+        ],
+        "additionalProperties": false
+      },
+      "RefundListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderCode": {
+                  "type": "string"
+                },
+                "issueId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantName": {
+                  "type": "string"
+                },
+                "amountPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "destination": {
+                  "type": "string",
+                  "enum": [
+                    "wallet",
+                    "source"
+                  ]
+                },
+                "liability": {
+                  "type": "string",
+                  "enum": [
+                    "merchant",
+                    "platform",
+                    "rider"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "awaiting_second",
+                    "processed",
+                    "rejected",
+                    "failed"
+                  ]
+                },
+                "approvals": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "at": {
+                        "type": "string",
+                        "description": "ISO-8601 timestamp"
+                      }
+                    },
+                    "required": [
+                      "userId",
+                      "at"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "needsSecondApproval": {
+                  "type": "boolean"
+                },
+                "rejectNote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "failureReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "trustScore": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "processedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "disputable": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "orderId",
+                "orderCode",
+                "issueId",
+                "userId",
+                "merchantId",
+                "merchantName",
+                "amountPaise",
+                "destination",
+                "liability",
+                "reason",
+                "status",
+                "approvals",
+                "needsSecondApproval",
+                "rejectNote",
+                "failureReason",
+                "trustScore",
+                "createdAt",
+                "processedAt",
+                "disputable"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "OpenDisputeDto": {
+        "type": "object",
+        "properties": {
+          "refundId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 1000
+          },
+          "evidenceMediaIds": {
+            "default": [],
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "required": [
+          "refundId",
+          "reason"
+        ]
+      },
+      "DisputeDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantName": {
+            "type": "string"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          },
+          "refundId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string"
+          },
+          "evidenceMediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "accepted",
+              "rejected"
+            ]
+          },
+          "resolutionNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "adjustmentPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "deadlineAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "resolvedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "settledInPayout": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "merchantId",
+          "merchantName",
+          "orderId",
+          "refundId",
+          "reason",
+          "evidenceMediaIds",
+          "status",
+          "resolutionNote",
+          "adjustmentPaise",
+          "deadlineAt",
+          "createdAt",
+          "resolvedAt",
+          "settledInPayout"
+        ],
+        "additionalProperties": false
+      },
+      "DisputeListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantName": {
+                  "type": "string"
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "refundId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "evidenceMediaIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "accepted",
+                    "rejected"
+                  ]
+                },
+                "resolutionNote": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "adjustmentPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "deadlineAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "resolvedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "settledInPayout": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "merchantId",
+                "merchantName",
+                "orderId",
+                "refundId",
+                "reason",
+                "evidenceMediaIds",
+                "status",
+                "resolutionNote",
+                "adjustmentPaise",
+                "deadlineAt",
+                "createdAt",
+                "resolvedAt",
+                "settledInPayout"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "RunListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "merchant",
+                    "rider"
+                  ]
+                },
+                "periodStart": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "periodEnd": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "status": {
+                  "type": "string"
+                },
+                "totals": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "number"
+                  }
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "completedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "id",
+                "kind",
+                "periodStart",
+                "periodEnd",
+                "status",
+                "totals",
+                "createdAt",
+                "completedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "RunSettlementDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "merchant",
+              "rider_daily",
+              "rider_weekly"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "IST date YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "kind",
+          "date"
+        ]
+      },
+      "RunDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "merchant",
+              "rider"
+            ]
+          },
+          "periodStart": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "periodEnd": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "status": {
+            "type": "string"
+          },
+          "totals": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "number"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "completedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "periodStart",
+          "periodEnd",
+          "status",
+          "totals",
+          "createdAt",
+          "completedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RefundDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "orderCode": {
+            "type": "string"
+          },
+          "issueId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantName": {
+            "type": "string"
+          },
+          "amountPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "destination": {
+            "type": "string",
+            "enum": [
+              "wallet",
+              "source"
+            ]
+          },
+          "liability": {
+            "type": "string",
+            "enum": [
+              "merchant",
+              "platform",
+              "rider"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending",
+              "awaiting_second",
+              "processed",
+              "rejected",
+              "failed"
+            ]
+          },
+          "approvals": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "at": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                }
+              },
+              "required": [
+                "userId",
+                "at"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "needsSecondApproval": {
+            "type": "boolean"
+          },
+          "rejectNote": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "failureReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trustScore": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "processedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "disputable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "orderCode",
+          "issueId",
+          "userId",
+          "merchantId",
+          "merchantName",
+          "amountPaise",
+          "destination",
+          "liability",
+          "reason",
+          "status",
+          "approvals",
+          "needsSecondApproval",
+          "rejectNote",
+          "failureReason",
+          "trustScore",
+          "createdAt",
+          "processedAt",
+          "disputable"
+        ],
+        "additionalProperties": false
+      },
+      "RejectRefundDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "ReconListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "reportDate": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "missing_in_report",
+                    "amount_mismatch",
+                    "unknown_in_report"
+                  ]
+                },
+                "providerPaymentId": {
+                  "type": "string"
+                },
+                "expectedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "reportedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "resolved"
+                  ]
+                },
+                "note": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                }
+              },
+              "required": [
+                "id",
+                "reportDate",
+                "kind",
+                "providerPaymentId",
+                "expectedPaise",
+                "reportedPaise",
+                "status",
+                "note",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ReconRunDto": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+            "description": "IST date YYYY-MM-DD"
+          }
+        },
+        "required": [
+          "date"
+        ]
+      },
+      "ReconRunResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "matched": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "exceptions": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "matched",
+          "exceptions"
+        ],
+        "additionalProperties": false
+      },
+      "ResolveReconDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "note"
+        ]
+      },
+      "ReconDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "reportDate": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "missing_in_report",
+              "amount_mismatch",
+              "unknown_in_report"
+            ]
+          },
+          "providerPaymentId": {
+            "type": "string"
+          },
+          "expectedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "reportedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved"
+            ]
+          },
+          "note": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "reportDate",
+          "kind",
+          "providerPaymentId",
+          "expectedPaise",
+          "reportedPaise",
+          "status",
+          "note",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "ResolveDisputeDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "decision",
+          "note"
+        ]
+      },
+      "ReportIssueDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "missing_item",
+              "wrong_item",
+              "damaged",
+              "quality",
+              "late",
+              "not_delivered",
+              "return_request"
+            ]
+          },
+          "variantIds": {
+            "description": "Lines with the problem (item issues and returns)",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000
+          },
+          "photoMediaIds": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "IssueDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "missing_item",
+              "wrong_item",
+              "damaged",
+              "quality",
+              "late",
+              "not_delivered",
+              "return_request"
+            ]
+          },
+          "variantIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "description": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "claimedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "auto_resolved",
+              "pending_review",
+              "approved",
+              "rejected",
+              "return_pickup"
+            ]
+          },
+          "refundPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "refundDestination": {
+            "type": "string",
+            "enum": [
+              "wallet",
+              "source",
+              null
+            ],
+            "nullable": true
+          },
+          "reason": {
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "decidedAt": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "type",
+          "variantIds",
+          "description",
+          "claimedPaise",
+          "status",
+          "refundPaise",
+          "refundDestination",
+          "reason",
+          "createdAt",
+          "decidedAt"
+        ],
+        "additionalProperties": false
+      },
+      "IssueListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "missing_item",
+                    "wrong_item",
+                    "damaged",
+                    "quality",
+                    "late",
+                    "not_delivered",
+                    "return_request"
+                  ]
+                },
+                "variantIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "claimedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "auto_resolved",
+                    "pending_review",
+                    "approved",
+                    "rejected",
+                    "return_pickup"
+                  ]
+                },
+                "refundPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "refundDestination": {
+                  "type": "string",
+                  "enum": [
+                    "wallet",
+                    "source",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "decidedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "orderId",
+                "type",
+                "variantIds",
+                "description",
+                "claimedPaise",
+                "status",
+                "refundPaise",
+                "refundDestination",
+                "reason",
+                "createdAt",
+                "decidedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "RateDto": {
+        "type": "object",
+        "properties": {
+          "storeStars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "riderStars": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 5
+          },
+          "comment": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "required": [
+          "storeStars"
+        ]
+      },
+      "RatingDto_Output": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "storeStars": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "riderStars": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "comment": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "orderId",
+          "storeStars",
+          "riderStars",
+          "comment",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "OpsIssueListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "missing_item",
+                    "wrong_item",
+                    "damaged",
+                    "quality",
+                    "late",
+                    "not_delivered",
+                    "return_request"
+                  ]
+                },
+                "variantIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "claimedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "auto_resolved",
+                    "pending_review",
+                    "approved",
+                    "rejected",
+                    "return_pickup"
+                  ]
+                },
+                "refundPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "refundDestination": {
+                  "type": "string",
+                  "enum": [
+                    "wallet",
+                    "source",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "reason": {
+                  "type": "string"
+                },
+                "createdAt": {
+                  "type": "string"
+                },
+                "decidedAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantName": {
+                  "type": "string"
+                },
+                "trustScore": {
+                  "type": "number"
+                },
+                "flags": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "orderId",
+                "type",
+                "variantIds",
+                "description",
+                "claimedPaise",
+                "status",
+                "refundPaise",
+                "refundDestination",
+                "reason",
+                "createdAt",
+                "decidedAt",
+                "userId",
+                "merchantName",
+                "trustScore",
+                "flags"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
         ],
         "additionalProperties": false
       }

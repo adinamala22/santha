@@ -72,3 +72,11 @@ dispatchRepositoryContract('prisma', async () => ({
   repo: new PrismaDispatchRepository(prisma),
   riderId: async () => (await prisma.user.create({ data: { phone: `+9196${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id,
 }));
+
+// M7
+import { issuesRepositoryContract, moneyRepositoryContract } from '../contracts/m7.contract';
+import { PrismaMoneyRepository } from '../../src/modules/payments-settlement/settlement/money.repository';
+import { PrismaIssuesRepository } from '../../src/modules/trust-safety/issues.repository';
+
+moneyRepositoryContract('prisma', async () => new PrismaMoneyRepository(prisma));
+issuesRepositoryContract('prisma', async () => new PrismaIssuesRepository(prisma));

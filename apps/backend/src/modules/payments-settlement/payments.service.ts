@@ -180,6 +180,31 @@ export class PaymentsService implements OnModuleInit {
 
   // ───────────── wallet (refund credits only) ─────────────
 
+  // ───────────── settlement support (M7) ─────────────
+
+  /** Refund to the card / UPI the customer paid with; ok:false when the order was not paid online. */
+  async refundToSource(orderId: string, amountPaise: number, receipt: string): Promise<{ ok: true; ref: string } | { ok: false; error: string }> {
+    const intent = await this.repo.intentForOrder(orderId);
+    if (!intent || intent.status !== 'captured' || !intent.providerPaymentId) return { ok: false, error: 'not_paid_online' };
+    return this.provider.refund({ providerPaymentId: intent.providerPaymentId, amountPaise, receipt });
+  }
+
+  /** Route transfer to a store's or rider's linked account. */
+  transfer(account: string, amountPaise: number, reference: string) {
+    return this.provider.transfer({ account, amountPaise, reference });
+  }
+
+  capturedBetween(from: Date, to: Date) {
+    return this.repo.capturedBetween(from, to);
+  }
+
+  /** The aggregator report for a day. The mock with no scripted report mirrors what was captured (2% fee). */
+  async settlementReport(date: string, captured: PaymentIntentRecord[] = []) {
+    if (this.provider instanceof MockPaymentsProvider && this.provider.report === null)
+      return captured.map((c) => ({ providerPaymentId: c.providerPaymentId!, amountPaise: c.amountPaise, feePaise: Math.round(c.amountPaise * 0.02) }));
+    return this.provider.settlementReport(date);
+  }
+
   async wallet(userId: string): Promise<{ balancePaise: number; entries: WalletEntryRecord[] }> {
     const [balancePaise, entries] = await Promise.all([this.repo.walletBalance(userId), this.repo.walletEntries(userId, 50)]);
     return { balancePaise, entries };

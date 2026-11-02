@@ -841,6 +841,15 @@ export class DispatchService implements OnModuleInit {
     return this.locations.all(this.clock());
   }
 
+  deliveredForRider(riderUserId: string, since: Date): Promise<FulfilmentRecord[]> {
+    return this.repo.deliveredForRider(riderUserId, since);
+  }
+
+  /** Ratings (M7) keep the rider's average up to date; scoring uses it. */
+  async setRiderRating(riderUserId: string, rating: number): Promise<void> {
+    await this.repo.updateRider(riderUserId, { rating: Math.round(rating * 100) / 100 });
+  }
+
   deliveredForMerchant(merchantId: string, since: Date): Promise<FulfilmentRecord[]> {
     return this.repo.deliveredForMerchant(merchantId, since);
   }

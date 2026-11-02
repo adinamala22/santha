@@ -26,6 +26,8 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { OrdersModule } from './modules/orders/orders.module';
 import { PaymentsSettlementModule } from './modules/payments-settlement/payments-settlement.module';
 import { SearchDiscoveryModule } from './modules/search-discovery/search-discovery.module';
+import { SettlementModule } from './modules/payments-settlement/settlement/settlement.module';
+import { IssuesModule } from './modules/trust-safety/issues.module';
 import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
 
 @Module({
@@ -69,6 +71,8 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     PaymentsSettlementModule,
     NotificationsModule,
     TrustSafetyModule,
+    SettlementModule,
+    IssuesModule,
     AnalyticsConfigModule,
     DevModule,
   ],
