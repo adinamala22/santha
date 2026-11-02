@@ -198,6 +198,7 @@ export class BarcodeRequestListDto extends createZodDto(
 
 export const CategorySchema = z.object({ slug: z.string(), name: z.string(), nameTe: z.string() });
 export class CategoryListDto extends createZodDto(z.object({ items: z.array(CategorySchema) })) {}
+export class CategoryQueryDto extends createZodDto(z.object({ type: z.enum(['retail', 'fashion', 'home_business', 'home_kitchen']) })) {}
 export const toCategoryDto = (c: Category) => ({ slug: c.slug, name: c.name, nameTe: c.nameTe });
 
 // ── import ──

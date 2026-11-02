@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
-import { type AuthUser, CurrentUser, RequestId, Roles } from '../../common/auth/decorators';
+import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
 import { CatalogueService } from './catalogue.service';
 import {
   ApprovePendingDto,
@@ -9,6 +9,7 @@ import {
   BarcodeRequestListDto,
   BarcodeResultDto,
   CategoryListDto,
+  CategoryQueryDto,
   ConfirmResultDto,
   CreateItemDto,
   EnrichBarcodeDto,
@@ -179,6 +180,13 @@ export class MasterCatalogueController {
     private readonly catalogue: CatalogueService,
     private readonly merchants: MerchantsService,
   ) {}
+
+  @Get('categories')
+  @Public()
+  @ZodResponse({ type: CategoryListDto, description: 'Platform taxonomy for a supply type (en + te)' })
+  categories(@Query() q: CategoryQueryDto) {
+    return { items: this.catalogue.categories(q.type).map(toCategoryDto) };
+  }
 
   @Get('barcodes/:code')
   @Roles('merchant', 'admin', 'ops')

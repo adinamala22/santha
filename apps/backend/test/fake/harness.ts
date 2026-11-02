@@ -57,6 +57,8 @@ const RELAXED_OTP_LIMITS = {
   OTP_LIMIT_PER_PHONE_HOUR: '1000',
   OTP_LIMIT_PER_DEVICE_HOUR: '1000',
   OTP_LIMIT_PER_IP_HOUR: '10000',
+  OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: '1000',
+  OPS_LOGIN_LIMIT_PER_IP_HOUR: '1000',
 };
 
 export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promise<FakeApp> {

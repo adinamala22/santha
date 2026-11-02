@@ -69,6 +69,9 @@ export const EnvSchema = z
 
     /** Ops refresh sessions are short (santha-web skill: 8 h). */
     OPS_REFRESH_TTL_SEC: z.coerce.number().int().positive().default(8 * 3600),
+    /** Ops console password attempts (step 1 of sign-in) per email and per IP per hour. */
+    OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: z.coerce.number().int().positive().default(10),
+    OPS_LOGIN_LIMIT_PER_IP_HOUR: z.coerce.number().int().positive().default(30),
 
     /** Search engine. Fake mode always uses the in-memory index; Postgres mode defaults to Typesense. */
     SEARCH_ENGINE: z.enum(['typesense', 'memory']).optional(),

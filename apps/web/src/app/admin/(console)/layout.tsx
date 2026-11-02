@@ -3,6 +3,7 @@ import Image from 'next/image';
 import { type ReactNode, Suspense } from 'react';
 import { LangSwitch } from '@/components/admin/lang-switch';
 import { NavLink } from '@/components/admin/nav-link';
+import { catalogueCopy } from '@/i18n/catalogue';
 import { consoleCopy } from '@/i18n/console';
 import { opsLocale, opsSession } from '@/lib/ops/server';
 
@@ -21,6 +22,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
             {copy.nav.overview}
           </NavLink>
           <NavLink href="/admin/merchants">{copy.nav.merchants}</NavLink>
+          <NavLink href="/admin/catalogue">{catalogueCopy(locale).nav}</NavLink>
           <NavLink href="/admin/micro-markets">{copy.nav.microMarkets}</NavLink>
           <NavLink href="/admin/audit">{copy.nav.audit}</NavLink>
         </nav>
