@@ -9,6 +9,7 @@ import '../../../data/discovery_providers.dart';
 import '../../../data/providers.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../location/location_page.dart';
+import '../../orders/orders_page.dart';
 
 /// Bottom navigation: Home · Search · Orders · Account. The cart bar sits above it on Home.
 class HomeShell extends StatelessWidget {
@@ -43,19 +44,6 @@ class HomeShell extends StatelessWidget {
   }
 }
 
-class OrdersPage extends StatelessWidget {
-  const OrdersPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l.navOrders)),
-      body: Center(child: EmptyView(message: l.ordersEmpty, icon: Icons.receipt_long_outlined)),
-    );
-  }
-}
-
 /// Account: language, delivery addresses, sign out.
 class AccountPage extends ConsumerWidget {
   const AccountPage({super.key});
@@ -80,6 +68,7 @@ class AccountPage extends ConsumerWidget {
           subtitle: Text(l.languageValue),
           trailing: TextButton(onPressed: () => ref.read(localeControllerProvider.notifier).toggle(), child: Text(l.switchLanguage)),
         ),
+        const WalletTile(),
         const Divider(),
         Text(l.manageAddresses, style: text.titleMedium),
         switch (addresses) {

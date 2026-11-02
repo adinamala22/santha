@@ -7,6 +7,9 @@ Flutter app (flavors dev / stg / prod). Conventions: `.claude/skills/santha-flut
   category grid, stores near you), search (grouped by store, Telugu hints, inline ADD), store page and
   home-kitchen page (slots with cut-offs, food marks, allergens), product sheet, local single-store cart with
   the sticky cart bar, offline cache with a stale banner (ADR-009). Strings: `lib/l10n/app_{en,te}.arb`.
+- M4: cart page (per-item "if unavailable" preference), checkout (address, ASAP or kitchen slot, coupon, bill with
+  fees and GST, online or cash on delivery), Razorpay checkout (`razorpay_flutter`; a "Test payment" sheet when the
+  backend runs the mock gateway), order confirmation, Orders tab and order detail, wallet balance (ADR-010).
 
 ```bash
 melos run platforms                                   # once, generates android/ios around our flavor files

@@ -26,6 +26,20 @@ class FakeBackend implements HttpClientAdapter {
   bool serviceable = true;
   final requests = <String>[];
 
+  // M4 state
+  String? cartMerchantId;
+  bool paid = false;
+  bool codOrder = false;
+  final bodies = <String, Object?>{};
+
+  Map<String, dynamic> _order() {
+    if (codOrder) {
+      final o = fixture('order_placed');
+      return {...o, 'paymentMethod': 'cod', 'payment': null};
+    }
+    return fixture(paid ? 'order_placed' : 'order_awaiting_payment');
+  }
+
   @override
   Future<ResponseBody> fetch(RequestOptions o, Stream<Uint8List>? _, Future<void>? _) async {
     requests.add('${o.method} ${o.path}');
@@ -33,7 +47,20 @@ class FakeBackend implements HttpClientAdapter {
       throw DioException.connectionError(requestOptions: o, reason: 'offline');
     }
     final path = o.path;
+    bodies['${o.method} $path'] = o.data;
+    if (o.method == 'PUT' && path == '/v1/cart') cartMerchantId = (o.data as Map)['merchantId'] as String?;
+    if (o.method == 'POST' && path == '/v1/orders') codOrder = (o.data as Map)['paymentMethod'] == 'cod';
+    if (o.method == 'POST' && path.startsWith('/v1/dev/payments/') && path.endsWith('/succeed')) paid = true;
     final (status, body) = switch ('${o.method} $path') {
+      'PUT /v1/cart' => (200, fixture('cart')),
+      'POST /v1/cart/price' => (200, fixture(cartMerchantId == kitchenId ? 'checkout_kitchen' : 'checkout_retail')),
+      'POST /v1/orders' => (201, _order()),
+      'GET /v1/orders' => (200, {'items': [_order()]}),
+      'GET /v1/wallet' => (200, fixture('wallet')),
+      final r when r.startsWith('GET /v1/orders/') => (200, _order()),
+      final r when r.startsWith('POST /v1/dev/payments/') =>
+        (200, {...(fixture('order_placed')['payment'] as Map<String, dynamic>), 'status': path.endsWith('/succeed') ? 'captured' : 'created', 'lastFailure': path.endsWith('/fail') ? 'Payment declined by the bank (mock)' : null}),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/abandon-payment') => (200, {...fixture('order_awaiting_payment'), 'state': 'PAYMENT_FAILED'}),
       'POST /v1/auth/otp/request' => (200, {'challengeId': 'c1', 'expiresInSec': 300, 'resendAfterSec': 30}),
       'POST /v1/auth/otp/verify' => (
           200,
@@ -128,8 +155,8 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
 }
 
 /// Signs in and picks the seeded default address (Dargamitta) → home.
-Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en'}) async {
-  final h = await pumpApp(tester, locale: locale);
+Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}}) async {
+  final h = await pumpApp(tester, locale: locale, kv: kv);
   await tester.tap(find.textContaining('Sai Residency'));
   await settle(tester, 20);
   return h;

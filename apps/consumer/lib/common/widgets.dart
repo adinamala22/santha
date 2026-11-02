@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
@@ -160,76 +161,7 @@ class CartBar extends ConsumerWidget {
       top: false,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(SanthaSpacing.s4, SanthaSpacing.s2, SanthaSpacing.s4, SanthaSpacing.s3),
-        child: StickyCartBar(key: const ValueKey('cart-bar'), summary: summary, action: action ?? l.viewCart, onTap: () => showCartSheet(context)),
-      ),
-    );
-  }
-}
-
-/// Cart review. Checkout and payment arrive in M4.
-Future<void> showCartSheet(BuildContext context) => showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      showDragHandle: true,
-      builder: (context) => const _CartSheet(),
-    );
-
-class _CartSheet extends ConsumerWidget {
-  const _CartSheet();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l = AppLocalizations.of(context);
-    final text = Theme.of(context).textTheme;
-    final cart = ref.watch(cartControllerProvider);
-    if (cart.isEmpty) return const SizedBox(height: 120);
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, 0, SanthaSpacing.s5, SanthaSpacing.s4),
-        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(l.cartTitle, style: text.titleLarge),
-          Text(l.cartFrom(cart.merchantName ?? ''), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
-          const SizedBox(height: SanthaSpacing.s3),
-          for (final line in cart.lines)
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s2),
-              child: Row(children: [
-                Expanded(
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    Text(line.name, style: text.bodyMedium),
-                    Text('${line.variantLabel} · ${rupees(line.pricePaise)}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
-                  ]),
-                ),
-                CartAddButton(
-                  source: 'cart',
-                  add: CartAdd(
-                    merchantId: cart.merchantId!,
-                    merchantName: cart.merchantName ?? '',
-                    itemId: line.itemId,
-                    variantId: line.variantId,
-                    name: line.name,
-                    variantLabel: line.variantLabel,
-                    pricePaise: line.pricePaise,
-                    maxPerOrder: line.maxPerOrder,
-                  ),
-                ),
-                const SizedBox(width: SanthaSpacing.s3),
-                SizedBox(width: 64, child: Text(rupees(line.totalPaise), textAlign: TextAlign.end, style: text.titleSmall)),
-              ]),
-            ),
-          const Divider(height: SanthaSpacing.s6),
-          Row(children: [
-            Expanded(child: Text(l.itemTotal, style: text.titleMedium)),
-            Text(rupees(cart.totalPaise), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-          ]),
-          const SizedBox(height: SanthaSpacing.s3),
-          Text(l.checkoutSoon, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
-          const SizedBox(height: SanthaSpacing.s3),
-          SanthaButton(label: l.clearCart, variant: SanthaButtonVariant.outline, onPressed: () {
-            ref.read(cartControllerProvider.notifier).clear();
-            Navigator.pop(context);
-          }),
-        ]),
+        child: StickyCartBar(key: const ValueKey('cart-bar'), summary: summary, action: action ?? l.viewCart, onTap: () => context.push('/cart')),
       ),
     );
   }
