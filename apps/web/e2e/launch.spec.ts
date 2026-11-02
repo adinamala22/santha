@@ -49,7 +49,11 @@ test('landing → For stores → lead form; the lead reaches the ops console', a
 });
 
 test('legal pages in English and Telugu; the riders page in Telugu', async ({ page }) => {
-  await page.goto('/legal/privacy');
+  const res = await page.goto('/legal/privacy');
+  const h = res!.headers();
+  expect(h['content-security-policy']).toContain("frame-ancestors 'none'");
+  expect(h['x-frame-options']).toBe('DENY');
+  expect(h['x-content-type-options']).toBe('nosniff');
   await expect(page.getByRole('heading', { name: 'Privacy notice' })).toBeVisible();
   await expect(page.getByText(/DPDP Act 2023/).first()).toBeVisible();
   await page.getByRole('link', { name: 'తెలుగు' }).click();
