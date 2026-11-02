@@ -12,3 +12,9 @@ final orderProvider = FutureProvider.autoDispose.family<Order, String>(retry: _n
 
 /// Refund credits.
 final walletProvider = FutureProvider.autoDispose<Wallet>(retry: _noRetry, (ref) => ref.watch(checkoutApiProvider).wallet());
+
+/// How often an open order screen re-checks a moving order (realtime is the fast path).
+final orderPollEveryProvider = Provider<Duration?>((ref) => const Duration(seconds: 20));
+
+/// WhatsApp order updates opt-in (off by default).
+final whatsappUpdatesProvider = FutureProvider.autoDispose<bool>(retry: _noRetry, (ref) => ref.watch(checkoutApiProvider).whatsappUpdates());

@@ -4,6 +4,7 @@ import 'package:consumer/data/format.dart';
 import 'package:consumer/features/cart/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:santha_core/santha_core.dart';
 
 import 'support/harness.dart';
 
@@ -125,5 +126,58 @@ void main() {
     await tester.tap(find.text('Account').last);
     await settle(tester, 10);
     expect(find.byKey(const ValueKey('wallet')), findsOneWidget);
+  });
+
+  testWidgets('M5: a placed order can be cancelled before the store accepts; the refund shows', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
+    await openCheckout(tester);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 10);
+    await tester.tap(find.byKey(const ValueKey('mock-pay')));
+    await settle(tester, 20);
+    expect(find.text('You can cancel until the store accepts.'), findsOneWidget);
+    await tapVisible(tester, find.byKey(const ValueKey('cancel-placed-order')));
+    await settle(tester, 10);
+    await tester.tap(find.byKey(const ValueKey('cancel-ordered_by_mistake')));
+    await settle(tester, 20);
+    expect(h.backend.cancelReason, 'ordered_by_mistake');
+    expect(find.byKey(const ValueKey('cancel-placed-order')), findsNothing);
+    expect(find.byKey(const ValueKey('refunded')), findsOneWidget);
+    expect(h.events, contains('order_cancelled'));
+  });
+
+  testWidgets('M5: a realtime order.updated refreshes the order; substituted lines are explained', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    final lines = [
+      for (final (i, l) in (o['lines'] as List).cast<Map<String, dynamic>>().indexed)
+        i == 0 ? {...l, 'status': 'substituted', 'substituteName': 'Aashirvaad Atta', 'substituteVariantLabel': '1 kg', 'refundPaise': 1200} : l,
+    ];
+    h.backend.orderPatch = {'state': 'PREPARING', 'lines': lines, 'refundedPaise': 1200};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'PREPARING'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('cancel-placed-order')), findsNothing);
+    expect(find.text('Replaced with Aashirvaad Atta (1 kg)'), findsOneWidget);
+    expect(find.byKey(const ValueKey('refunded')), findsOneWidget);
+  });
+
+  testWidgets('M5: WhatsApp order updates are off until the customer turns them on', (tester) async {
+    final h = await pumpAtHome(tester);
+    await tester.tap(find.text('Account'));
+    await settle(tester, 10);
+    final tile = find.byKey(const ValueKey('whatsapp-updates'));
+    expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    await tester.tap(tile);
+    await settle(tester, 10);
+    expect(h.backend.whatsapp, isTrue);
+    expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+    expect(h.events, contains('whatsapp_opt_in_changed'));
   });
 }
