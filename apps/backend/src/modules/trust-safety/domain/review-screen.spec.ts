@@ -14,5 +14,13 @@ describe('review screen', () => {
     expect(screenReview('This shop is a fraud').reasons).toEqual(['abuse']);
     expect(screenReview('WORST DELIVERY EVER NEVER AGAIN').reasons).toEqual(['shouting']);
     expect(screenReview('write to me at a.b@gmail.com').reasons).toEqual(['contact_details', 'link']);
+    expect(screenReview('mail ravi_k+deals@yahoo.co.in please').reasons).toContain('contact_details');
+  });
+
+  it('stays fast on hostile input (no catastrophic backtracking)', () => {
+    const t0 = performance.now();
+    screenReview('+'.repeat(50_000));
+    screenReview(`${'a.'.repeat(20_000)}@`);
+    expect(performance.now() - t0).toBeLessThan(200);
   });
 });
