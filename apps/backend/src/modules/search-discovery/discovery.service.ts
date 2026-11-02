@@ -3,7 +3,7 @@ import { CLOCK, type Clock } from '../../common/clock';
 import { haversineMeters, type LatLng } from '../../common/geo/polygon';
 import { istParts, openStatus } from '../../common/hours';
 import { DomainError } from '../../common/errors/domain-error';
-import { categoryBySlug } from '../merchant-catalogue/domain/taxonomy';
+import { categoryBySlug, categoryRank } from '../merchant-catalogue/domain/taxonomy';
 import { buildDocs } from './search-indexer.service';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { CatalogueService } from '../merchant-catalogue/catalogue.service';
@@ -235,6 +235,7 @@ export class DiscoveryService {
         special: i.specialOn === today.date,
       };
     });
+    items.sort((a, b) => categoryRank(a.categorySlug) - categoryRank(b.categorySlug) || a.name.localeCompare(b.name)); // aisle order
     const counts = new Map<string, number>();
     for (const it of items) counts.set(it.categorySlug, (counts.get(it.categorySlug) ?? 0) + 1);
     const categories = [...counts].map(([slug, count]) => {

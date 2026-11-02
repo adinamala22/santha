@@ -165,7 +165,9 @@ class AddressStore extends MemoryStore<{ rows: AddressRecord[] }> {
       fn({
         list: async (userId) => this.clone(this.state.rows.filter((r) => r.userId === userId).sort(sortAddresses)),
         create: async (a) => {
-          const now = new Date();
+          // Strictly increasing like Postgres' microsecond now(), so "newest first" never ties.
+          const last = Math.max(0, ...this.state.rows.map((r) => r.createdAt.getTime()));
+          const now = new Date(Math.max(Date.now(), last + 1));
           const rec: AddressRecord = { ...this.clone(a), id: randomUUID(), createdAt: now, updatedAt: now };
           this.state.rows.push(rec);
           return this.clone(rec);

@@ -84,6 +84,8 @@ describe('M3 · consumer discovery backend (fake mode)', () => {
     expect(b.photos[0].mediumUrl).toContain('medium.webp');
     expect(b.categories.map((c: { slug: string }) => c.slug)).toEqual(expect.arrayContaining(['staples', 'dairy', 'snacks']));
     expect(b.categories.reduce((n: number, c: { count: number }) => n + c.count, 0)).toBe(b.items.length);
+    expect(b.categories[0].slug).toBe('staples'); // aisle (taxonomy) order, staples first
+    expect(b.items[0].categorySlug).toBe('staples');
     const atta = b.items.find((i: { name: string }) => i.name === 'Annapoorna Chakki Atta');
     expect(atta.variants.map((v: { label: string }) => v.label)).toEqual(['1 kg', '5 kg', '10 kg']);
     expect(atta).toMatchObject({ merchantId: kirana.id, variantId: expect.any(String), allergens: ['gluten'], foodMark: 'veg' });
