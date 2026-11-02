@@ -4,11 +4,11 @@ import { useActionState, useId, useState } from 'react';
 import type { ActionState } from '@/components/admin/confirm-action';
 import { Notice } from '@/components/admin/ui';
 import type { CatalogueCopy } from '@/i18n/catalogue';
+import { fill } from '@/i18n/console';
 import type { ImportState } from '../../../catalogue/actions';
 
 const input = 'mt-1 h-10 w-full rounded-md border border-indigo-100 bg-white px-3 s-focus';
 const UNITS = ['pc', 'g', 'kg', 'ml', 'l', 'pack', 'portion'] as const;
-const fill = (s: string, v: Record<string, string | number>) => s.replace(/\{(\w+)\}/g, (_, k: string) => String(v[k] ?? `{${k}}`));
 
 /** One item for the merchant's approval (FR-CAT-3). Price ≤ MRP and category rules are checked by the API. */
 export function AssistedItemForm({

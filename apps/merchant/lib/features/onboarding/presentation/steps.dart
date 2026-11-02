@@ -403,7 +403,7 @@ class _AadhaarStepState extends _KycState<AadhaarStep> {
         }
       },
       children: [
-        KycBanner(check: result ?? widget.view.check(KycKind.aadhaar)),
+        KycBanner(check: result ?? widget.view.check(KycKind.aadhaar), pendingText: l.kycAadhaarOtpPending),
         TextFormField(
           key: const ValueKey('aadhaar'),
           controller: _number,

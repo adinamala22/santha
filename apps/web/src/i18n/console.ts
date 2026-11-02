@@ -414,9 +414,14 @@ export type ConsoleCopy = Widen<(typeof consoleMessages)['en']>;
 
 export const consoleCopy = (locale: 'en' | 'te'): ConsoleCopy => consoleMessages[locale];
 
-/** `fill('{n} waiting', { n: 3 })` → '3 waiting'. */
+/**
+ * `fill('{n} waiting', { n: 3 })` → '3 waiting'. English plurals: `{n|item|items}` picks the
+ * singular when n is 1 (Telugu strings don't need it).
+ */
 export const fill = (s: string, vars: Record<string, string | number>) =>
-  s.replace(/\{(\w+)\}/g, (_, k: string) => (k in vars ? String(vars[k]) : `{${k}}`));
+  s
+    .replace(/\{(\w+)\|([^|}]*)\|([^}]*)\}/g, (_, k: string, one: string, other: string) => (Number(vars[k]) === 1 ? one : other))
+    .replace(/\{(\w+)\}/g, (_, k: string) => (k in vars ? String(vars[k]) : `{${k}}`));
 
 export const errorText = (copy: ConsoleCopy, code: string) =>
   (copy.errors as Record<string, string>)[code] ?? copy.errors.UNKNOWN;

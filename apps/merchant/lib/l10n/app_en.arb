@@ -261,7 +261,7 @@
   "catTitle": "Catalogue",
   "catOpen": "Manage catalogue",
   "catOpenSub": "Add products, prices and stock",
-  "catCount": "{n} items",
+  "catCount": "{n, plural, =1{1 item} other{{n} items}}",
   "@catCount": {
     "placeholders": {
       "n": {
@@ -278,7 +278,7 @@
   "catEmpty": "No items yet. Scan a barcode or add your first item.",
   "catEmptyFilter": "Nothing here.",
   "catPendingTitle": "Catalogue pending your approval",
-  "catPendingSub": "Santha added {n} items for you. Check them and approve.",
+  "catPendingSub": "Santha added {n, plural, =1{1 item} other{{n} items}} for you. Check them and approve.",
   "@catPendingSub": {
     "placeholders": {
       "n": {
@@ -287,7 +287,7 @@
     }
   },
   "catApproveAll": "Approve all",
-  "catApproved": "{n} items approved",
+  "catApproved": "{n, plural, =1{1 item approved} other{{n} items approved}}",
   "@catApproved": {
     "placeholders": {
       "n": {
@@ -296,7 +296,7 @@
     }
   },
   "catStaleTitle": "Is your stock still right?",
-  "catStaleSub": "{n} items have not been checked for 3 days. Customers trust stores that keep stock up to date.",
+  "catStaleSub": "{n, plural, =1{1 item has} other{{n} items have}} not been checked for 3 days. Customers trust stores that keep stock up to date.",
   "@catStaleSub": {
     "placeholders": {
       "n": {
@@ -305,7 +305,7 @@
     }
   },
   "catConfirmAll": "Everything is as listed",
-  "catConfirmed": "Stock confirmed for {n} items",
+  "catConfirmed": "Stock confirmed for {n, plural, =1{1 item} other{{n} items}}",
   "@catConfirmed": {
     "placeholders": {
       "n": {
@@ -431,7 +431,7 @@
   "importSub": "One row per size. Columns: name, category, size, unit, qty, price, mrp, stock, food_mark, allergens, barcode.",
   "importPaste": "Or paste the list here",
   "importCheck": "Check list",
-  "importReady": "{n} items ready",
+  "importReady": "{n, plural, =1{1 item ready} other{{n} items ready}}",
   "@importReady": {
     "placeholders": {
       "n": {
@@ -439,7 +439,7 @@
       }
     }
   },
-  "importRejected": "{n} rows need fixing",
+  "importRejected": "{n, plural, =1{1 row needs fixing} other{{n} rows need fixing}}",
   "@importRejected": {
     "placeholders": {
       "n": {
@@ -458,7 +458,7 @@
       }
     }
   },
-  "importNow": "Add {n} items",
+  "importNow": "{n, plural, =1{Add 1 item} other{Add {n} items}}",
   "@importNow": {
     "placeholders": {
       "n": {
@@ -466,7 +466,7 @@
       }
     }
   },
-  "importDone": "{n} items added",
+  "importDone": "{n, plural, =1{1 item added} other{{n} items added}}",
   "@importDone": {
     "placeholders": {
       "n": {
@@ -529,5 +529,8 @@
   "errTooLarge": "This file is too large.",
   "errPhoto": "Could not use this photo. Try another one.",
   "done": "Done",
-  "itemFoodMarkMissing": "Choose veg, non-veg or contains egg."
+  "itemFoodMarkMissing": "Choose veg, non-veg or contains egg.",
+  "kycAadhaarOtpPending": "Enter the OTP sent to your Aadhaar-linked mobile.",
+  "slotToday": "Today",
+  "slotTomorrow": "Tomorrow"
 }

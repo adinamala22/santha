@@ -154,10 +154,10 @@ test.describe('assisted catalogue entry', () => {
     const list = page.locator('section').filter({ has: page.getByRole('heading', { name: 'Paste a list (CSV)' }) });
     await list.getByRole('textbox').fill('name,category,size,unit,qty,price,mrp\nCotton Dupatta,accessories,Free size,pc,1,450,\nSilk Blouse,women_wear,M,pc,1,abc,\n');
     await list.getByRole('button', { name: 'Check list' }).click();
-    await expect(list.getByText('1 items ready · 1 rows need fixing')).toBeVisible();
+    await expect(list.getByText('1 item ready · 1 row needs fixing')).toBeVisible();
     await expect(list.getByText('Line 3: price is not a valid amount')).toBeVisible();
-    await list.getByRole('button', { name: 'Add 1 items for approval' }).click();
-    await expect(list.getByText('1 items added for the merchant’s approval.')).toBeVisible();
+    await list.getByRole('button', { name: 'Add 1 item for approval' }).click();
+    await expect(list.getByText('1 item added for the merchant’s approval.')).toBeVisible();
 
     await page.reload();
     await expect(page.getByRole('row', { name: /Gadwal Silk Saree/ })).toContainText('Waiting for merchant');
