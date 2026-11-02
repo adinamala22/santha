@@ -4,6 +4,7 @@ import 'package:merchant/features/catalogue/data/catalogue_controller.dart';
 import 'package:merchant/features/orders/data/orders_controller.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
+import 'package:santha_ui/santha_ui.dart';
 
 import 'catalogue_test.dart' show FakeCatalogueApi;
 import 'onboarding_test.dart' show FakeMerchantApi, pumpSignedIn;
@@ -59,6 +60,14 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('tab-ready')));
     await tester.pumpAndSettle();
     expect(find.byKey(const ValueKey('order-o1')), findsOneWidget);
+  });
+
+  testWidgets('past the countdown the order can still be accepted until it expires', (tester) async {
+    await pumpSignedIn(tester, view: _liveView(), orders: [merchantOrder('late', 'SN-5', acceptInSec: -10), merchantOrder('gone', 'SN-6', acceptInSec: -110, expireInSec: -1)]);
+    expect(find.descendant(of: find.byKey(const ValueKey('accept-late')), matching: find.text('Accept')), findsOneWidget);
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('accept-late'))).onPressed, isNotNull);
+    expect(find.descendant(of: find.byKey(const ValueKey('accept-gone')), matching: find.text('Time is up')), findsOneWidget);
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('accept-gone'))).onPressed, isNull);
   });
 
   testWidgets('reject asks for a reason', (tester) async {

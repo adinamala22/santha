@@ -13,7 +13,7 @@ Map<String, dynamic> orderLine(String variantId, String name, int unitPaise, {in
       'linePaise': unitPaise * qty, 'substitution': substitution, 'status': 'ok', 'refundPaise': 0, 'substituteName': null, 'substituteVariantLabel': null,
     };
 
-Map<String, dynamic> merchantOrder(String id, String code, {String state = 'PLACED', String payment = 'online', List<Map<String, dynamic>>? lines, int acceptInSec = 17}) {
+Map<String, dynamic> merchantOrder(String id, String code, {String state = 'PLACED', String payment = 'online', List<Map<String, dynamic>>? lines, int acceptInSec = 17, int expireInSec = 117}) {
   final ls = lines ?? [orderLine('v-atta', 'Chakki Atta', 6200, qty: 2), orderLine('v-dal', 'Toor Dal', 15000, substitution: 'remove')];
   final items = ls.fold<int>(0, (s, l) => s + (l['linePaise'] as int));
   final placed = state == 'PLACED';
@@ -24,7 +24,7 @@ Map<String, dynamic> merchantOrder(String id, String code, {String state = 'PLAC
     'address': placed ? null : {'line': '12-3 Pogathota', 'landmark': 'Near Gandhi statue'}, 'instructions': null, 'lines': ls,
     'placedAt': testNow.subtract(const Duration(seconds: 30)).toIso8601String(),
     'acceptBy': placed ? testNow.add(Duration(seconds: acceptInSec)).toIso8601String() : null,
-    'expiresAt': null,
+    'expiresAt': placed ? testNow.add(Duration(seconds: expireInSec)).toIso8601String() : null,
     'acceptedAt': placed ? null : testNow.subtract(const Duration(minutes: 5)).toIso8601String(),
     'packBy': placed ? null : testNow.add(const Duration(minutes: 10)).toIso8601String(),
     'readyAt': null, 'outcomeReason': null,

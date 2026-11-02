@@ -131,7 +131,10 @@ class _NewOrderCard extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final now = ref.watch(nowTickerProvider).value ?? DateTime.now();
     final left = order.acceptBy?.difference(now);
-    final timeUp = left != null && left.isNegative;
+    // The countdown runs to the soft deadline (acceptBy); the order stays acceptable, with reminders,
+    // until the hard expiry (expiresAt).
+    final timeUp = order.expiresAt != null && !order.expiresAt!.isAfter(now);
+    final late = left != null && left.isNegative;
     return Container(
       key: ValueKey('new-${order.id}'),
       margin: const EdgeInsets.only(bottom: SanthaSpacing.s4),
@@ -139,7 +142,7 @@ class _NewOrderCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: SanthaColors.marigold100,
         borderRadius: BorderRadius.circular(SanthaRadius.lg),
-        border: Border.all(color: SanthaColors.marigold, width: 2),
+        border: Border.all(color: late ? SanthaColors.chilli : SanthaColors.marigold, width: 2),
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
@@ -165,7 +168,7 @@ class _NewOrderCard extends ConsumerWidget {
             flex: 3,
             child: SanthaButton(
               key: ValueKey('accept-${order.id}'),
-              label: timeUp ? l.orderTimeUp : (left == null ? l.acceptNow : l.acceptIn(_countdown(left))),
+              label: timeUp ? l.orderTimeUp : (left == null || late ? l.acceptNow : l.acceptIn(_countdown(left))),
               onPressed: timeUp ? null : () => _run(context, ref, () => ref.read(ordersBoardProvider.notifier).accept(order)),
             ),
           ),
