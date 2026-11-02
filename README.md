@@ -5,10 +5,12 @@ delivered in 30–45 minutes. *The whole town, one app. · ఊరు అంత�
 
 Start with `CLAUDE.md` (project guide), `BUILD-PLAN.md` (milestones M0–M8) and `.claude/skills/`.
 
+**See it working end to end:** `pnpm i && pnpm dev:fake`, then `pnpm walkthrough` in a second terminal. This runs order → accept → deliver → refund → settle → dispute → grievance → reports against the in-memory backend. See `docs/WALKTHROUGH.md` for the scripted and by-hand tours. The launch pack (checklist, beta plan, store listings, DPDP register, runbooks, on-call) is in `docs/launch/`.
+
 ## Layout
 ```
 apps/backend     NestJS modular monolith (REST /v1, outbox → BullMQ, Prisma + PostGIS)
-apps/web         Next.js — landing (/), ops console (/admin)
+apps/web         Next.js — landing (/), sign-up pages, legal, store links (/s/[slug]), ops console (/admin)
 apps/consumer    Flutter consumer app          ┐
 apps/merchant    Flutter merchant app          ├ flavors dev / stg / prod
 apps/rider       Flutter rider app             ┘
@@ -97,7 +99,9 @@ shows budget exhaustion). COD works for shops up to ₹1,500, never for home kit
 pnpm lint && pnpm typecheck && pnpm test   # backend, web, shared-types
 pnpm --filter backend test:fake            # fake-mode acceptance per milestone (DATA_STORE=memory, no Docker)
 pnpm --filter backend test:int             # Testcontainers: Postgres/PostGIS + Redis + Typesense (needs Docker)
-pnpm --filter web e2e                      # console e2e (Playwright) on a production build against the fake backend
+pnpm --filter web e2e                      # console + site e2e (Playwright) on a production build against the fake backend
+pnpm walkthrough                           # HTTP end-to-end smoke against a running fake service (also in CI)
+k6 run infra/k6/peak.js                    # load at 5× peak; budgets in docs/performance-budgets.md (staging for real numbers)
 pnpm openapi:gen                           # regenerate OpenAPI → shared-types / santha_api (CI fails if stale)
 melos run analyze && melos run test        # Flutter
 melos run golden:update                    # regenerate santha_ui + consumer Home goldens (on Linux, to match CI)
@@ -105,5 +109,11 @@ melos run golden:update                    # regenerate santha_ui + consumer Hom
 Goldens are compared on Linux only (CI); on Windows/macOS they are skipped because font anti-aliasing differs.
 
 ## Decisions
-See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting, ADR-003 local object storage, ADR-004 separate apps,
-ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search, ADR-009 M3 consumer discovery, ADR-010 M4 pricing, orders & payments).
+See `docs/decisions/`: ADR-001 stack · 002 web hosting · 003 local object storage · 004 separate apps · 005 in-memory fake mode ·
+006 M1 scope · 007 ops console session & maps · 008 M2 catalogue & search · 009 M3 consumer discovery · 010 M4 pricing, orders &
+payments · 011 M5 order lifecycle · 012 M6 hybrid fulfilment · 013 M7 settlements, refunds & disputes · 014 M8 trust & safety,
+analytics, hardening & launch.
+
+## Security and launch
+CodeQL (`.github/workflows/codeql.yml`) on PRs and weekly; OWASP ZAP baseline and API scans (`zap.yml`) weekly against the fake
+service; security headers on the API and web. Launch readiness: `docs/launch/launch-checklist.md`.

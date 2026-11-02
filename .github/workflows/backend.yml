@@ -44,6 +44,10 @@ jobs:
         with: { node-version-file: .nvmrc, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter backend test:fake
+      - name: End-to-end walkthrough over HTTP (scripts/walkthrough.mjs)
+        run: |
+          (cd apps/backend && DATA_STORE=memory node -r @swc-node/register src/dev/fake-main.ts > ../../fake.log 2>&1 &)
+          pnpm walkthrough || (tail -50 fake.log; exit 1)
 
   integration:
     name: integration (Testcontainers · Postgres+PostGIS · Redis)

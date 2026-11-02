@@ -2,7 +2,9 @@
   "name": "santha",
   "private": true,
   "packageManager": "pnpm@9.15.4",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "pnpm --parallel --filter backend --filter web dev",
     "dev:fake": "pnpm --parallel --filter backend --filter web dev:fake",
@@ -10,6 +12,7 @@
     "lint": "pnpm -r lint",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "openapi:gen": "pnpm --filter backend openapi:gen && pnpm --filter @santha/shared-types gen"
+    "openapi:gen": "pnpm --filter backend openapi:gen && pnpm --filter @santha/shared-types gen",
+    "walkthrough": "node scripts/walkthrough.mjs"
   }
 }
