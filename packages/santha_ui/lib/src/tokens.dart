@@ -70,7 +70,15 @@ ThemeData santhaTheme({Locale locale = const Locale('en')}) {
     chipTheme: ChipThemeData(
       backgroundColor: SanthaColors.indigo100,
       selectedColor: SanthaColors.indigo,
-      labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, fontFamily: family, package: 'santha_ui'),
+      // Resolved per state: white on the indigo selected chip, indigo on the light unselected one.
+      labelStyle: TextStyle(
+        fontSize: 12,
+        fontWeight: FontWeight.w500,
+        fontFamily: family,
+        package: 'santha_ui',
+        color: WidgetStateColor.resolveWith((s) => s.contains(WidgetState.selected) ? SanthaColors.white : SanthaColors.indigo),
+      ),
+      checkmarkColor: SanthaColors.white,
       shape: const StadiumBorder(),
     ),
     cardTheme: CardThemeData(

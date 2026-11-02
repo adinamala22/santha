@@ -42,6 +42,10 @@ class SanthaApiClient {
   static const _skipAuth = 'santha.skipAuth';
   static const _retried = 'santha.retried';
 
+  /// Absolute URL for one the API returned: absolute URLs (CDN, presigned S3) pass through;
+  /// API-relative paths (fake mode's `/v1/dev/…` uploads and images) resolve against the base URL.
+  String resolve(String url) => url.startsWith('/') ? '${dio.options.baseUrl.replaceAll(RegExp(r'/$'), '')}$url' : url;
+
   /// Options for public endpoints (OTP, refresh) — never attach or refresh tokens.
   static Options publicOptions() => Options(extra: {_skipAuth: true});
 

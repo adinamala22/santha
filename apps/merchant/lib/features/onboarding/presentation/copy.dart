@@ -8,6 +8,7 @@ extension OnboardingCopy on AppLocalizations {
         ChecklistKey.business => stepBusiness,
         ChecklistKey.location => stepLocation,
         ChecklistKey.hours => stepHours,
+        ChecklistKey.photos => stepPhotos,
         ChecklistKey.pan => stepPan,
         ChecklistKey.aadhaar => stepAadhaar,
         ChecklistKey.gst => stepGst,

@@ -8,6 +8,7 @@ import 'package:santha_ui/santha_ui.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/onboarding_controller.dart';
 import 'copy.dart';
+import 'photos_step.dart';
 import 'widgets.dart';
 
 /// `/onboarding/:step` → the page for that checklist step (or staff).
@@ -23,6 +24,7 @@ class StepRouter extends ConsumerWidget {
       'business' => BusinessStep(view: view),
       'location' => LocationStep(view: view),
       'hours' => HoursStep(view: view),
+      'photos' => StorePhotosStep(view: view),
       'pan' => PanStep(view: view),
       'aadhaar' => AadhaarStep(view: view),
       'gst' => GstStep(view: view),

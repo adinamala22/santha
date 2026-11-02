@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/app.dart';
 import 'package:merchant/features/onboarding/data/onboarding_controller.dart';
@@ -109,7 +110,13 @@ class FakeMerchantApi extends MerchantApi {
   }
 }
 
-Future<(ProviderContainer, FakeMerchantApi)> pumpSignedIn(WidgetTester tester, {Map<String, dynamic>? view, String locale = 'en', LocationReader? location}) async {
+Future<(ProviderContainer, FakeMerchantApi)> pumpSignedIn(
+  WidgetTester tester, {
+  Map<String, dynamic>? view,
+  String locale = 'en',
+  LocationReader? location,
+  List<Override> overrides = const [],
+}) async {
   late FakeMerchantApi api;
   final tokens = MemoryTokenStore();
   await tokens.write(const TokenPair(accessToken: 'a', refreshToken: 'r', accessExpiresIn: 900, refreshExpiresIn: 99999));
@@ -130,6 +137,7 @@ Future<(ProviderContainer, FakeMerchantApi)> pumpSignedIn(WidgetTester tester, {
         )),
     merchantApiProvider.overrideWith((ref) => api = FakeMerchantApi(ref.watch(apiClientProvider), view: view)),
     if (location != null) locationReaderProvider.overrideWithValue(location),
+    ...overrides,
   ]);
   addTearDown(container.dispose);
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const SanthaMerchantApp()));

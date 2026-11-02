@@ -239,5 +239,295 @@
   "errDuplicateStaff": "This person is already on your list.",
   "errRequired": "This is required.",
   "retry": "Try again",
-  "kycVerify": "Verify"
+  "kycVerify": "Verify",
+  "stepPhotos": "Store photo",
+  "photosTitle": "Store photos",
+  "photosSub": "Add a clear photo of your shop front or kitchen. Customers see it once Santha checks it.",
+  "photoTake": "Take photo",
+  "photoPick": "Choose from gallery",
+  "photoRemove": "Remove photo",
+  "photoPending": "Waiting for review",
+  "photoApproved": "Approved",
+  "photoRejected": "Not accepted — choose another",
+  "photoUploading": "Uploading…",
+  "photoMax": "Up to {n} photos",
+  "@photoMax": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catTitle": "Catalogue",
+  "catOpen": "Manage catalogue",
+  "catOpenSub": "Add products, prices and stock",
+  "catCount": "{n} items",
+  "@catCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catSearch": "Search your items",
+  "catFilterAll": "All",
+  "catFilterOut": "Out of stock",
+  "catFilterStale": "Check stock",
+  "catFilterHeld": "Under review",
+  "catFilterHidden": "Hidden",
+  "catEmpty": "No items yet. Scan a barcode or add your first item.",
+  "catEmptyFilter": "Nothing here.",
+  "catPendingTitle": "Catalogue pending your approval",
+  "catPendingSub": "Santha added {n} items for you. Check them and approve.",
+  "@catPendingSub": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catApproveAll": "Approve all",
+  "catApproved": "{n} items approved",
+  "@catApproved": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catStaleTitle": "Is your stock still right?",
+  "catStaleSub": "{n} items have not been checked for 3 days. Customers trust stores that keep stock up to date.",
+  "@catStaleSub": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catConfirmAll": "Everything is as listed",
+  "catConfirmed": "Stock confirmed for {n} items",
+  "@catConfirmed": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "catScan": "Scan barcode",
+  "catAdd": "Add item",
+  "catImport": "Import list (CSV)",
+  "catSlots": "Menu and delivery slots",
+  "catHeld": "Under review",
+  "catHidden": "Hidden",
+  "catPendingBadge": "Needs your approval",
+  "catStaleBadge": "Check stock",
+  "catSizes": "{n} sizes",
+  "@catSizes": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "stockIn": "In stock",
+  "stockLow": "Low",
+  "stockOut": "Out",
+  "stockLabel": "Stock for {name}",
+  "@stockLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "scanTitle": "Scan a product",
+  "scanHint": "Point the camera at the barcode on the pack.",
+  "scanManual": "Type the barcode",
+  "scanFind": "Find",
+  "scanCameraOff": "The camera is not available. Type the barcode instead.",
+  "scanUnknown": "We do not know this product yet. Add it yourself — our team will also add it to the catalogue.",
+  "scanInvalid": "That does not look like a product barcode. Scan again or type it in.",
+  "scanAlreadyListed": "You already sell this. Opening it to edit.",
+  "scanCount": "{n} scanned",
+  "@scanCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "itemNew": "New item",
+  "itemEdit": "Edit item",
+  "itemFromMaster": "From the Santha catalogue · MRP {mrp}",
+  "@itemFromMaster": {
+    "placeholders": {
+      "mrp": {
+        "type": "String"
+      }
+    }
+  },
+  "itemName": "Item name",
+  "itemNameTe": "Name in Telugu (optional)",
+  "itemDescription": "Description (optional)",
+  "itemCategory": "Category",
+  "itemPhoto": "Photo",
+  "itemSizes": "Sizes and prices",
+  "itemAddSize": "Add a size",
+  "itemRemoveSize": "Remove size",
+  "itemSizeLabel": "Size",
+  "itemSizeHint": "e.g. 500 g, Large, Serves 2",
+  "itemQty": "Qty",
+  "itemUnit": "Unit",
+  "itemPrice": "Price (₹)",
+  "itemMrp": "MRP (₹)",
+  "itemPriceAboveMrp": "The price cannot be more than the MRP.",
+  "itemFoodMark": "Veg or non-veg",
+  "foodVeg": "Veg",
+  "foodNonVeg": "Non-veg",
+  "foodEgg": "Contains egg",
+  "itemAllergens": "Allergens",
+  "itemMadeToOrder": "Made to order",
+  "itemLeadTime": "Ready in (minutes)",
+  "itemMenuDays": "On the menu",
+  "itemMenuEveryDay": "Every day",
+  "itemDailyCapacity": "Portions per day (optional)",
+  "itemSpecialToday": "Today's special",
+  "itemHide": "Hide from customers",
+  "itemDelete": "Delete item",
+  "itemDeleteConfirm": "Delete \"{name}\"? This cannot be undone.",
+  "@itemDeleteConfirm": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "itemSaved": "Saved",
+  "itemHeldNote": "Santha will check this item before customers see it.",
+  "itemApprove": "Approve",
+  "itemNoCategory": "Pick a category",
+  "unitKg": "kg",
+  "unitG": "g",
+  "unitL": "litre",
+  "unitMl": "ml",
+  "unitPc": "piece",
+  "unitPack": "pack",
+  "unitPortion": "portion",
+  "algGluten": "Gluten",
+  "algMilk": "Milk",
+  "algEgg": "Egg",
+  "algPeanut": "Peanut",
+  "algTreeNuts": "Tree nuts",
+  "algSoy": "Soy",
+  "algFish": "Fish",
+  "algShellfish": "Shellfish",
+  "algSesame": "Sesame",
+  "algMustard": "Mustard",
+  "algCelery": "Celery",
+  "algSulphites": "Sulphites",
+  "algLupin": "Lupin",
+  "algMolluscs": "Molluscs",
+  "importTitle": "Import a list",
+  "importSub": "One row per size. Columns: name, category, size, unit, qty, price, mrp, stock, food_mark, allergens, barcode.",
+  "importPaste": "Or paste the list here",
+  "importCheck": "Check list",
+  "importReady": "{n} items ready",
+  "@importReady": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importRejected": "{n} rows need fixing",
+  "@importRejected": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importLine": "Line {line}: {reason}",
+  "@importLine": {
+    "placeholders": {
+      "line": {
+        "type": "int"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "importNow": "Add {n} items",
+  "@importNow": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importDone": "{n} items added",
+  "@importDone": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "importHeld": "{n} will be checked by Santha first",
+  "@importHeld": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "slotsTitle": "Delivery slots",
+  "slotsSub": "Customers order for a slot. Orders close at the cut-off before each slot.",
+  "slotsEmpty": "No slots yet. Add lunch or dinner slots.",
+  "slotAdd": "Add slot",
+  "slotLabel": "Name (optional)",
+  "slotStart": "Starts",
+  "slotEnd": "Ends",
+  "slotCutoff": "Orders close (minutes before)",
+  "slotCapacity": "Orders per slot",
+  "slotDays": "Days",
+  "slotSummary": "{start}–{end} · closes {cutoff} min before · {capacity} orders",
+  "@slotSummary": {
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      },
+      "cutoff": {
+        "type": "int"
+      },
+      "capacity": {
+        "type": "int"
+      }
+    }
+  },
+  "slotNext": "Next open slot: {day} {start}–{end}",
+  "@slotNext": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "slotRemove": "Remove slot",
+  "slotsSaved": "Slots saved",
+  "errBarcodeUnknown": "We do not know this product yet.",
+  "errTooLarge": "This file is too large.",
+  "errPhoto": "Could not use this photo. Try another one.",
+  "done": "Done",
+  "itemFoodMarkMissing": "Choose veg, non-veg or contains egg."
 }
