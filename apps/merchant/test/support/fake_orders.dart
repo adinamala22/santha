@@ -202,3 +202,20 @@ List<Override> orderOverrides({
       realtimeProvider.overrideWithValue(realtime ?? FakeRealtime()),
       orderAlertProvider.overrideWithValue(() => alerts?.rings++),
     ];
+
+/// M8: store reviews with replies.
+class FakeComplianceApi extends ComplianceApi {
+  FakeComplianceApi(super.client, this.rows);
+  final List<Map<String, dynamic>> rows;
+  final replies = <String>[];
+
+  @override
+  Future<List<StoreReview>> storeReviews() async => rows.map(StoreReview.fromJson).toList();
+
+  @override
+  Future<StoreReview> replyToReview(String orderId, String text) async {
+    replies.add('$orderId $text');
+    final r = rows.firstWhere((x) => x['orderId'] == orderId)..['reply'] = text;
+    return StoreReview.fromJson(r);
+  }
+}

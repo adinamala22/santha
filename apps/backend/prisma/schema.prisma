@@ -284,6 +284,8 @@ enum FulfilmentMode {
 
 model Merchant {
   id                String                                 @id @default(uuid()) @db.Uuid
+  /// Public store link /s/{slug} (M8), set when the store goes live.
+  slug              String?                                @unique
   ownerUserId       String                                 @unique @map("owner_user_id") @db.Uuid // MVP: one store per owner
   microMarketId     String?                                @map("micro_market_id") @db.Uuid
   type              MerchantType
@@ -1156,16 +1158,107 @@ model Issue {
 
 /// One rating per delivered order: the store, and the rider when a rider delivered.
 model Rating {
-  orderId     String   @id @map("order_id") @db.Uuid
-  userId      String   @map("user_id") @db.Uuid
-  merchantId  String   @map("merchant_id") @db.Uuid
-  riderUserId String?  @map("rider_user_id") @db.Uuid
-  storeStars  Int      @map("store_stars")
-  riderStars  Int?     @map("rider_stars")
+  orderId     String    @id @map("order_id") @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  merchantId  String    @map("merchant_id") @db.Uuid
+  riderUserId String?   @map("rider_user_id") @db.Uuid
+  storeStars  Int       @map("store_stars")
+  riderStars  Int?      @map("rider_stars")
   comment     String?
-  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  /// visible | flagged | hidden (comments are screened; ops moderates flagged ones, M8)
+  status      String    @default("visible")
+  flagReason  String?   @map("flag_reason")
+  /// The store's public reply.
+  reply       String?
+  replyAt     DateTime? @map("reply_at") @db.Timestamptz(6)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@index([merchantId, createdAt])
   @@index([riderUserId])
   @@map("ratings")
+}
+
+// ───────────── M8: growth leads, grievances, DPDP consents and data requests ─────────────
+
+/// A store, home kitchen or rider who asked to join from the website (/stores, /home-kitchens, /riders).
+model Lead {
+  id        String   @id @db.Uuid
+  /// store | home_kitchen | rider
+  kind      String
+  name      String
+  phone     String
+  area      String?
+  message   String?
+  locale    String   @default("en")
+  /// new | contacted | converted | dropped
+  status    String   @default("new")
+  note      String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@map("leads")
+}
+
+/// A grievance to the Grievance Officer (Consumer Protection (E-Commerce) Rules 2020): acknowledged
+/// within 48 hours, resolved within one month.
+model Grievance {
+  id             String    @id @db.Uuid
+  userId         String    @map("user_id") @db.Uuid
+  /// consumer | merchant | rider
+  app            String
+  orderId        String?   @map("order_id") @db.Uuid
+  /// order | payment | refund | account | privacy | other
+  category       String
+  description    String
+  /// open | acknowledged | resolved
+  status         String
+  resolution     String?
+  ackDueAt       DateTime  @map("ack_due_at") @db.Timestamptz(6)
+  resolveDueAt   DateTime  @map("resolve_due_at") @db.Timestamptz(6)
+  acknowledgedAt DateTime? @map("acknowledged_at") @db.Timestamptz(6)
+  resolvedAt     DateTime? @map("resolved_at") @db.Timestamptz(6)
+  handledBy      String?   @map("handled_by") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@index([userId, createdAt])
+  @@map("grievances")
+}
+
+/// Consent ledger (DPDP Act 2023): append-only; the latest row per user and purpose is in force.
+model Consent {
+  id        String   @id @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  /// terms | privacy | whatsapp_updates | marketing
+  purpose   String
+  /// Notice version the person saw (e.g. privacy-2026-11)
+  version   String
+  granted   Boolean
+  /// app | web | ops
+  source    String
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId, purpose, createdAt])
+  @@map("consents")
+}
+
+/// A data principal's request (DPDP Act 2023 s.11–13): access (export), correction or erasure.
+model DataRequest {
+  id          String    @id @db.Uuid
+  userId      String    @map("user_id") @db.Uuid
+  /// access | correction | erasure
+  type        String
+  details     String?
+  /// open | completed | rejected
+  status      String
+  note        String?
+  exportKey   String?   @map("export_key")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+  completedBy String?   @map("completed_by") @db.Uuid
+
+  @@index([status, createdAt])
+  @@index([userId])
+  @@map("data_requests")
 }

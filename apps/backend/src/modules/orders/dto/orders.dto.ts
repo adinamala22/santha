@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '../../../common/zod-dto';
 import { z } from 'zod';
 import { SUBSTITUTIONS } from '../../cart-pricing/domain/pricing';
 import type { CheckoutPayload } from '../../payments-settlement/payments.service';

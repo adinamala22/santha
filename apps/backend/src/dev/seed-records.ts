@@ -1,5 +1,5 @@
 import { everyDay } from '../common/hours';
-import type { MerchantRecord, StaffRecord } from '../modules/merchant-catalogue/domain/merchant';
+import { merchantSlug, type MerchantRecord, type StaffRecord } from '../modules/merchant-catalogue/domain/merchant';
 import { gstinCheckChar } from '../modules/identity-kyc/domain/kyc-formats';
 import type { KycCheckInput } from '../modules/identity-kyc/kyc.repository';
 import type { PromoRecord } from '../modules/cart-pricing/domain/promo';
@@ -99,6 +99,7 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       liveAt: live ? new Date(t0 + (23 + i) * DAY) : null,
       acceptingOrders: true,
       pausedReason: null,
+      slug: live ? merchantSlug(s.name, s.id) : null,
       pausedAt: null,
       missedInARow: 0,
       photoIds: s.status === 'draft' ? [] : [seedStorePhotoId(n)],

@@ -71,6 +71,11 @@ export abstract class IdentityRepository {
   /** Compare-and-swap rotation; false if the session changed concurrently. */
   abstract rotateSession(id: string, expectedHash: string, newHash: string, expiresAt: Date, now: Date): Promise<boolean>;
   abstract revokeSession(id: string, reason: string, now: Date): Promise<void>;
+  /**
+   * DPDP erasure (M8): the phone, name and email are removed, the account is marked deleted and every
+   * session revoked. Orders and money records keep only the user id (retained for tax law).
+   */
+  abstract anonymize(userId: string, now: Date): Promise<void>;
 }
 
 const userSelect = {
@@ -225,5 +230,13 @@ export class PrismaIdentityRepository extends IdentityRepository {
       where: { id, revokedAt: null },
       data: { revokedAt: now, revokedReason: reason },
     });
+  }
+
+  async anonymize(userId: string, now: Date): Promise<void> {
+    await this.prisma.$transaction([
+      this.prisma.user.update({ where: { id: userId }, data: { phone: `deleted:${userId}`, name: null, email: null, passwordHash: null, status: 'deleted' } }),
+      this.prisma.session.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: now, revokedReason: 'account_erased' } }),
+      this.prisma.address.deleteMany({ where: { userId } }),
+    ]);
   }
 }

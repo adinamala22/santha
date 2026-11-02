@@ -1,4 +1,4 @@
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '../../../common/zod-dto';
 import { z } from 'zod';
 import type { NotificationRecord } from '../../notifications/notifications.repository';
 import type { PaymentIntentRecord } from '../../payments-settlement/payments.repository';

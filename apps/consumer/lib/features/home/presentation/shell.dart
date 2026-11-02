@@ -9,17 +9,19 @@ import '../../../data/discovery_providers.dart';
 import '../../../data/order_providers.dart';
 import '../../../data/providers.dart';
 import '../../../l10n/gen/app_localizations.dart';
+import '../../account/privacy_page.dart';
 import '../../location/location_page.dart';
 import '../../orders/orders_page.dart';
 
 /// Bottom navigation: Home · Search · Orders · Account. The cart bar sits above it on Home.
-class HomeShell extends StatelessWidget {
+class HomeShell extends ConsumerWidget {
   const HomeShell({super.key, required this.shell});
   final StatefulNavigationShell shell;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
+    ref.watch(consentSyncProvider); // records Terms + Privacy agreement once per notice version
     return Scaffold(
       body: shell,
       bottomNavigationBar: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -71,6 +73,15 @@ class AccountPage extends ConsumerWidget {
         ),
         const WalletTile(),
         const _WhatsappTile(),
+        ListTile(
+          key: const ValueKey('privacy-help'),
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.shield_outlined),
+          title: Text(l.privacyHelp),
+          subtitle: Text(l.privacyHelpSub),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const PrivacyHelpPage())),
+        ),
         const Divider(),
         Text(l.manageAddresses, style: text.titleMedium),
         switch (addresses) {

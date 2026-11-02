@@ -32,6 +32,8 @@ class LoginPage extends ConsumerWidget {
             l.loginTagline,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(color: SanthaColors.onDarkMuted),
           ),
+          const SizedBox(height: SanthaSpacing.s2),
+          Text(l.loginConsent, key: const ValueKey('login-consent'), style: Theme.of(context).textTheme.bodySmall?.copyWith(color: SanthaColors.onDarkMuted)),
         ],
       ),
       strings: OtpLoginStrings(

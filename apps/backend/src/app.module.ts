@@ -28,6 +28,7 @@ import { PaymentsSettlementModule } from './modules/payments-settlement/payments
 import { SearchDiscoveryModule } from './modules/search-discovery/search-discovery.module';
 import { SettlementModule } from './modules/payments-settlement/settlement/settlement.module';
 import { IssuesModule } from './modules/trust-safety/issues.module';
+import { GrowthModule } from './modules/analytics-config/growth/growth.module';
 import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
 
 @Module({
@@ -73,6 +74,7 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     TrustSafetyModule,
     SettlementModule,
     IssuesModule,
+    GrowthModule,
     AnalyticsConfigModule,
     DevModule,
   ],

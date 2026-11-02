@@ -66,6 +66,12 @@ export class NotificationsService implements OnModuleInit {
 
   // ───────────── API for other modules / controllers ─────────────
 
+  /** Account erasure (DPDP): drop every push token and the WhatsApp opt-in. */
+  async forgetUser(userId: string): Promise<void> {
+    for (const t of await this.repo.tokensFor(userId)) await this.repo.removeToken(t.token);
+    await this.repo.setWhatsappOptIn(userId, false);
+  }
+
   registerToken(userId: string, deviceId: string, token: string, platform: string): Promise<void> {
     return this.repo.upsertToken({ userId, deviceId, token, platform });
   }

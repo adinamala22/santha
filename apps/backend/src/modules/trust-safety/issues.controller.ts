@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { ZodResponse } from 'nestjs-zod';
+import { createZodDto } from '../../common/zod-dto';
 import { z } from 'zod';
 import { type AuthUser, CurrentUser, Roles } from '../../common/auth/decorators';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';

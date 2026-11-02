@@ -1,0 +1,32 @@
+{
+ "items": [
+  {
+   "purpose": "terms",
+   "granted": true,
+   "version": "terms-2026-11",
+   "current": true,
+   "at": "2026-11-02T21:21:56.561Z"
+  },
+  {
+   "purpose": "privacy",
+   "granted": true,
+   "version": "privacy-2026-11",
+   "current": true,
+   "at": "2026-11-02T21:21:56.565Z"
+  },
+  {
+   "purpose": "marketing",
+   "granted": false,
+   "version": "marketing-2026-11",
+   "current": true,
+   "at": "2026-11-02T21:21:56.570Z"
+  },
+  {
+   "purpose": "whatsapp_updates",
+   "granted": false,
+   "version": "whatsapp-2026-11",
+   "current": false,
+   "at": null
+  }
+ ]
+}

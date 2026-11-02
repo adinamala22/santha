@@ -8,6 +8,8 @@ import 'package:santha_ui/santha_ui.dart';
 
 import 'catalogue_test.dart' show FakeCatalogueApi;
 import 'onboarding_test.dart' show FakeMerchantApi, pumpSignedIn;
+import 'package:merchant/features/orders/presentation/reviews_view.dart';
+
 import 'support/fake_orders.dart';
 
 Map<String, dynamic> _liveView({bool open = true, String? pausedReason}) {
@@ -268,6 +270,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.calls.last, 'dispute r1');
     expect(find.text('Dispute sent — we will decide within 48 hours'), findsOneWidget);
+  });
+
+  testWidgets('M8: Earnings shows customer reviews; the store replies once', (tester) async {
+    late FakeComplianceApi reviews;
+    await pumpSignedIn(tester, view: _liveView(), overrides: [
+      complianceApiProvider.overrideWith((ref) => reviews = FakeComplianceApi(ref.watch(apiClientProvider), [
+            {'orderId': 'o1', 'storeStars': 4, 'comment': 'Fresh atta, a little late', 'reply': null, 'createdAt': '2026-11-02T08:00:00.000Z'},
+          ])),
+    ]);
+    await tester.tap(find.text('Earnings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('review-o1')), 200, scrollable: find.byType(Scrollable).last);
+    expect(find.textContaining('Fresh atta, a little late'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('4 out of 5 stars')), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('reply-o1')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('reply-send'))).onPressed, isNull);
+    await tester.enterText(find.byKey(const ValueKey('reply-text')), 'Sorry for the wait — thank you!');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('reply-send')));
+    await tester.pumpAndSettle();
+    expect(reviews.replies.single, 'o1 Sorry for the wait — thank you!');
+    expect(find.text('Reply posted'), findsOneWidget);
+    expect(find.textContaining('Your reply: Sorry for the wait'), findsOneWidget);
+    expect(find.byKey(const ValueKey('reply-o1')), findsNothing);
   });
 
   test('every bucket maps to its wire name', () {

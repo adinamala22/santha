@@ -313,6 +313,11 @@ export class AuthService {
     await this.repo.revokeSession(sessionId, 'logout', this.clock());
   }
 
+  /** DPDP erasure (M8): anonymise the account and end every session. */
+  async erase(userId: string): Promise<void> {
+    await this.repo.anonymize(userId, this.clock());
+  }
+
   async me(userId: string): Promise<UserRecord> {
     const user = await this.repo.findUserById(userId);
     if (!user) throw new DomainError('NOT_FOUND', 'Account not found');

@@ -15,6 +15,7 @@ import {
   MAX_STAFF,
   type MerchantRecord,
   type MerchantType,
+  merchantSlug,
   missingSteps,
   needsFssai,
   profileEditable,
@@ -381,7 +382,7 @@ export class MerchantsService implements OnModuleInit {
         });
       if (!m.microMarketId) throw new DomainError('NOT_SERVICEABLE', 'The store is outside every micro-market.');
       return {
-        patch: { status: 'live', liveAt: this.clock() },
+        patch: { status: 'live', liveAt: this.clock(), slug: m.slug ?? merchantSlug(m.name, m.id) },
         event: { type: 'merchant.went_live', payload: { merchant_id: m.id, type: m.type, micro_market_id: m.microMarketId } },
         action: 'went_live',
       };

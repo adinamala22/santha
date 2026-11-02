@@ -48,6 +48,14 @@ class FakeBackend implements HttpClientAdapter {
   final issues = <Map<String, dynamic>>[];
   Map<String, dynamic>? rating;
 
+  // M8 state
+  final consents = <String, bool>{};
+  final grievances = <Map<String, dynamic>>[];
+  final dataRequests = <Map<String, dynamic>>[];
+  List<Map<String, dynamic>> _consents() => [
+        for (final e in consents.entries) {'purpose': e.key, 'granted': e.value, 'current': true, 'at': '2026-11-02T08:00:00.000Z'},
+      ];
+
   Map<String, dynamic> _order() {
     final Map<String, dynamic> o;
     if (codOrder) {
@@ -118,6 +126,32 @@ class FakeBackend implements HttpClientAdapter {
               return _order();
             })())
           : (409, <String, Object?>{'error': {'code': 'INVALID_STATE', 'message': 'The store has already started on this order.'}}),
+      'GET /v1/me/consents' => (200, {'items': _consents()}),
+      'PUT /v1/me/consents' => (() {
+          final b = o.data as Map;
+          consents[b['purpose'] as String] = b['granted'] as bool;
+          return (200, {'items': _consents()});
+        })(),
+      'GET /v1/me/grievances' => (200, {'items': grievances}),
+      'POST /v1/me/grievances' => (() {
+          final b = o.data as Map;
+          final g = {
+            'id': 'grv${grievances.length + 1}', 'category': b['category'], 'description': b['description'], 'status': 'open', 'resolution': null,
+            'resolveDueAt': '2026-12-02T08:00:00.000Z', 'createdAt': '2026-11-02T08:00:00.000Z',
+          };
+          grievances.insert(0, g);
+          return (201, g);
+        })(),
+      'GET /v1/me/data-requests' => (200, {'items': dataRequests}),
+      'POST /v1/me/data-requests' => (() {
+          final type = (o.data as Map)['type'] as String;
+          if (dataRequests.any((r) => r['type'] == type && r['status'] == 'open')) return (409, <String, Object?>{'error': {'code': 'ALREADY_EXISTS', 'message': 'open'}});
+          final r = {'id': 'dr${dataRequests.length + 1}', 'type': type, 'status': type == 'access' ? 'completed' : 'open', 'exportReady': type == 'access', 'createdAt': '2026-11-02T08:00:00.000Z'};
+          dataRequests.add(r);
+          return (201, r);
+        })(),
+      final r when r.startsWith('GET /v1/me/data-requests/') && r.endsWith('/export') =>
+        (200, {'account': {'id': 'u1'}, 'addresses': fixture('address_list')['items'], 'orders': [_order()], 'consents': _consents()}),
       'GET /v1/me/notification-preferences' => (200, {'whatsappUpdates': whatsapp}),
       'PUT /v1/me/notification-preferences' => (200, {'whatsappUpdates': whatsapp = (o.data as Map)['whatsappUpdates'] as bool}),
       final r when r.startsWith('POST /v1/dev/payments/') =>

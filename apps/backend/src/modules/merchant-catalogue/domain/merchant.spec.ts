@@ -32,6 +32,7 @@ const base: MerchantRecord = {
   liveAt: null,
   acceptingOrders: true,
   pausedReason: null,
+  slug: null,
   pausedAt: null,
   missedInARow: 0,
   photoIds: ["media-1"],

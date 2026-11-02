@@ -8,6 +8,7 @@ import '../../../l10n/gen/app_localizations.dart';
 import '../../catalogue/presentation/catalogue_copy.dart' show rupees;
 import '../data/orders_controller.dart';
 import 'money_view.dart';
+import 'reviews_view.dart';
 
 /// The choice made in the fulfilment sheet.
 class FulfilmentChoice {
@@ -201,6 +202,7 @@ class StatementPreviewView extends ConsumerWidget {
             const SizedBox(height: SanthaSpacing.s3),
             Text(l.statementNote, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
             const MoneySection(),
+            const ReviewsSection(),
           ]),
         ),
       ),
