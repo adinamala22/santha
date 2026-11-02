@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import 'checkout_models.dart' show OrderState, PaymentMethodChoice;
+import 'dispatch.dart';
 import 'merchant_models.dart';
 import 'models.dart';
 
@@ -184,7 +185,21 @@ class MerchantOrdersApi {
 
   Future<MerchantOrder> get(String id) => _order(() => _dio.get<Json>('/v1/merchants/me/orders/$id'));
 
-  Future<MerchantOrder> accept(String id, {FulfilmentMode? mode}) => _order(() => _dio.post<Json>('/v1/orders/$id/accept', data: {'fulfilmentMode': ?mode?.name}));
+  /// Accept with the fulfilment choice (M6): self (optionally a staff member, who gets the tracking link) or rider.
+  Future<MerchantOrder> accept(String id, {FulfilmentMode? mode, String? staffId}) =>
+      _order(() => _dio.post<Json>('/v1/orders/$id/accept', data: {'fulfilmentMode': ?mode?.name, 'staffId': ?staffId}));
+
+  /// Active deliveries: pickup code, courier, staff link, fallback bonus.
+  Future<List<MerchantDelivery>> deliveries() =>
+      _call(() async => ((await _dio.get<Json>('/v1/merchants/me/deliveries')).data!['items'] as List).map((d) => MerchantDelivery.fromJson(d as Json)).toList());
+
+  /// Switch a delivery still looking for a rider to self-delivery.
+  Future<MerchantDelivery> deliverMyself(String orderId, {String? staffId}) =>
+      _call(() async => MerchantDelivery.fromJson((await _dio.post<Json>('/v1/merchants/me/orders/$orderId/deliver-myself', data: {'staffId': ?staffId})).data!));
+
+  /// Delivered orders of an IST day with commission and delivery-fee credit.
+  Future<StatementPreview> statementPreview({String? date}) =>
+      _call(() async => StatementPreview.fromJson((await _dio.get<Json>('/v1/merchants/me/statements/preview', queryParameters: {'date': ?date})).data!));
 
   Future<MerchantOrder> reject(String id, String reason) => _order(() => _dio.post<Json>('/v1/orders/$id/reject', data: {'reason': reason}));
 

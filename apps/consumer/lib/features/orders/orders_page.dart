@@ -14,6 +14,7 @@ import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../checkout/bill_view.dart';
 import '../checkout/checkout_page.dart';
+import 'tracking_view.dart';
 
 String orderStateLabel(AppLocalizations l, OrderState s) => switch (s) {
       OrderState.awaitingPayment => l.state_AWAITING_PAYMENT,
@@ -163,7 +164,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
   @override
   Widget build(BuildContext context) {
     ref.listen(realtimeEventsProvider, (_, next) {
-      if (next.value?.orderId == id) {
+      // Location fixes only move the map (tracking_view); state changes refetch the order.
+      if (next.value?.orderId == id && next.value?.name != 'order.location') {
         ref.invalidate(orderProvider(id));
         ref.invalidate(ordersProvider);
       }
@@ -207,6 +209,10 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 child: Text('${l.deliverySlot}: ${istClock(value.slotStartsAt!)}${value.slotEnd != null ? '–${clock(value.slotEnd!)}' : ''}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
               ),
             const SizedBox(height: SanthaSpacing.s4),
+            if (const [OrderState.accepted, OrderState.preparing, OrderState.ready, OrderState.pickedUp, OrderState.outForDelivery].contains(value.state)) ...[
+              TrackingSection(orderId: value.id, storeName: l.localeName == 'te' && value.merchantNameTe != null ? value.merchantNameTe! : value.merchantName),
+              const SizedBox(height: SanthaSpacing.s4),
+            ],
             if (!_bad(value.state) && value.state != OrderState.awaitingPayment) _Steps(order: value),
             if (value.state == OrderState.awaitingPayment && value.payment != null) ...[
               if (value.paymentDueAt != null) Text(l.payBy(istClock(value.paymentDueAt!)), style: text.bodySmall?.copyWith(color: SanthaColors.marigold600)),

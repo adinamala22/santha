@@ -21,15 +21,17 @@ final orderAlertProvider = Provider<void Function()>((ref) => () {
     });
 
 class OrdersBoard {
-  const OrdersBoard({required this.tab, required this.newOrders, required this.list});
+  const OrdersBoard({required this.tab, required this.newOrders, required this.list, this.deliveries = const {}});
   /// The selected tab below the new-order cards (never [OrderBucket.newOrders]).
   final OrderBucket tab;
   final List<MerchantOrder> newOrders;
   final MerchantOrderList list;
+  /// Active deliveries by order id (M6): pickup code, courier, staff link, fallback bonus.
+  final Map<String, MerchantDelivery> deliveries;
 
   int count(OrderBucket b) => list.counts[b] ?? 0;
   OrdersBoard copyWith({OrderBucket? tab, List<MerchantOrder>? newOrders, MerchantOrderList? list}) =>
-      OrdersBoard(tab: tab ?? this.tab, newOrders: newOrders ?? this.newOrders, list: list ?? this.list);
+      OrdersBoard(tab: tab ?? this.tab, newOrders: newOrders ?? this.newOrders, list: list ?? this.list, deliveries: deliveries);
 }
 
 /// The merchant's live order board: new orders waiting for a decision on top, then one tab.
@@ -56,13 +58,13 @@ class OrdersBoardController extends AsyncNotifier<OrdersBoard> {
   }
 
   Future<OrdersBoard> _load(OrderBucket tab) async {
-    final results = await Future.wait([_api.list(OrderBucket.newOrders), _api.list(tab)]);
+    final (results, deliveries) = await (Future.wait([_api.list(OrderBucket.newOrders), _api.list(tab)]), _api.deliveries().catchError((_) => <MerchantDelivery>[])).wait;
     final fresh = results[0].items.where((o) => !_rung.contains(o.id)).toList();
     if (fresh.isNotEmpty) {
       _rung.addAll(fresh.map((o) => o.id));
       ref.read(orderAlertProvider)();
     }
-    return OrdersBoard(tab: tab, newOrders: results[0].items, list: results[1]);
+    return OrdersBoard(tab: tab, newOrders: results[0].items, list: results[1], deliveries: {for (final d in deliveries) d.orderId: d});
   }
 
   Future<void> reload() async {
@@ -79,9 +81,17 @@ class OrdersBoardController extends AsyncNotifier<OrdersBoard> {
     state = AsyncData((state.value ?? cur!).copyWith(tab: tab, list: list));
   }
 
-  Future<void> accept(MerchantOrder o) async {
-    await _act(() => _api.accept(o.id));
+  /// Accept with the fulfilment choice (M6): self (a staff member, or the owner when [staffId] is null) or rider.
+  Future<void> accept(MerchantOrder o, {FulfilmentMode? mode, String? staffId}) async {
+    await _act(() => _api.accept(o.id, mode: mode, staffId: staffId));
     _analytics.track('order_accepted', {'order_id': o.id});
+    if (mode != null) _analytics.track('fulfilment_choice', {'order_id': o.id, 'mode': mode.name, 'staff': staffId != null});
+  }
+
+  /// No rider yet (fallback bonus offered): the store delivers after all.
+  Future<void> deliverMyself(String orderId, {String? staffId}) async {
+    await _act(() => _api.deliverMyself(orderId, staffId: staffId));
+    _analytics.track('fulfilment_choice', {'order_id': orderId, 'mode': 'self', 'after_fallback': true});
   }
 
   Future<void> reject(MerchantOrder o, String reason) async {
@@ -143,3 +153,6 @@ class StoreOpenController extends Notifier<bool?> {
     }
   }
 }
+
+/// Statement preview for today (M6): delivered orders with commission and delivery-fee credit.
+final statementPreviewProvider = FutureProvider.autoDispose<StatementPreview>((ref) => ref.watch(merchantOrdersApiProvider).statementPreview());

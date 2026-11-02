@@ -10,7 +10,12 @@ const int = z.number().int();
 const BUCKET_NAMES = Object.keys(BUCKETS) as [keyof typeof BUCKETS, ...Array<keyof typeof BUCKETS>];
 
 export class BucketQueryDto extends createZodDto(z.object({ bucket: z.enum(BUCKET_NAMES).default('new') })) {}
-export class AcceptDto extends createZodDto(z.object({ fulfilmentMode: z.enum(['self', 'rider']).optional().describe('Default: the store setting (fashion is always rider)') })) {}
+export class AcceptDto extends createZodDto(
+  z.object({
+    fulfilmentMode: z.enum(['self', 'rider']).optional().describe('Default: the store setting (fashion is always rider)'),
+    staffId: z.uuid().optional().describe('Self delivery: which staff member delivers (they get the tracking link). Omit: the owner delivers.'),
+  }),
+) {}
 export class RejectDto extends createZodDto(z.object({ reason: z.enum(REJECT_REASONS) })) {}
 export class CancelOrderDto extends createZodDto(z.object({ reason: z.enum(CANCEL_REASONS) })) {}
 export class ItemUnavailableDto extends createZodDto(

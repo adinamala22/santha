@@ -897,3 +897,96 @@ model NotificationPreference {
 
   @@map("notification_preferences")
 }
+
+// ───────────── dispatch-tracking (M6) ─────────────
+
+/// Delivery partner profile (users with the rider role). Live positions live in Redis GEO, not here.
+model Rider {
+  userId         String    @id @map("user_id") @db.Uuid
+  name           String
+  vehicle        String    @default("bike")
+  /// Micro-markets the rider works in (chosen when going online).
+  zones          String[]  @db.Uuid
+  online         Boolean   @default(false)
+  rating         Float?
+  offersShown    Int       @default(0) @map("offers_shown")
+  offersAccepted Int       @default(0) @map("offers_accepted")
+  onlineSince    DateTime? @map("online_since") @db.Timestamptz(6)
+  /// Minutes online before today's session (resets daily).
+  onlineMinToday Int       @default(0) @map("online_min_today")
+  lastSeenAt     DateTime? @map("last_seen_at") @db.Timestamptz(6)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@map("riders")
+}
+
+/// How one order reaches the customer: the store's staff (self), a Santha rider, or a 3PL partner.
+model Fulfilment {
+  id                String    @id @db.Uuid
+  orderId           String    @unique @map("order_id") @db.Uuid
+  merchantId        String    @map("merchant_id") @db.Uuid
+  microMarketId     String    @map("micro_market_id") @db.Uuid
+  /// self | rider | tpl
+  mode              String
+  /// searching | assigned | picked_up | delivered | failed | cancelled
+  state             String
+  staffId           String?   @map("staff_id") @db.Uuid
+  /// Secret for the staff tracking link (/d/{token}); null for riders.
+  staffToken        String?   @unique @map("staff_token")
+  riderUserId       String?   @map("rider_user_id") @db.Uuid
+  tplRef            String?   @map("tpl_ref")
+  /// Shown on the store's order card; the courier enters it at pickup.
+  pickupCode        String    @map("pickup_code")
+  /// Shown to the customer; the courier enters it at the door.
+  deliveryOtp       String    @map("delivery_otp")
+  /// none | tpl | self_bonus | standby | customer_notified
+  fallbackStage     String    @default("none") @map("fallback_stage")
+  selfBonusPaise    Int       @default(0) @map("self_bonus_paise")
+  storeToDropM      Int       @map("store_to_drop_m")
+  riderPayPaise     Int       @default(0) @map("rider_pay_paise")
+  payLines          Json      @default("[]") @map("pay_lines")
+  batchedWith       String?   @map("batched_with") @db.Uuid
+  promisedAt        DateTime  @map("promised_at") @db.Timestamptz(6)
+  etaAt             DateTime? @map("eta_at") @db.Timestamptz(6)
+  delayNotifiedAt   DateTime? @map("delay_notified_at") @db.Timestamptz(6)
+  /// otp | photo
+  proof             String?
+  proofMediaId      String?   @map("proof_media_id") @db.Uuid
+  codCollectedPaise Int?      @map("cod_collected_paise")
+  lastLat           Float?    @map("last_lat")
+  lastLng           Float?    @map("last_lng")
+  lastLocationAt    DateTime? @map("last_location_at") @db.Timestamptz(6)
+  requestedAt       DateTime  @default(now()) @map("requested_at") @db.Timestamptz(6)
+  assignedAt        DateTime? @map("assigned_at") @db.Timestamptz(6)
+  arrivedAt         DateTime? @map("arrived_at") @db.Timestamptz(6)
+  pickedUpAt        DateTime? @map("picked_up_at") @db.Timestamptz(6)
+  deliveredAt       DateTime? @map("delivered_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  offers DispatchOffer[]
+
+  @@index([state, microMarketId])
+  @@index([riderUserId, state])
+  @@map("fulfilments")
+}
+
+/// One 30-second offer of a fulfilment to one rider.
+model DispatchOffer {
+  id           String    @id @db.Uuid
+  fulfilmentId String    @map("fulfilment_id") @db.Uuid
+  riderUserId  String    @map("rider_user_id") @db.Uuid
+  /// offered | accepted | declined | expired | withdrawn
+  state        String
+  payPaise     Int       @map("pay_paise")
+  payLines     Json      @map("pay_lines")
+  distanceM    Int       @map("distance_m")
+  offeredAt    DateTime  @map("offered_at") @db.Timestamptz(6)
+  expiresAt    DateTime  @map("expires_at") @db.Timestamptz(6)
+  respondedAt  DateTime? @map("responded_at") @db.Timestamptz(6)
+
+  fulfilment Fulfilment @relation(fields: [fulfilmentId], references: [id], onDelete: Cascade)
+
+  @@index([riderUserId, state])
+  @@index([fulfilmentId])
+  @@map("dispatch_offers")
+}

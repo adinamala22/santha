@@ -4470,6 +4470,891 @@
           "me"
         ]
       }
+    },
+    "/v1/riders/me": {
+      "get": {
+        "operationId": "RiderController_me",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Profile, today so far, the open offer (if any) and active jobs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderHomeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/status": {
+      "put": {
+        "operationId": "RiderController_status",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderStatusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Go online (with zones) or offline. Going offline declines an open offer.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderHomeDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/location": {
+      "post": {
+        "operationId": "RiderController_location",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/earnings": {
+      "get": {
+        "operationId": "RiderController_earnings",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Today's deliveries (IST) with the pay breakdown",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderEarningsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/offers/{id}/accept": {
+      "post": {
+        "operationId": "RiderController_accept",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "409 OFFER_EXPIRED after 30 s or when the order went elsewhere",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/offers/{id}/decline": {
+      "post": {
+        "operationId": "RiderController_decline",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/jobs/{id}": {
+      "get": {
+        "operationId": "RiderController_job",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/jobs/{id}/arrived": {
+      "post": {
+        "operationId": "RiderController_arrived",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "At the store (starts paid waiting after 5 min)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/jobs/{id}/picked-up": {
+      "post": {
+        "operationId": "RiderController_pickedUp",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PickupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "422 WRONG_CODE; 409 NOT_READY while the store is packing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/jobs/{id}/delivered": {
+      "post": {
+        "operationId": "RiderController_delivered",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliveredDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Customer's OTP or a door photo; cash collected for COD. 422 WRONG_CODE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}": {
+      "get": {
+        "operationId": "StaffJobsController_get",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}/picked-up": {
+      "post": {
+        "operationId": "StaffJobsController_pickedUp",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "409 NOT_READY until the store marks the order ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}/delivered": {
+      "post": {
+        "operationId": "StaffJobsController_delivered",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffDeliveredDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Customer's OTP; cash collected for COD. 422 WRONG_CODE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}/location": {
+      "post": {
+        "operationId": "StaffJobsController_location",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/orders/{id}/tracking": {
+      "get": {
+        "operationId": "TrackingController_tracking",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Courier, OTP, live location and ETA vs the promise. 404 until the store accepts.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrackingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/v1/orders/{id}/cancel-no-courier": {
+      "post": {
+        "operationId": "TrackingController_cancel",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/v1/merchants/me/deliveries": {
+      "get": {
+        "operationId": "MerchantDeliveriesController_list",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Active deliveries: pickup code, courier, staff link, fallback bonus",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDeliveryListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/orders/{id}/deliver-myself": {
+      "post": {
+        "operationId": "MerchantDeliveriesController_deliverMyself",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliverMyselfDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Switch a delivery still looking for a rider to self-delivery (any fallback bonus applies)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/merchants/me/statements/preview": {
+      "get": {
+        "operationId": "MerchantDeliveriesController_statement",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date",
+            "required": false,
+            "in": "query",
+            "description": "IST day, default today",
+            "schema": {
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Delivered orders of an IST day with the commission ladder and delivery-fee credit (final statements: M7)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StatementPreviewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "merchants"
+        ]
+      }
+    },
+    "/v1/ops/live": {
+      "get": {
+        "operationId": "OpsDispatchController_live",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "KPIs, needs-attention, active orders with fulfilment, riders on the map",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsLiveDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/orders/{id}/reassign": {
+      "post": {
+        "operationId": "OpsDispatchController_reassign",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReassignDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/orders/{id}/force-self": {
+      "post": {
+        "operationId": "OpsDispatchController_forceSelf",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeliverMyselfDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
     }
   },
   "info": {
@@ -5719,6 +6604,18 @@
                           "type": "integer",
                           "minimum": 0,
                           "maximum": 28
+                        },
+                        "commissionSelfPercent": {
+                          "default": 6,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 30
+                        },
+                        "commissionRiderPercent": {
+                          "default": 9,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 30
                         }
                       },
                       "required": [
@@ -5730,7 +6627,9 @@
                         "platformFeePaise",
                         "packagingFeeCapPaise",
                         "gstOnFeesPercent",
-                        "gstCookedFoodPercent"
+                        "gstCookedFoodPercent",
+                        "commissionSelfPercent",
+                        "commissionRiderPercent"
                       ],
                       "additionalProperties": false
                     },
@@ -6326,6 +7225,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 28
+                  },
+                  "commissionSelfPercent": {
+                    "default": 6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "commissionRiderPercent": {
+                    "default": 9,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
                   }
                 },
                 "required": [
@@ -6337,7 +7248,9 @@
                   "platformFeePaise",
                   "packagingFeeCapPaise",
                   "gstOnFeesPercent",
-                  "gstCookedFoodPercent"
+                  "gstCookedFoodPercent",
+                  "commissionSelfPercent",
+                  "commissionRiderPercent"
                 ],
                 "additionalProperties": false
               },
@@ -6892,6 +7805,18 @@
                       "type": "integer",
                       "minimum": 0,
                       "maximum": 28
+                    },
+                    "commissionSelfPercent": {
+                      "default": 6,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 30
+                    },
+                    "commissionRiderPercent": {
+                      "default": 9,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 30
                     }
                   },
                   "required": [
@@ -6903,7 +7828,9 @@
                     "platformFeePaise",
                     "packagingFeeCapPaise",
                     "gstOnFeesPercent",
-                    "gstCookedFoodPercent"
+                    "gstCookedFoodPercent",
+                    "commissionSelfPercent",
+                    "commissionRiderPercent"
                   ],
                   "additionalProperties": false
                 },
@@ -7464,6 +8391,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 28
+                  },
+                  "commissionSelfPercent": {
+                    "default": 6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "commissionRiderPercent": {
+                    "default": 9,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
                   }
                 },
                 "required": [
@@ -7994,6 +8933,18 @@
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 28
+                  },
+                  "commissionSelfPercent": {
+                    "default": 6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "commissionRiderPercent": {
+                    "default": 9,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 30
                   }
                 },
                 "required": [
@@ -8547,6 +9498,18 @@
                 "type": "integer",
                 "minimum": 0,
                 "maximum": 28
+              },
+              "commissionSelfPercent": {
+                "default": 6,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 30
+              },
+              "commissionRiderPercent": {
+                "default": 9,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 30
               }
             },
             "required": [
@@ -8558,7 +9521,9 @@
               "platformFeePaise",
               "packagingFeeCapPaise",
               "gstOnFeesPercent",
-              "gstCookedFoodPercent"
+              "gstCookedFoodPercent",
+              "commissionSelfPercent",
+              "commissionRiderPercent"
             ],
             "additionalProperties": false
           },
@@ -17862,6 +18827,12 @@
               "self",
               "rider"
             ]
+          },
+          "staffId": {
+            "description": "Self delivery: which staff member delivers (they get the tracking link). Omit: the owner delivers.",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
           }
         }
       },
@@ -18576,6 +19547,1727 @@
         "required": [
           "whatsappUpdates"
         ]
+      },
+      "RiderHomeDto_Output": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "vehicle": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "zones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "nameTe"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "allZones": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "nameTe"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rating": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          },
+          "today": {
+            "type": "object",
+            "properties": {
+              "deliveries": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "earningsPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "onlineMin": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "deliveries",
+              "earningsPaise",
+              "onlineMin"
+            ],
+            "additionalProperties": false
+          },
+          "offer": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "expiresAt": {
+                "type": "string",
+                "description": "ISO-8601 timestamp"
+              },
+              "payPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "payLines": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string",
+                      "enum": [
+                        "base",
+                        "distance",
+                        "wait",
+                        "batch"
+                      ]
+                    },
+                    "amountPaise": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "amountPaise"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "pickup": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "distanceM": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "readyInMin": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991,
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "name",
+                  "distanceM",
+                  "readyInMin"
+                ],
+                "additionalProperties": false
+              },
+              "drop": {
+                "type": "object",
+                "properties": {
+                  "area": {
+                    "type": "string"
+                  },
+                  "distanceM": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "area",
+                  "distanceM"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "id",
+              "expiresAt",
+              "payPaise",
+              "payLines",
+              "pickup",
+              "drop"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "jobs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "rider",
+                    "tpl"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "searching",
+                    "assigned",
+                    "picked_up",
+                    "delivered",
+                    "failed",
+                    "cancelled"
+                  ]
+                },
+                "orderState": {
+                  "type": "string"
+                },
+                "store": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": "string"
+                    },
+                    "line": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lat": {
+                      "type": "number"
+                    },
+                    "lng": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "line",
+                    "lat",
+                    "lng"
+                  ],
+                  "additionalProperties": false
+                },
+                "drop": {
+                  "type": "object",
+                  "properties": {
+                    "name": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "line": {
+                      "type": "string"
+                    },
+                    "landmark": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "lat": {
+                      "type": "number"
+                    },
+                    "lng": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "name",
+                    "line",
+                    "landmark",
+                    "lat",
+                    "lng"
+                  ],
+                  "additionalProperties": false
+                },
+                "instructions": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "itemCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "codDuePaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "payPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "payLines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "enum": [
+                          "base",
+                          "distance",
+                          "wait",
+                          "batch"
+                        ]
+                      },
+                      "amountPaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "amountPaise"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "callNumber": {
+                  "type": "string"
+                },
+                "readyAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "arrivedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "pickedUpAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "deliveredAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "pickupCodeRequired": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "id",
+                "orderId",
+                "code",
+                "mode",
+                "state",
+                "orderState",
+                "store",
+                "drop",
+                "instructions",
+                "itemCount",
+                "codDuePaise",
+                "payPaise",
+                "payLines",
+                "callNumber",
+                "readyAt",
+                "arrivedAt",
+                "pickedUpAt",
+                "deliveredAt",
+                "pickupCodeRequired"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "name",
+          "vehicle",
+          "online",
+          "zones",
+          "allZones",
+          "rating",
+          "today",
+          "offer",
+          "jobs"
+        ],
+        "additionalProperties": false
+      },
+      "RiderStatusDto": {
+        "type": "object",
+        "properties": {
+          "online": {
+            "type": "boolean"
+          },
+          "zones": {
+            "description": "Micro-markets to work in; omit to keep the current ones (empty = all)",
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "required": [
+          "online"
+        ]
+      },
+      "LocationDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "accuracyM": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 5000
+          }
+        },
+        "required": [
+          "lat",
+          "lng"
+        ]
+      },
+      "RiderEarningsDto_Output": {
+        "type": "object",
+        "properties": {
+          "totalPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "onlineMin": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "deliveries": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string"
+                },
+                "deliveredAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "payPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "payLines": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string",
+                        "enum": [
+                          "base",
+                          "distance",
+                          "wait",
+                          "batch"
+                        ]
+                      },
+                      "amountPaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "amountPaise"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "code",
+                "deliveredAt",
+                "payPaise",
+                "payLines"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "totalPaise",
+          "onlineMin",
+          "deliveries"
+        ],
+        "additionalProperties": false
+      },
+      "JobViewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "code": {
+            "type": "string"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "self",
+              "rider",
+              "tpl"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "searching",
+              "assigned",
+              "picked_up",
+              "delivered",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "orderState": {
+            "type": "string"
+          },
+          "store": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "line": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "line",
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false
+          },
+          "drop": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "line": {
+                "type": "string"
+              },
+              "landmark": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "line",
+              "landmark",
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false
+          },
+          "instructions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "itemCount": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "codDuePaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "payPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "payLines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "string",
+                  "enum": [
+                    "base",
+                    "distance",
+                    "wait",
+                    "batch"
+                  ]
+                },
+                "amountPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "code",
+                "amountPaise"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "callNumber": {
+            "type": "string"
+          },
+          "readyAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "arrivedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "pickedUpAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "pickupCodeRequired": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "orderId",
+          "code",
+          "mode",
+          "state",
+          "orderState",
+          "store",
+          "drop",
+          "instructions",
+          "itemCount",
+          "codDuePaise",
+          "payPaise",
+          "payLines",
+          "callNumber",
+          "readyAt",
+          "arrivedAt",
+          "pickedUpAt",
+          "deliveredAt",
+          "pickupCodeRequired"
+        ],
+        "additionalProperties": false
+      },
+      "PickupDto": {
+        "type": "object",
+        "properties": {
+          "pickupCode": {
+            "type": "string",
+            "pattern": "^\\d{4}$",
+            "description": "Code shown on the store order card"
+          }
+        },
+        "required": [
+          "pickupCode"
+        ]
+      },
+      "DeliveredDto": {
+        "type": "object",
+        "properties": {
+          "otp": {
+            "description": "Customer's 4-digit delivery OTP",
+            "type": "string",
+            "pattern": "^\\d{4}$"
+          },
+          "photoMediaId": {
+            "description": "No-contact delivery: photo at the door",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "codCollectedPaise": {
+            "description": "Cash collected for COD orders",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          }
+        }
+      },
+      "StaffDeliveredDto": {
+        "type": "object",
+        "properties": {
+          "otp": {
+            "type": "string",
+            "pattern": "^\\d{4}$"
+          },
+          "codCollectedPaise": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 10000000
+          }
+        },
+        "required": [
+          "otp"
+        ]
+      },
+      "TrackingDto_Output": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "self",
+              "rider",
+              "tpl"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "searching",
+              "assigned",
+              "picked_up",
+              "delivered",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "courier": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "staff",
+                  "owner",
+                  "rider",
+                  "tpl"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "callNumber": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "callNumber"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "deliveryOtp": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "store": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "name",
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false
+          },
+          "drop": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false
+          },
+          "courierLocation": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              },
+              "at": {
+                "type": "string",
+                "description": "ISO-8601 timestamp"
+              }
+            },
+            "required": [
+              "lat",
+              "lng",
+              "at"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "promisedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "etaAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "fallbackStage": {
+            "type": "string",
+            "enum": [
+              "none",
+              "tpl",
+              "self_bonus",
+              "standby",
+              "customer_notified"
+            ]
+          },
+          "canCancelNoCourier": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "orderId",
+          "mode",
+          "state",
+          "courier",
+          "deliveryOtp",
+          "store",
+          "drop",
+          "courierLocation",
+          "promisedAt",
+          "etaAt",
+          "fallbackStage",
+          "canCancelNoCourier"
+        ],
+        "additionalProperties": false
+      },
+      "MerchantDeliveryListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "rider",
+                    "tpl"
+                  ]
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "searching",
+                    "assigned",
+                    "picked_up",
+                    "delivered",
+                    "failed",
+                    "cancelled"
+                  ]
+                },
+                "pickupCode": {
+                  "type": "string"
+                },
+                "courier": {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "staff",
+                        "owner",
+                        "rider",
+                        "tpl"
+                      ]
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "callNumber": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "name",
+                    "callNumber"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "staffLink": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "deliveryOtp": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fallbackStage": {
+                  "type": "string",
+                  "enum": [
+                    "none",
+                    "tpl",
+                    "self_bonus",
+                    "standby",
+                    "customer_notified"
+                  ]
+                },
+                "selfBonusPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "promisedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "etaAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "orderId",
+                "mode",
+                "state",
+                "pickupCode",
+                "courier",
+                "staffLink",
+                "deliveryOtp",
+                "fallbackStage",
+                "selfBonusPaise",
+                "promisedAt",
+                "etaAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "DeliverMyselfDto": {
+        "type": "object",
+        "properties": {
+          "staffId": {
+            "description": "Omit: the owner delivers",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        }
+      },
+      "MerchantDeliveryDto_Output": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "self",
+              "rider",
+              "tpl"
+            ]
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "searching",
+              "assigned",
+              "picked_up",
+              "delivered",
+              "failed",
+              "cancelled"
+            ]
+          },
+          "pickupCode": {
+            "type": "string"
+          },
+          "courier": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "staff",
+                  "owner",
+                  "rider",
+                  "tpl"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "callNumber": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "name",
+              "callNumber"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          },
+          "staffLink": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "deliveryOtp": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fallbackStage": {
+            "type": "string",
+            "enum": [
+              "none",
+              "tpl",
+              "self_bonus",
+              "standby",
+              "customer_notified"
+            ]
+          },
+          "selfBonusPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "promisedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "etaAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          }
+        },
+        "required": [
+          "orderId",
+          "mode",
+          "state",
+          "pickupCode",
+          "courier",
+          "staffLink",
+          "deliveryOtp",
+          "fallbackStage",
+          "selfBonusPaise",
+          "promisedAt",
+          "etaAt"
+        ],
+        "additionalProperties": false
+      },
+      "StatementPreviewDto_Output": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "deliveredAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp"
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "rider",
+                    "tpl"
+                  ]
+                },
+                "itemsPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "commissionPercent": {
+                  "type": "number"
+                },
+                "commissionPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "deliveryFeeCreditPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "selfBonusPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "netPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "orderId",
+                "code",
+                "deliveredAt",
+                "mode",
+                "itemsPaise",
+                "commissionPercent",
+                "commissionPaise",
+                "deliveryFeeCreditPaise",
+                "selfBonusPaise",
+                "netPaise"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "totals": {
+            "type": "object",
+            "properties": {
+              "orders": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "itemsPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "commissionPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "deliveryFeeCreditPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "selfBonusPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "netPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "orders",
+              "itemsPaise",
+              "commissionPaise",
+              "deliveryFeeCreditPaise",
+              "selfBonusPaise",
+              "netPaise"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "date",
+          "lines",
+          "totals"
+        ],
+        "additionalProperties": false
+      },
+      "OpsLiveDto_Output": {
+        "type": "object",
+        "properties": {
+          "at": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "kpis": {
+            "type": "object",
+            "properties": {
+              "ordersToday": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "activeNow": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "onTimePercent": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "fillRatePercent": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "ridersOnline": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "avgAcceptSec": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "ordersToday",
+              "activeNow",
+              "onTimePercent",
+              "fillRatePercent",
+              "ridersOnline",
+              "avgAcceptSec"
+            ],
+            "additionalProperties": false
+          },
+          "attention": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "no_rider",
+                    "eta_breach",
+                    "auto_paused"
+                  ]
+                },
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "code": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "merchantName": {
+                  "type": "string"
+                },
+                "minutes": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "stage": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "kind",
+                "orderId",
+                "code",
+                "merchantName",
+                "minutes",
+                "stage"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "orders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "code": {
+                  "type": "string"
+                },
+                "microMarketId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantName": {
+                  "type": "string"
+                },
+                "orderState": {
+                  "type": "string"
+                },
+                "totalPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "paymentMethod": {
+                  "type": "string",
+                  "enum": [
+                    "online",
+                    "cod"
+                  ]
+                },
+                "mode": {
+                  "type": "string",
+                  "enum": [
+                    "self",
+                    "rider",
+                    "tpl",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "fulfilmentState": {
+                  "type": "string",
+                  "enum": [
+                    "searching",
+                    "assigned",
+                    "picked_up",
+                    "delivered",
+                    "failed",
+                    "cancelled",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "courier": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fallbackStage": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "searchingSec": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "promisedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "etaAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "store": {
+                  "type": "object",
+                  "properties": {
+                    "lat": {
+                      "type": "number"
+                    },
+                    "lng": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "lat",
+                    "lng"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                }
+              },
+              "required": [
+                "orderId",
+                "code",
+                "microMarketId",
+                "merchantName",
+                "orderState",
+                "totalPaise",
+                "paymentMethod",
+                "mode",
+                "fulfilmentState",
+                "courier",
+                "fallbackStage",
+                "searchingSec",
+                "promisedAt",
+                "etaAt",
+                "store"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "riders": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "online": {
+                  "type": "boolean"
+                },
+                "lat": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "lng": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "activeJobs": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "userId",
+                "name",
+                "online",
+                "lat",
+                "lng",
+                "activeJobs"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "at",
+          "kpis",
+          "attention",
+          "orders",
+          "riders"
+        ],
+        "additionalProperties": false
+      },
+      "ReassignDto": {
+        "type": "object",
+        "properties": {
+          "riderUserId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "riderUserId"
+        ]
+      },
+      "OpsDeliveryDto_Output": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "code": {
+            "type": "string"
+          },
+          "microMarketId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantName": {
+            "type": "string"
+          },
+          "orderState": {
+            "type": "string"
+          },
+          "totalPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "online",
+              "cod"
+            ]
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "self",
+              "rider",
+              "tpl",
+              null
+            ],
+            "nullable": true
+          },
+          "fulfilmentState": {
+            "type": "string",
+            "enum": [
+              "searching",
+              "assigned",
+              "picked_up",
+              "delivered",
+              "failed",
+              "cancelled",
+              null
+            ],
+            "nullable": true
+          },
+          "courier": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "fallbackStage": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "searchingSec": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "promisedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "etaAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "store": {
+            "type": "object",
+            "properties": {
+              "lat": {
+                "type": "number"
+              },
+              "lng": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "lat",
+              "lng"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "orderId",
+          "code",
+          "microMarketId",
+          "merchantName",
+          "orderState",
+          "totalPaise",
+          "paymentMethod",
+          "mode",
+          "fulfilmentState",
+          "courier",
+          "fallbackStage",
+          "searchingSec",
+          "promisedAt",
+          "etaAt",
+          "store"
+        ],
+        "additionalProperties": false
       }
     }
   }

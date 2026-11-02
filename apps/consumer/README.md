@@ -12,6 +12,8 @@ Flutter app (flavors dev / stg / prod). Conventions: `.claude/skills/santha-flut
   backend runs the mock gateway), order confirmation, Orders tab and order detail, wallet balance (ADR-010).
 - M5: live order detail (realtime order.updated + polling), cancel before the store accepts, store changes to lines
   (removed / substituted) with wallet refunds, WhatsApp order-updates opt-in in Account (ADR-011).
+- M6: live tracking on accepted orders: OSM map with store, courier and home, ETA vs the promise, the courier with
+  a masked call and the delivery OTP; cancel with a full refund when no courier can be found (ADR-012).
 
 ```bash
 melos run platforms                                   # once, generates android/ios around our flavor files

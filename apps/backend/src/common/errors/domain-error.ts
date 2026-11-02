@@ -40,6 +40,10 @@ export const ERROR_STATUS = {
   SLOT_UNAVAILABLE: 409,
   PAYMENT_SIGNATURE_INVALID: 400,
   WEBHOOK_SIGNATURE_INVALID: 401,
+  // M6 — dispatch
+  OFFER_EXPIRED: 409,
+  WRONG_CODE: 422,
+  NOT_READY: 409,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;

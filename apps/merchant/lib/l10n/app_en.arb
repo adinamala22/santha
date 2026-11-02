@@ -710,5 +710,120 @@
   "outcomeRejected": "Rejected",
   "outcomeExpired": "Missed",
   "outcomeDelivered": "Delivered",
-  "earningsSoon": "Payouts and statements will appear here."
+  "earningsSoon": "Payouts and statements will appear here.",
+  "fulfilTitle": "How will this order reach the customer?",
+  "deliverMyself": "Deliver myself",
+  "deliverMyselfSub": "Lower commission · keep the delivery fee",
+  "requestRider": "Request rider",
+  "requestRiderSub": "A Santha rider picks it up",
+  "whoDelivers": "Who delivers?",
+  "ownerDelivers": "I will deliver it",
+  "staffGetsLink": "Gets the address and OTP steps by SMS",
+  "fashionRiderOnly": "Fashion orders always go with a Santha rider.",
+  "confirmAccept": "Accept order",
+  "pickupCodeLine": "Pickup code {code}",
+  "@pickupCodeLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "searchingRider": "Looking for a rider…",
+  "riderComing": "{name} is coming to pick up",
+  "@riderComing": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courierOnWay": "{name} is on the way to the customer",
+  "@courierOnWay": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "staffDelivering": "{name} delivers",
+  "@staffDelivering": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "copyLink": "Copy delivery link",
+  "linkCopied": "Link copied",
+  "noRiderBonus": "No rider yet. Deliver it yourself and earn a {amount} bonus.",
+  "@noRiderBonus": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deliverMyselfNow": "Deliver myself",
+  "statementTitle": "Today's statement (preview)",
+  "statementEmpty": "No delivered orders today yet.",
+  "statementTotal": "{count, plural, =1{1 order} other{{count} orders}} · you get {amount}",
+  "@statementTotal": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "statementLineTitle": "#{code} · you get {amount}",
+  "@statementLineTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "statementLineSub": "{mode} · items {items} · commission {commission} ({pct}%)",
+  "@statementLineSub": {
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      },
+      "items": {
+        "type": "String"
+      },
+      "commission": {
+        "type": "String"
+      },
+      "pct": {
+        "type": "String"
+      }
+    }
+  },
+  "statementCredit": "+ delivery fee {amount}",
+  "@statementCredit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "statementBonus": "+ bonus {amount}",
+  "@statementBonus": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "statementNote": "Final statements and payouts come with settlement.",
+  "modeSelf": "Self delivery",
+  "modeRider": "Santha rider",
+  "modePartner": "Partner courier"
 }

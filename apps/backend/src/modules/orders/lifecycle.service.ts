@@ -127,16 +127,23 @@ export class OrderLifecycleService implements OnModuleInit {
 
   // ───────────── merchant actions ─────────────
 
-  async accept(ownerUserId: string, orderId: string, opts: { fulfilmentMode?: 'self' | 'rider' | undefined }): Promise<MerchantOrderView> {
+  async accept(ownerUserId: string, orderId: string, opts: { fulfilmentMode?: 'self' | 'rider' | undefined; staffId?: string | undefined }): Promise<MerchantOrderView> {
     const { merchant, order } = await this.ownedOrder(ownerUserId, orderId);
     if (order.state !== 'PLACED') throw new DomainError('INVALID_STATE', 'This order is no longer waiting for you.', { state: order.state });
     const { discovery } = await this.sla(order);
     const now = this.clock();
     // Fashion always goes with a Santha rider (try-on and returns); otherwise the merchant chooses.
     const mode = merchant.type === 'fashion' ? 'rider' : (opts.fulfilmentMode ?? merchant.defaultFulfilment);
+    let staffId: string | null = null;
+    if (mode === 'self' && opts.staffId) {
+      const staff = (await this.merchants.staffOf(merchant.id)).find((s) => s.id === opts.staffId && s.active);
+      if (!staff) throw new DomainError('VALIDATION_FAILED', 'Choose one of your staff members.', { field: 'staffId' });
+      staffId = staff.id;
+    }
     const prepMin = discovery.defaultPrepMin[merchant.type];
     const packBy = order.slotStartsAt ? new Date(order.slotStartsAt.getTime() - 10 * 60_000) : new Date(now.getTime() + prepMin * 60_000);
-    if (!(await this.orders.move(order, 'ACCEPTED', 'merchant', ownerUserId, 'accepted', { acceptedAt: now, fulfilmentMode: mode, packBy })))
+    // dispatch-tracking starts the delivery from this event (staff link, or the rider search).
+    if (!(await this.orders.move(order, 'ACCEPTED', 'merchant', ownerUserId, 'accepted', { acceptedAt: now, fulfilmentMode: mode, packBy }, { fulfilment_mode: mode, staff_id: staffId, pack_by: packBy.toISOString() })))
       throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.');
     await this.cancelTimers(order.id);
     const accepted = (await this.repo.get(order.id))!;
@@ -283,6 +290,18 @@ export class OrderLifecycleService implements OnModuleInit {
   }
 
   /** Gives back whatever has not been refunded yet (wallet, instantly — refunds to source arrive in M7). */
+  /**
+   * No courier after the whole fallback ladder and the customer chose to cancel: full refund (M6).
+   * dispatch-tracking checks the fallback stage before calling this.
+   */
+  async cancelForNoCourier(userId: string, orderId: string): Promise<void> {
+    const o = await this.repo.get(orderId);
+    if (!o || o.userId !== userId) throw new DomainError('NOT_FOUND', 'Order not found');
+    if (!['ACCEPTED', 'PREPARING', 'READY'].includes(o.state)) throw new DomainError('INVALID_STATE', 'This order can no longer be cancelled here.', { state: o.state });
+    if (!(await this.orders.move(o, 'CANCELLED', 'system', userId, 'no_courier', { outcomeReason: 'no_courier' }))) throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.');
+    await this.refundRemaining(o, 'No delivery partner was available');
+  }
+
   private async refundRemaining(order: OrderRecord, note: string): Promise<void> {
     const fresh = (await this.repo.get(order.id))!;
     const remaining = fresh.totalPaise - fresh.refundedPaise;

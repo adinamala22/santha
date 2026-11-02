@@ -1,0 +1,29 @@
+{
+ "orderId": "6f2ca5bf-335a-4c70-a77f-6f9800e83a63",
+ "mode": "rider",
+ "state": "picked_up",
+ "courier": {
+  "kind": "rider",
+  "name": "Demo Rider 2",
+  "callNumber": "+918047167374"
+ },
+ "deliveryOtp": "7050",
+ "store": {
+  "name": "Ramesh Stores",
+  "lat": 14.454500000000001,
+  "lng": 79.992
+ },
+ "drop": {
+  "lat": 14.4535,
+  "lng": 79.99600000000001
+ },
+ "courierLocation": {
+  "lat": 14.456298642025272,
+  "lng": 79.992,
+  "at": "2026-11-02T16:27:16.974Z"
+ },
+ "promisedAt": "2026-11-02T16:47:16.910Z",
+ "etaAt": "2026-11-02T16:29:16.974Z",
+ "fallbackStage": "none",
+ "canCancelNoCourier": false
+}

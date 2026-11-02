@@ -1,0 +1,37 @@
+{
+ "date": "2026-11-02",
+ "lines": [
+  {
+   "orderId": "6f2ca5bf-335a-4c70-a77f-6f9800e83a63",
+   "code": "SNAWHNNF",
+   "deliveredAt": "2026-11-02T16:27:16.988Z",
+   "mode": "rider",
+   "itemsPaise": 18000,
+   "commissionPercent": 9,
+   "commissionPaise": 1620,
+   "deliveryFeeCreditPaise": 0,
+   "selfBonusPaise": 0,
+   "netPaise": 16380
+  },
+  {
+   "orderId": "5e076ba3-663a-4a0b-925c-dff95571ec8d",
+   "code": "SNV48EZD",
+   "deliveredAt": "2026-11-02T16:27:17.055Z",
+   "mode": "self",
+   "itemsPaise": 18000,
+   "commissionPercent": 6,
+   "commissionPaise": 1080,
+   "deliveryFeeCreditPaise": 2856,
+   "selfBonusPaise": 0,
+   "netPaise": 19776
+  }
+ ],
+ "totals": {
+  "orders": 2,
+  "itemsPaise": 36000,
+  "commissionPaise": 2700,
+  "deliveryFeeCreditPaise": 2856,
+  "selfBonusPaise": 0,
+  "netPaise": 36156
+ }
+}

@@ -35,3 +35,9 @@ import { InMemoryNotificationRepository } from '../../modules/notifications/noti
 
 orderLifecycleContract('in-memory', async () => new InMemoryOrderRepository());
 notificationRepositoryContract('in-memory', async () => ({ repo: new InMemoryNotificationRepository(), userId: async () => randomUUID() }));
+
+// M6
+import { dispatchRepositoryContract } from '../../../test/contracts/m6.contract';
+import { InMemoryDispatchRepository } from '../../modules/dispatch-tracking/dispatch.repository';
+
+dispatchRepositoryContract('in-memory', async () => ({ repo: new InMemoryDispatchRepository(), riderId: async () => randomUUID() }));

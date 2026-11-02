@@ -1348,6 +1348,358 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/riders/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderController_me"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RiderController_status"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_location"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/earnings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderController_earnings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/offers/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/offers/{id}/decline": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_decline"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderController_job"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{id}/arrived": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_arrived"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{id}/picked-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_pickedUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{id}/delivered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_delivered"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StaffJobsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}/picked-up": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffJobsController_pickedUp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}/delivered": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffJobsController_delivered"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}/location": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffJobsController_location"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/tracking": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TrackingController_tracking"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/cancel-no-courier": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["TrackingController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/deliveries": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantDeliveriesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/orders/{id}/deliver-myself": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantDeliveriesController_deliverMyself"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/statements/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantDeliveriesController_statement"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsDispatchController_live"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders/{id}/reassign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_reassign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders/{id}/force-self": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_forceSelf"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1649,6 +2001,10 @@ export interface components {
                         gstOnFeesPercent: number;
                         /** @default 5 */
                         gstCookedFoodPercent: number;
+                        /** @default 6 */
+                        commissionSelfPercent: number;
+                        /** @default 9 */
+                        commissionRiderPercent: number;
                     };
                     cod: {
                         enabled: boolean;
@@ -1795,6 +2151,10 @@ export interface components {
                     gstOnFeesPercent: number;
                     /** @default 5 */
                     gstCookedFoodPercent: number;
+                    /** @default 6 */
+                    commissionSelfPercent: number;
+                    /** @default 9 */
+                    commissionRiderPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -1931,6 +2291,10 @@ export interface components {
                     gstOnFeesPercent: number;
                     /** @default 5 */
                     gstCookedFoodPercent: number;
+                    /** @default 6 */
+                    commissionSelfPercent: number;
+                    /** @default 9 */
+                    commissionRiderPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2067,6 +2431,10 @@ export interface components {
                     gstOnFeesPercent: number;
                     /** @default 5 */
                     gstCookedFoodPercent: number;
+                    /** @default 6 */
+                    commissionSelfPercent: number;
+                    /** @default 9 */
+                    commissionRiderPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2220,6 +2588,10 @@ export interface components {
                     gstOnFeesPercent: number;
                     /** @default 5 */
                     gstCookedFoodPercent: number;
+                    /** @default 6 */
+                    commissionSelfPercent: number;
+                    /** @default 9 */
+                    commissionRiderPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2379,6 +2751,10 @@ export interface components {
                 gstOnFeesPercent: number;
                 /** @default 5 */
                 gstCookedFoodPercent: number;
+                /** @default 6 */
+                commissionSelfPercent: number;
+                /** @default 9 */
+                commissionRiderPercent: number;
             };
             cod: {
                 enabled: boolean;
@@ -4422,6 +4798,11 @@ export interface components {
              * @enum {string}
              */
             fulfilmentMode?: "self" | "rider";
+            /**
+             * Format: uuid
+             * @description Self delivery: which staff member delivers (they get the tracking link). Omit: the owner delivers.
+             */
+            staffId?: string;
         };
         ItemUnavailableDto: {
             /** @enum {string} */
@@ -4593,6 +4974,391 @@ export interface components {
         PreferencesDto: {
             /** @description Order updates on WhatsApp (explicit opt-in) */
             whatsappUpdates: boolean;
+        };
+        RiderHomeDto_Output: {
+            name: string;
+            vehicle: string;
+            online: boolean;
+            zones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string;
+            }[];
+            allZones: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string;
+            }[];
+            rating: number[];
+            today: {
+                deliveries: number;
+                earningsPaise: number;
+                onlineMin: number;
+            };
+            offer: {
+                /** Format: uuid */
+                id: string;
+                /** @description ISO-8601 timestamp */
+                expiresAt: string;
+                payPaise: number;
+                payLines: {
+                    /** @enum {string} */
+                    code: "base" | "distance" | "wait" | "batch";
+                    amountPaise: number;
+                }[];
+                pickup: {
+                    name: string;
+                    distanceM: number;
+                    readyInMin: number | null;
+                };
+                drop: {
+                    area: string;
+                    distanceM: number;
+                };
+            } | null;
+            jobs: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                code: string;
+                /** @enum {string} */
+                mode: "self" | "rider" | "tpl";
+                /** @enum {string} */
+                state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled";
+                orderState: string;
+                store: {
+                    name: string;
+                    line: string | null;
+                    lat: number;
+                    lng: number;
+                };
+                drop: {
+                    name: string | null;
+                    line: string;
+                    landmark: string | null;
+                    lat: number;
+                    lng: number;
+                };
+                instructions: string | null;
+                itemCount: number;
+                codDuePaise: number;
+                payPaise: number;
+                payLines: {
+                    /** @enum {string} */
+                    code: "base" | "distance" | "wait" | "batch";
+                    amountPaise: number;
+                }[];
+                callNumber: string;
+                /** @description ISO-8601 timestamp */
+                readyAt: string | null;
+                /** @description ISO-8601 timestamp */
+                arrivedAt: string | null;
+                /** @description ISO-8601 timestamp */
+                pickedUpAt: string | null;
+                /** @description ISO-8601 timestamp */
+                deliveredAt: string | null;
+                pickupCodeRequired: boolean;
+            }[];
+        };
+        RiderStatusDto: {
+            online: boolean;
+            /** @description Micro-markets to work in; omit to keep the current ones (empty = all) */
+            zones?: string[];
+        };
+        LocationDto: {
+            lat: number;
+            lng: number;
+            accuracyM?: number;
+        };
+        RiderEarningsDto_Output: {
+            totalPaise: number;
+            onlineMin: number;
+            deliveries: {
+                code: string;
+                /** @description ISO-8601 timestamp */
+                deliveredAt: string;
+                payPaise: number;
+                payLines: {
+                    /** @enum {string} */
+                    code: "base" | "distance" | "wait" | "batch";
+                    amountPaise: number;
+                }[];
+            }[];
+        };
+        JobViewDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            code: string;
+            /** @enum {string} */
+            mode: "self" | "rider" | "tpl";
+            /** @enum {string} */
+            state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled";
+            orderState: string;
+            store: {
+                name: string;
+                line: string | null;
+                lat: number;
+                lng: number;
+            };
+            drop: {
+                name: string | null;
+                line: string;
+                landmark: string | null;
+                lat: number;
+                lng: number;
+            };
+            instructions: string[];
+            itemCount: number;
+            codDuePaise: number;
+            payPaise: number;
+            payLines: {
+                /** @enum {string} */
+                code: "base" | "distance" | "wait" | "batch";
+                amountPaise: number;
+            }[];
+            callNumber: string;
+            /** @description ISO-8601 timestamp */
+            readyAt: string | null;
+            /** @description ISO-8601 timestamp */
+            arrivedAt: string | null;
+            /** @description ISO-8601 timestamp */
+            pickedUpAt: string | null;
+            /** @description ISO-8601 timestamp */
+            deliveredAt: string | null;
+            pickupCodeRequired: boolean;
+        };
+        PickupDto: {
+            /** @description Code shown on the store order card */
+            pickupCode: string;
+        };
+        DeliveredDto: {
+            /** @description Customer's 4-digit delivery OTP */
+            otp?: string;
+            /**
+             * Format: uuid
+             * @description No-contact delivery: photo at the door
+             */
+            photoMediaId?: string;
+            /** @description Cash collected for COD orders */
+            codCollectedPaise?: number;
+        };
+        StaffDeliveredDto: {
+            otp: string;
+            codCollectedPaise?: number;
+        };
+        TrackingDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            /** @enum {string} */
+            mode: "self" | "rider" | "tpl";
+            /** @enum {string} */
+            state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled";
+            courier: {
+                /** @enum {string} */
+                kind: "staff" | "owner" | "rider" | "tpl";
+                name: string;
+                callNumber: string;
+            } | null;
+            deliveryOtp: string[];
+            store: {
+                name: string;
+                lat: number;
+                lng: number;
+            };
+            drop: {
+                lat: number;
+                lng: number;
+            };
+            courierLocation: {
+                lat: number;
+                lng: number;
+                /** @description ISO-8601 timestamp */
+                at: string;
+            } | null;
+            /** @description ISO-8601 timestamp */
+            promisedAt: string;
+            /** @description ISO-8601 timestamp */
+            etaAt: string | null;
+            /** @enum {string} */
+            fallbackStage: "none" | "tpl" | "self_bonus" | "standby" | "customer_notified";
+            canCancelNoCourier: boolean;
+        };
+        MerchantDeliveryListDto_Output: {
+            items: {
+                /** Format: uuid */
+                orderId: string;
+                /** @enum {string} */
+                mode: "self" | "rider" | "tpl";
+                /** @enum {string} */
+                state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled";
+                pickupCode: string;
+                courier: {
+                    /** @enum {string} */
+                    kind: "staff" | "owner" | "rider" | "tpl";
+                    name: string;
+                    callNumber: string;
+                } | null;
+                staffLink: string | null;
+                deliveryOtp: string | null;
+                /** @enum {string} */
+                fallbackStage: "none" | "tpl" | "self_bonus" | "standby" | "customer_notified";
+                selfBonusPaise: number;
+                /** @description ISO-8601 timestamp */
+                promisedAt: string;
+                /** @description ISO-8601 timestamp */
+                etaAt: string | null;
+            }[];
+        };
+        DeliverMyselfDto: {
+            /**
+             * Format: uuid
+             * @description Omit: the owner delivers
+             */
+            staffId?: string;
+        };
+        MerchantDeliveryDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            /** @enum {string} */
+            mode: "self" | "rider" | "tpl";
+            /** @enum {string} */
+            state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled";
+            pickupCode: string;
+            courier: {
+                /** @enum {string} */
+                kind: "staff" | "owner" | "rider" | "tpl";
+                name: string;
+                callNumber: string;
+            } | null;
+            staffLink: string[];
+            deliveryOtp: string[];
+            /** @enum {string} */
+            fallbackStage: "none" | "tpl" | "self_bonus" | "standby" | "customer_notified";
+            selfBonusPaise: number;
+            /** @description ISO-8601 timestamp */
+            promisedAt: string;
+            /** @description ISO-8601 timestamp */
+            etaAt: string | null;
+        };
+        StatementPreviewDto_Output: {
+            date: string;
+            lines: {
+                /** Format: uuid */
+                orderId: string;
+                code: string;
+                /** @description ISO-8601 timestamp */
+                deliveredAt: string;
+                /** @enum {string} */
+                mode: "self" | "rider" | "tpl";
+                itemsPaise: number;
+                commissionPercent: number;
+                commissionPaise: number;
+                deliveryFeeCreditPaise: number;
+                selfBonusPaise: number;
+                netPaise: number;
+            }[];
+            totals: {
+                orders: number;
+                itemsPaise: number;
+                commissionPaise: number;
+                deliveryFeeCreditPaise: number;
+                selfBonusPaise: number;
+                netPaise: number;
+            };
+        };
+        OpsLiveDto_Output: {
+            /** @description ISO-8601 timestamp */
+            at: string;
+            kpis: {
+                ordersToday: number;
+                activeNow: number;
+                onTimePercent: number | null;
+                fillRatePercent: number | null;
+                ridersOnline: number;
+                avgAcceptSec: number | null;
+            };
+            attention: {
+                /** @enum {string} */
+                kind: "no_rider" | "eta_breach" | "auto_paused";
+                /** Format: uuid */
+                orderId: string | null;
+                code: string | null;
+                merchantName: string;
+                minutes: number;
+                stage: string | null;
+            }[];
+            orders: {
+                /** Format: uuid */
+                orderId: string;
+                code: string;
+                /** Format: uuid */
+                microMarketId: string;
+                merchantName: string;
+                orderState: string;
+                totalPaise: number;
+                /** @enum {string} */
+                paymentMethod: "online" | "cod";
+                /** @enum {string|null} */
+                mode: "self" | "rider" | "tpl" | null;
+                /** @enum {string|null} */
+                fulfilmentState: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled" | null;
+                courier: string | null;
+                fallbackStage: string | null;
+                searchingSec: number | null;
+                /** @description ISO-8601 timestamp */
+                promisedAt: string | null;
+                /** @description ISO-8601 timestamp */
+                etaAt: string | null;
+                store: {
+                    lat: number;
+                    lng: number;
+                } | null;
+            }[];
+            riders: {
+                /** Format: uuid */
+                userId: string;
+                name: string;
+                online: boolean;
+                lat: number | null;
+                lng: number | null;
+                activeJobs: number;
+            }[];
+        };
+        ReassignDto: {
+            /** Format: uuid */
+            riderUserId: string;
+        };
+        OpsDeliveryDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            code: string;
+            /** Format: uuid */
+            microMarketId: string;
+            merchantName: string;
+            orderState: string;
+            totalPaise: number;
+            /** @enum {string} */
+            paymentMethod: "online" | "cod";
+            /** @enum {string|null} */
+            mode: "self" | "rider" | "tpl" | null;
+            /** @enum {string|null} */
+            fulfilmentState: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled" | null;
+            courier: string[];
+            fallbackStage: string[];
+            searchingSec: number | null;
+            /** @description ISO-8601 timestamp */
+            promisedAt: string | null;
+            /** @description ISO-8601 timestamp */
+            etaAt: string | null;
+            store: {
+                lat: number;
+                lng: number;
+            } | null;
         };
     };
     responses: never;
@@ -6982,6 +7748,529 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PreferencesDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_me: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Profile, today so far, the open offer (if any) and active jobs */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderHomeDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_status: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderStatusDto"];
+            };
+        };
+        responses: {
+            /** @description Go online (with zones) or offline. Going offline declines an open offer. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderHomeDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_location: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocationDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RiderController_earnings: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Today's deliveries (IST) with the pay breakdown */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderEarningsDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_accept: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 409 OFFER_EXPIRED after 30 s or when the order went elsewhere */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_decline: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    RiderController_job: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_arrived: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description At the store (starts paid waiting after 5 min) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_pickedUp: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PickupDto"];
+            };
+        };
+        responses: {
+            /** @description 422 WRONG_CODE; 409 NOT_READY while the store is packing */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_delivered: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliveredDto"];
+            };
+        };
+        responses: {
+            /** @description Customer's OTP or a door photo; cash collected for COD. 422 WRONG_CODE */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_pickedUp: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 409 NOT_READY until the store marks the order ready */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_delivered: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StaffDeliveredDto"];
+            };
+        };
+        responses: {
+            /** @description Customer's OTP; cash collected for COD. 422 WRONG_CODE */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_location: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LocationDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    TrackingController_tracking: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Courier, OTP, live location and ETA vs the promise. 404 until the store accepts. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TrackingDto_Output"];
+                };
+            };
+        };
+    };
+    TrackingController_cancel: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantDeliveriesController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active deliveries: pickup code, courier, staff link, fallback bonus */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDeliveryListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantDeliveriesController_deliverMyself: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliverMyselfDto"];
+            };
+        };
+        responses: {
+            /** @description Switch a delivery still looking for a rider to self-delivery (any fallback bonus applies) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantDeliveriesController_statement: {
+        parameters: {
+            query?: {
+                /** @description IST day, default today */
+                date?: string;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Delivered orders of an IST day with the commission ladder and delivery-fee credit (final statements: M7) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StatementPreviewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_live: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description KPIs, needs-attention, active orders with fulfilment, riders on the map */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsLiveDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_reassign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReassignDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_forceSelf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeliverMyselfDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsDeliveryDto_Output"];
                 };
             };
         };

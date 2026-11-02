@@ -3,7 +3,7 @@ import type { MerchantRecord, StaffRecord } from '../modules/merchant-catalogue/
 import { gstinCheckChar } from '../modules/identity-kyc/domain/kyc-formats';
 import type { KycCheckInput } from '../modules/identity-kyc/kyc.repository';
 import type { PromoRecord } from '../modules/cart-pricing/domain/promo';
-import { seedStorePhotoId, SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, SEED_PROMOS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
+import { SEED_PEOPLE, seedStorePhotoId, SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, SEED_PROMOS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
 
 export interface SeedMerchantRecords {
   merchants: MerchantRecord[];
@@ -126,4 +126,9 @@ export function buildSeedPromos(): PromoRecord[] {
     createdAt: SEED_EFFECTIVE_FROM,
     updatedAt: SEED_EFFECTIVE_FROM,
   }));
+}
+
+/** M6: rider profiles for the demo riders (offline until they go online in the rider app). */
+export function buildSeedRiders(): Array<{ userId: string; name: string; vehicle: string; rating: number }> {
+  return SEED_PEOPLE.filter((p) => p.roles.includes('rider')).map((p, i) => ({ userId: p.id, name: p.name, vehicle: i === 2 ? 'cycle' : 'bike', rating: [4.8, 4.6, 4.9][i] ?? 4.5 }));
 }

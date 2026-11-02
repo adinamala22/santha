@@ -44,7 +44,10 @@ void main() {
 
     await tester.tap(find.byKey(const ValueKey('accept-o1')));
     await tester.pumpAndSettle();
-    expect(api.calls, ['accept o1']);
+    await tester.tap(find.byKey(const ValueKey('mode-rider')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['accept o1 rider']);
     expect(find.byKey(const ValueKey('new-o1')), findsNothing);
     expect(find.byKey(const ValueKey('order-o1')), findsOneWidget);
     expect(find.text('Preparing (1)'), findsOneWidget);
@@ -90,7 +93,10 @@ void main() {
     orders.first['state'] = 'EXPIRED'; // the accept window ran out on the server
     await tester.tap(find.byKey(const ValueKey('accept-o1')));
     await tester.pumpAndSettle();
-    expect(api.calls, ['accept o1']);
+    await tester.tap(find.byKey(const ValueKey('mode-rider')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['accept o1 rider']);
     expect(find.text('This order changed. We refreshed the list.'), findsOneWidget);
     expect(find.byKey(const ValueKey('new-o1')), findsNothing);
   });
@@ -167,6 +173,69 @@ void main() {
     expect(find.text('ఆపివేయబడింది'), findsOneWidget);
     expect(find.text('ఆర్డర్లు మిస్ అయినందున మీ షాప్‌ను ఆపివేశాం. సిద్ధంగా ఉన్నప్పుడు తెరవండి.'), findsOneWidget);
     expect(find.text('ఈరోజు'), findsOneWidget);
+  });
+
+  testWidgets('M6: accepting asks how the order reaches the customer; self delivery picks a staff member', (tester) async {
+    late FakeMerchantOrdersApi api;
+    final view = _liveView();
+    view['staff'] = [
+      {'id': 'st1', 'name': 'Suresh', 'phoneMasked': '+9190******01'},
+    ];
+    await pumpSignedIn(tester, view: view, orders: [merchantOrder('o1', 'SN-7')], onOrdersApi: (a) => api = a);
+    await tester.tap(find.byKey(const ValueKey('accept-o1')));
+    await tester.pumpAndSettle();
+    expect(find.text('How will this order reach the customer?'), findsOneWidget);
+    expect(find.text('Lower commission · keep the delivery fee'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('mode-self')));
+    await tester.pumpAndSettle();
+    expect(find.text('Who delivers?'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['accept o1 self st1']);
+    expect(find.text('Suresh delivers'), findsOneWidget);
+    expect(find.byKey(const ValueKey('copy-link-o1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('pickup-code-o1')), findsNothing); // staff need no pickup code
+  });
+
+  testWidgets('M6: rider deliveries show the pickup code; no rider yet → bonus to deliver it yourself', (tester) async {
+    late FakeMerchantOrdersApi api;
+    await pumpSignedIn(tester, view: _liveView(), orders: [merchantOrder('o1', 'SN-8')], onOrdersApi: (a) => api = a);
+    await tester.tap(find.byKey(const ValueKey('accept-o1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('mode-rider')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(find.text('Looking for a rider…'), findsOneWidget);
+    expect(find.text('Pickup code 4812'), findsOneWidget);
+
+    api.deliveryRows['o1']!.addAll({'fallbackStage': 'self_bonus', 'selfBonusPaise': 2000});
+    await tester.drag(find.byKey(const ValueKey('orders-list')), const Offset(0, 300));
+    await tester.pumpAndSettle();
+    expect(find.text('No rider yet. Deliver it yourself and earn a ₹20 bonus.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('deliver-myself-o1')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'deliver-myself o1');
+    expect(find.text('Owner delivers'), findsOneWidget);
+
+    api.deliveryRows['o1']!.addAll({'mode': 'rider', 'state': 'assigned', 'courier': {'kind': 'rider', 'name': 'Kiran', 'callNumber': '+918047100003'}, 'staffLink': null});
+    await tester.drag(find.byKey(const ValueKey('orders-list')), const Offset(0, 300));
+    await tester.pumpAndSettle();
+    expect(find.text('Kiran is coming to pick up'), findsOneWidget);
+  });
+
+  testWidgets('M6: Earnings shows the statement preview with the commission ladder', (tester) async {
+    late FakeMerchantOrdersApi api;
+    await pumpSignedIn(tester, view: _liveView(), onOrdersApi: (a) => api = a);
+    api.statementLines = [
+      {'orderId': 'a', 'code': 'SN1', 'deliveredAt': '2026-11-02T07:00:00Z', 'mode': 'self', 'itemsPaise': 20000, 'commissionPercent': 6, 'commissionPaise': 1200, 'deliveryFeeCreditPaise': 2500, 'selfBonusPaise': 0, 'netPaise': 21300},
+      {'orderId': 'b', 'code': 'SN2', 'deliveredAt': '2026-11-02T08:00:00Z', 'mode': 'rider', 'itemsPaise': 10000, 'commissionPercent': 9, 'commissionPaise': 900, 'deliveryFeeCreditPaise': 0, 'selfBonusPaise': 0, 'netPaise': 9100},
+    ];
+    await tester.tap(find.text('Earnings'));
+    await tester.pumpAndSettle();
+    expect(find.text('2 orders · you get ₹304'), findsOneWidget);
+    expect(find.text('#SN1 · you get ₹213'), findsOneWidget);
+    expect(find.text('Self delivery · items ₹200 · commission ₹12 (6%) + delivery fee ₹25'), findsOneWidget);
+    expect(find.text('Santha rider · items ₹100 · commission ₹9 (9%)'), findsOneWidget);
   });
 
   test('every bucket maps to its wire name', () {

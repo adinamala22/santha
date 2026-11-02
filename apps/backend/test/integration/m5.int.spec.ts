@@ -171,7 +171,9 @@ describe('M5 on Postgres + Redis', () => {
     const credited = await prisma.walletEntry.aggregate({ where: { userId: user.id }, _sum: { amountPaise: true } });
     expect(credited._sum.amountPaise).toBe(expected);
     expect((await prisma.order.findUniqueOrThrow({ where: { id: o.id } })).refundedPaise).toBe(expected);
-    const comms = await until(() => prisma.notification.findMany({ where: { orderId: o.id } }), (n) => n.some((x) => x.template === 'customer.item_substituted'));
+    // Notifications are separate jobs and may finish in any order: wait for all three.
+    const templates = ['merchant.new_order', 'customer.order_accepted', 'customer.item_substituted'];
+    const comms = await until(() => prisma.notification.findMany({ where: { orderId: o.id } }), (n) => templates.every((t) => n.some((x) => x.template === t)));
     expect(comms.map((n) => n.template)).toEqual(expect.arrayContaining(['merchant.new_order', 'customer.order_accepted', 'customer.item_substituted']));
   });
 });
