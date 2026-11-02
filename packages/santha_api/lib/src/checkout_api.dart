@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import 'dispatch.dart';
+import 'money.dart';
 import 'checkout_models.dart';
 import 'models.dart';
 
@@ -79,6 +80,18 @@ class CheckoutApi {
 
   /// No courier after the fallback ladder: cancel with a full refund.
   Future<void> cancelNoCourier(String orderId) => _call(() => _dio.post<void>('/v1/orders/$orderId/cancel-no-courier'));
+
+  /// Report a problem with a delivered order (M7). Decided at once: auto-refunded to the wallet, waiting
+  /// for review, or rejected. Errors: ISSUE_WINDOW_CLOSED (422), ALREADY_EXISTS (409).
+  Future<Issue> reportIssue(String orderId, IssueType type, {List<String>? variantIds, String? description}) => _call(() async => Issue.fromJson(
+      (await _dio.post<Json>('/v1/orders/$orderId/issues', data: {'type': type.wire, 'variantIds': ?variantIds, 'description': ?description})).data!));
+
+  Future<List<Issue>> issues(String orderId) =>
+      _call(() async => ((await _dio.get<Json>('/v1/orders/$orderId/issues')).data!['items'] as List).map((i) => Issue.fromJson(i as Json)).toList());
+
+  /// Rate a delivered order once (store, and the rider when a rider delivered).
+  Future<void> rate(String orderId, {required int storeStars, int? riderStars, String? comment}) =>
+      _call(() => _dio.post<void>('/v1/orders/$orderId/rating', data: {'storeStars': storeStars, 'riderStars': ?riderStars, 'comment': ?comment}));
 
   /// WhatsApp order updates (explicit opt-in, off by default).
   Future<bool> whatsappUpdates() => _call(() async => (await _dio.get<Json>('/v1/me/notification-preferences')).data!['whatsappUpdates'] as bool);

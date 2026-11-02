@@ -1,0 +1,38 @@
+{
+ "items": [
+  {
+   "id": "ddad9b34-d01a-4a14-af0c-cc61538c3f32",
+   "runId": "f7844bb3-1c9e-45ce-93a3-b86165484685",
+   "partyType": "rider",
+   "partyId": "00000000-0000-4000-8000-000000000101",
+   "partyName": "Demo Rider 1",
+   "periodStart": "2026-11-01T18:30:00.000Z",
+   "periodEnd": "2026-11-08T18:30:00.000Z",
+   "grossPaise": 3560,
+   "netPaise": 3560,
+   "tcsPaise": 0,
+   "tdsPaise": 0,
+   "status": "transferred",
+   "transferRef": "trf_mock_a1aacaed0f0a",
+   "failureReason": null,
+   "hasStatement": true,
+   "totals": {
+    "deliveries": 1,
+    "earnedPaise": 3560,
+    "cashHeldPaise": 0,
+    "adjustmentsPaise": 0,
+    "netPaise": 3560
+   },
+   "lines": [
+    {
+     "orderId": "986de6f3-5bfb-45f1-aa00-1ab5735261b4",
+     "code": "SNBEZ5HJ",
+     "payPaise": 3560,
+     "codCollectedPaise": 0
+    }
+   ],
+   "createdAt": "2026-11-02T17:52:26.173Z",
+   "transferredAt": "2026-11-02T17:52:26.173Z"
+  }
+ ]
+}

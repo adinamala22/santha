@@ -14,5 +14,6 @@ export 'src/merchant_api.dart';
 export 'src/merchant_models.dart';
 export 'src/merchant_orders.dart';
 export 'src/dispatch.dart';
+export 'src/money.dart';
 export 'src/models.dart';
 export 'src/token_store.dart';

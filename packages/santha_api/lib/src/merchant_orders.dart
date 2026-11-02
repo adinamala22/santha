@@ -5,6 +5,7 @@ import 'api_client.dart';
 import 'api_exception.dart';
 import 'checkout_models.dart' show OrderState, PaymentMethodChoice;
 import 'dispatch.dart';
+import 'money.dart';
 import 'merchant_models.dart';
 import 'models.dart';
 
@@ -196,6 +197,23 @@ class MerchantOrdersApi {
   /// Switch a delivery still looking for a rider to self-delivery.
   Future<MerchantDelivery> deliverMyself(String orderId, {String? staffId}) =>
       _call(() async => MerchantDelivery.fromJson((await _dio.post<Json>('/v1/merchants/me/orders/$orderId/deliver-myself', data: {'staffId': ?staffId})).data!));
+
+  /// Daily payouts with statements (M7).
+  Future<List<Payout>> payouts() =>
+      _call(() async => ((await _dio.get<Json>('/v1/merchants/me/payouts')).data!['items'] as List).map((p) => Payout.fromJson(p as Json)).toList());
+
+  /// Refunds charged to the store (last 30 days); disputable for 48 h.
+  Future<List<StoreRefund>> storeRefunds() =>
+      _call(() async => ((await _dio.get<Json>('/v1/merchants/me/refunds')).data!['items'] as List).map((p) => StoreRefund.fromJson(p as Json)).toList());
+
+  Future<Dispute> openDispute(String refundId, String reason) =>
+      _call(() async => Dispute.fromJson((await _dio.post<Json>('/v1/merchants/me/disputes', data: {'refundId': refundId, 'reason': reason})).data!));
+
+  Future<List<Dispute>> disputes() =>
+      _call(() async => ((await _dio.get<Json>('/v1/merchants/me/disputes')).data!['items'] as List).map((p) => Dispute.fromJson(p as Json)).toList());
+
+  /// Statement PDF bytes for a payout.
+  Future<List<int>> statementPdf(String payoutId) => _call(() async => (await _dio.get<List<int>>('/v1/merchants/me/payouts/$payoutId/statement.pdf', options: Options(responseType: ResponseType.bytes))).data!);
 
   /// Delivered orders of an IST day with commission and delivery-fee credit.
   Future<StatementPreview> statementPreview({String? date}) =>

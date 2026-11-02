@@ -1,0 +1,16 @@
+{
+ "id": "b55d356f-7747-453a-a555-011d0d0e9108",
+ "orderId": "ba36b009-e8eb-437b-bba5-7eef060bf53b",
+ "type": "missing_item",
+ "variantIds": [
+  "70000000-0000-4000-8000-201000000300"
+ ],
+ "description": "The rice was not in the bag",
+ "claimedPaise": 17700,
+ "status": "auto_resolved",
+ "refundPaise": 17700,
+ "refundDestination": "wallet",
+ "reason": "auto_small_trusted",
+ "createdAt": "2026-11-02T17:52:26.024Z",
+ "decidedAt": "2026-11-02T17:52:26.022Z"
+}

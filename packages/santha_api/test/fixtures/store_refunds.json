@@ -1,0 +1,26 @@
+{
+ "items": [
+  {
+   "id": "fcc7edde-763c-4372-96c8-36b89eed0ebe",
+   "orderId": "ba36b009-e8eb-437b-bba5-7eef060bf53b",
+   "orderCode": "SNUKP5KQ",
+   "issueId": "b55d356f-7747-453a-a555-011d0d0e9108",
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "merchantId": "10000000-0000-4000-8000-000000000201",
+   "merchantName": "Ramesh Stores",
+   "amountPaise": 17700,
+   "destination": "wallet",
+   "liability": "merchant",
+   "reason": "missing_item:auto_small_trusted",
+   "status": "processed",
+   "approvals": [],
+   "needsSecondApproval": false,
+   "rejectNote": null,
+   "failureReason": null,
+   "trustScore": null,
+   "createdAt": "2026-11-02T17:52:26.024Z",
+   "processedAt": "2026-11-02T17:52:26.025Z",
+   "disputable": true
+  }
+ ]
+}

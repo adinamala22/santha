@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 import 'models.dart';
+import 'money.dart';
 
 DateTime? _date(Object? v) => v == null ? null : DateTime.parse(v as String);
 
@@ -269,6 +270,10 @@ class RiderApi {
 
   Future<Job> delivered(String id, {required String otp, int? codCollectedPaise}) =>
       _job(() => _dio.post<Json>('/v1/jobs/$id/delivered', data: {'otp': otp, 'codCollectedPaise': ?codCollectedPaise}));
+
+  /// Payouts (weekly by default) with the earned / cash-held breakdown (M7).
+  Future<List<Payout>> payouts() =>
+      _call(() async => ((await _dio.get<Json>('/v1/riders/me/payouts')).data!['items'] as List).map((p) => Payout.fromJson(p as Json)).toList());
 
   Future<Job> _job(Future<Response<Json>> Function() req) => _call(() async => Job.fromJson((await req()).data!));
 
