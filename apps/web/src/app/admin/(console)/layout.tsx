@@ -6,6 +6,7 @@ import { NavLink } from '@/components/admin/nav-link';
 import { catalogueCopy } from '@/i18n/catalogue';
 import { consoleCopy } from '@/i18n/console';
 import { liveCopy } from '@/i18n/live';
+import { launchCopy } from '@/i18n/launch';
 import { moneyCopy } from '@/i18n/money';
 import { orderCopy } from '@/i18n/orders';
 import { promoCopy } from '@/i18n/promos';
@@ -19,9 +20,9 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
   const copy = consoleCopy(locale);
   return (
     <div lang={locale} className="flex min-h-screen bg-sky/40">
-      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col bg-indigo px-6 py-10">
+      <aside className="sticky top-0 flex h-screen w-72 shrink-0 flex-col overflow-y-auto bg-indigo px-6 py-8">
         <Image src="/brand/santha-primary-reverse.svg" alt="Santha" width={180} height={52} priority className="ml-4 h-auto w-[180px]" />
-        <nav aria-label="Console" className="mt-12 space-y-2">
+        <nav aria-label="Console" className="mt-8 space-y-1">
           <NavLink href="/admin" exact>
             {copy.nav.overview}
           </NavLink>
@@ -33,10 +34,15 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           <NavLink href="/admin/merchants">{copy.nav.merchants}</NavLink>
           <NavLink href="/admin/catalogue">{catalogueCopy(locale).nav}</NavLink>
           <NavLink href="/admin/promos">{promoCopy(locale).nav}</NavLink>
+          <NavLink href="/admin/reports">{launchCopy(locale).nav.reports}</NavLink>
+          <NavLink href="/admin/grievances">{launchCopy(locale).nav.grievances}</NavLink>
+          <NavLink href="/admin/privacy">{launchCopy(locale).nav.privacy}</NavLink>
+          <NavLink href="/admin/reviews">{launchCopy(locale).nav.reviews}</NavLink>
+          <NavLink href="/admin/leads">{launchCopy(locale).nav.leads}</NavLink>
           <NavLink href="/admin/micro-markets">{copy.nav.microMarkets}</NavLink>
           <NavLink href="/admin/audit">{copy.nav.audit}</NavLink>
         </nav>
-        <div className="mt-auto space-y-3">
+        <div className="mt-auto space-y-3 pt-6">
           <Suspense>
             <LangSwitch to={locale === 'te' ? 'en' : 'te'} label={copy.nav.language} />
           </Suspense>

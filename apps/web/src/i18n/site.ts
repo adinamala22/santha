@@ -1,0 +1,191 @@
+/**
+ * Public website copy (M8): acquisition pages, lead forms, legal pages, store link pages.
+ * English and Telugu with identical keys and placeholders (see site.test.ts).
+ */
+export const siteMessages = {
+  en: {
+    cta: {
+      title: 'Run a shop or a home kitchen in Nellore?',
+      body: 'Get orders from the neighbourhood, deliver yourself or request a rider, and get paid the next day. No listing fee. 6–9% commission on groceries. FSSAI help for home kitchens.',
+      store: 'Register your store',
+      kitchen: 'Register a home kitchen',
+    },
+    acquisition: {
+      store: {
+        title: 'Sell to your whole neighbourhood',
+        sub: 'Kiranas, pharmacies, bakeries, boutiques — list your shop on Santha and take orders on your phone.',
+        points: ['No listing fee; 6% commission when you deliver yourself, 9% with a Santha rider', 'Paid every night, straight to your bank, with a GST statement', 'Barcode scan, photo and paste-a-list to set up your catalogue in an hour'],
+      },
+      home_kitchen: {
+        title: 'Cook at home, sell to your town',
+        sub: 'Meals, tiffins, pickles and sweets from your kitchen, delivered in time slots you choose.',
+        points: ['We help you get your FSSAI registration', 'Set your own menu, slots and daily capacity', 'Santha riders pick up at your door; you get paid the next day'],
+      },
+      rider: {
+        title: 'Deliver in your town, earn every day',
+        sub: 'Short local trips on your bike or cycle, in the micro-markets you choose.',
+        points: ['Clear pay on every offer before you accept: base + distance + waiting', 'Weekly payouts, or daily if you prefer', 'Work the hours you want; go online with one tap'],
+      },
+    },
+    form: {
+      title: 'Leave your details — our Nellore team will call you',
+      name: 'Your name',
+      phone: 'Mobile number',
+      area: 'Area (e.g. Magunta Layout)',
+      message: 'Anything we should know? (optional)',
+      submit: 'Request a call',
+      sending: 'Sending…',
+      thanks: 'Thank you! We will call you within two working days.',
+      errorPhone: 'Enter a 10-digit mobile number.',
+      errorName: 'Enter your name.',
+      error: 'Could not send. Please try again.',
+      rateLimited: 'Too many requests. Please try again later.',
+    },
+    store: {
+      order: 'Order on Santha',
+      openInApp: 'Open in the Santha app',
+      rating: '{avg} ★ from {count} ratings',
+      noRating: 'New on Santha',
+      reviews: 'What customers say',
+      reply: 'Reply from the store',
+      items: 'Popular items',
+      delivers: 'Delivers in {area}, Nellore · 30–45 min',
+      notFound: 'This store link is not active.',
+      types: { retail: 'Shop', fashion: 'Fashion', home_business: 'Home business', home_kitchen: 'Home kitchen' },
+    },
+    legal: {
+      updated: 'Last updated: {date}',
+      privacy: {
+        title: 'Privacy notice',
+        sections: [
+          ['What we collect', 'Your mobile number, name, delivery addresses, orders, payments (we never see full card numbers), and — for stores and riders — KYC documents and bank details. Riders share live location only while online and during a delivery.'],
+          ['Why', 'To deliver your orders, take payments and refunds, prevent fraud, meet tax law (GST, TCS/TDS) and, only if you agree, to send offers. Each purpose is recorded with your consent in the app.'],
+          ['Who sees it', 'A store sees your address only after it accepts your order; a rider only after they are assigned. Calls go through masked numbers. We use payment, SMS and maps providers in India under contract.'],
+          ['Where and how long', 'All data is stored in India (AWS Mumbai). Order and payment records are kept for 8 years as tax law requires; everything else is deleted or anonymised when you delete your account.'],
+          ['Your rights (DPDP Act 2023)', 'In the app (Account → Privacy) you can download your data, correct it, withdraw consent for offers, or ask us to delete your account. You can also write to our Grievance Officer.'],
+        ],
+      },
+      terms: {
+        title: 'Terms of use',
+        sections: [
+          ['Santha is a marketplace', 'Santha Technologies connects you with independent local stores, home kitchens and delivery partners. Each store sells its own goods and is responsible for them; Santha handles ordering, payments and delivery coordination.'],
+          ['Prices and bills', 'Item prices are set by stores and include GST. Delivery, platform and small-order fees are shown on the bill before you pay. Coupons have their own conditions.'],
+          ['Cancellations and refunds', 'You can cancel free until the store accepts. Missing, wrong or damaged items can be reported within 2 hours (cooked food), 24 hours (other items) or 48 hours (fashion returns). Approved refunds go to your Santha wallet at once or back to how you paid.'],
+          ['Accounts', 'One account per mobile number. Do not misuse coupons, refunds or delivery partners; we may suspend accounts that do.'],
+          ['Law', 'These terms are governed by Indian law; courts in Nellore have jurisdiction.'],
+        ],
+      },
+      grievance: {
+        title: 'Grievance officer',
+        sections: [
+          ['Contact', 'Grievance Officer, Santha Technologies, Nellore, Andhra Pradesh 524001 · grievance@santha.in · Monday–Saturday, 10:00–18:00.'],
+          ['In the app', 'Account → Help → Raise a grievance. You get a reference immediately.'],
+          ['Timelines', 'We acknowledge every grievance within 48 hours and resolve it within one month (Consumer Protection (E-Commerce) Rules, 2020).'],
+        ],
+      },
+      fssai: {
+        title: 'Food safety (FSSAI)',
+        sections: [
+          ['Licence', 'Santha Technologies operates as a food business e-commerce operator. FSSAI licence number: to be published before launch.'],
+          ['Home kitchens', 'Every home kitchen and food seller on Santha shows a verified FSSAI registration or licence on its page.'],
+          ['Report a concern', 'Report food quality problems from the order screen, or write to grievance@santha.in.'],
+        ],
+      },
+    },
+  },
+  te: {
+    cta: {
+      title: 'నెల్లూరులో షాప్ లేదా ఇంటి వంటగది ఉందా?',
+      body: 'చుట్టుపక్కల నుండి ఆర్డర్లు పొందండి, మీరే డెలివరీ చేయండి లేదా రైడర్‌ను పిలవండి, మరుసటి రోజే డబ్బు పొందండి. లిస్టింగ్ ఫీజు లేదు. కిరాణాపై 6–9% కమిషన్. ఇంటి వంటగదులకు FSSAI సహాయం.',
+      store: 'మీ షాప్ నమోదు చేయండి',
+      kitchen: 'ఇంటి వంటగది నమోదు చేయండి',
+    },
+    acquisition: {
+      store: {
+        title: 'మీ చుట్టుపక్కల అందరికీ అమ్మండి',
+        sub: 'కిరాణా, ఫార్మసీ, బేకరీ, బొటిక్ — సంతలో మీ షాప్ పెట్టి ఫోన్‌లోనే ఆర్డర్లు తీసుకోండి.',
+        points: ['లిస్టింగ్ ఫీజు లేదు; మీరే డెలివరీ చేస్తే 6%, సంత రైడర్‌తో 9% కమిషన్', 'ప్రతి రాత్రి GST స్టేట్‌మెంట్‌తో మీ బ్యాంక్‌కు డబ్బు', 'బార్‌కోడ్ స్కాన్, ఫోటో, జాబితా పేస్ట్‌తో గంటలో కేటలాగ్ సిద్ధం'],
+      },
+      home_kitchen: {
+        title: 'ఇంట్లో వండండి, ఊరంతా అమ్మండి',
+        sub: 'భోజనం, టిఫిన్లు, పచ్చళ్ళు, స్వీట్లు — మీరు ఎంచుకున్న సమయాల్లో డెలివరీ.',
+        points: ['FSSAI నమోదులో మేము సహాయం చేస్తాం', 'మీ మెనూ, సమయాలు, రోజువారీ పరిమితి మీరే నిర్ణయించండి', 'సంత రైడర్లు మీ ఇంటి వద్దే పికప్; మరుసటి రోజు డబ్బు'],
+      },
+      rider: {
+        title: 'మీ ఊరిలో డెలివరీ చేయండి, రోజూ సంపాదించండి',
+        sub: 'మీరు ఎంచుకున్న ప్రాంతాల్లో బైక్ లేదా సైకిల్‌పై చిన్న ట్రిప్పులు.',
+        points: ['అంగీకరించే ముందే ప్రతి ఆఫర్‌పై స్పష్టమైన చెల్లింపు: బేస్ + దూరం + వేచి ఉన్న సమయం', 'వారానికోసారి చెల్లింపు, కావాలంటే రోజూ', 'మీకు నచ్చిన సమయంలో పని; ఒక్క ట్యాప్‌తో ఆన్‌లైన్'],
+      },
+    },
+    form: {
+      title: 'మీ వివరాలు ఇవ్వండి — మా నెల్లూరు బృందం కాల్ చేస్తుంది',
+      name: 'మీ పేరు',
+      phone: 'మొబైల్ నంబర్',
+      area: 'ప్రాంతం (ఉదా. మాగుంట లేఅవుట్)',
+      message: 'ఇంకేమైనా చెప్పాలా? (ఐచ్ఛికం)',
+      submit: 'కాల్ కోరండి',
+      sending: 'పంపుతున్నాం…',
+      thanks: 'ధన్యవాదాలు! రెండు పని దినాల్లో మీకు కాల్ చేస్తాం.',
+      errorPhone: '10 అంకెల మొబైల్ నంబర్ ఇవ్వండి.',
+      errorName: 'మీ పేరు ఇవ్వండి.',
+      error: 'పంపలేకపోయాం. మళ్ళీ ప్రయత్నించండి.',
+      rateLimited: 'చాలా అభ్యర్థనలు. తర్వాత ప్రయత్నించండి.',
+    },
+    store: {
+      order: 'సంతలో ఆర్డర్ చేయండి',
+      openInApp: 'సంత యాప్‌లో తెరవండి',
+      rating: '{count} రేటింగ్‌ల నుండి {avg} ★',
+      noRating: 'సంతలో కొత్తది',
+      reviews: 'కస్టమర్లు ఏమంటున్నారు',
+      reply: 'షాప్ సమాధానం',
+      items: 'ప్రసిద్ధ వస్తువులు',
+      delivers: '{area}, నెల్లూరులో డెలివరీ · 30–45 నిమిషాలు',
+      notFound: 'ఈ షాప్ లింక్ పనిచేయడం లేదు.',
+      types: { retail: 'షాప్', fashion: 'ఫ్యాషన్', home_business: 'ఇంటి వ్యాపారం', home_kitchen: 'ఇంటి వంటగది' },
+    },
+    legal: {
+      updated: 'చివరి మార్పు: {date}',
+      privacy: {
+        title: 'గోప్యతా నోటీసు',
+        sections: [
+          ['మేము ఏమి సేకరిస్తాం', 'మీ మొబైల్ నంబర్, పేరు, డెలివరీ చిరునామాలు, ఆర్డర్లు, చెల్లింపులు (పూర్తి కార్డ్ నంబర్లు మేము చూడము), షాపులు మరియు రైడర్ల KYC పత్రాలు, బ్యాంక్ వివరాలు. రైడర్లు ఆన్‌లైన్‌లో మరియు డెలివరీ సమయంలో మాత్రమే లొకేషన్ పంచుకుంటారు.'],
+          ['ఎందుకు', 'మీ ఆర్డర్లు డెలివరీ చేయడానికి, చెల్లింపులు మరియు రీఫండ్ల కోసం, మోసాలు ఆపడానికి, పన్ను చట్టాల (GST, TCS/TDS) కోసం, మీరు అంగీకరిస్తేనే ఆఫర్లు పంపడానికి. ప్రతి ప్రయోజనం యాప్‌లో మీ సమ్మతితో నమోదవుతుంది.'],
+          ['ఎవరు చూస్తారు', 'షాప్ ఆర్డర్ అంగీకరించిన తర్వాతే మీ చిరునామా చూస్తుంది; రైడర్ కేటాయించిన తర్వాతే. కాల్స్ మాస్క్ చేసిన నంబర్ల ద్వారా జరుగుతాయి. భారతదేశంలోని చెల్లింపు, SMS, మ్యాప్ సేవలను ఒప్పందంతో ఉపయోగిస్తాం.'],
+          ['ఎక్కడ, ఎంతకాలం', 'మొత్తం డేటా భారతదేశంలో (AWS ముంబై) నిల్వ అవుతుంది. పన్ను చట్టం ప్రకారం ఆర్డర్ మరియు చెల్లింపు రికార్డులు 8 సంవత్సరాలు ఉంచుతాం; మీరు ఖాతా తొలగిస్తే మిగతావి తొలగిస్తాం లేదా అనామకం చేస్తాం.'],
+          ['మీ హక్కులు (DPDP చట్టం 2023)', 'యాప్‌లో (ఖాతా → గోప్యత) మీ డేటా డౌన్‌లోడ్ చేయవచ్చు, సరిచేయవచ్చు, ఆఫర్ల సమ్మతి ఉపసంహరించవచ్చు, లేదా ఖాతా తొలగించమని కోరవచ్చు. మా ఫిర్యాదుల అధికారికి కూడా రాయవచ్చు.'],
+        ],
+      },
+      terms: {
+        title: 'వినియోగ నిబంధనలు',
+        sections: [
+          ['సంత ఒక మార్కెట్‌ప్లేస్', 'సంత టెక్నాలజీస్ మిమ్మల్ని స్వతంత్ర స్థానిక షాపులు, ఇంటి వంటగదులు మరియు డెలివరీ భాగస్వాములతో కలుపుతుంది. ప్రతి షాప్ తన వస్తువులను అమ్ముతుంది మరియు వాటికి బాధ్యత వహిస్తుంది; ఆర్డర్లు, చెల్లింపులు, డెలివరీ సమన్వయం సంత చూసుకుంటుంది.'],
+          ['ధరలు మరియు బిల్లులు', 'వస్తువుల ధరలు షాపులు నిర్ణయిస్తాయి, GST కలిపి ఉంటాయి. డెలివరీ, ప్లాట్‌ఫామ్, చిన్న ఆర్డర్ ఫీజులు చెల్లించే ముందే బిల్లులో చూపిస్తాం. కూపన్లకు వాటి షరతులు ఉంటాయి.'],
+          ['రద్దు మరియు రీఫండ్లు', 'షాప్ అంగీకరించే వరకు ఉచితంగా రద్దు చేయవచ్చు. రాని, తప్పు లేదా దెబ్బతిన్న వస్తువులను 2 గంటల్లో (వండిన ఆహారం), 24 గంటల్లో (ఇతర వస్తువులు), 48 గంటల్లో (ఫ్యాషన్ రిటర్న్లు) తెలియజేయవచ్చు. ఆమోదించిన రీఫండ్లు వెంటనే సంత వాలెట్‌కు లేదా మీరు చెల్లించిన విధానానికి వెళ్తాయి.'],
+          ['ఖాతాలు', 'ఒక మొబైల్ నంబర్‌కు ఒక ఖాతా. కూపన్లు, రీఫండ్లు లేదా డెలివరీ భాగస్వాములను దుర్వినియోగం చేయవద్దు; అలా చేసే ఖాతాలను నిలిపివేయవచ్చు.'],
+          ['చట్టం', 'ఈ నిబంధనలు భారత చట్టానికి లోబడి ఉంటాయి; నెల్లూరు కోర్టులకు అధికార పరిధి ఉంటుంది.'],
+        ],
+      },
+      grievance: {
+        title: 'ఫిర్యాదుల అధికారి',
+        sections: [
+          ['సంప్రదింపు', 'ఫిర్యాదుల అధికారి, సంత టెక్నాలజీస్, నెల్లూరు, ఆంధ్రప్రదేశ్ 524001 · grievance@santha.in · సోమవారం–శనివారం, 10:00–18:00.'],
+          ['యాప్‌లో', 'ఖాతా → సహాయం → ఫిర్యాదు చేయండి. మీకు వెంటనే రిఫరెన్స్ వస్తుంది.'],
+          ['సమయ పరిమితులు', 'ప్రతి ఫిర్యాదును 48 గంటల్లో గుర్తిస్తాం, ఒక నెలలో పరిష్కరిస్తాం (వినియోగదారుల రక్షణ (ఈ-కామర్స్) నిబంధనలు, 2020).'],
+        ],
+      },
+      fssai: {
+        title: 'ఆహార భద్రత (FSSAI)',
+        sections: [
+          ['లైసెన్స్', 'సంత టెక్నాలజీస్ ఆహార వ్యాపార ఈ-కామర్స్ ఆపరేటర్‌గా పనిచేస్తుంది. FSSAI లైసెన్స్ నంబర్: ప్రారంభానికి ముందు ప్రచురిస్తాం.'],
+          ['ఇంటి వంటగదులు', 'సంతలోని ప్రతి ఇంటి వంటగది మరియు ఆహార విక్రేత తన పేజీలో ధృవీకరించిన FSSAI నమోదు లేదా లైసెన్స్ చూపిస్తారు.'],
+          ['సమస్య తెలియజేయండి', 'ఆహార నాణ్యత సమస్యలను ఆర్డర్ స్క్రీన్ నుండి తెలియజేయండి, లేదా grievance@santha.in కు రాయండి.'],
+        ],
+      },
+    },
+  },
+} as const;
+
+export type SiteCopy = (typeof siteMessages)['en'];
+export const siteCopy = (locale: 'en' | 'te'): SiteCopy => siteMessages[locale] as unknown as SiteCopy;
+export const LEGAL_DOCS = ['privacy', 'terms', 'grievance', 'fssai'] as const;
+export type LegalDoc = (typeof LEGAL_DOCS)[number];

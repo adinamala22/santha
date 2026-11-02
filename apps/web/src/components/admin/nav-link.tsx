@@ -12,7 +12,7 @@ export function NavLink({ href, exact = false, children }: { href: string; exact
     <Link
       href={href}
       aria-current={active ? 'page' : undefined}
-      className={`block rounded-md px-6 py-4 text-lg s-focus ${active ? 'bg-white/10 font-medium text-white' : 'text-ondarkmuted hover:text-white'}`}
+      className={`block rounded-md px-5 py-2.5 text-base s-focus ${active ? 'bg-white/10 font-medium text-white' : 'text-ondarkmuted hover:text-white'}`}
     >
       {children}
     </Link>
