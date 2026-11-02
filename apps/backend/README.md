@@ -41,6 +41,21 @@ Realtime: Socket.IO at path `/v1/realtime`, `auth: { token, deviceId }`, events 
 `store.paused`. Timers (accept window, SMS/call reminders) are BullMQ delayed jobs on the `timers` queue. In fake
 mode, `POST /v1/dev/jobs/timers` fires the ones due at the dev clock (ADR-011).
 
+## dispatch-tracking (M6)
+| Endpoint | Auth | Notes |
+|---|---|---|
+| `GET /v1/riders/me` · `PUT /v1/riders/me/status` · `POST /v1/riders/me/location` · `GET /v1/riders/me/earnings` | rider | Home (open offer, jobs, today), online with zones, position every ~10 s (Redis GEO). |
+| `POST /v1/offers/:id/accept` · `/decline` | rider | 30-s offers; 409 OFFER_EXPIRED. |
+| `GET /v1/jobs/:id` · `POST /v1/jobs/:id/arrived` · `/picked-up` `{ pickupCode }` · `/delivered` `{ otp \| photoMediaId, codCollectedPaise? }` | rider | 422 WRONG_CODE, 409 NOT_READY. |
+| `GET /v1/staff-jobs/:token` · `POST …/picked-up` · `…/delivered` · `…/location` | public (token) | Self-delivery link `/d/{token}` on the web. |
+| `GET /v1/orders/:id/tracking` · `POST /v1/orders/:id/cancel-no-courier` | consumer | Courier, OTP, live location, ETA vs promise; cancel after the fallback ladder. |
+| `GET /v1/merchants/me/deliveries` · `POST /v1/merchants/me/orders/:id/deliver-myself` · `GET /v1/merchants/me/statements/preview` | merchant | Pickup code, courier, staff link, fallback bonus; commission ladder preview. |
+| `GET /v1/ops/live` · `POST /v1/ops/orders/:id/reassign` · `/force-self` | ops | Live board; overrides are audited. |
+
+Accept takes `{ fulfilmentMode, staffId? }`. Dispatch starts from `order.accepted`; offers, retries and the
+fallback ladder are timers on the `timers` queue (`fulfilment:{id}:offer|retry|fallback`). Providers: 3PL
+(`THREEPL_PROVIDER=mock`, `MOCK_3PL_AVAILABLE`) and call masking are mocks only (ADR-012).
+
 ## Commands
 ```bash
 pnpm --filter backend dev            # watch mode (reads ../../.env)

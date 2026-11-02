@@ -32,3 +32,5 @@ The fake store resets when the backend restarts; restart it before re-running e2
 M4: `/admin/promos` lists promo codes with budget usage, creates codes (admin, finance) and pauses/resumes them (admin, ops, finance); every change is audited.
 
 M5: `/admin/orders` lists orders with state filters and counts; `/admin/orders/[id]` shows line changes, refunds, the transition timeline with actors, payment and every message sent (comms log).
+
+M6: `/admin/live` is the live board (KPIs, map of riders and stores, needs attention, active orders with reassign and "store delivers"); `/d/[token]` is the public staff delivery page (pickup, live location, OTP and cash for COD).
