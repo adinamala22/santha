@@ -148,6 +148,7 @@ void main() {
     expect(find.text('₹48 from 1 delivery'), findsOneWidget);
     expect(find.text('#SN4821 · ₹48'), findsOneWidget);
     expect(find.text('Base ₹30 + distance ₹18'), findsOneWidget);
+    expect(find.text('No payouts yet. Payouts run every Monday for the week before.'), findsOneWidget);
   });
 
   testWidgets('a realtime offer refreshes the home; Telugu works', (tester) async {
@@ -158,5 +159,19 @@ void main() {
     realtime.emit('offer.new', {'offerId': 'o2'});
     await tester.pumpAndSettle();
     expect(find.text('కొత్త ఆర్డర్ · ₹48'), findsOneWidget);
+  });
+
+  testWidgets('M7: earnings show weekly payouts with cash held deducted', (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true));
+    api.payoutList = [
+      Payout.fromJson({
+        'id': 'p1', 'periodStart': '2026-10-25T18:30:00.000Z', 'periodEnd': '2026-11-01T18:30:00.000Z', 'grossPaise': 74200, 'netPaise': 58600, 'status': 'transferred',
+        'totals': {'earnedPaise': 74200, 'cashHeldPaise': 15600, 'adjustmentsPaise': 0}, 'lines': <Object>[], 'hasStatement': true, 'transferRef': 'trf_1',
+      }),
+    ];
+    await tester.tap(find.byTooltip('Earnings today'));
+    await tester.pumpAndSettle();
+    expect(find.text('26/10 – 01/11 · ₹586'), findsOneWidget);
+    expect(find.text('Earned ₹742 − cash you held ₹156'), findsOneWidget);
   });
 }

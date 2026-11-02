@@ -825,5 +825,63 @@
   "statementNote": "Final statements and payouts come with settlement.",
   "modeSelf": "Self delivery",
   "modeRider": "Santha rider",
-  "modePartner": "Partner courier"
+  "modePartner": "Partner courier",
+  "payoutsTitle": "Payouts",
+  "payoutsEmpty": "No payouts yet. Delivered orders are settled every night.",
+  "payoutLine": "{date} · {amount}",
+  "@payoutLine": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutTransferred": "Sent to your bank",
+  "payoutOnHold": "Nothing to send (carried forward)",
+  "payoutFailed": "Transfer failed — we will retry",
+  "payoutPending": "Processing",
+  "payoutBreakdown": "Items {items} · commission {commission} + GST {gst} · TCS {tcs} · TDS {tds}",
+  "@payoutBreakdown": {
+    "placeholders": {
+      "items": {
+        "type": "String"
+      },
+      "commission": {
+        "type": "String"
+      },
+      "gst": {
+        "type": "String"
+      },
+      "tcs": {
+        "type": "String"
+      },
+      "tds": {
+        "type": "String"
+      }
+    }
+  },
+  "refundsChargedTitle": "Refunds charged to you",
+  "refundsChargedEmpty": "No refunds charged in the last 30 days.",
+  "refundLine": "#{code} · {amount}",
+  "@refundLine": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "dispute": "Dispute",
+  "disputeTitle": "Why is this refund wrong?",
+  "disputeHint": "Explain what happened (at least 10 characters).",
+  "disputeSend": "Send dispute",
+  "disputeOpen": "Dispute sent — we will decide within 48 hours",
+  "disputeAccepted": "Dispute accepted — credited in your next payout",
+  "disputeRejected": "Dispute not accepted",
+  "disputeWindowClosed": "Refunds can only be disputed within 48 hours."
 }

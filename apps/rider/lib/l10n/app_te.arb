@@ -81,5 +81,9 @@
   "earningsTitle": "ఈరోజు ఆదాయం",
   "earningsTotal": "{count, plural, =1{1 డెలివరీ} other{{count} డెలివరీల}} నుండి {amount}",
   "noDeliveries": "ఈరోజు ఇంకా డెలివరీలు లేవు.",
-  "retry": "మళ్ళీ ప్రయత్నించండి"
+  "retry": "మళ్ళీ ప్రయత్నించండి",
+  "payoutsTitle": "చెల్లింపులు",
+  "payoutsEmpty": "ఇంకా చెల్లింపులు లేవు. ప్రతి సోమవారం గత వారానికి చెల్లిస్తాం.",
+  "payoutPeriod": "{from} – {to} · {amount}",
+  "payoutBreakdown": "సంపాదన {earned} − మీ దగ్గరి నగదు {cash}"
 }

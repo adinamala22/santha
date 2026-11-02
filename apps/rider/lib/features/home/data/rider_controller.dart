@@ -159,3 +159,5 @@ class JobController extends AsyncNotifier<Job> {
 }
 
 final earningsProvider = FutureProvider.autoDispose<RiderEarnings>((ref) => ref.watch(riderApiProvider).earnings());
+
+final payoutsProvider = FutureProvider.autoDispose<List<Payout>>((ref) => ref.watch(riderApiProvider).payouts());
