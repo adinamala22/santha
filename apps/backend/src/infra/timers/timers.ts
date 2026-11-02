@@ -61,6 +61,8 @@ export class BullTimers extends Timers {
   }
 
   async repeat(name: string, everyMs: number): Promise<void> {
+    // Worker processes own the schedules; API-only processes (and tests without Redis) must not dial Redis here.
+    if (!workersEnabled(this.env)) return;
     await this.queues.get('timers').upsertJobScheduler(name, { every: everyMs }, { name });
   }
 
