@@ -38,6 +38,6 @@ import { OrdersService } from './orders.service';
         env.DATA_STORE === 'memory' ? new InMemoryOrderRepository(sinks) : new PrismaOrderRepository(prisma),
     },
   ],
-  exports: [OrdersService],
+  exports: [OrdersService, OrderLifecycleService],
 })
 export class OrdersModule {}

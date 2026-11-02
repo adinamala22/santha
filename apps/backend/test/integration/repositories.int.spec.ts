@@ -63,3 +63,12 @@ import { PrismaNotificationRepository } from '../../src/modules/notifications/no
 
 orderLifecycleContract('prisma', async () => new PrismaOrderRepository(prisma));
 notificationRepositoryContract('prisma', async () => ({ repo: new PrismaNotificationRepository(prisma), userId: async () => (await prisma.user.create({ data: { phone: `+9197${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id }));
+
+// M6
+import { dispatchRepositoryContract } from '../contracts/m6.contract';
+import { PrismaDispatchRepository } from '../../src/modules/dispatch-tracking/dispatch.repository';
+
+dispatchRepositoryContract('prisma', async () => ({
+  repo: new PrismaDispatchRepository(prisma),
+  riderId: async () => (await prisma.user.create({ data: { phone: `+9196${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id,
+}));

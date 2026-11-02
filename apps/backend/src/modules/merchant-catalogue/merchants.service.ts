@@ -238,6 +238,11 @@ export class MerchantsService implements OnModuleInit {
   // ───────── for the catalogue and search-discovery (same module / exported) ─────────
 
   /** The caller's store, or NOT_FOUND. */
+  /** Active and inactive staff of a store (dispatch, M6). */
+  staffOf(merchantId: string): Promise<StaffRecord[]> {
+    return this.repo.staff(merchantId);
+  }
+
   ownedBy(ownerUserId: string): Promise<MerchantRecord> {
     return this.owned(ownerUserId);
   }

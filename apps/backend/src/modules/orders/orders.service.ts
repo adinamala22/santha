@@ -328,7 +328,16 @@ export class OrdersService implements OnModuleInit {
   // ───────────── state changes ─────────────
 
   /** The single guarded transition: validates the edge, CAS on the state, history row + event in one transaction. */
-  async move(order: OrderRecord, to: OrderState, actor: OrderActor, actorId: string | null, reason: string, set: TransitionSet = {}): Promise<boolean> {
+  async move(
+    order: OrderRecord,
+    to: OrderState,
+    actor: OrderActor,
+    actorId: string | null,
+    reason: string,
+    set: TransitionSet = {},
+    /** Extra event payload for consumers (e.g. the fulfilment choice on order.accepted). */
+    extra: Record<string, unknown> = {},
+  ): Promise<boolean> {
     const cookedFood = (order.quote as QuoteSnapshot['checkout'] | null)?.merchant?.type === 'home_kitchen';
     try {
       assertTransition(order.state, to, actor, { cookedFood });
@@ -345,7 +354,7 @@ export class OrdersService implements OnModuleInit {
         aggregate: { type: 'order', id: order.id },
         microMarketId: order.microMarketId,
         actor: { type: actor === 'customer' ? 'user' : actor === 'ops' ? 'ops' : 'system', id: actorId },
-        payload: { ...orderPayload(order), from: order.state, to, reason },
+        payload: { ...orderPayload(order), ...extra, from: order.state, to, reason },
       });
       return true;
     });
@@ -369,6 +378,16 @@ export class OrdersService implements OnModuleInit {
         microMarketId: latest.microMarketId,
       });
     }
+  }
+
+  /** Recent orders for ops views (dispatch live board). */
+  listRecent(q: { states?: OrderState[]; microMarketId?: string; limit: number }): Promise<OrderRecord[]> {
+    return this.repo.listRecent(q);
+  }
+
+  /** Raw order for other modules (dispatch-tracking). */
+  get(id: string): Promise<OrderRecord | null> {
+    return this.repo.get(id);
   }
 
   /** The customer closed the payment sheet / gave up: the order will not be placed. */

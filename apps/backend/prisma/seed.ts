@@ -7,7 +7,7 @@
  */
 import { Prisma, PrismaClient } from '@prisma/client';
 import { SEED_CITY, SEED_EFFECTIVE_FROM, SEED_MICRO_MARKETS, SEED_OPS_PASSWORD, SEED_PEOPLE } from '../src/dev/seed-data';
-import { buildSeedKyc, buildSeedMerchants, buildSeedPromos } from '../src/dev/seed-records';
+import { buildSeedKyc, buildSeedMerchants, buildSeedPromos, buildSeedRiders } from '../src/dev/seed-records';
 import { buildSeedAddresses } from '../src/modules/identity-kyc/identity-kyc.module';
 import { buildSeedCatalogue, buildSeedMaster, renderStorePhoto, seedStorePhotoRecords } from '../src/dev/seed-catalogue';
 import { parseEnv } from '../src/config/env';
@@ -148,6 +148,11 @@ async function seedPromos(): Promise<number> {
   return n;
 }
 
+/** M6: rider profiles. */
+async function seedRiders(): Promise<void> {
+  for (const r of buildSeedRiders()) await prisma.rider.upsert({ where: { userId: r.userId }, create: r, update: {} });
+}
+
 async function main(): Promise<void> {
   if ((process.env.APP_ENV ?? 'dev') !== 'dev') throw new Error('The demo seed only runs with APP_ENV=dev');
   await seedPeople();
@@ -157,6 +162,7 @@ async function main(): Promise<void> {
   await seedAddresses(marketIds);
   await seedStorePhotos();
   await seedPromos();
+  await seedRiders();
   console.log(`Seeded ${SEED_PEOPLE.length} users, ${marketIds.size} micro-markets, ${merchants} merchants, ${catalogue.master} master products, ${catalogue.items} new items.`);
   console.log('Ops console: admin@santha.local / SEED_OPS_PASSWORD (default santha-admin-dev), OTP 123456');
 }

@@ -91,6 +91,32 @@ export class NotificationsService implements OnModuleInit {
     await this.sendMessage(channel, owner.phone, `${title}. ${body}`, 'merchant.order_waiting', locale, { userId: owner.id, merchantId, orderId });
   }
 
+  /**
+   * Direct message for other modules (dispatch, M6): push to a user's devices, SMS when they have none
+   * (or when only a phone is known, e.g. merchant staff), WhatsApp too for opted-in customers.
+   */
+  async notify(
+    template: TemplateKey,
+    to: { userId?: string; phone?: string },
+    vars: Record<string, string | number>,
+    ctx: { orderId?: string | null; merchantId?: string | null } = {},
+    opts: { urgent?: boolean; data?: Record<string, string>; whatsapp?: boolean } = {},
+  ): Promise<void> {
+    const user = to.userId ? await this.auth.me(to.userId) : null;
+    const locale = asLocale(user?.locale ?? 'te');
+    const msg = render(template, locale, vars);
+    const logCtx = { userId: user?.id ?? null, merchantId: ctx.merchantId ?? null, orderId: ctx.orderId ?? null };
+    const pushed = user ? await this.pushTo(user.id, msg, opts.data ?? {}, opts.urgent ?? false, template, locale, logCtx) : false;
+    const phone = to.phone ?? user?.phone;
+    if (!pushed && phone) await this.sendMessage('sms', phone, `${msg.title}. ${msg.body}`, template, locale, logCtx);
+    if (opts.whatsapp && user && (await this.repo.whatsappOptIn(user.id))) await this.sendMessage('whatsapp', user.phone, `${msg.title}. ${msg.body}`, template, locale, logCtx);
+  }
+
+  /** Screen refresh in a socket room (user:{id}, merchant:{id}, rider:{id}). */
+  toRoom(room: string, event: string, payload: Record<string, unknown>): void {
+    this.realtime.emit(room, event, payload);
+  }
+
   // ───────────── event handlers ─────────────
 
   private async onOrderEvent(e: DomainEvent): Promise<void> {
@@ -162,7 +188,7 @@ export class NotificationsService implements OnModuleInit {
     urgent: boolean,
     template: string,
     locale: Locale,
-    ctx: { userId: string; merchantId: string | null; orderId: string | null },
+    ctx: { userId: string | null; merchantId: string | null; orderId: string | null },
   ): Promise<boolean> {
     const tokens = await this.repo.tokensFor(userId);
     if (!tokens.length) {
@@ -185,7 +211,7 @@ export class NotificationsService implements OnModuleInit {
     text: string,
     template: string,
     locale: Locale,
-    ctx: { userId: string; merchantId: string | null; orderId: string | null },
+    ctx: { userId: string | null; merchantId: string | null; orderId: string | null },
   ): Promise<void> {
     const r = await this.messaging.send({ channel, to, text, template }).catch((err: Error) => ({ ok: false, error: err.message }));
     await this.log(channel, template, locale, text, r.ok ? 'sent' : 'failed', r.ok ? null : (r.error ?? 'failed'), ctx);
@@ -198,7 +224,7 @@ export class NotificationsService implements OnModuleInit {
     body: string,
     status: NotificationRecord['status'],
     error: string | null,
-    ctx: { userId: string; merchantId: string | null; orderId: string | null },
+    ctx: { userId: string | null; merchantId: string | null; orderId: string | null },
   ): Promise<void> {
     await this.repo
       .log({ ...ctx, channel, template, locale, body, status, provider: channel === 'push' ? this.push.name : this.messaging.name, error })
