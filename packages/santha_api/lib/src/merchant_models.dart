@@ -161,6 +161,8 @@ class Merchant {
     this.hygieneDeclaredAt,
     this.rejectionCode,
     this.rejectionNote,
+    this.acceptingOrders = true,
+    this.pausedReason,
   });
 
   factory Merchant.fromJson(Json j) => Merchant(
@@ -184,6 +186,8 @@ class Merchant {
         status: _enum(MerchantStatus.values, j['status'] as String),
         rejectionCode: j['rejectionCode'] as String?,
         rejectionNote: j['rejectionNote'] as String?,
+        acceptingOrders: j['acceptingOrders'] as bool? ?? true,
+        pausedReason: j['pausedReason'] as String?,
       );
 
   final String id;
@@ -206,6 +210,10 @@ class Merchant {
   final MerchantStatus status;
   final String? rejectionCode;
   final String? rejectionNote;
+
+  /// Store toggle (M5); false after an auto-pause (pausedReason: missed_orders) or when the owner paused.
+  final bool acceptingOrders;
+  final String? pausedReason;
 
   /// Food sellers need FSSAI (every home kitchen, and retail/home businesses that sell food).
   bool get needsFssai => type == MerchantType.homeKitchen || sellsFood;
