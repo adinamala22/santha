@@ -601,13 +601,17 @@ export class CatalogueService {
         if (!batch.length) break;
         await this.repo.transaction(async (tx) => {
           await tx.flagStale(batch.map((b) => b.id), now);
-          for (const b of batch)
+          // One event per store, not per item: consumers (search, merchant nudges) act per store,
+          // and a sweep can flag thousands of items at once.
+          const byMerchant = new Map<string, string[]>();
+          for (const b of batch) byMerchant.set(b.merchantId, [...(byMerchant.get(b.merchantId) ?? []), b.id]);
+          for (const [merchantId, itemIds] of byMerchant)
             await tx.appendEvent({
-              type: 'item.stale_flagged',
-              aggregate: { type: 'item', id: b.id },
+              type: 'merchant.catalogue_went_stale',
+              aggregate: { type: 'merchant', id: merchantId },
               microMarketId: market.id,
               actor: { type: 'system', id: null },
-              payload: { item_id: b.id, merchant_id: b.merchantId, confirmed_at: b.confirmedAt.toISOString(), hours: current.sla.staleCatalogueHours },
+              payload: { merchant_id: merchantId, item_ids: itemIds, hours: current.sla.staleCatalogueHours },
             });
         });
         flagged += batch.length;

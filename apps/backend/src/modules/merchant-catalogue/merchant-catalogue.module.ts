@@ -47,8 +47,8 @@ class FakeStorePhotos implements OnApplicationBootstrap {
  * merchant-catalogue — merchants, staff, hours, radius, store photos (M1/M2); catalogue items and
  * variants, master catalogue + barcode resolution, menus/slots, media pipeline, staleness (M2).
  * Events out: merchant.created|updated|submitted|approved|rejected|went_live|staff_added|
- * catalogue_confirmed|slots_updated, item.created|updated|price_changed|stock_changed|deleted|
- * approved|released|rejected|stale_flagged, media.uploaded|approved|rejected
+ * catalogue_confirmed|slots_updated|catalogue_went_stale, item.created|updated|price_changed|stock_changed|deleted|
+ * approved|released|rejected, merchant.catalogue_went_stale, media.uploaded|approved|rejected
  * (merchant.kyc_updated comes from identity-kyc's KycService).
  */
 @Module({

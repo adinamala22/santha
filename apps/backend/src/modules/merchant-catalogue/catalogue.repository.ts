@@ -275,7 +275,7 @@ export class PrismaCatalogueRepository extends CatalogueRepository {
   }
 
   transaction<T>(fn: (tx: CatalogueTx) => Promise<T>): Promise<T> {
-    return this.prisma.$transaction((tx) => fn(new PrismaCatalogueTx(tx)), { timeout: 30_000 });
+    return this.prisma.$transaction((tx) => fn(new PrismaCatalogueTx(tx)), { timeout: 30_000, maxWait: 10_000 });
   }
 
   async getItem(id: string): Promise<ItemRecord | null> {

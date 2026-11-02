@@ -22,7 +22,7 @@ export const INDEXED_EVENTS = [
   'item.approved',
   'item.released',
   'item.rejected',
-  'item.stale_flagged',
+  'merchant.catalogue_went_stale',
   'media.approved',
   'media.rejected',
 ] as const;

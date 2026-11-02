@@ -221,11 +221,12 @@ describe('M2 on Postgres + Redis + Typesense', () => {
   it('ACCEPTANCE: staleness flag after 72 h (clock override), cleared by the daily confirm', async () => {
     const ops = await opsSignIn();
     offsetMs = 73 * 3600_000;
-    const sweep = await http().post('/v1/ops/catalogue/staleness-sweep').set(auth(ops)).expect(200);
+    const sweep = await http().post('/v1/ops/catalogue/staleness-sweep').set(auth(ops));
+    expect(sweep.status, JSON.stringify(sweep.body)).toBe(200);
     expect(sweep.body.flagged).toBeGreaterThan(100);
     expect(await prisma.item.count({ where: { merchantId: kirana.id, staleSince: { not: null } } })).toBeGreaterThan(40);
-    const events = await prisma.outboxEvent.count({ where: { type: 'item.stale_flagged' } });
-    expect(events).toBeGreaterThanOrEqual(sweep.body.flagged);
+    const stale = await prisma.outboxEvent.findMany({ where: { type: 'merchant.catalogue_went_stale', aggregateId: kirana.id } });
+    expect(stale.length).toBeGreaterThanOrEqual(1); // one event per store, listing its items
 
     const owner = await signIn(kirana.ownerPhone.replace('+91', ''));
     await http().post('/v1/merchants/me/items/confirm').set(auth(owner)).expect(200);
