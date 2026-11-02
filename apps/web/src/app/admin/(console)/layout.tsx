@@ -5,6 +5,7 @@ import { LangSwitch } from '@/components/admin/lang-switch';
 import { NavLink } from '@/components/admin/nav-link';
 import { catalogueCopy } from '@/i18n/catalogue';
 import { consoleCopy } from '@/i18n/console';
+import { liveCopy } from '@/i18n/live';
 import { orderCopy } from '@/i18n/orders';
 import { promoCopy } from '@/i18n/promos';
 import { opsLocale, opsSession } from '@/lib/ops/server';
@@ -23,6 +24,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           <NavLink href="/admin" exact>
             {copy.nav.overview}
           </NavLink>
+          <NavLink href="/admin/live">{liveCopy(locale).nav}</NavLink>
           <NavLink href="/admin/orders">{orderCopy(locale).nav}</NavLink>
           <NavLink href="/admin/merchants">{copy.nav.merchants}</NavLink>
           <NavLink href="/admin/catalogue">{catalogueCopy(locale).nav}</NavLink>

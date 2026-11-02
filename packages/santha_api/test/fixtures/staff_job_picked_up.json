@@ -1,0 +1,32 @@
+{
+ "id": "d2e7d3e7-5f13-406b-926b-da0ea6dd53f5",
+ "orderId": "5e076ba3-663a-4a0b-925c-dff95571ec8d",
+ "code": "SNV48EZD",
+ "mode": "self",
+ "state": "picked_up",
+ "orderState": "OUT_FOR_DELIVERY",
+ "store": {
+  "name": "Ramesh Stores",
+  "line": "14-2-31, Dargamitta Main Road",
+  "lat": 14.454500000000001,
+  "lng": 79.992
+ },
+ "drop": {
+  "name": null,
+  "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+  "landmark": "Near Dargamitta Temple",
+  "lat": 14.4535,
+  "lng": 79.99600000000001
+ },
+ "instructions": "Call before coming",
+ "itemCount": 3,
+ "codDuePaise": 21960,
+ "payPaise": 0,
+ "payLines": [],
+ "callNumber": "+918047157325",
+ "readyAt": "2026-11-02T16:27:17.036Z",
+ "arrivedAt": "2026-11-02T16:27:17.041Z",
+ "pickedUpAt": "2026-11-02T16:27:17.041Z",
+ "deliveredAt": null,
+ "pickupCodeRequired": false
+}

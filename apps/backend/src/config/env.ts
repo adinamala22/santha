@@ -114,6 +114,12 @@ export const EnvSchema = z
     PUSH_PROVIDER: z.enum(['mock', 'fcm']).default('mock'),
     FCM_SERVICE_ACCOUNT_B64: z.string().optional(),
 
+    /** Dispatch (M6): 3PL fallback partner (mock only until a Nellore partner is contracted); whether the mock has capacity. */
+    THREEPL_PROVIDER: z.enum(['mock']).default('mock'),
+    MOCK_3PL_AVAILABLE: bool.default(false),
+    /** Public base URL of the web app, for staff delivery links (/d/{token}). */
+    WEB_BASE_URL: z.string().url().default('http://localhost:3000'),
+
     RUN_WORKERS: bool.default(true),
     OUTBOX_POLL_MS: z.coerce.number().int().positive().default(500),
   })

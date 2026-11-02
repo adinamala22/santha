@@ -180,4 +180,71 @@ void main() {
     expect(tester.widget<SwitchListTile>(tile).value, isTrue);
     expect(h.events, contains('whatsapp_opt_in_changed'));
   });
+
+  testWidgets('M6: tracking shows the rider, OTP and ETA; live fixes move the ETA; the call is masked', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    final eta = DateTime.now().add(const Duration(minutes: 12)).toUtc();
+    h.backend.tracking = {
+      ...fixture('tracking_picked_up'),
+      'orderId': o['id'],
+      'promisedAt': DateTime.now().add(const Duration(minutes: 20)).toUtc().toIso8601String(),
+      'etaAt': eta.toIso8601String(),
+    };
+    h.backend.orderPatch = {'state': 'OUT_FOR_DELIVERY'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'OUT_FOR_DELIVERY'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('tracking')), findsOneWidget);
+    expect(find.text('Demo Rider 2 · Santha rider'), findsOneWidget);
+    final otp = (h.backend.tracking!['deliveryOtp'] as String).split('').join(' ');
+    expect(find.text('Delivery OTP $otp'), findsOneWidget);
+    expect(find.textContaining('On time · promised by'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const ValueKey('eta'))).data, anyOf('Arriving in 11 min', 'Arriving in 12 min'));
+
+    realtime.emit('order.location', {'orderId': o['id'], 'lat': 14.455, 'lng': 79.993, 'etaAt': DateTime.now().add(const Duration(minutes: 30)).toUtc().toIso8601String()});
+    await settle(tester, 4);
+    expect(find.textContaining('Running late'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const ValueKey('eta'))).data, anyOf('Arriving in 29 min', 'Arriving in 30 min'));
+
+    await tapVisible(tester, find.byKey(const ValueKey('call-courier')));
+    expect(dialled.last, h.backend.tracking!['courier']['callNumber']);
+  });
+
+  testWidgets('M6: no courier after the fallback ladder: the customer can cancel for a full refund', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.tracking = {
+      ...fixture('tracking_picked_up'),
+      'orderId': o['id'],
+      'state': 'searching',
+      'courier': null,
+      'deliveryOtp': null,
+      'courierLocation': null,
+      'fallbackStage': 'customer_notified',
+      'canCancelNoCourier': true,
+    };
+    h.backend.orderPatch = {'state': 'PREPARING'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'PREPARING'});
+    await settle(tester, 20);
+    expect(find.textContaining('taking longer than usual'), findsOneWidget);
+    await tapVisible(tester, find.byKey(const ValueKey('cancel-no-courier')));
+    await settle(tester, 20);
+    expect(h.backend.cancelledNoCourier, isTrue);
+    expect(h.events, contains('order_cancelled'));
+    expect(find.byKey(const ValueKey('tracking')), findsNothing);
+  });
 }

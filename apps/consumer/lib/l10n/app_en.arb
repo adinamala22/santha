@@ -734,5 +734,80 @@
   "outcomeStoreRejected": "The store could not take this order.",
   "outcomeTimedOut": "The store did not respond in time.",
   "whatsappUpdates": "Order updates on WhatsApp",
-  "whatsappUpdatesSub": "We send these only if you turn this on."
+  "whatsappUpdatesSub": "We send these only if you turn this on.",
+  "trackingMapLabel": "Live map: store, delivery partner and your home",
+  "arrivingIn": "Arriving in {min} min",
+  "@arrivingIn": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "arrivingNow": "Arriving now",
+  "onTimeBy": "On time · promised by {time}",
+  "@onTimeBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "lateBy": "Running late · promised by {time}",
+  "@lateBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "promisedBy": "Expected by {time}",
+  "@promisedBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "findingCourier": "Finding a delivery partner…",
+  "findingCourierLate": "It is taking longer than usual to find a delivery partner. You can wait or cancel for a full refund.",
+  "cancelFullRefund": "Cancel with full refund",
+  "courierStaff": "{name} · {store} staff",
+  "@courierStaff": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "courierOwner": "{store} is delivering",
+  "@courierOwner": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "courierRider": "{name} · Santha rider",
+  "@courierRider": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "courierPartner": "Partner courier",
+  "deliveryOtp": "Delivery OTP {otp}",
+  "@deliveryOtp": {
+    "placeholders": {
+      "otp": {
+        "type": "String"
+      }
+    }
+  },
+  "deliveryOtpHint": "Share this code only at your door.",
+  "callCourier": "Call"
 }

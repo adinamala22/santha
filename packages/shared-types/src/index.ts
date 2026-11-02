@@ -82,3 +82,13 @@ export interface ApiError {
 }
 
 export const API_PREFIX = '/v1' as const;
+
+// M6 — dispatch & tracking
+export type OpsLive = Schemas['OpsLiveDto_Output'];
+export type OpsLiveOrder = OpsLive['orders'][number];
+export type OpsLiveAttention = OpsLive['attention'][number];
+export type OpsLiveRider = OpsLive['riders'][number];
+export type OpsDelivery = Schemas['OpsDeliveryDto_Output'];
+export type JobView = Schemas['JobViewDto_Output'];
+export type Tracking = Schemas['TrackingDto_Output'];
+export type MerchantDelivery = Schemas['MerchantDeliveryDto_Output'];

@@ -8,6 +8,7 @@ import '../../catalogue/data/catalogue_controller.dart';
 import '../../catalogue/presentation/catalogue_copy.dart' show rupees;
 import '../../onboarding/presentation/copy.dart';
 import '../data/orders_controller.dart';
+import 'fulfilment.dart';
 
 /// Orders tab (M5, merchant-orders-hifi): store Open/Paused toggle, ringing new-order cards with
 /// the accept countdown, Preparing / Ready / Out / Done tabs and today's summary.
@@ -38,7 +39,7 @@ class OrdersPage extends ConsumerWidget {
             padding: const EdgeInsets.all(SanthaSpacing.s4),
             children: [
               if (!open) _PausedBanner(missed: view.merchant.pausedReason == 'missed_orders'),
-              for (final o in b.newOrders) _NewOrderCard(order: o),
+              for (final o in b.newOrders) _NewOrderCard(order: o, view: view),
               if (b.newOrders.isEmpty && open)
                 Padding(
                   padding: const EdgeInsets.only(bottom: SanthaSpacing.s4),
@@ -51,7 +52,7 @@ class OrdersPage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s8),
                   child: Text(l.emptyTab, textAlign: TextAlign.center, style: const TextStyle(color: SanthaColors.slate)),
                 ),
-              for (final o in b.list.items) _OrderCard(order: o),
+              for (final o in b.list.items) _OrderCard(order: o, delivery: b.deliveries[o.id]),
               const SizedBox(height: SanthaSpacing.s4),
               _TodayCard(summary: b.list.summary),
             ],
@@ -124,8 +125,9 @@ String _time(BuildContext context, DateTime t) =>
     MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(t.toUtc().add(const Duration(hours: 5, minutes: 30))));
 
 class _NewOrderCard extends ConsumerWidget {
-  const _NewOrderCard({required this.order});
+  const _NewOrderCard({required this.order, required this.view});
   final MerchantOrder order;
+  final MerchantView view;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -171,7 +173,13 @@ class _NewOrderCard extends ConsumerWidget {
             child: SanthaButton(
               key: ValueKey('accept-${order.id}'),
               label: timeUp ? l.orderTimeUp : (left == null || late ? l.acceptNow : l.acceptIn(_countdown(left))),
-              onPressed: timeUp ? null : () => _run(context, ref, () => ref.read(ordersBoardProvider.notifier).accept(order)),
+              onPressed: timeUp
+                  ? null
+                  : () async {
+                      final choice = await chooseFulfilment(context, view);
+                      if (choice == null || !context.mounted) return;
+                      await _run(context, ref, () => ref.read(ordersBoardProvider.notifier).accept(order, mode: choice.mode, staffId: choice.staffId));
+                    },
             ),
           ),
           const SizedBox(width: SanthaSpacing.s3),
@@ -253,8 +261,9 @@ class _Tabs extends ConsumerWidget {
 }
 
 class _OrderCard extends ConsumerWidget {
-  const _OrderCard({required this.order});
+  const _OrderCard({required this.order, this.delivery});
   final MerchantOrder order;
+  final MerchantDelivery? delivery;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -320,6 +329,7 @@ class _OrderCard extends ConsumerWidget {
               borderRadius: BorderRadius.circular(SanthaRadius.pill),
             ),
           ],
+          if (delivery != null) DeliveryInfo(orderId: order.id, delivery: delivery!),
           if (order.state == OrderState.preparing) ...[
             const SizedBox(height: SanthaSpacing.s3),
             Row(children: [

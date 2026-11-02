@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import 'api_client.dart';
 import 'api_exception.dart';
+import 'dispatch.dart';
 import 'checkout_models.dart';
 import 'models.dart';
 
@@ -72,6 +73,12 @@ class CheckoutApi {
   /// Online payments are refunded to the wallet at once.
   Future<Order> cancelOrder(String orderId, String reason) =>
       _call(() async => Order.fromJson((await _dio.post<Json>('/v1/orders/$orderId/cancel', data: {'reason': reason})).data!));
+
+  /// Live delivery tracking (M6): courier, OTP, location, ETA. 404 until the store accepts.
+  Future<Tracking> tracking(String orderId) => _call(() async => Tracking.fromJson((await _dio.get<Json>('/v1/orders/$orderId/tracking')).data!));
+
+  /// No courier after the fallback ladder: cancel with a full refund.
+  Future<void> cancelNoCourier(String orderId) => _call(() => _dio.post<void>('/v1/orders/$orderId/cancel-no-courier'));
 
   /// WhatsApp order updates (explicit opt-in, off by default).
   Future<bool> whatsappUpdates() => _call(() async => (await _dio.get<Json>('/v1/me/notification-preferences')).data!['whatsappUpdates'] as bool);

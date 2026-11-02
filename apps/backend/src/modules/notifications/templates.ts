@@ -49,6 +49,39 @@ export const TEMPLATES = {
     en: { title: 'An item was replaced', body: '{store} replaced {name} with {substitute}. {refund}' },
     te: { title: 'ఒక వస్తువు మార్చారు', body: '{store} {name}కు బదులుగా {substitute} పంపుతున్నారు. {refund}' },
   },
+  // delivery (M6)
+  'rider.new_offer': {
+    en: { title: 'New delivery · {pay}', body: 'Pickup at {store} ({distance} away). Accept within 30 seconds.' },
+    te: { title: 'కొత్త డెలివరీ · {pay}', body: '{store} వద్ద పికప్ ({distance} దూరం). 30 సెకన్లలో అంగీకరించండి.' },
+  },
+  'staff.delivery_link': {
+    en: { title: 'Delivery for {store}', body: 'Order {code}: open {link} for the address, pickup and delivery OTP steps.' },
+    te: { title: '{store} డెలివరీ', body: 'ఆర్డర్ {code}: చిరునామా, పికప్ మరియు డెలివరీ OTP కోసం {link} తెరవండి.' },
+  },
+  'merchant.self_delivery_bonus': {
+    en: { title: 'No rider yet for {code}', body: 'Deliver order {code} yourself and earn a {bonus} bonus. Open Santha Partner to switch.' },
+    te: { title: '{code}కు ఇంకా రైడర్ లేరు', body: 'ఆర్డర్ {code} మీరే డెలివరీ చేసి {bonus} బోనస్ పొందండి. మార్చడానికి సంత పార్ట్‌నర్ తెరవండి.' },
+  },
+  'merchant.rider_assigned': {
+    en: { title: 'Rider assigned for {code}', body: '{name} will pick up order {code}. Pickup code {pickup}.' },
+    te: { title: '{code}కు రైడర్ వచ్చారు', body: '{name} ఆర్డర్ {code} పికప్ చేస్తారు. పికప్ కోడ్ {pickup}.' },
+  },
+  'customer.out_for_delivery': {
+    en: { title: 'On the way', body: '{name} is bringing your order {code}. Share OTP {otp} at the door.' },
+    te: { title: 'దారిలో ఉంది', body: '{name} మీ ఆర్డర్ {code} తెస్తున్నారు. తలుపు వద్ద OTP {otp} చెప్పండి.' },
+  },
+  'customer.order_delivered': {
+    en: { title: 'Delivered', body: 'Your order {code} from {store} was delivered. Enjoy!' },
+    te: { title: 'డెలివరీ అయింది', body: '{store} నుండి మీ ఆర్డర్ {code} డెలివరీ అయింది.' },
+  },
+  'customer.delivery_delayed': {
+    en: { title: 'Running a little late', body: 'Your order {code} will now arrive by {eta}. Sorry for the wait.' },
+    te: { title: 'కొంచెం ఆలస్యం', body: 'మీ ఆర్డర్ {code} ఇప్పుడు {eta}కు వస్తుంది. ఆలస్యానికి క్షమించండి.' },
+  },
+  'customer.finding_courier': {
+    en: { title: 'Finding a delivery partner', body: 'It is taking longer than usual to find someone for order {code}. New estimate {eta}. You can cancel for a full refund.' },
+    te: { title: 'డెలివరీ భాగస్వామి కోసం వెతుకుతున్నాం', body: 'ఆర్డర్ {code}కు ఎవరినైనా కనుగొనడం ఆలస్యం అవుతోంది. కొత్త అంచనా {eta}. పూర్తి రీఫండ్‌తో రద్దు చేయవచ్చు.' },
+  },
   // shared refund sentence
   'fragment.refund_wallet': { en: { title: '', body: '{amount} is back in your Santha wallet.' }, te: { title: '', body: '{amount} మీ సంత వాలెట్‌కు తిరిగి వచ్చింది.' } },
   'fragment.refund_cod': { en: { title: '', body: 'You will pay {amount} less on delivery.' }, te: { title: '', body: 'డెలివరీ సమయంలో {amount} తక్కువ చెల్లిస్తారు.' } },

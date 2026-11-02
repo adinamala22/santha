@@ -22,9 +22,10 @@ export const LIVE: readonly OrderState[] = ['PLACED', 'ACCEPTED', 'PREPARING', '
 const EDGES: Partial<Record<OrderState, Partial<Record<OrderState, readonly OrderActor[]>>>> = {
   AWAITING_PAYMENT: { PLACED: ['system'], PAYMENT_FAILED: ['system', 'customer'] },
   PLACED: { ACCEPTED: ['merchant', 'ops'], REJECTED: ['merchant', 'ops'], EXPIRED: ['system'], CANCELLED: ['customer', 'ops'] },
-  ACCEPTED: { PREPARING: ['merchant', 'ops'], CANCELLED: ['customer', 'merchant', 'ops'] },
-  PREPARING: { READY: ['merchant', 'ops'], CANCELLED: ['merchant', 'ops'] },
-  READY: { PICKED_UP: ['rider', 'staff', 'ops'] },
+  ACCEPTED: { PREPARING: ['merchant', 'ops'], CANCELLED: ['customer', 'merchant', 'ops', 'system'] },
+  // system: no courier could be found and the customer chose to cancel (dispatch fallback ladder, M6).
+  PREPARING: { READY: ['merchant', 'ops'], CANCELLED: ['merchant', 'ops', 'system'] },
+  READY: { PICKED_UP: ['rider', 'staff', 'ops'], CANCELLED: ['ops', 'system'] },
   PICKED_UP: { OUT_FOR_DELIVERY: ['rider', 'staff', 'system', 'ops'] },
   OUT_FOR_DELIVERY: { DELIVERED: ['rider', 'staff', 'ops'], FAILED_DELIVERY: ['rider', 'staff', 'ops'] },
   FAILED_DELIVERY: { OUT_FOR_DELIVERY: ['rider', 'staff', 'ops'], CANCELLED: ['ops', 'system'] },
