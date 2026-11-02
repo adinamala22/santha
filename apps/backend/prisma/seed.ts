@@ -7,7 +7,7 @@
  */
 import { Prisma, PrismaClient } from '@prisma/client';
 import { SEED_CITY, SEED_EFFECTIVE_FROM, SEED_MICRO_MARKETS, SEED_OPS_PASSWORD, SEED_PEOPLE } from '../src/dev/seed-data';
-import { buildSeedKyc, buildSeedMerchants } from '../src/dev/seed-records';
+import { buildSeedKyc, buildSeedMerchants, buildSeedPromos } from '../src/dev/seed-records';
 import { buildSeedAddresses } from '../src/modules/identity-kyc/identity-kyc.module';
 import { buildSeedCatalogue, buildSeedMaster, renderStorePhoto, seedStorePhotoRecords } from '../src/dev/seed-catalogue';
 import { parseEnv } from '../src/config/env';
@@ -137,6 +137,17 @@ async function seedAddresses(marketIds: Map<string, string>): Promise<number> {
   return rows.length;
 }
 
+/** M4: demo promo codes (NELLORE50, KITCHEN20, TINY). */
+async function seedPromos(): Promise<number> {
+  let n = 0;
+  for (const p of buildSeedPromos()) {
+    if (await prisma.promo.findUnique({ where: { code: p.code } })) continue;
+    await prisma.promo.create({ data: p });
+    n++;
+  }
+  return n;
+}
+
 async function main(): Promise<void> {
   if ((process.env.APP_ENV ?? 'dev') !== 'dev') throw new Error('The demo seed only runs with APP_ENV=dev');
   await seedPeople();
@@ -145,6 +156,7 @@ async function main(): Promise<void> {
   const catalogue = await seedCatalogue();
   await seedAddresses(marketIds);
   await seedStorePhotos();
+  await seedPromos();
   console.log(`Seeded ${SEED_PEOPLE.length} users, ${marketIds.size} micro-markets, ${merchants} merchants, ${catalogue.master} master products, ${catalogue.items} new items.`);
   console.log('Ops console: admin@santha.local / SEED_OPS_PASSWORD (default santha-admin-dev), OTP 123456');
 }

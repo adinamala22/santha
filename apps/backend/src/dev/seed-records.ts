@@ -2,7 +2,8 @@ import { everyDay } from '../common/hours';
 import type { MerchantRecord, StaffRecord } from '../modules/merchant-catalogue/domain/merchant';
 import { gstinCheckChar } from '../modules/identity-kyc/domain/kyc-formats';
 import type { KycCheckInput } from '../modules/identity-kyc/kyc.repository';
-import { seedStorePhotoId, SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
+import type { PromoRecord } from '../modules/cart-pricing/domain/promo';
+import { seedStorePhotoId, SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, SEED_PROMOS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
 
 export interface SeedMerchantRecords {
   merchants: MerchantRecord[];
@@ -84,6 +85,8 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       radiusM: s.radiusM,
       hours: everyDay(s.hours.open, s.hours.close),
       movPaise: s.movPaise,
+      // Kitchens and home businesses pack each order; shops include packing in the price.
+      packagingFeePaise: s.type === 'home_kitchen' ? 1000 : s.type === 'home_business' ? 500 : 0,
       defaultFulfilment: s.defaultFulfilment,
       returnPolicy: s.returnPolicy ?? null,
       hygieneDeclaredAt: s.type === 'home_kitchen' && s.status !== 'draft' ? created : null,
@@ -102,4 +105,21 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       out.staff.push({ id: `20000000-0000-4000-8000-000000000${n}`, merchantId: s.id, name: st.name, phone: st.phone, active: true, createdAt: created });
   });
   return out;
+}
+
+/** Demo promos as stored records (fake mode and the Postgres seed share them). */
+export function buildSeedPromos(): PromoRecord[] {
+  return SEED_PROMOS.map((p) => ({
+    ...p,
+    merchantTypes: [...p.merchantTypes],
+    spentPaise: 0,
+    microMarketIds: [],
+    merchantIds: [],
+    validFrom: SEED_EFFECTIVE_FROM,
+    validTo: null,
+    active: true,
+    createdBy: null,
+    createdAt: SEED_EFFECTIVE_FROM,
+    updatedAt: SEED_EFFECTIVE_FROM,
+  }));
 }
