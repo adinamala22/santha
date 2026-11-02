@@ -2,12 +2,16 @@ import type { MerchantView, MicroMarketList } from '@santha/shared-types';
 import Link from 'next/link';
 import { Card, PageHeader, Stat } from '@/components/admin/ui';
 import { consoleCopy, fill } from '@/i18n/console';
-import { opsGet, opsLocale } from '@/lib/ops/server';
+import { redirect } from 'next/navigation';
+import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 
 export const metadata = { title: 'Overview' };
 
 /** Overview: onboarding funnel and micro-markets. Live orders (mockup) join once ordering exists. */
 export default async function Overview() {
+  // Finance works in payouts and refunds; the onboarding overview is for ops and admins.
+  const session = await opsSession();
+  if (session && !session.roles.some((r) => r === 'admin' || r === 'ops')) redirect('/admin/payouts');
   const copy = consoleCopy(await opsLocale());
   const [merchants, markets] = await Promise.all([
     opsGet<{ items: MerchantView[] }>('/v1/ops/merchants?limit=200'),

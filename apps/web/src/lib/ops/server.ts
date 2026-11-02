@@ -67,3 +67,19 @@ export async function opsGet<T>(path: string): Promise<T> {
   if (!r.ok) throw new Error(`${r.code}: ${r.message}`);
   return r.data;
 }
+
+/** Raw passthrough for file downloads (CSV exports, PDF statements) as the signed-in ops user. */
+export async function opsFile(path: string): Promise<Response> {
+  const jar = await cookies();
+  const token = jar.get(COOKIE.access)?.value;
+  const deviceId = jar.get(COOKIE.device)?.value;
+  if (!token || !deviceId) return new Response('Unauthorized', { status: 401 });
+  const res = await fetch(`${BACKEND_URL}${path}`, { headers: { authorization: `Bearer ${token}`, 'x-device-id': deviceId }, cache: 'no-store' });
+  return new Response(res.body, {
+    status: res.status,
+    headers: {
+      'content-type': res.headers.get('content-type') ?? 'application/octet-stream',
+      ...(res.headers.get('content-disposition') ? { 'content-disposition': res.headers.get('content-disposition')! } : {}),
+    },
+  });
+}

@@ -6,6 +6,7 @@ import { NavLink } from '@/components/admin/nav-link';
 import { catalogueCopy } from '@/i18n/catalogue';
 import { consoleCopy } from '@/i18n/console';
 import { liveCopy } from '@/i18n/live';
+import { moneyCopy } from '@/i18n/money';
 import { orderCopy } from '@/i18n/orders';
 import { promoCopy } from '@/i18n/promos';
 import { opsLocale, opsSession } from '@/lib/ops/server';
@@ -26,6 +27,9 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           </NavLink>
           <NavLink href="/admin/live">{liveCopy(locale).nav}</NavLink>
           <NavLink href="/admin/orders">{orderCopy(locale).nav}</NavLink>
+          <NavLink href="/admin/refunds">{moneyCopy(locale).nav.refunds}</NavLink>
+          <NavLink href="/admin/payouts">{moneyCopy(locale).nav.payouts}</NavLink>
+          <NavLink href="/admin/disputes">{moneyCopy(locale).nav.disputes}</NavLink>
           <NavLink href="/admin/merchants">{copy.nav.merchants}</NavLink>
           <NavLink href="/admin/catalogue">{catalogueCopy(locale).nav}</NavLink>
           <NavLink href="/admin/promos">{promoCopy(locale).nav}</NavLink>
