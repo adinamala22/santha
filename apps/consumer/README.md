@@ -14,6 +14,8 @@ Flutter app (flavors dev / stg / prod). Conventions: `.claude/skills/santha-flut
   (removed / substituted) with wallet refunds, WhatsApp order-updates opt-in in Account (ADR-011).
 - M6: live tracking on accepted orders: OSM map with store, courier and home, ETA vs the promise, the courier with
   a masked call and the delivery OTP; cancel with a full refund when no courier can be found (ADR-012).
+- M7: after delivery, rate the store and rider, report a problem (instant wallet refund for small claims, review
+  otherwise), and see wallet history from Account (ADR-013).
 
 ```bash
 melos run platforms                                   # once, generates android/ios around our flavor files

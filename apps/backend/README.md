@@ -56,6 +56,20 @@ Accept takes `{ fulfilmentMode, staffId? }`. Dispatch starts from `order.accepte
 fallback ladder are timers on the `timers` queue (`fulfilment:{id}:offer|retry|fallback`). Providers: 3PL
 (`THREEPL_PROVIDER=mock`, `MOCK_3PL_AVAILABLE`) and call masking are mocks only (ADR-012).
 
+## settlement, refunds, issues (M7)
+| Endpoint | Auth | Notes |
+|---|---|---|
+| `POST /v1/orders/:id/issues` · `GET /v1/orders/:id/issues` · `POST /v1/orders/:id/rating` | consumer | Windows 2 h cooked / 24 h retail / 48 h fashion; decided at once (auto wallet refund or review). |
+| `GET /v1/merchants/me/payouts` · `/payouts/:id` · `/payouts/:id/statement.pdf` · `.csv` | merchant | Nightly payouts with commission invoice, TCS, TDS. |
+| `GET /v1/merchants/me/refunds` · `POST /v1/merchants/me/disputes` · `GET /v1/merchants/me/disputes` | merchant | Dispute refunds charged to the store within 48 h. |
+| `GET /v1/riders/me/payouts` | rider | Weekly (or daily) payouts. |
+| `GET /v1/ops/settlements` · `POST /v1/ops/settlements/run` · `GET …/:id/payouts(.csv)` · `POST /v1/ops/payouts/:id/retry` | admin, finance (ops read) | Idempotent per period. |
+| `GET /v1/ops/refunds` · `POST …/:id/approve` · `…/:id/reject` | admin, ops, finance | Four-eyes above ₹1,000; ops capped at ₹2,000. |
+| `GET /v1/ops/recon` · `POST /v1/ops/recon/run` · `…/:id/resolve` · `GET /v1/ops/disputes` · `POST …/:id/resolve` · `GET /v1/ops/issues` | ops / finance | Exceptions queue, disputes, issues with trust scores. |
+
+Settlement runs hourly after 02:00 IST (timer `settlement.daily`). Seeded console users: admin@, finance@ and
+ops@santha.local (dev password) so four-eyes can be tried locally (ADR-013).
+
 ## Commands
 ```bash
 pnpm --filter backend dev            # watch mode (reads ../../.env)
