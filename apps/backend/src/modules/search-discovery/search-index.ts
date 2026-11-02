@@ -6,6 +6,8 @@ export interface ItemSearch {
   /** Only available items (any size in stock or low). */
   inStockOnly: boolean;
   vegOnly?: boolean | undefined;
+  /** Category browse; with an empty `q` every item of the category matches. */
+  categorySlug?: string | undefined;
   limit: number;
 }
 

@@ -173,7 +173,11 @@ export class InMemorySearchIndex extends SearchIndex {
   }
 
   async searchItems(s: ItemSearch): Promise<Hit<ItemDoc>[]> {
-    const hits = this.items.search(s.q, (d) => d.microMarketId === s.microMarketId && (!s.inStockOnly || d.inStock) && (!s.vegOnly || d.foodMark === 'veg'), s.limit);
+    const filter = (d: ItemDoc) =>
+      d.microMarketId === s.microMarketId && (!s.inStockOnly || d.inStock) && (!s.vegOnly || d.foodMark === 'veg') && (!s.categorySlug || d.categorySlug === s.categorySlug);
+    if (!s.q.trim())
+      return [...this.items.values()].map((e) => e.doc).filter(filter).sort((a, b) => a.name.localeCompare(b.name)).slice(0, s.limit).map((doc) => ({ doc, text: 1 }));
+    const hits = this.items.search(s.q, filter, s.limit);
     const max = hits[0]?.text ?? 1;
     return hits.map((h) => ({ doc: h.doc, text: h.text / max }));
   }

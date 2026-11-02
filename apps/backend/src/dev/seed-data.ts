@@ -194,3 +194,25 @@ export const seedKycValues = (n: number) => ({
 
 /** Fixed id of a seeded merchant's store photo (media row), e.g. owner …201 → …-000000000201. */
 export const seedStorePhotoId = (n: number) => `30000000-0000-4000-8000-000000000${n}`;
+
+// ───────────── M3: consumer addresses ─────────────
+
+export interface SeedAddress {
+  id: string;
+  ownerPhone: string;
+  label: 'home' | 'work' | 'other';
+  name?: string;
+  line: string;
+  landmark?: string;
+  pincode: string;
+  microMarketSlug: string;
+  /** Offset from the micro-market centre (degrees). */
+  offset: { lat: number; lng: number };
+  isDefault: boolean;
+}
+
+export const SEED_ADDRESSES: readonly SeedAddress[] = [
+  { id: '80000000-0000-4000-8000-000000000001', ownerPhone: '+919000000001', label: 'home', line: '4-12, Sai Residency, Dargamitta 2nd Lane', landmark: 'Near Dargamitta Temple', pincode: '524003', microMarketSlug: 'dargamitta', offset: { lat: 0.001, lng: 0.001 }, isDefault: true },
+  { id: '80000000-0000-4000-8000-000000000002', ownerPhone: '+919000000001', label: 'work', line: '2nd floor, Magunta Towers, Magunta Layout Main Road', pincode: '524003', microMarketSlug: 'magunta-layout', offset: { lat: 0.001, lng: -0.001 }, isDefault: false },
+  { id: '80000000-0000-4000-8000-000000000003', ownerPhone: '+919000000002', label: 'home', line: '11-3, Balaji Nagar 3rd Street', landmark: 'Opposite water tank', pincode: '524002', microMarketSlug: 'balaji-nagar', offset: { lat: 0.002, lng: 0.0 }, isDefault: true },
+];

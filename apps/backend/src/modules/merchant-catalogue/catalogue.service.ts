@@ -629,15 +629,18 @@ export class CatalogueService {
   // ───────────── for search-discovery (exported) ─────────────
 
   /** A live merchant's sellable items with consumer image URLs, for the search index. */
-  async indexSnapshot(merchantId: string): Promise<{ merchant: MerchantRecord; items: ItemView[]; photos: MediaView[]; hasSlots: boolean } | null> {
+  async indexSnapshot(
+    merchantId: string,
+  ): Promise<{ merchant: MerchantRecord; items: ItemView[]; photos: MediaView[]; hasSlots: boolean; fssaiVerified: boolean } | null> {
     const merchant = await this.merchants.record(merchantId).catch(() => null);
     if (!merchant) return null;
-    const [rows, photos, slots] = await Promise.all([
+    const [rows, photos, slots, fssaiVerified] = await Promise.all([
       this.repo.listItems({ merchantId, status: ['active'], limit: 20_000 }),
       this.merchants.approvedPhotos(merchant),
       this.repo.slots(merchantId),
+      this.merchants.fssaiVerified(merchant),
     ]);
-    return { merchant, items: await this.views(rows), photos, hasSlots: slots.length > 0 };
+    return { merchant, items: await this.views(rows), photos, hasSlots: slots.length > 0, fssaiVerified };
   }
 
   async liveMerchantIds(): Promise<string[]> {

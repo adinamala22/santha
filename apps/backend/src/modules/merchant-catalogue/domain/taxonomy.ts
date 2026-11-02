@@ -64,6 +64,10 @@ const BY_SLUG = new Map(CATEGORIES.map((c) => [c.slug, c]));
 
 export const categoryBySlug = (slug: string): Category | undefined => BY_SLUG.get(slug);
 
+const RANK = new Map(CATEGORIES.map((c, i) => [c.slug, i]));
+/** Position in the platform taxonomy (staples first); unknown slugs last. Orders store pages. */
+export const categoryRank = (slug: string): number => RANK.get(slug) ?? CATEGORIES.length;
+
 export const categoriesFor = (type: MerchantType): Category[] => CATEGORIES.filter((c) => c.types.includes(type));
 
 export const categoryAllowed = (slug: string, type: MerchantType): boolean => !!BY_SLUG.get(slug)?.types.includes(type);

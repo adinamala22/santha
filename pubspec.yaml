@@ -34,7 +34,7 @@ melos:
       description: Regenerate golden images (run on Linux/CI so they match the CI renderer).
       exec: flutter test --no-pub --update-goldens --tags golden
       packageFilters:
-        scope: santha_ui
+        scope: [santha_ui, consumer]
     l10n:
       description: Regenerate AppLocalizations from the ARB files.
       exec: flutter gen-l10n

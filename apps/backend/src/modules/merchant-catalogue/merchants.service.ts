@@ -193,6 +193,11 @@ export class MerchantsService {
     return pages.flat();
   }
 
+  /** Trust row on the store page: a verified FSSAI licence (food sellers). */
+  async fssaiVerified(m: MerchantRecord): Promise<boolean> {
+    return (await this.kyc.list({ type: 'merchant', id: m.id })).some((c) => c.kind === 'fssai' && c.status === 'verified');
+  }
+
   /** Approved store photo URLs, in order (consumer-facing). */
   async approvedPhotos(m: MerchantRecord): Promise<MediaView[]> {
     return (await this.media.views(m.photoIds)).filter((p) => p.status === 'approved');

@@ -86,6 +86,8 @@ and synthetic barcodes, e.g. `8901000000019` (Annapoorna Chakki Atta 1 kg). Barc
 `8901262010016` and `8906010500016` resolve only through the mock open-barcode lookup; anything else is "unknown"
 and lands in the ops enrichment queue. **Try search:** `/v1/search?lat=14.4525&lng=79.995&q=biyyam` (Telugu
 transliteration → rice), `q=pappu`, `q=tomoto` (typo); feed: `/v1/feed?lat=14.4525&lng=79.995&tab=home_kitchens`.
+**Consumer app (M3):** sign in with `9000000001` and pick the saved Home address (Dargamitta): Ramesh Stores and
+Saraswathi's Kitchen deliver there. Store page API: `/v1/stores/<id>?lat=14.4525&lng=79.995`.
 
 ## Checks (what CI runs)
 ```bash
@@ -95,10 +97,10 @@ pnpm --filter backend test:int             # Testcontainers: Postgres/PostGIS + 
 pnpm --filter web e2e                      # console e2e (Playwright) on a production build against the fake backend
 pnpm openapi:gen                           # regenerate OpenAPI → shared-types / santha_api (CI fails if stale)
 melos run analyze && melos run test        # Flutter
-melos run golden:update                    # regenerate santha_ui goldens (on Linux, to match CI)
+melos run golden:update                    # regenerate santha_ui + consumer Home goldens (on Linux, to match CI)
 ```
 Goldens are compared on Linux only (CI); on Windows/macOS they are skipped because font anti-aliasing differs.
 
 ## Decisions
 See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting, ADR-003 local object storage, ADR-004 separate apps,
-ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search).
+ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search, ADR-009 M3 consumer discovery).

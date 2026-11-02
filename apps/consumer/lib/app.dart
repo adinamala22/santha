@@ -6,11 +6,22 @@ import 'package:santha_ui/santha_ui.dart';
 import 'l10n/gen/app_localizations.dart';
 import 'router/router.dart';
 
-class SanthaConsumerApp extends ConsumerWidget {
+class SanthaConsumerApp extends ConsumerStatefulWidget {
   const SanthaConsumerApp({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SanthaConsumerApp> createState() => _SanthaConsumerAppState();
+}
+
+class _SanthaConsumerAppState extends ConsumerState<SanthaConsumerApp> {
+  @override
+  void initState() {
+    super.initState();
+    ref.read(analyticsProvider).track('app_open', {'app': 'consumer', 'version': ref.read(appConfigProvider).appVersion});
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final locale = ref.watch(localeControllerProvider);
     final config = ref.watch(appConfigProvider);
     return MaterialApp.router(

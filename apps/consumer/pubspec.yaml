@@ -19,6 +19,11 @@ dependencies:
   santha_api: any
   santha_core: any
   santha_ui: any
+  santha_offline: any
+  geolocator: ^14.0.2
+  path_provider: ^2.1.5
+  flutter_map: ^8.2.1
+  latlong2: ^0.9.1
 
 dev_dependencies:
   flutter_test:

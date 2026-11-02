@@ -15,6 +15,28 @@ datasource db {
 
 // ───────────── identity-kyc ─────────────
 
+/// A consumer's saved delivery address (up to 10, FR-LOC-1). The exact address is shown to the
+/// merchant only after acceptance and to the rider only after assignment.
+model Address {
+  id            String                                 @id @default(uuid()) @db.Uuid
+  userId        String                                 @map("user_id") @db.Uuid
+  label         String // home | work | other
+  name          String? // custom label for "other"
+  line          String // house / flat, building, street
+  landmark      String?
+  pincode       String?
+  location      Unsupported("geography(Point, 4326)")?
+  microMarketId String?                                @map("micro_market_id") @db.Uuid
+  isDefault     Boolean                                @default(false) @map("is_default")
+  createdAt     DateTime                               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime                               @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
 enum UserStatus {
   active
   blocked
@@ -57,9 +79,10 @@ model User {
   createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
-  roles    UserRole[]
-  devices  Device[]
-  sessions Session[]
+  roles     UserRole[]
+  devices   Device[]
+  sessions  Session[]
+  addresses Address[]
 
   @@map("users")
 }

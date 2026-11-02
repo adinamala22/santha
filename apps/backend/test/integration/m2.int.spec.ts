@@ -189,14 +189,14 @@ describe('M2 on Postgres + Redis + Typesense', () => {
       const merchant: MerchantDoc = {
         id, microMarketId, name: `Synthetic Store ${s}`, nameTe: null, type: 'retail', category: 'kirana', description: null, location: loc,
         radiusM: 5000, hours: everyDay('00:00', '23:59'), selfDelivers: false, photoUrl: null, hasSlots: false, itemCount: 200, staleItemCount: 0,
-        catalogueUpdatedAt: Date.now(), movPaise: 0, hygieneDeclared: false, rating: null, ratingCount: 0, acceptanceRate: null, prepP50Min: null,
+        catalogueUpdatedAt: Date.now(), movPaise: 0, hygieneDeclared: false, fssaiVerified: false, returnPolicy: null, rating: null, ratingCount: 0, acceptanceRate: null, prepP50Min: null,
       };
       const docs: ItemDoc[] = Array.from({ length: 200 }, (_, k) => ({
         id: `99999999-1111-4000-8000-${String(s * 200 + k).padStart(12, '0')}`,
         merchantId: id, microMarketId, merchantName: merchant.name, merchantType: 'retail',
         name: `${brands[(s + k) % brands.length]} ${products[k % products.length]} ${packs[(k + s) % packs.length]}`,
         nameTe: null, brand: brands[(s + k) % brands.length]!, categorySlug: 'staples', categoryName: 'Atta, rice & dal', categoryNameTe: 'అట్టా, బియ్యం & పప్పులు',
-        foodMark: 'veg', inStock: k % 13 !== 0, stale: false, pricePaise: 1000 + k, mrpPaise: null, variantCount: 1, imageUrl: null, madeToOrder: false, specialOn: null, location: loc,
+        foodMark: 'veg', inStock: k % 13 !== 0, stale: false, pricePaise: 1000 + k, mrpPaise: null, variantId: '00000000-0000-4000-8000-000000000000', variantLabel: '1 pc', variantCount: 1, imageUrl: null, madeToOrder: false, specialOn: null, location: loc,
       }));
       await index.replaceMerchant(merchant, docs);
     }

@@ -55,8 +55,11 @@ const gap = SizedBox(height: SanthaSpacing.s4);
 
 /// Shows the latest result of a KYC check (verified / failed with reason / pending).
 class KycBanner extends StatelessWidget {
-  const KycBanner({super.key, required this.check});
+  const KycBanner({super.key, required this.check, this.pendingText});
   final KycCheck? check;
+
+  /// What "pending" means for this check (e.g. Aadhaar: waiting for the OTP, not for review).
+  final String? pendingText;
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +70,7 @@ class KycBanner extends StatelessWidget {
       KycStatus.verified => (SanthaColors.etaBg, SanthaColors.leaf, Icons.verified, '${l.kycVerified}${c.display != null ? ' · ${c.display}' : ''}'),
       KycStatus.failed => (SanthaColors.chilli.withValues(alpha: 0.1), SanthaColors.chilli, Icons.error_outline,
           c.failureReason != null ? l.kycFailed(c.failureReason!) : l.kycFailedGeneric),
-      KycStatus.pending => (SanthaColors.marigold100, SanthaColors.ink, Icons.hourglass_top, l.kycPending),
+      KycStatus.pending => (SanthaColors.marigold100, SanthaColors.ink, Icons.hourglass_top, pendingText ?? l.kycPending),
     };
     return Container(
       margin: const EdgeInsets.only(bottom: SanthaSpacing.s4),

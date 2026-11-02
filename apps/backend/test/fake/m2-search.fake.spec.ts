@@ -178,6 +178,8 @@ describe('M2 · feed and search (fake mode)', () => {
           catalogueUpdatedAt: Date.now(),
           movPaise: 0,
           hygieneDeclared: false,
+          fssaiVerified: false,
+          returnPolicy: null,
           rating: 3 + ((s * 7) % 21) / 10, // 3.0 … 5.0, not in distance order
           ratingCount: 10,
           acceptanceRate: 0.9,
@@ -204,6 +206,8 @@ describe('M2 · feed and search (fake mode)', () => {
             stale: k % 29 === 0,
             pricePaise: 1000 + k * 10,
             mrpPaise: 1200 + k * 10,
+            variantId: '00000000-0000-4000-8000-000000000000',
+            variantLabel: pack,
             variantCount: 1,
             imageUrl: null,
             madeToOrder: false,

@@ -3,8 +3,6 @@
   "appName": "Santha",
   "loginTagline": "The whole town, one app.",
   "loginSubtitle": "Enter your mobile number. We'll send you a one-time code.",
-  "homeWelcome": "Welcome to Santha",
-  "homeComingSoon": "Shops, home kitchens and home businesses near you are on their way.",
   "switchLanguage": "తెలుగు",
   "@switchLanguage": {
     "description": "Label of the button that switches to the other language"
@@ -52,5 +50,397 @@
       }
     }
   },
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "navHome": "Home",
+  "navSearch": "Search",
+  "navOrders": "Orders",
+  "navAccount": "Account",
+  "back": "Back",
+  "retry": "Try again",
+  "deliverTo": "Deliver to",
+  "changeLocation": "Change delivery location",
+  "locationTitle": "Where should we deliver?",
+  "locationSubtitle": "We show shops and home kitchens that deliver to you.",
+  "useCurrentLocation": "Use my current location",
+  "pickOnMap": "Pick on the map",
+  "savedAddresses": "Saved addresses",
+  "addressHome": "Home",
+  "addressWork": "Work",
+  "addressOther": "Other",
+  "defaultAddress": "Default",
+  "notServiceableShort": "Not delivering here yet",
+  "locating": "Finding your location…",
+  "locationOff": "Location is off. Turn it on, or pick on the map.",
+  "locationDenied": "Location permission was denied. Pick your place on the map instead.",
+  "pinTitle": "Move the map to your door",
+  "pinHint": "The pin marks where the rider will come.",
+  "confirmLocation": "Confirm location",
+  "pinMapLabel": "Map. Drag to move the delivery pin.",
+  "saveAddressTitle": "Save this address",
+  "addressLine": "House no., street, area",
+  "addressLandmark": "Landmark (optional)",
+  "addressLineError": "Enter at least 5 characters.",
+  "saveAndContinue": "Save and continue",
+  "skipSaving": "Continue without saving",
+  "currentLocationLabel": "Current location",
+  "pinnedLocationLabel": "Pinned location",
+  "notServiceableTitle": "We're not in your area yet",
+  "notServiceableBody": "Santha is live in parts of Nellore and growing street by street. Try another address.",
+  "tryAnotherAddress": "Try another address",
+  "searchHint": "Search 'biyyam', 'atta', 'biryani'…",
+  "tabStores": "Stores",
+  "tabFashion": "Fashion",
+  "tabHomeKitchens": "Home Kitchens",
+  "tabHomeBiz": "Home Biz",
+  "promoTitle": "₹50 off your first Santha order",
+  "promoSubtitle": "Use NELLORE50 · min order ₹199",
+  "promoAction": "Shop now",
+  "shopByCategory": "Shop by category",
+  "storesNearYou": "Stores near you",
+  "kitchensNearYou": "Home kitchens near you",
+  "fashionNearYou": "Fashion near you",
+  "homeBizNearYou": "Home businesses near you",
+  "feedEmpty": "No one here delivers to you yet. Check another tab or come back soon.",
+  "catGrocery": "Grocery",
+  "catVegFruit": "Veg & fruit",
+  "catDairy": "Dairy",
+  "catPharmacy": "Pharmacy",
+  "catBakery": "Bakery",
+  "catMeatFish": "Meat & fish",
+  "catSnacks": "Snacks",
+  "catHomeCare": "Home care",
+  "storeCatKirana": "Grocery",
+  "storeCatSupermarket": "Supermarket",
+  "storeCatPharmacy": "Pharmacy",
+  "storeCatBakery": "Bakery",
+  "storeCatMeatFish": "Meat & fish",
+  "storeCatFruitsVeg": "Fruits & vegetables",
+  "storeCatStationery": "Stationery",
+  "storeCatElectronics": "Electronics",
+  "storeCatOther": "Shop",
+  "typeFashion": "Fashion",
+  "typeHomeBusiness": "Home business",
+  "typeHomeKitchen": "Home kitchen",
+  "distanceM": "{m} m",
+  "@distanceM": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKm": "{km} km",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "ratingShort": "★ {rating}",
+  "@ratingShort": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "minUnit": "min",
+  "selfDelivers": "Self-delivers",
+  "opensAt": "Opens {time}",
+  "@opensAt": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "opensOn": "Opens {day} {time}",
+  "@opensOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "closedNow": "Closed now",
+  "nextSlot": "Next slot {time}",
+  "@nextSlot": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "noSlotsSoon": "No slots soon",
+  "storeCardLabel": "{name}, {meta}",
+  "@storeCardLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "meta": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineStale": "You're offline · showing what we saved at {time}",
+  "@offlineStale": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "staleData": "Prices and stock may have changed since {time}",
+  "@staleData": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "errorLoad": "We couldn't load this. Check your connection and try again.",
+  "loading": "Loading…",
+  "searchTitle": "Search",
+  "clearSearch": "Clear search",
+  "didYouMean": "Did you mean:",
+  "searchPrompt": "Search for rice, atta, medicines, biryani, sarees…",
+  "searchNoResults": "Nothing nearby matches \"{q}\". Try another word or a Telugu name.",
+  "@searchNoResults": {
+    "placeholders": {
+      "q": {
+        "type": "String"
+      }
+    }
+  },
+  "searchMore": "{n, plural, =1{1 more in this store} other{{n} more in this store}}",
+  "@searchMore": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "matchingStores": "Stores",
+  "vegOnly": "Veg only",
+  "openNowFilter": "Open now",
+  "storeSearchHint": "Search in this store",
+  "allCategories": "All",
+  "minOrder": "Min order {amount}",
+  "@minOrder": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "freeDeliveryOver": "Free delivery over {amount}",
+  "@freeDeliveryOver": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "returnsPolicy": "Returns: {policy}",
+  "@returnsPolicy": {
+    "placeholders": {
+      "policy": {
+        "type": "String"
+      }
+    }
+  },
+  "fssaiOk": "FSSAI OK",
+  "hygieneOk": "Hygiene declared",
+  "newOnSantha": "New on Santha",
+  "ratingWithCount": "★ {rating} ({count})",
+  "@ratingWithCount": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "notDeliveringHere": "This store doesn't deliver to your location. You can still look around.",
+  "storeEmpty": "Nothing here matches.",
+  "storeNotFound": "This store is not available right now.",
+  "add": "ADD",
+  "lowStock": "Few left",
+  "checkStock": "Store will confirm stock",
+  "outOfStock": "Out of stock",
+  "mrpLabel": "MRP {amount}",
+  "@mrpLabel": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "sizesCount": "{n} sizes",
+  "@sizesCount": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "todaysMenu": "Today's menu · order by {time} for the next slot",
+  "@todaysMenu": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "chooseSlot": "Choose a delivery slot",
+  "slotFull": "Full",
+  "slotClosed": "Closed",
+  "orderBy": "Order by {time}",
+  "@orderBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "serves": "{label}",
+  "@serves": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      }
+    }
+  },
+  "veg": "Veg",
+  "nonVeg": "Non-veg",
+  "egg": "Contains egg",
+  "portionsLeft": "{n} portions a day",
+  "@portionsLeft": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "special": "Today's special",
+  "notOnMenuToday": "Not on today’s menu",
+  "allergensLine": "Allergens: {list}",
+  "@allergensLine": {
+    "placeholders": {
+      "list": {
+        "type": "String"
+      }
+    }
+  },
+  "noSlotsToday": "No more slots today. See you tomorrow!",
+  "chooseSize": "Choose a size",
+  "substitutionInfo": "If this is out of stock when the store packs your order, they will call you before replacing it. You only pay for what you get.",
+  "madeFresh": "Made fresh · ready in about {n} min",
+  "@madeFresh": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "maxPerOrder": "Up to {n} per order",
+  "@maxPerOrder": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "addToCart": "Add to cart · {amount}",
+  "@addToCart": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "allergen_gluten": "gluten",
+  "allergen_milk": "milk",
+  "allergen_egg": "egg",
+  "allergen_peanut": "groundnut",
+  "allergen_tree_nuts": "nuts",
+  "allergen_soy": "soy",
+  "allergen_fish": "fish",
+  "allergen_shellfish": "shellfish",
+  "allergen_sesame": "sesame",
+  "allergen_mustard": "mustard",
+  "allergen_celery": "celery",
+  "allergen_sulphites": "sulphites",
+  "allergen_lupin": "lupin",
+  "allergen_molluscs": "molluscs",
+  "cartSummary": "{n, plural, =1{1 item} other{{n} items}} · {total}",
+  "@cartSummary": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "cartSlot": "Slot {time}",
+  "@cartSlot": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "viewCart": "View cart",
+  "checkout": "Checkout",
+  "cartTitle": "Your cart",
+  "cartFrom": "From {store}",
+  "@cartFrom": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "itemTotal": "Item total",
+  "checkoutSoon": "Checkout and payment are coming in the next update.",
+  "replaceCartTitle": "Start a new cart?",
+  "replaceCartBody": "Your cart has items from {store}. A cart can hold one store at a time.",
+  "@replaceCartBody": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "replaceCart": "Start new cart",
+  "keepCart": "Keep current cart",
+  "clearCart": "Clear cart",
+  "maxReached": "You can add up to {n} of this.",
+  "@maxReached": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "pickSlotFirst": "Choose a slot first",
+  "ordersEmpty": "Your orders will show here once you place one.",
+  "language": "Language",
+  "languageValue": "English",
+  "manageAddresses": "Delivery addresses",
+  "deleteAddress": "Delete address",
+  "makeDefault": "Make default",
+  "addAddress": "Add an address",
+  "noAddresses": "No saved addresses yet.",
+  "dayToday": "today",
+  "dayTomorrow": "tomorrow"
 }

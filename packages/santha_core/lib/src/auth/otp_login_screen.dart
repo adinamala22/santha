@@ -246,8 +246,8 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
                     ),
                     if (onCodeStep) ...[
                       const SizedBox(height: SanthaSpacing.s4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      Wrap(
+                        alignment: WrapAlignment.spaceBetween,
                         children: [
                           TextButton(
                             onPressed: _busy

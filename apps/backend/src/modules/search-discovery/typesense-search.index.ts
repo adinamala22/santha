@@ -127,9 +127,9 @@ export class TypesenseSearchIndex extends SearchIndex {
   }
 
   async searchItems(s: ItemSearch): Promise<Hit<ItemDoc>[]> {
-    const filters = [`microMarketId:=${s.microMarketId}`, s.inStockOnly ? 'inStock:=true' : null, s.vegOnly ? 'foodMark:=veg' : null].filter(Boolean).join(' && ');
+    const filters = [`microMarketId:=${s.microMarketId}`, s.inStockOnly ? 'inStock:=true' : null, s.vegOnly ? 'foodMark:=veg' : null, s.categorySlug ? `categorySlug:=${s.categorySlug}` : null].filter(Boolean).join(' && ');
     const r = await this.client.collections<TsItem>(this.itemsName).documents().search({
-      q: s.q,
+      q: s.q.trim() || '*',
       query_by: 'name,nameTe,brand,categoryName,categoryNameTe,merchantName',
       query_by_weights: '10,10,7,5,5,3',
       filter_by: filters,
