@@ -110,6 +110,10 @@ export const EnvSchema = z
     /** Minutes a checkout quote stays valid. */
     QUOTE_TTL_MIN: z.coerce.number().int().min(5).max(120).default(30),
 
+    /** Push notifications (M5): mock (dev/test, records) | fcm (needs FCM_SERVICE_ACCOUNT_B64 = base64 service-account JSON). */
+    PUSH_PROVIDER: z.enum(['mock', 'fcm']).default('mock'),
+    FCM_SERVICE_ACCOUNT_B64: z.string().optional(),
+
     RUN_WORKERS: bool.default(true),
     OUTBOX_POLL_MS: z.coerce.number().int().positive().default(500),
   })
@@ -128,6 +132,8 @@ export const EnvSchema = z
     if (env.PAYMENTS_PROVIDER !== 'mock')
       for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const)
         if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: `required when PAYMENTS_PROVIDER=${env.PAYMENTS_PROVIDER}` });
+    if (env.PUSH_PROVIDER === 'fcm' && !env.FCM_SERVICE_ACCOUNT_B64)
+      ctx.addIssue({ code: 'custom', path: ['FCM_SERVICE_ACCOUNT_B64'], message: 'required when PUSH_PROVIDER=fcm' });
     if (env.MAPS_PROVIDER === 'google' && !env.GOOGLE_MAPS_SERVER_KEY)
       ctx.addIssue({ code: 'custom', path: ['GOOGLE_MAPS_SERVER_KEY'], message: 'required when MAPS_PROVIDER=google' });
     if (env.OTP_PROVIDER === 'msg91' && (!env.MSG91_AUTH_KEY || !env.MSG91_TEMPLATE_ID))

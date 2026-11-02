@@ -7,6 +7,7 @@ import {
   AadhaarVerifyDto,
   AddStaffDto,
   ApproveDto,
+  AvailabilityDto,
   BankDto,
   CreateMerchantDto,
   GstExemptionDto,
@@ -50,6 +51,12 @@ export class MerchantsController {
   @ZodResponse({ type: MerchantViewDto })
   async update(@Body() body: UpdateMerchantDto, @CurrentUser() u: AuthUser) {
     return toViewDto(await this.merchants.update(u.userId, body));
+  }
+
+  @Put('me/availability')
+  @ZodResponse({ type: MerchantViewDto, description: 'Open or pause the store (M5). Re-opening clears the missed-order count after an auto-pause.' })
+  async availability(@Body() body: AvailabilityDto, @CurrentUser() u: AuthUser) {
+    return toViewDto(await this.merchants.setAvailability(u.userId, body.open));
   }
 
   @Put('me/kyc/pan')

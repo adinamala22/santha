@@ -35,6 +35,8 @@ export const CodRulesSchema = z.object({
 
 export const SlaSchema = z.object({
   merchantAcceptSec: z.number().int().min(10).max(300),
+  /** Hard accept window: an order still not accepted after this becomes EXPIRED (refunded). */
+  merchantAcceptHardSec: z.number().int().min(30).max(900).default(120),
   etaBufferMin: z.number().int().min(0).max(60),
   riderFallbackMin: z.number().int().min(1).max(60),
   staleCatalogueHours: z.number().int().min(1).max(720),
@@ -107,7 +109,7 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
     gstCookedFoodPercent: 5,
   },
   cod: { enabled: true, maxOrderPaise: 150000, allowedTypes: ['retail', 'fashion'] },
-  sla: { merchantAcceptSec: 20, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },
+  sla: { merchantAcceptSec: 20, merchantAcceptHardSec: 120, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },
   riderPay: { basePaise: 3000, perKmPaise: 700, waitPerMinPaise: 100, batchBonusPaise: 1500 },
   discovery: DEFAULT_DISCOVERY,
 };

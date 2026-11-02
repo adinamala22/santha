@@ -8,7 +8,10 @@ import { AnalyticsConfigModule } from '../analytics-config/analytics-config.modu
 import { CartPricingModule } from '../cart-pricing/cart-pricing.module';
 import { IdentityKycModule } from '../identity-kyc/identity-kyc.module';
 import { MerchantCatalogueModule } from '../merchant-catalogue/merchant-catalogue.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsSettlementModule } from '../payments-settlement/payments-settlement.module';
+import { CustomerOrderActionsController, MerchantOrdersController, OpsOrdersController } from './lifecycle.controller';
+import { OrderLifecycleService } from './lifecycle.service';
 import { PaymentExpiryJob } from './jobs/payment-expiry.job';
 import { DevOrderJobsController, OrdersController } from './orders.controller';
 import { InMemoryOrderRepository, OrderRepository, PrismaOrderRepository } from './orders.repository';
@@ -21,10 +24,11 @@ import { OrdersService } from './orders.service';
  * Events in: payment.captured. Owns orders, order_lines, order_transitions.
  */
 @Module({
-  imports: [CartPricingModule, PaymentsSettlementModule, MerchantCatalogueModule, AnalyticsConfigModule, IdentityKycModule],
-  controllers: [OrdersController, DevOrderJobsController],
+  imports: [CartPricingModule, PaymentsSettlementModule, MerchantCatalogueModule, AnalyticsConfigModule, IdentityKycModule, NotificationsModule],
+  controllers: [OrdersController, DevOrderJobsController, MerchantOrdersController, CustomerOrderActionsController, OpsOrdersController],
   providers: [
     OrdersService,
+    OrderLifecycleService,
     IdempotencyService,
     PaymentExpiryJob,
     {

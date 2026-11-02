@@ -28,3 +28,10 @@ import { InMemoryPaymentsRepository } from '../../modules/payments-settlement/pa
 orderRepositoryContract('in-memory', async () => new InMemoryOrderRepository());
 promoRepositoryContract('in-memory', async () => new InMemoryCartPricingRepository());
 paymentsRepositoryContract('in-memory', async () => new InMemoryPaymentsRepository());
+
+// M5
+import { notificationRepositoryContract, orderLifecycleContract } from '../../../test/contracts/m5.contract';
+import { InMemoryNotificationRepository } from '../../modules/notifications/notifications.repository';
+
+orderLifecycleContract('in-memory', async () => new InMemoryOrderRepository());
+notificationRepositoryContract('in-memory', async () => ({ repo: new InMemoryNotificationRepository(), userId: async () => randomUUID() }));

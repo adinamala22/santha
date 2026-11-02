@@ -42,6 +42,8 @@ export interface MerchantDoc {
   location: LatLng;
   radiusM: number;
   hours: WeeklyHours | null;
+  /** Store toggle / auto-pause (M5); a paused store shows as closed. Absent in docs indexed before M5. */
+  acceptingOrders?: boolean;
   selfDelivers: boolean;
   photoUrl: string | null;
   hasSlots: boolean;

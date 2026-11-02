@@ -49,7 +49,7 @@ type Row = Merchant & { lat: number | null; lng: number | null };
 const SELECT = Prisma.sql`m.id::text, m.owner_user_id::text, m.micro_market_id::text, m.type::text, m.sells_food, m.category,
   m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.hours, m.mov_paise, m.packaging_fee_paise,
   m.default_fulfilment::text, m.return_policy, m.hygiene_declared_at, m.status::text, m.submitted_at, m.decided_at,
-  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
+  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.accepting_orders, m.paused_reason, m.paused_at, m.missed_in_a_row, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
   ST_Y(m.location::geometry) AS lat, ST_X(m.location::geometry) AS lng`;
 
 const toRecord = (r: Row): MerchantRecord => ({
@@ -80,6 +80,10 @@ const toRecord = (r: Row): MerchantRecord => ({
   rejectionCode: r.rejectionCode,
   rejectionNote: r.rejectionNote,
   liveAt: r.liveAt,
+  acceptingOrders: r.acceptingOrders,
+  pausedReason: r.pausedReason,
+  pausedAt: r.pausedAt,
+  missedInARow: r.missedInARow,
   photoIds: r.photoIds,
   createdAt: r.createdAt,
   updatedAt: r.updatedAt,
@@ -113,6 +117,10 @@ interface RawRow {
   rejection_code: string | null;
   rejection_note: string | null;
   live_at: Date | null;
+  accepting_orders: boolean;
+  paused_reason: string | null;
+  paused_at: Date | null;
+  missed_in_a_row: number;
   photo_ids: string[];
   created_at: Date;
   updated_at: Date;
@@ -148,6 +156,10 @@ const fromRaw = (r: RawRow): MerchantRecord =>
     rejectionCode: r.rejection_code,
     rejectionNote: r.rejection_note,
     liveAt: r.live_at,
+    acceptingOrders: r.accepting_orders,
+    pausedReason: r.paused_reason,
+    pausedAt: r.paused_at,
+    missedInARow: r.missed_in_a_row,
     photoIds: r.photo_ids ?? [],
     createdAt: r.created_at,
     updatedAt: r.updated_at,
@@ -329,6 +341,10 @@ class MerchantStore extends MemoryStore<MemState> {
             rejectionCode: null,
             rejectionNote: null,
             liveAt: null,
+            acceptingOrders: true,
+            pausedReason: null,
+            pausedAt: null,
+            missedInARow: 0,
             photoIds: [],
             createdAt: now,
             updatedAt: now,

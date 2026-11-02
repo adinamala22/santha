@@ -107,7 +107,7 @@ export class DiscoveryService {
       docs.map(async (doc): Promise<StoreCard | null> => {
         const straight = haversineMeters(doc.location, pt);
         if (straight > doc.radiusM) return null;
-        const hours = openStatus(doc.hours, now);
+        const hours = doc.acceptingOrders === false ? { open: false, nextOpenAt: null, closesAt: null } : openStatus(doc.hours, now);
         let eta: StoreCard['eta'];
         let etaMin: number | null = null;
         if (doc.type === 'home_kitchen' && doc.hasSlots) {

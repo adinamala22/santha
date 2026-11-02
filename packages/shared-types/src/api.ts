@@ -308,6 +308,22 @@ export interface paths {
         patch: operations["MerchantsController_update"];
         trace?: never;
     };
+    "/v1/merchants/me/availability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_availability"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchants/me/kyc/pan": {
         parameters: {
             query?: never;
@@ -1124,6 +1140,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchants/me/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantOrdersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantOrdersController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/accept": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantOrdersController_accept"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantOrdersController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/items/{variantId}/unavailable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantOrdersController_unavailable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/ready": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantOrdersController_ready"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["CustomerOrderActionsController_cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsOrdersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsOrdersController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payments/{id}/confirm": {
         parameters: {
             query?: never;
@@ -1149,6 +1309,38 @@ export interface paths {
         };
         get: operations["PaymentsController_wallet"];
         put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/push-token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["NotificationsController_pushToken"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/notification-preferences": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["NotificationsController_prefs"];
+        put: operations["NotificationsController_setPrefs"];
         post?: never;
         delete?: never;
         options?: never;
@@ -1466,6 +1658,8 @@ export interface components {
                     };
                     sla: {
                         merchantAcceptSec: number;
+                        /** @default 120 */
+                        merchantAcceptHardSec: number;
                         etaBufferMin: number;
                         riderFallbackMin: number;
                         staleCatalogueHours: number;
@@ -1610,6 +1804,8 @@ export interface components {
                 };
                 sla: {
                     merchantAcceptSec: number;
+                    /** @default 120 */
+                    merchantAcceptHardSec: number;
                     etaBufferMin: number;
                     riderFallbackMin: number;
                     staleCatalogueHours: number;
@@ -1744,6 +1940,8 @@ export interface components {
                 };
                 sla: {
                     merchantAcceptSec: number;
+                    /** @default 120 */
+                    merchantAcceptHardSec: number;
                     etaBufferMin: number;
                     riderFallbackMin: number;
                     staleCatalogueHours: number;
@@ -1878,6 +2076,8 @@ export interface components {
                 };
                 sla: {
                     merchantAcceptSec: number;
+                    /** @default 120 */
+                    merchantAcceptHardSec: number;
                     etaBufferMin: number;
                     riderFallbackMin: number;
                     staleCatalogueHours: number;
@@ -2029,6 +2229,8 @@ export interface components {
                 };
                 sla: {
                     merchantAcceptSec: number;
+                    /** @default 120 */
+                    merchantAcceptHardSec: number;
                     etaBufferMin: number;
                     riderFallbackMin: number;
                     staleCatalogueHours: number;
@@ -2186,6 +2388,8 @@ export interface components {
             };
             sla: {
                 merchantAcceptSec: number;
+                /** @default 120 */
+                merchantAcceptHardSec: number;
                 etaBufferMin: number;
                 riderFallbackMin: number;
                 staleCatalogueHours: number;
@@ -2338,6 +2542,9 @@ export interface components {
                 rejectionNote: string | null;
                 /** Format: date-time */
                 liveAt: string | null;
+                acceptingOrders: boolean;
+                /** @description missed_orders (auto-pause) | merchant | ops */
+                pausedReason: string | null;
                 /** Format: date-time */
                 createdAt: string;
             };
@@ -2449,6 +2656,10 @@ export interface components {
             packagingFeePaise?: number;
             /** @enum {string} */
             defaultFulfilment?: "self" | "rider";
+        };
+        AvailabilityDto: {
+            /** @description true = taking orders */
+            open: boolean;
         };
         PanDto: {
             pan: string;
@@ -2571,6 +2782,9 @@ export interface components {
                     rejectionNote: string | null;
                     /** Format: date-time */
                     liveAt: string | null;
+                    acceptingOrders: boolean;
+                    /** @description missed_orders (auto-pause) | merchant | ops */
+                    pausedReason: string | null;
                     /** Format: date-time */
                     createdAt: string;
                 };
@@ -2632,8 +2846,7 @@ export interface components {
         };
         RejectDto: {
             /** @enum {string} */
-            reasonCode: "kyc_mismatch" | "fssai_invalid" | "documents_unclear" | "outside_serviceable_area" | "restricted_category" | "duplicate_merchant" | "other";
-            note?: string;
+            reason: "out_of_stock" | "store_closing" | "too_busy" | "cannot_deliver" | "other";
         };
         CategoryListDto_Output: {
             items: {
@@ -4038,6 +4251,284 @@ export interface components {
                 } | null;
             }[];
         };
+        MerchantOrderListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                state: string;
+                /** @enum {string} */
+                paymentMethod: "online" | "cod";
+                /** @enum {string|null} */
+                fulfilmentMode: "self" | "rider" | null;
+                itemCount: number;
+                itemsPaise: number;
+                totalPaise: number;
+                refundedPaise: number;
+                /** @description Cash to collect on delivery (COD orders, after removed items) */
+                codDuePaise: number;
+                when: {
+                    /** @enum {string} */
+                    mode: "asap" | "slot";
+                    slotDate: string | null;
+                    /** Format: date-time */
+                    slotStartsAt: string | null;
+                };
+                distanceM: number;
+                /** @description Shown only after you accept */
+                address: {
+                    line: string;
+                    landmark: string | null;
+                } | null;
+                instructions: string | null;
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    variantId: string;
+                    name: string;
+                    variantLabel: string;
+                    quantity: number;
+                    unitPricePaise: number;
+                    linePaise: number;
+                    substitution: string;
+                    /** @enum {string} */
+                    status: "ok" | "removed" | "substituted";
+                    substituteName: string | null;
+                    substituteVariantLabel: string | null;
+                    substituteUnitPaise: number | null;
+                    refundPaise: number;
+                }[];
+                /** Format: date-time */
+                placedAt: string | null;
+                /**
+                 * Format: date-time
+                 * @description UI countdown (accept window)
+                 */
+                acceptBy: string | null;
+                /**
+                 * Format: date-time
+                 * @description After this the order expires and is refunded
+                 */
+                expiresAt: string | null;
+                /** Format: date-time */
+                acceptedAt: string | null;
+                /** Format: date-time */
+                packBy: string | null;
+                /** Format: date-time */
+                readyAt: string | null;
+                outcomeReason: string | null;
+            }[];
+            counts: {
+                new: number;
+                preparing: number;
+                ready: number;
+                out: number;
+                done: number;
+            };
+            summary: {
+                orders: number;
+                itemsPaise: number;
+                acceptanceRate: number | null;
+                avgPrepMin: number | null;
+            };
+        };
+        MerchantOrderDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            state: string;
+            /** @enum {string} */
+            paymentMethod: "online" | "cod";
+            /** @enum {string|null} */
+            fulfilmentMode: "self" | "rider" | null;
+            itemCount: number;
+            itemsPaise: number;
+            totalPaise: number;
+            refundedPaise: number;
+            /** @description Cash to collect on delivery (COD orders, after removed items) */
+            codDuePaise: number;
+            when: {
+                /** @enum {string} */
+                mode: "asap" | "slot";
+                slotDate: string | null;
+                /** Format: date-time */
+                slotStartsAt: string | null;
+            };
+            distanceM: number;
+            /** @description Shown only after you accept */
+            address: {
+                line: string;
+                landmark: string | null;
+            } | null;
+            instructions: string[];
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                variantId: string;
+                name: string;
+                variantLabel: string;
+                quantity: number;
+                unitPricePaise: number;
+                linePaise: number;
+                substitution: string;
+                /** @enum {string} */
+                status: "ok" | "removed" | "substituted";
+                substituteName: string | null;
+                substituteVariantLabel: string | null;
+                substituteUnitPaise: number | null;
+                refundPaise: number;
+            }[];
+            /** Format: date-time */
+            placedAt: string | null;
+            /**
+             * Format: date-time
+             * @description UI countdown (accept window)
+             */
+            acceptBy: string | null;
+            /**
+             * Format: date-time
+             * @description After this the order expires and is refunded
+             */
+            expiresAt: string | null;
+            /** Format: date-time */
+            acceptedAt: string | null;
+            /** Format: date-time */
+            packBy: string | null;
+            /** Format: date-time */
+            readyAt: string | null;
+            outcomeReason: string[];
+        };
+        AcceptDto: {
+            /**
+             * @description Default: the store setting (fashion is always rider)
+             * @enum {string}
+             */
+            fulfilmentMode?: "self" | "rider";
+        };
+        ItemUnavailableDto: {
+            /** @enum {string} */
+            action: "remove" | "substitute";
+            /**
+             * Format: uuid
+             * @description substitute: an item from your store
+             */
+            itemId?: string;
+            /**
+             * Format: uuid
+             * @description substitute: its size (same or lower price)
+             */
+            variantId?: string;
+        };
+        CancelOrderDto: {
+            /** @enum {string} */
+            reason: "changed_mind" | "ordered_by_mistake" | "taking_too_long" | "other";
+        };
+        OpsOrderListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                state: string;
+                /** Format: uuid */
+                userId: string;
+                /** Format: uuid */
+                merchantId: string;
+                merchantName: string;
+                /** Format: uuid */
+                microMarketId: string;
+                /** @enum {string} */
+                paymentMethod: "online" | "cod";
+                fulfilmentMode: string | null;
+                totalPaise: number;
+                refundedPaise: number;
+                itemCount: number;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                placedAt: string | null;
+                outcomeReason: string | null;
+            }[];
+        };
+        OpsOrderDetailDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            state: string;
+            /** Format: uuid */
+            userId: string;
+            /** Format: uuid */
+            merchantId: string;
+            merchantName: string;
+            /** Format: uuid */
+            microMarketId: string;
+            /** @enum {string} */
+            paymentMethod: "online" | "cod";
+            fulfilmentMode: string[];
+            totalPaise: number;
+            refundedPaise: number;
+            itemCount: number;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            placedAt: string | null;
+            outcomeReason: string[];
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                variantId: string;
+                name: string;
+                variantLabel: string;
+                quantity: number;
+                unitPricePaise: number;
+                linePaise: number;
+                substitution: string;
+                /** @enum {string} */
+                status: "ok" | "removed" | "substituted";
+                substituteName: string | null;
+                substituteVariantLabel: string | null;
+                substituteUnitPaise: number | null;
+                refundPaise: number;
+            }[];
+            bill: unknown;
+            address: {
+                line: string;
+                landmark: string | null;
+            };
+            instructions: string[];
+            history: {
+                from: string | null;
+                to: string;
+                actorType: string;
+                actorId: string | null;
+                reason: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+            payment: {
+                status: string;
+                provider: string;
+                providerOrderId: string;
+                providerPaymentId: string | null;
+                amountPaise: number;
+                failureReason: string | null;
+            } | null;
+            comms: {
+                channel: string;
+                template: string;
+                locale: string;
+                body: string;
+                status: string;
+                provider: string;
+                error: string | null;
+                /** @enum {string} */
+                to: "customer" | "merchant";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
         ConfirmPaymentDto: {
             /** @description razorpay_order_id */
             providerOrderId: string;
@@ -4073,6 +4564,19 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
+        };
+        PushTokenDto: {
+            token: string;
+            /** @enum {string} */
+            platform: "android" | "ios" | "web";
+        };
+        PreferencesDto_Output: {
+            /** @description Order updates on WhatsApp (explicit opt-in) */
+            whatsappUpdates: boolean;
+        };
+        PreferencesDto: {
+            /** @description Order updates on WhatsApp (explicit opt-in) */
+            whatsappUpdates: boolean;
         };
     };
     responses: never;
@@ -4605,6 +5109,32 @@ export interface operations {
             };
         };
         responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_availability: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AvailabilityDto"];
+            };
+        };
+        responses: {
+            /** @description Open or pause the store (M5). Re-opening clears the missed-order count after an auto-pause. */
             default: {
                 headers: {
                     [name: string]: unknown;
@@ -6087,6 +6617,239 @@ export interface operations {
             };
         };
     };
+    MerchantOrdersController_list: {
+        parameters: {
+            query?: {
+                bucket?: "new" | "preparing" | "ready" | "out" | "done";
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Orders in one tab (new · preparing · ready · out · done), tab counts and today’s summary */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantOrdersController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantOrdersController_accept: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptDto"];
+            };
+        };
+        responses: {
+            /** @description PLACED → ACCEPTED → PREPARING; reveals the address */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantOrdersController_reject: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectDto"];
+            };
+        };
+        responses: {
+            /** @description PLACED → REJECTED; the customer is refunded */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantOrdersController_unavailable: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+                variantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ItemUnavailableDto"];
+            };
+        };
+        responses: {
+            /** @description Remove the item or substitute one at the same or lower price; the difference is refunded at once */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantOrdersController_ready: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description PREPARING → READY */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantOrderDto_Output"];
+                };
+            };
+        };
+    };
+    CustomerOrderActionsController_cancel: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelOrderDto"];
+            };
+        };
+        responses: {
+            /** @description Free cancellation while the order is PLACED (refunded to the wallet); 409 once the store accepted */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto_Output"];
+                };
+            };
+        };
+    };
+    OpsOrdersController_list: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated states */
+                state?: string;
+                microMarketId?: string;
+                limit?: number;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsOrderListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsOrdersController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsOrderDetailDto_Output"];
+                };
+            };
+        };
+    };
     PaymentsController_confirm: {
         parameters: {
             query?: never;
@@ -6134,6 +6897,75 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["WalletDto_Output"];
+                };
+            };
+        };
+    };
+    NotificationsController_pushToken: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PushTokenDto"];
+            };
+        };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_prefs: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesDto_Output"];
+                };
+            };
+        };
+    };
+    NotificationsController_setPrefs: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreferencesDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PreferencesDto_Output"];
                 };
             };
         };

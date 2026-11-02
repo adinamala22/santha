@@ -1,4 +1,6 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
+import type { DomainEvent } from '../../infra/outbox/domain-event';
+import { EventBus } from '../../infra/outbox/event-bus';
 import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
 import type { LatLng } from '../../common/geo/polygon';
@@ -68,15 +70,75 @@ export interface OpsActor {
  * merchant-catalogue, merchant side (M1): self-onboarding by the owner and the ops review
  * pipeline draft → submitted → approved/rejected → live (FR-OPS-1). Catalogue arrives in M2.
  */
+/** Consecutive missed (expired) orders that auto-pause a store (PRD: two misses → paused). */
+export const MAX_MISSED_IN_A_ROW = 2;
+
 @Injectable()
-export class MerchantsService {
+export class MerchantsService implements OnModuleInit {
   constructor(
     private readonly repo: MerchantRepository,
     private readonly kyc: KycService,
     private readonly markets: MicroMarketsService,
     private readonly media: MediaService,
+    private readonly bus: EventBus,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
+
+  onModuleInit(): void {
+    // M5: a missed order (accept window passed) counts towards auto-pause; any answer resets it.
+    this.bus.on('order.expired', 'merchant-availability', (e) => this.onMissed(e));
+    for (const t of ['order.accepted', 'order.rejected']) this.bus.on(t, 'merchant-availability', (e) => this.onAnswered(e));
+  }
+
+  // ───────── availability (M5) ─────────
+
+  /** Store toggle in the merchant app ("Open" pill). Re-opening clears the missed-order count. */
+  async setAvailability(ownerUserId: string, open: boolean): Promise<MerchantView> {
+    const m = await this.owned(ownerUserId);
+    if (m.status !== 'live') throw new DomainError('INVALID_STATE', 'Your store is not live yet.');
+    if (m.acceptingOrders === open) return this.view(m);
+    const merchant = await this.repo.transaction(async (tx) => {
+      const updated = await tx.update(m.id, open ? { acceptingOrders: true, pausedReason: null, pausedAt: null, missedInARow: 0 } : { acceptingOrders: false, pausedReason: 'merchant', pausedAt: this.clock() });
+      await tx.appendEvent({
+        type: 'merchant.availability_changed',
+        aggregate: { type: 'merchant', id: m.id },
+        microMarketId: m.microMarketId,
+        actor: { type: 'user', id: ownerUserId },
+        payload: { merchant_id: m.id, accepting_orders: open, reason: open ? null : 'merchant' },
+      });
+      return updated;
+    });
+    return this.view(merchant);
+  }
+
+  private async onMissed(e: DomainEvent): Promise<void> {
+    const merchantId = (e.payload as { merchant_id?: string }).merchant_id;
+    if (!merchantId) return;
+    await this.repo.transaction(async (tx) => {
+      const m = await tx.lock(merchantId);
+      if (!m) return;
+      const missed = m.missedInARow + 1;
+      if (missed >= MAX_MISSED_IN_A_ROW && m.acceptingOrders) {
+        await tx.update(m.id, { missedInARow: missed, acceptingOrders: false, pausedReason: 'missed_orders', pausedAt: this.clock() });
+        await tx.appendEvent({
+          type: 'merchant.auto_paused',
+          aggregate: { type: 'merchant', id: m.id },
+          microMarketId: m.microMarketId,
+          actor: { type: 'system', id: null },
+          payload: { merchant_id: m.id, missed_in_a_row: missed, last_order_id: e.aggregate.id },
+        });
+      } else await tx.update(m.id, { missedInARow: missed });
+    });
+  }
+
+  private async onAnswered(e: DomainEvent): Promise<void> {
+    const merchantId = (e.payload as { merchant_id?: string }).merchant_id;
+    if (!merchantId) return;
+    await this.repo.transaction(async (tx) => {
+      const m = await tx.lock(merchantId);
+      if (m && m.missedInARow > 0) await tx.update(m.id, { missedInARow: 0 });
+    });
+  }
 
   // ───────── owner (merchant app) ─────────
 

@@ -20,7 +20,7 @@ import { CatalogueService } from '../merchant-catalogue/catalogue.service';
 import type { MerchantRecord } from '../merchant-catalogue/domain/merchant';
 import { type CheckoutPayload, PaymentsService } from '../payments-settlement/payments.service';
 import { assertTransition, EVENT_FOR, type OrderActor } from './domain/state-machine';
-import { type OrderAddress, type OrderRecord, OrderRepository, type OrderState, type TransitionRecord } from './orders.repository';
+import { type NewOrder, type OrderAddress, type OrderRecord, OrderRepository, type OrderState, type TransitionRecord, type TransitionSet } from './orders.repository';
 
 export type When = { mode: 'asap' } | { mode: 'slot'; slotId: string; date: string };
 
@@ -125,6 +125,9 @@ export class OrdersService implements OnModuleInit {
     // Delivery: the address must be in the store's micro-market and within its radius.
     const hit = await this.markets.resolve(a.location, now);
     if (hit?.market.id !== m.microMarketId || haversineMeters(m.location!, a.location) > m.radiusM) problems.push({ code: 'NOT_DELIVERABLE' });
+
+    // A paused store (toggle or auto-pause after missed orders) takes no orders.
+    if (!m.acceptingOrders) problems.push({ code: 'STORE_CLOSED' });
 
     // Timing: home kitchens sell by slot (cut-off, capacity, menu days, portions); others ASAP while open.
     const when: Checkout['when'] = { ...input.when };
@@ -300,7 +303,7 @@ export class OrdersService implements OnModuleInit {
   }
 
   /** Inserts with a fresh short code (retries on the rare collision); emits order.placed / order.created. */
-  private async insertWithCode(o: Omit<OrderRecord, 'code' | 'createdAt' | 'updatedAt'>): Promise<OrderRecord> {
+  private async insertWithCode(o: Omit<NewOrder, 'code'>): Promise<OrderRecord> {
     for (let attempt = 0; ; attempt++) {
       const code = 'SN' + Array.from({ length: 6 }, () => CODE_ALPHABET[randomInt(CODE_ALPHABET.length)]).join('');
       try {
@@ -325,11 +328,17 @@ export class OrdersService implements OnModuleInit {
   // ───────────── state changes ─────────────
 
   /** The single guarded transition: validates the edge, CAS on the state, history row + event in one transaction. */
-  async move(order: OrderRecord, to: OrderState, actor: OrderActor, actorId: string | null, reason: string, opts: { placedAt?: Date } = {}): Promise<boolean> {
+  async move(order: OrderRecord, to: OrderState, actor: OrderActor, actorId: string | null, reason: string, set: TransitionSet = {}): Promise<boolean> {
     const cookedFood = (order.quote as QuoteSnapshot['checkout'] | null)?.merchant?.type === 'home_kitchen';
-    assertTransition(order.state, to, actor, { cookedFood });
+    try {
+      assertTransition(order.state, to, actor, { cookedFood });
+    } catch (err) {
+      // Illegal transitions are refused and logged (M5 acceptance).
+      this.logger.warn({ orderId: order.id, from: order.state, to, actor, actorId, reason }, 'Illegal order transition refused');
+      throw err;
+    }
     return this.repo.transaction(async (tx) => {
-      const moved = await tx.transition(order.id, { from: order.state, to, actor: { type: actor, id: actorId }, reason, ...(opts.placedAt ? { set: { placedAt: opts.placedAt } } : {}) });
+      const moved = await tx.transition(order.id, { from: order.state, to, actor: { type: actor, id: actorId }, reason, set });
       if (!moved) return false; // someone else moved it first
       await tx.appendEvent({
         type: EVENT_FOR[to],
