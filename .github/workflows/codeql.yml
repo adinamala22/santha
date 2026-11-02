@@ -1,6 +1,9 @@
 name: codeql
 
 # SAST: CodeQL for the TypeScript backend and web app. Dart is not supported by CodeQL; `flutter analyze` runs in flutter.yml.
+# The repo is private without GitHub Code Security, so results are not uploaded to code scanning. They are
+# saved as a SARIF artifact instead, and the job fails on any error-level finding. If Code Security is enabled
+# later, set `upload: always` and drop the gate step.
 on:
   pull_request:
     paths: [apps/backend/**, apps/web/**, packages/shared-types/**, .github/workflows/codeql.yml]
@@ -11,7 +14,7 @@ on:
 
 permissions:
   contents: read
-  security-events: write
+  actions: read
 
 jobs:
   analyze:
@@ -24,6 +27,33 @@ jobs:
           languages: javascript-typescript
           queries: security-extended
           config: |
-            paths: [apps/backend/src, apps/web/app, apps/web/components, apps/web/lib]
+            paths: [apps/backend/src, apps/web/src]
             paths-ignore: ['**/*.spec.ts', '**/*.test.ts', apps/backend/src/dev]
       - uses: github/codeql-action/analyze@v3
+        with:
+          upload: never
+          output: codeql-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with: { name: codeql-sarif, path: codeql-results, retention-days: 30 }
+      - name: Fail on error-level findings
+        run: |
+          node -e '
+            const fs = require("fs"), path = require("path");
+            const dir = "codeql-results";
+            let bad = 0;
+            for (const f of fs.readdirSync(dir).filter((x) => x.endsWith(".sarif"))) {
+              const sarif = JSON.parse(fs.readFileSync(path.join(dir, f), "utf8"));
+              for (const run of sarif.runs) {
+                const rules = new Map((run.tool.driver.rules ?? []).map((r) => [r.id, r]));
+                for (const r of run.results ?? []) {
+                  const level = r.level ?? rules.get(r.ruleId)?.defaultConfiguration?.level ?? "warning";
+                  const loc = r.locations?.[0]?.physicalLocation;
+                  console.log(`${level.padEnd(7)} ${r.ruleId} ${loc?.artifactLocation?.uri}:${loc?.region?.startLine} ${r.message.text}`);
+                  if (level === "error") bad++;
+                }
+              }
+            }
+            if (bad) { console.error(`${bad} error-level CodeQL finding(s)`); process.exit(1); }
+            console.log("No error-level CodeQL findings.");
+          '

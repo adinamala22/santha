@@ -115,5 +115,5 @@ payments · 011 M5 order lifecycle · 012 M6 hybrid fulfilment · 013 M7 settlem
 analytics, hardening & launch.
 
 ## Security and launch
-CodeQL (`.github/workflows/codeql.yml`) on PRs and weekly; OWASP ZAP baseline and API scans (`zap.yml`) weekly against the fake
+CodeQL (`.github/workflows/codeql.yml`) on PRs and weekly, failing on error-level findings (SARIF kept as an artifact); OWASP ZAP baseline and API scans (`zap.yml`) weekly against the fake
 service; security headers on the API and web. Launch readiness: `docs/launch/launch-checklist.md`.

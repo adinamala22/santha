@@ -10,7 +10,7 @@ legal or operations tasks.
 - [ ] Beta: k6 `peak.js` on staging meets all thresholds; record the p95 values here: feed ___ · search ___ · place ___
 - [ ] Beta: cold start measured on a Redmi 12C class phone: consumer ___ s · merchant ___ s · rider ___ s (≤ 2.5 s)
 - [ ] Beta: landing Lighthouse (mobile) ≥ 90 ×4 on staging: P ___ A ___ BP ___ SEO ___
-- [ ] Beta: CodeQL has no open high or critical alerts; ZAP baseline clean, or each finding triaged in `.github/zap-rules.tsv`
+- [ ] Beta: CodeQL job green (it fails on error-level findings; the SARIF is kept as the `codeql-sarif` artifact because code scanning needs GitHub Code Security on a private repo); ZAP baseline clean, or each finding triaged in `.github/zap-rules.tsv`
 - [ ] Launch: external pen test done on staging; criticals and highs closed and retested
 - [ ] Beta: Sentry and Crashlytics are receiving events from staging builds; Grafana SLO board and alerts live
 - [ ] Beta: PostHog project for staging and prod (India region, or self-hosted in ap-south-1); `POSTHOG_KEY` in Secrets Manager
