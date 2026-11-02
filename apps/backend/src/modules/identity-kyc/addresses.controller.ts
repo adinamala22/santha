@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { ZodResponse } from 'nestjs-zod';
+import { createZodDto } from '../../common/zod-dto';
 import { z } from 'zod';
 import { type AuthUser, CurrentUser } from '../../common/auth/decorators';
 import { type AddressView, AddressesService } from './addresses.service';

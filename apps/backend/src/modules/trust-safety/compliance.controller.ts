@@ -1,6 +1,7 @@
 import { Body, Controller, Get, Header, HttpCode, Param, ParseUUIDPipe, Post, Put, Query, StreamableFile } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiProduces, ApiTags } from '@nestjs/swagger';
-import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { ZodResponse } from 'nestjs-zod';
+import { createZodDto } from '../../common/zod-dto';
 import { z } from 'zod';
 import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
 import { DomainError } from '../../common/errors/domain-error';
@@ -89,6 +90,8 @@ class PublicStoreDto extends createZodDto(
     reviews: z.array(z.object({ storeStars: z.number().int(), comment: z.string().nullable(), reply: z.string().nullable(), createdAt: iso })),
   }),
 ) {}
+
+class PublicStoreListDto extends createZodDto(z.object({ items: z.array(z.object({ slug: z.string(), name: z.string(), updatedAt: iso })) })) {}
 
 const isoOrNull = (d: Date | null) => d?.toISOString() ?? null;
 const toGrievance = (g: GrievanceRecord, now: Date) => ({
@@ -261,6 +264,12 @@ export class PublicStoreController {
     private readonly issues: IssuesService,
     private readonly compliance: ComplianceService,
   ) {}
+
+  @Get()
+  @ZodResponse({ type: PublicStoreListDto, description: 'Live store links for the sitemap' })
+  async list() {
+    return { items: (await this.merchants.live()).filter((m) => m.slug).map((m) => ({ slug: m.slug!, name: m.name, updatedAt: m.updatedAt.toISOString() })) };
+  }
 
   @Get(':slug')
   @ZodResponse({ type: PublicStoreDto })

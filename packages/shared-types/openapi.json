@@ -7009,6 +7009,27 @@
         ]
       }
     },
+    "/v1/public/stores": {
+      "get": {
+        "operationId": "PublicStoreController_list",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "Live store links for the sitemap",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicStoreListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
     "/v1/public/stores/{slug}": {
       "get": {
         "operationId": "PublicStoreController_store",
@@ -7705,10 +7726,8 @@
             "type": "string"
           },
           "name": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "locale": {
             "type": "string"
@@ -7935,25 +7954,19 @@
             ]
           },
           "name": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "line": {
             "type": "string"
           },
           "landmark": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "pincode": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "location": {
             "type": "object",
@@ -11707,16 +11720,12 @@
             "additionalProperties": false
           },
           "note": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdBy": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -12798,31 +12807,23 @@
             ]
           },
           "valueMasked": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "valuePublic": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "nameOnRecord": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "provider": {
             "type": "string"
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "details": {
             "type": "object",
@@ -14235,22 +14236,16 @@
             "type": "string"
           },
           "nameTe": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "brand": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "categorySlug": {
             "type": "string"
@@ -14308,10 +14303,8 @@
             "nullable": true
           },
           "specialOn": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -14323,10 +14316,8 @@
             ]
           },
           "reviewReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "source": {
             "type": "string",
@@ -14401,10 +14392,8 @@
             }
           },
           "imageUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "stock": {
             "type": "string",
@@ -15339,23 +15328,17 @@
             ]
           },
           "rejectReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "thumbUrl": {
             "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "mediumUrl": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -16880,10 +16863,8 @@
             "additionalProperties": false
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "microMarket": {
             "type": "object",
@@ -16948,10 +16929,8 @@
             "type": "boolean"
           },
           "returnPolicy": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "freeDeliveryAbovePaise": {
             "type": "integer",
@@ -18898,10 +18877,8 @@
             "additionalProperties": false
           },
           "instructions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "lines": {
             "type": "array",
@@ -19279,19 +19256,15 @@
             "maximum": 9007199254740991
           },
           "outcomeReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "canCancel": {
             "type": "boolean"
           },
           "promoCode": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "placedAt": {
             "type": "string",
@@ -20628,10 +20601,8 @@
             "nullable": true
           },
           "instructions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "lines": {
             "type": "array",
@@ -20761,10 +20732,8 @@
             "nullable": true
           },
           "outcomeReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -21005,10 +20974,8 @@
             ]
           },
           "fulfilmentMode": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "totalPaise": {
             "type": "integer",
@@ -21037,10 +21004,8 @@
             "nullable": true
           },
           "outcomeReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "lines": {
             "type": "array",
@@ -21152,10 +21117,8 @@
             "additionalProperties": false
           },
           "instructions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "history": {
             "type": "array",
@@ -21374,11 +21337,9 @@
             "type": "string"
           },
           "keyId": {
+            "type": "string",
             "description": "Razorpay key id for the checkout SDK (null for the mock)",
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "nullable": true
           },
           "amountPaise": {
             "type": "integer",
@@ -21397,10 +21358,8 @@
             ]
           },
           "lastFailure": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -21587,10 +21546,8 @@
             }
           },
           "rating": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "today": {
             "type": "object",
@@ -22151,10 +22108,8 @@
             "additionalProperties": false
           },
           "instructions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "itemCount": {
             "type": "integer",
@@ -22355,10 +22310,8 @@
             "nullable": true
           },
           "deliveryOtp": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "store": {
             "type": "object",
@@ -22647,16 +22600,12 @@
             "nullable": true
           },
           "staffLink": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "deliveryOtp": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "fallbackStage": {
             "type": "string",
@@ -23181,16 +23130,12 @@
             "nullable": true
           },
           "courier": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "fallbackStage": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "searchingSec": {
             "type": "integer",
@@ -23455,16 +23400,12 @@
             ]
           },
           "transferRef": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "hasStatement": {
             "type": "boolean"
@@ -23758,10 +23699,8 @@
             ]
           },
           "resolutionNote": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "adjustmentPaise": {
             "type": "integer",
@@ -24150,22 +24089,16 @@
             "type": "boolean"
           },
           "rejectNote": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "failureReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "trustScore": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -24382,10 +24315,8 @@
             ]
           },
           "note": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string",
@@ -24503,10 +24434,8 @@
             }
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "claimedPaise": {
             "type": "integer",
@@ -24544,10 +24473,8 @@
             "type": "string"
           },
           "decidedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -24717,10 +24644,8 @@
             "nullable": true
           },
           "comment": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -24940,10 +24865,8 @@
             ]
           },
           "resolution": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "ackDueAt": {
             "type": "string"
@@ -24952,16 +24875,12 @@
             "type": "string"
           },
           "acknowledgedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "resolvedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -25203,10 +25122,8 @@
             ]
           },
           "details": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -25217,10 +25134,8 @@
             ]
           },
           "note": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "exportReady": {
             "type": "boolean"
@@ -25229,10 +25144,8 @@
             "type": "string"
           },
           "completedAt": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -25431,10 +25344,8 @@
             "maximum": 9007199254740991
           },
           "comment": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "status": {
             "type": "string",
@@ -25445,16 +25356,12 @@
             ]
           },
           "flagReason": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "reply": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -25521,6 +25428,38 @@
           "decision"
         ]
       },
+      "PublicStoreListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "updatedAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "PublicStoreDto_Output": {
         "type": "object",
         "properties": {
@@ -25536,31 +25475,23 @@
             "type": "string"
           },
           "nameTe": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "type": {
             "type": "string"
           },
           "description": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "area": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "areaTe": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "location": {
             "type": "object",
@@ -25838,16 +25769,12 @@
             "type": "string"
           },
           "area": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "message": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "locale": {
             "type": "string"
@@ -25862,10 +25789,8 @@
             ]
           },
           "note": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
+            "type": "string",
+            "nullable": true
           },
           "createdAt": {
             "type": "string"
@@ -25939,16 +25864,12 @@
             "additionalProperties": false
           },
           "onTimePercent": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "fillRatePercent": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            }
+            "type": "number",
+            "nullable": true
           },
           "contribution": {
             "type": "object",

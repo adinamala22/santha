@@ -1,7 +1,8 @@
 import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
-import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { ZodResponse } from 'nestjs-zod';
+import { createZodDto } from '../../../common/zod-dto';
 import { z } from 'zod';
 import { Public, Roles } from '../../../common/auth/decorators';
 import { GrowthService } from './growth.service';

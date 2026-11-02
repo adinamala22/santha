@@ -1,7 +1,7 @@
 import { Body, Controller, Get, HttpCode, Inject, Param, Post, Put, Query, Req, Res } from '@nestjs/common';
 import { ApiExcludeController } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
-import { createZodDto } from 'nestjs-zod';
+import { createZodDto } from '../common/zod-dto';
 import { z } from 'zod';
 import { DEV_CLOCK, type DevClock } from '../common/clock';
 import { Public } from '../common/auth/decorators';

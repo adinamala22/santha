@@ -1,6 +1,7 @@
 import { Controller, Get, Global, Injectable, Module, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { ZodResponse } from 'nestjs-zod';
+import { createZodDto } from '../../common/zod-dto';
 import { z } from 'zod';
 import { Roles } from '../../common/auth/decorators';
 import { ENV } from '../../config/config.module';

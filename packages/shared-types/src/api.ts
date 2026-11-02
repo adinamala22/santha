@@ -2308,6 +2308,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/public/stores": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicStoreController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/public/stores/{slug}": {
         parameters: {
             query?: never;
@@ -2520,7 +2536,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             phoneMasked: string;
-            name: string[];
+            name: string | null;
             locale: string;
             roles: ("consumer" | "merchant" | "merchant_staff" | "rider" | "admin" | "ops" | "finance" | "support")[];
         };
@@ -2569,10 +2585,10 @@ export interface components {
             id: string;
             /** @enum {string} */
             label: "home" | "work" | "other";
-            name: string[];
+            name: string | null;
             line: string;
-            landmark: string[];
-            pincode: string[];
+            landmark: string | null;
+            pincode: string | null;
             location: {
                 lat: number;
                 lng: number;
@@ -3542,8 +3558,8 @@ export interface components {
                 /** @default 4.2 */
                 newStoreRating: number;
             };
-            note: string[];
-            createdBy: string[];
+            note: string | null;
+            createdBy: string | null;
             /** Format: date-time */
             createdAt: string;
         };
@@ -3772,11 +3788,11 @@ export interface components {
             kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
             /** @enum {string} */
             status: "pending" | "verified" | "failed";
-            valueMasked: string[];
-            valuePublic: string[];
-            nameOnRecord: string[];
+            valueMasked: string | null;
+            valuePublic: string | null;
+            nameOnRecord: string | null;
             provider: string;
-            failureReason: string[];
+            failureReason: string | null;
             details: {
                 [key: string]: unknown;
             } | null;
@@ -4080,9 +4096,9 @@ export interface components {
             /** Format: uuid */
             masterProductId: string | null;
             name: string;
-            nameTe: string[];
-            description: string[];
-            brand: string[];
+            nameTe: string | null;
+            description: string | null;
+            brand: string | null;
             categorySlug: string;
             /** @enum {string|null} */
             foodMark: "veg" | "non_veg" | "egg" | null;
@@ -4092,10 +4108,10 @@ export interface components {
             maxPerOrder: number | null;
             availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
             dailyCapacity: number | null;
-            specialOn: string[];
+            specialOn: string | null;
             /** @enum {string} */
             status: "pending_merchant" | "in_review" | "active" | "hidden";
-            reviewReason: string[];
+            reviewReason: string | null;
             /** @enum {string} */
             source: "merchant" | "master" | "import" | "ops";
             images: {
@@ -4112,7 +4128,7 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
-            imageUrl: string[];
+            imageUrl: string | null;
             /** @enum {string} */
             stock: "in" | "low" | "out";
             /** @description Not confirmed within the staleness window (72 h); confirm to clear */
@@ -4322,10 +4338,10 @@ export interface components {
             purpose: "item" | "store";
             /** @enum {string} */
             status: "uploading" | "pending_review" | "approved" | "rejected";
-            rejectReason: string[];
+            rejectReason: string | null;
             /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-            thumbUrl: string[];
-            mediumUrl: string[];
+            thumbUrl: string | null;
+            mediumUrl: string | null;
             /** Format: date-time */
             createdAt: string;
         };
@@ -4654,7 +4670,7 @@ export interface components {
                 /** @description Ranking score 0..1 (for debugging ranking weights) */
                 score: number;
             };
-            description: string[];
+            description: string | null;
             microMarket: {
                 /** Format: uuid */
                 id: string;
@@ -4670,7 +4686,7 @@ export interface components {
             }[];
             fssaiVerified: boolean;
             hygieneDeclared: boolean;
-            returnPolicy: string[];
+            returnPolicy: string | null;
             freeDeliveryAbovePaise: number;
             categories: {
                 slug: string;
@@ -5119,7 +5135,7 @@ export interface components {
                     lng: number;
                 };
             };
-            instructions: string[];
+            instructions: string | null;
             lines: {
                 /** Format: uuid */
                 itemId: string;
@@ -5193,9 +5209,9 @@ export interface components {
             discountPaise: number;
             totalPaise: number;
             refundedPaise: number;
-            outcomeReason: string[];
+            outcomeReason: string | null;
             canCancel: boolean;
-            promoCode: string[];
+            promoCode: string | null;
             /** Format: date-time */
             placedAt: string | null;
             /** Format: date-time */
@@ -5481,7 +5497,7 @@ export interface components {
                 line: string;
                 landmark: string | null;
             } | null;
-            instructions: string[];
+            instructions: string | null;
             lines: {
                 /** Format: uuid */
                 itemId: string;
@@ -5518,7 +5534,7 @@ export interface components {
             packBy: string | null;
             /** Format: date-time */
             readyAt: string | null;
-            outcomeReason: string[];
+            outcomeReason: string | null;
         };
         AcceptDto: {
             /**
@@ -5590,7 +5606,7 @@ export interface components {
             microMarketId: string;
             /** @enum {string} */
             paymentMethod: "online" | "cod";
-            fulfilmentMode: string[];
+            fulfilmentMode: string | null;
             totalPaise: number;
             refundedPaise: number;
             itemCount: number;
@@ -5598,7 +5614,7 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             placedAt: string | null;
-            outcomeReason: string[];
+            outcomeReason: string | null;
             lines: {
                 /** Format: uuid */
                 itemId: string;
@@ -5622,7 +5638,7 @@ export interface components {
                 line: string;
                 landmark: string | null;
             };
-            instructions: string[];
+            instructions: string | null;
             history: {
                 from: string | null;
                 to: string;
@@ -5669,12 +5685,12 @@ export interface components {
             provider: "razorpay" | "mock";
             providerOrderId: string;
             /** @description Razorpay key id for the checkout SDK (null for the mock) */
-            keyId: string[];
+            keyId: string | null;
             amountPaise: number;
             currency: string;
             /** @enum {string} */
             status: "created" | "captured" | "failed";
-            lastFailure: string[];
+            lastFailure: string | null;
         };
         WalletDto_Output: {
             balancePaise: number;
@@ -5719,7 +5735,7 @@ export interface components {
                 name: string;
                 nameTe: string;
             }[];
-            rating: number[];
+            rating: number | null;
             today: {
                 deliveries: number;
                 earningsPaise: number;
@@ -5840,7 +5856,7 @@ export interface components {
                 lat: number;
                 lng: number;
             };
-            instructions: string[];
+            instructions: string | null;
             itemCount: number;
             codDuePaise: number;
             payPaise: number;
@@ -5892,7 +5908,7 @@ export interface components {
                 name: string;
                 callNumber: string;
             } | null;
-            deliveryOtp: string[];
+            deliveryOtp: string | null;
             store: {
                 name: string;
                 lat: number;
@@ -5963,8 +5979,8 @@ export interface components {
                 name: string;
                 callNumber: string;
             } | null;
-            staffLink: string[];
-            deliveryOtp: string[];
+            staffLink: string | null;
+            deliveryOtp: string | null;
             /** @enum {string} */
             fallbackStage: "none" | "tpl" | "self_bonus" | "standby" | "customer_notified";
             selfBonusPaise: number;
@@ -6076,8 +6092,8 @@ export interface components {
             mode: "self" | "rider" | "tpl" | null;
             /** @enum {string|null} */
             fulfilmentState: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled" | null;
-            courier: string[];
-            fallbackStage: string[];
+            courier: string | null;
+            fallbackStage: string | null;
             searchingSec: number | null;
             /** @description ISO-8601 timestamp */
             promisedAt: string | null;
@@ -6144,8 +6160,8 @@ export interface components {
             tdsPaise: number;
             /** @enum {string} */
             status: "pending" | "transferred" | "failed" | "on_hold";
-            transferRef: string[];
-            failureReason: string[];
+            transferRef: string | null;
+            failureReason: string | null;
             hasStatement: boolean;
             totals: {
                 [key: string]: number;
@@ -6218,7 +6234,7 @@ export interface components {
             evidenceMediaIds: string[];
             /** @enum {string} */
             status: "open" | "accepted" | "rejected";
-            resolutionNote: string[];
+            resolutionNote: string | null;
             adjustmentPaise: number;
             /** @description ISO-8601 timestamp */
             deadlineAt: string;
@@ -6328,9 +6344,9 @@ export interface components {
                 at: string;
             }[];
             needsSecondApproval: boolean;
-            rejectNote: string[];
-            failureReason: string[];
-            trustScore: number[];
+            rejectNote: string | null;
+            failureReason: string | null;
+            trustScore: number | null;
             /** @description ISO-8601 timestamp */
             createdAt: string;
             /** @description ISO-8601 timestamp */
@@ -6379,7 +6395,7 @@ export interface components {
             reportedPaise: number | null;
             /** @enum {string} */
             status: "open" | "resolved";
-            note: string[];
+            note: string | null;
             /** @description ISO-8601 timestamp */
             createdAt: string;
         };
@@ -6404,7 +6420,7 @@ export interface components {
             /** @enum {string} */
             type: "missing_item" | "wrong_item" | "damaged" | "quality" | "late" | "not_delivered" | "return_request";
             variantIds: string[];
-            description: string[];
+            description: string | null;
             claimedPaise: number;
             /** @enum {string} */
             status: "auto_resolved" | "pending_review" | "approved" | "rejected" | "return_pickup";
@@ -6413,7 +6429,7 @@ export interface components {
             refundDestination: "wallet" | "source" | null;
             reason: string;
             createdAt: string;
-            decidedAt: string[];
+            decidedAt: string | null;
         };
         IssueListDto_Output: {
             items: {
@@ -6446,7 +6462,7 @@ export interface components {
             orderId: string;
             storeStars: number;
             riderStars: number | null;
-            comment: string[];
+            comment: string | null;
             createdAt: string;
         };
         OpsIssueListDto_Output: {
@@ -6494,11 +6510,11 @@ export interface components {
             description: string;
             /** @enum {string} */
             status: "open" | "acknowledged" | "resolved";
-            resolution: string[];
+            resolution: string | null;
             ackDueAt: string;
             resolveDueAt: string;
-            acknowledgedAt: string[];
-            resolvedAt: string[];
+            acknowledgedAt: string | null;
+            resolvedAt: string | null;
             createdAt: string;
             overdue: boolean;
         };
@@ -6551,13 +6567,13 @@ export interface components {
             userId: string;
             /** @enum {string} */
             type: "access" | "correction" | "erasure";
-            details: string[];
+            details: string | null;
             /** @enum {string} */
             status: "open" | "completed" | "rejected";
-            note: string[];
+            note: string | null;
             exportReady: boolean;
             createdAt: string;
-            completedAt: string[];
+            completedAt: string | null;
         };
         DataRequestListDto_Output: {
             items: {
@@ -6600,11 +6616,11 @@ export interface components {
             /** Format: uuid */
             merchantId: string;
             storeStars: number;
-            comment: string[];
+            comment: string | null;
             /** @enum {string} */
             status: "visible" | "flagged" | "hidden";
-            flagReason: string[];
-            reply: string[];
+            flagReason: string | null;
+            reply: string | null;
             createdAt: string;
         };
         ResolveGrievanceDto: {
@@ -6619,16 +6635,23 @@ export interface components {
             /** @enum {string} */
             decision: "publish" | "hide";
         };
+        PublicStoreListDto_Output: {
+            items: {
+                slug: string;
+                name: string;
+                updatedAt: string;
+            }[];
+        };
         PublicStoreDto_Output: {
             /** Format: uuid */
             id: string;
             slug: string;
             name: string;
-            nameTe: string[];
+            nameTe: string | null;
             type: string;
-            description: string[];
-            area: string[];
-            areaTe: string[];
+            description: string | null;
+            area: string | null;
+            areaTe: string | null;
             location: {
                 lat: number;
                 lng: number;
@@ -6688,12 +6711,12 @@ export interface components {
             kind: "store" | "home_kitchen" | "rider";
             name: string;
             phone: string;
-            area: string[];
-            message: string[];
+            area: string | null;
+            message: string | null;
             locale: string;
             /** @enum {string} */
             status: "new" | "contacted" | "converted" | "dropped";
-            note: string[];
+            note: string | null;
             createdAt: string;
         };
         ReportDto_Output: {
@@ -6707,8 +6730,8 @@ export interface components {
                 rejected: number;
                 expired: number;
             };
-            onTimePercent: number[];
-            fillRatePercent: number[];
+            onTimePercent: number | null;
+            fillRatePercent: number | null;
             contribution: {
                 totalPaise: number;
                 perOrderPaise: number | null;
@@ -10624,6 +10647,26 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ReviewDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Live store links for the sitemap */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicStoreListDto_Output"];
                 };
             };
         };
