@@ -66,8 +66,14 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
   Future<MerchantOrder> get(String id) async => _parse(_find(id));
 
   @override
-  Future<MerchantOrder> accept(String id, {FulfilmentMode? mode}) async {
-    calls.add('accept $id');
+  Future<MerchantOrder> accept(String id, {FulfilmentMode? mode, String? staffId}) async {
+    calls.add(mode == null ? 'accept $id' : 'accept $id ${mode.name}${staffId == null ? '' : ' $staffId'}');
+    deliveryRows[id] = {
+      'orderId': id, 'mode': mode?.name ?? 'rider', 'state': mode == FulfilmentMode.self ? 'assigned' : 'searching', 'pickupCode': '4812',
+      'courier': mode == FulfilmentMode.self ? {'kind': staffId == null ? 'owner' : 'staff', 'name': staffId == null ? "Lakshmi's Kitchen" : 'Suresh', 'callNumber': '+918047100001'} : null,
+      'staffLink': mode == FulfilmentMode.self ? 'http://localhost:3000/d/tok123' : null, 'deliveryOtp': null, 'fallbackStage': 'none', 'selfBonusPaise': 0,
+      'promisedAt': testNow.add(const Duration(minutes: 30)).toIso8601String(), 'etaAt': null,
+    };
     final o = _find(id);
     _expect(o, ['PLACED']);
     o.addAll({'state': 'PREPARING', 'acceptedAt': testNow.toIso8601String(), 'packBy': testNow.add(const Duration(minutes: 15)).toIso8601String(),
@@ -114,6 +120,30 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
     l.addAll({'status': 'substituted', 'substituteName': 'Substitute', 'substituteVariantLabel': '1 kg', 'refundPaise': 1200});
     o['refundedPaise'] = (o['refundedPaise'] as int) + 1200;
     return _parse(o);
+  }
+
+  /// Deliveries by order id (raw JSON so tests can change them).
+  final deliveryRows = <String, Map<String, dynamic>>{};
+  List<Map<String, dynamic>> statementLines = [];
+
+  @override
+  Future<List<MerchantDelivery>> deliveries() async => deliveryRows.values.map((d) => MerchantDelivery.fromJson(jsonDecode(jsonEncode(d)) as Map<String, dynamic>)).toList();
+
+  @override
+  Future<MerchantDelivery> deliverMyself(String orderId, {String? staffId}) async {
+    calls.add('deliver-myself $orderId');
+    deliveryRows[orderId]!.addAll({'mode': 'self', 'state': 'assigned', 'courier': {'kind': 'owner', 'name': 'Owner', 'callNumber': '+918047100002'}, 'staffLink': 'http://localhost:3000/d/tok999'});
+    return MerchantDelivery.fromJson(jsonDecode(jsonEncode(deliveryRows[orderId])) as Map<String, dynamic>);
+  }
+
+  @override
+  Future<StatementPreview> statementPreview({String? date}) async {
+    int sum(String k) => statementLines.fold<int>(0, (s, l) => s + (l[k] as int));
+    return StatementPreview.fromJson({
+      'date': '2026-11-02',
+      'lines': statementLines,
+      'totals': {'orders': statementLines.length, 'itemsPaise': sum('itemsPaise'), 'commissionPaise': sum('commissionPaise'), 'deliveryFeeCreditPaise': sum('deliveryFeeCreditPaise'), 'selfBonusPaise': sum('selfBonusPaise'), 'netPaise': sum('netPaise')},
+    });
   }
 
   @override

@@ -5,6 +5,7 @@ import 'package:santha_ui/santha_ui.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../catalogue/presentation/catalogue_page.dart';
 import '../../onboarding/presentation/onboarding_gate.dart';
+import 'fulfilment.dart';
 import 'orders_page.dart';
 
 /// Home for a live store (M5): bottom navigation Orders / Catalogue / Earnings / More.
@@ -26,7 +27,7 @@ class _MerchantHomeState extends State<MerchantHome> {
       body: IndexedStack(index: _tab, children: [
         OrdersPage(view: widget.view),
         if (_tab == 1) const CataloguePage() else const SizedBox.shrink(),
-        const _EarningsTab(),
+        if (_tab == 2) const StatementPreviewView() else const SizedBox.shrink(),
         StatusPage(view: widget.view),
       ]),
       bottomNavigationBar: NavigationBar(
@@ -45,20 +46,3 @@ class _MerchantHomeState extends State<MerchantHome> {
   }
 }
 
-class _EarningsTab extends StatelessWidget {
-  const _EarningsTab();
-
-  @override
-  Widget build(BuildContext context) {
-    final l = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(title: Text(l.navEarnings)),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(SanthaSpacing.s6),
-          child: Text(l.earningsSoon, textAlign: TextAlign.center, style: const TextStyle(color: SanthaColors.slate)),
-        ),
-      ),
-    );
-  }
-}
