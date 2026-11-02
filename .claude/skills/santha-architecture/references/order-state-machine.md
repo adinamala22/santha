@@ -1,4 +1,5 @@
 # Order state machine
+Before the lifecycle (online payment, ADR-010): AWAITING_PAYMENT → PLACED (payment captured, system) | PAYMENT_FAILED (window passed or customer gave up). COD orders start in PLACED.
 States: PLACED → ACCEPTED → PREPARING → READY → PICKED_UP → OUT_FOR_DELIVERY → DELIVERED
 Terminal: CANCELLED (actor: customer|merchant|platform, reason code), FAILED_DELIVERY (re-attempt or refund), REJECTED/EXPIRED (merchant; two misses → merchant.auto_paused)
 

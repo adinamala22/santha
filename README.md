@@ -88,6 +88,9 @@ and lands in the ops enrichment queue. **Try search:** `/v1/search?lat=14.4525&l
 transliteration → rice), `q=pappu`, `q=tomoto` (typo); feed: `/v1/feed?lat=14.4525&lng=79.995&tab=home_kitchens`.
 **Consumer app (M3):** sign in with `9000000001` and pick the saved Home address (Dargamitta): Ramesh Stores and
 Saraswathi's Kitchen deliver there. Store page API: `/v1/stores/<id>?lat=14.4525&lng=79.995`.
+**Checkout (M4):** payments use the mock gateway in dev (`PAYMENTS_PROVIDER=mock`; the app shows a "Test payment" sheet). Demo
+coupons: `NELLORE50` (₹50 off the first order over ₹199), `KITCHEN20` (20% off kitchens, up to ₹60), `TINY` (₹60 off, ₹100 budget —
+shows budget exhaustion). COD works for shops up to ₹1,500, never for home kitchens. Ops edit promos at `/admin/promos`.
 
 ## Checks (what CI runs)
 ```bash
@@ -103,4 +106,4 @@ Goldens are compared on Linux only (CI); on Windows/macOS they are skipped becau
 
 ## Decisions
 See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting, ADR-003 local object storage, ADR-004 separate apps,
-ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search, ADR-009 M3 consumer discovery).
+ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search, ADR-009 M3 consumer discovery, ADR-010 M4 pricing, orders & payments).
