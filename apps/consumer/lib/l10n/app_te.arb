@@ -314,5 +314,21 @@
   "outcomeStoreRejected": "షాప్ ఈ ఆర్డర్ తీసుకోలేకపోయింది.",
   "outcomeTimedOut": "షాప్ సమయానికి స్పందించలేదు.",
   "whatsappUpdates": "WhatsAppలో ఆర్డర్ అప్‌డేట్లు",
-  "whatsappUpdatesSub": "మీరు దీన్ని ఆన్ చేస్తేనే పంపుతాం."
+  "whatsappUpdatesSub": "మీరు దీన్ని ఆన్ చేస్తేనే పంపుతాం.",
+  "trackingMapLabel": "లైవ్ మ్యాప్: షాప్, డెలివరీ భాగస్వామి, మీ ఇల్లు",
+  "arrivingIn": "{min} నిమిషాల్లో వస్తుంది",
+  "arrivingNow": "ఇప్పుడే వస్తోంది",
+  "onTimeBy": "సమయానికి · {time} లోపు అని చెప్పాం",
+  "lateBy": "కొంచెం ఆలస్యం · {time} లోపు అని చెప్పాం",
+  "promisedBy": "{time} లోపు వస్తుంది",
+  "findingCourier": "డెలివరీ భాగస్వామి కోసం వెతుకుతున్నాం…",
+  "findingCourierLate": "డెలివరీ భాగస్వామిని కనుగొనడం ఆలస్యం అవుతోంది. మీరు వేచి ఉండవచ్చు లేదా పూర్తి రీఫండ్‌తో రద్దు చేయవచ్చు.",
+  "cancelFullRefund": "పూర్తి రీఫండ్‌తో రద్దు చేయండి",
+  "courierStaff": "{name} · {store} సిబ్బంది",
+  "courierOwner": "{store} డెలివరీ చేస్తున్నారు",
+  "courierRider": "{name} · సంత రైడర్",
+  "courierPartner": "భాగస్వామి కొరియర్",
+  "deliveryOtp": "డెలివరీ OTP {otp}",
+  "deliveryOtpHint": "ఈ కోడ్‌ను మీ తలుపు వద్దే చెప్పండి.",
+  "callCourier": "కాల్"
 }
