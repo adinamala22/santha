@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
+import 'support/fake_rider.dart';
+
 /// Minimal fake of the backend auth endpoints.
 class _FakeBackend implements HttpClientAdapter {
   @override
@@ -53,6 +55,7 @@ Future<ProviderContainer> pumpApp(WidgetTester tester) async {
           dio: Dio()..httpClientAdapter = _FakeBackend(),
         ),
       ),
+      ...riderOverrides((c) => FakeRiderApi(c), onApi: (_) {}),
     ],
   );
   addTearDown(container.dispose);
@@ -77,7 +80,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(container.read(authControllerProvider), isA<AuthSignedIn>());
-    expect(find.text('Signed in as +9198******10'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byKey(const ValueKey('rider-home')), findsOneWidget);
     await tester.pump(const Duration(seconds: 31)); // let the resend countdown finish
   });
 

@@ -52,5 +52,202 @@
       }
     }
   },
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "statusOnline": "Online",
+  "statusOffline": "Offline",
+  "onlineToggle": "Available for orders",
+  "chooseZones": "Where will you work today?",
+  "zonesAll": "All zones",
+  "goOnline": "Go online",
+  "onlineIn": "Online · {zones}",
+  "@onlineIn": {
+    "placeholders": {
+      "zones": {
+        "type": "String"
+      }
+    }
+  },
+  "offlineHint": "You are offline. Go online to get orders near you.",
+  "locationOff": "Turn on location so we can send you nearby orders.",
+  "waitingOffers": "Waiting for orders near you…",
+  "newOrderPay": "New order · {pay}",
+  "@newOrderPay": {
+    "placeholders": {
+      "pay": {
+        "type": "String"
+      }
+    }
+  },
+  "pickupLine": "Pickup: {store} · {distance}",
+  "@pickupLine": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "readyIn": "ready in {min} min",
+  "@readyIn": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "dropLine": "Drop: {area} · {distance}",
+  "@dropLine": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "payBase": "Base {amount}",
+  "@payBase": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payDistance": "distance {amount}",
+  "@payDistance": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payWait": "waiting {amount}",
+  "@payWait": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payBatch": "second order {amount}",
+  "@payBatch": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptIn": "Accept {time}",
+  "@acceptIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "decline": "Decline",
+  "offerGone": "This order is no longer available.",
+  "todayLine": "Today · {count, plural, =1{1 delivery} other{{count} deliveries}} · {amount} · online {time}",
+  "@todayLine": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursMinutes": "{h} h {m} m",
+  "@hoursMinutes": {
+    "placeholders": {
+      "h": {
+        "type": "int"
+      },
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "minutesOnly": "{m} m",
+  "@minutesOnly": {
+    "placeholders": {
+      "m": {
+        "type": "int"
+      }
+    }
+  },
+  "currentDelivery": "Current delivery",
+  "orderCode": "Order #{code}",
+  "@orderCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "stepToStore": "Go to the store",
+  "stepToCustomer": "Deliver to the customer",
+  "navigate": "Navigate",
+  "callCustomer": "Call customer",
+  "arrived": "I have arrived",
+  "waitingReady": "The store is still packing. Please wait here.",
+  "orderReady": "Packed and ready for pickup.",
+  "pickupCodeLabel": "Pickup code from the store",
+  "pickedUp": "Picked up",
+  "otpLabel": "Delivery OTP",
+  "otpHint": "Ask the customer for the 4-digit code in their app.",
+  "collectCod": "COD: collect {amount}",
+  "@collectCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "prepaid": "Prepaid · nothing to collect",
+  "cashCollected": "Cash collected (₹)",
+  "markDelivered": "Mark delivered",
+  "deliveredDone": "Delivered. Well done!",
+  "backHome": "Back to orders",
+  "wrongCode": "That code is not right. Check and try again.",
+  "notReady": "The store is still packing this order.",
+  "genericError": "Something went wrong. Please try again.",
+  "networkError": "No internet. Check your connection.",
+  "itemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteLabel": "Note: {text}",
+  "@noteLabel": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "earningsTitle": "Earnings today",
+  "earningsTotal": "{amount} from {count, plural, =1{1 delivery} other{{count} deliveries}}",
+  "@earningsTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noDeliveries": "No deliveries yet today.",
+  "retry": "Retry"
 }

@@ -5,7 +5,9 @@ import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../features/auth/presentation/login_page.dart';
+import '../features/home/presentation/earnings_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/home/presentation/job_page.dart';
 
 abstract final class Routes {
   static const splash = '/splash';
@@ -34,6 +36,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.splash, builder: (context, state) => const _Splash()),
       GoRoute(path: Routes.login, builder: (context, state) => const LoginPage()),
       GoRoute(path: Routes.home, builder: (context, state) => const HomePage()),
+      GoRoute(path: '/job/:id', builder: (context, state) => JobPage(id: state.pathParameters['id']!)),
+      GoRoute(path: '/earnings', builder: (context, state) => const EarningsPage()),
     ],
   );
 });
