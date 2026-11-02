@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { FakeSinks } from '../../../infra/fake/fake-sinks';
 import { ENV } from '../../../config/config.module';
 import type { Env } from '../../../config/env';
 import { PrismaService } from '../../../infra/prisma/prisma.service';
@@ -23,8 +24,8 @@ import { InMemoryLeadsRepository, LeadsRepository, PrismaLeadsRepository } from 
   providers: [
     {
       provide: LeadsRepository,
-      inject: [ENV, PrismaService],
-      useFactory: (env: Env, prisma: PrismaService) => (env.DATA_STORE === 'memory' ? new InMemoryLeadsRepository() : new PrismaLeadsRepository(prisma)),
+      inject: [ENV, PrismaService, FakeSinks],
+      useFactory: (env: Env, prisma: PrismaService, sinks: FakeSinks) => (env.DATA_STORE === 'memory' ? new InMemoryLeadsRepository(sinks) : new PrismaLeadsRepository(prisma)),
     },
     GrowthService,
   ],

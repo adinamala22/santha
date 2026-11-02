@@ -10,7 +10,8 @@ export function complianceRepositoryContract(name: string, make: () => Promise<{
     it('grievances move open → acknowledged → resolved once each', async () => {
       const { repo, userId } = await make();
       const u = await userId();
-      const g = await repo.createGrievance({ id: randomUUID(), userId: u, app: 'consumer', orderId: null, category: 'refund', description: 'Refund missing for a week', status: 'open', ackDueAt: new Date(), resolveDueAt: new Date() });
+      const g = await repo.createGrievance({ id: randomUUID(), userId: u, app: 'consumer', orderId: null, category: 'refund', description: 'Refund missing for a week', status: 'open', ackDueAt: new Date(), resolveDueAt: new Date(), createdAt: new Date('2026-11-03T05:00:00.000Z') });
+      expect(g.createdAt.toISOString()).toBe('2026-11-03T05:00:00.000Z');
       expect(await repo.updateGrievance(g.id, ['open'], { status: 'acknowledged', acknowledgedAt: new Date() })).toMatchObject({ status: 'acknowledged' });
       expect(await repo.updateGrievance(g.id, ['open'], { status: 'acknowledged' })).toBeNull();
       await repo.updateGrievance(g.id, ['acknowledged'], { status: 'resolved', resolution: 'done', resolvedAt: new Date() });
@@ -41,7 +42,9 @@ export function leadsRepositoryContract(name: string, make: () => Promise<LeadsR
       expect(l.status).toBe('new');
       expect((await repo.recent(phone, 'store', new Date(Date.now() - 60_000)))?.id).toBe(l.id);
       expect(await repo.recent(phone, 'rider', new Date(Date.now() - 60_000))).toBeNull();
-      expect(await repo.update(l.id, { status: 'converted', note: 'live' })).toMatchObject({ status: 'converted', note: 'live' });
+      const audit = { action: 'lead.updated', actorId: null };
+      expect(await repo.update(l.id, { status: 'converted', note: 'live' }, audit)).toMatchObject({ status: 'converted', note: 'live' });
+      expect(await repo.update(randomUUID(), { status: 'dropped' }, audit)).toBeNull();
     });
   });
 }

@@ -4,7 +4,7 @@ import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
 import { createZodDto } from '../../../common/zod-dto';
 import { z } from 'zod';
-import { Public, Roles } from '../../../common/auth/decorators';
+import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../../common/auth/decorators';
 import { GrowthService } from './growth.service';
 import type { LeadRecord } from './leads.repository';
 
@@ -90,8 +90,8 @@ export class OpsGrowthController {
 
   @Patch('leads/:id')
   @ZodResponse({ type: LeadDto })
-  async updateLead(@Param('id', ParseUUIDPipe) id: string, @Body() b: LeadPatchDto) {
-    return toLead(await this.growth.updateLead(id, b.status, b.note));
+  async updateLead(@Param('id', ParseUUIDPipe) id: string, @Body() b: LeadPatchDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
+    return toLead(await this.growth.updateLead(id, b.status, b.note, { userId: u.userId, requestId }));
   }
 
   @Get('reports')

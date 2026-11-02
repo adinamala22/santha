@@ -111,8 +111,8 @@ export class GrowthService implements OnModuleInit {
     return this.leads.list({ status, limit: 500 });
   }
 
-  async updateLead(id: string, status: LeadRecord['status'], note: string | undefined) {
-    const l = await this.leads.update(id, { status, ...(note !== undefined ? { note } : {}) });
+  async updateLead(id: string, status: LeadRecord['status'], note: string | undefined, actor: { userId: string; requestId: string | null }) {
+    const l = await this.leads.update(id, { status, ...(note !== undefined ? { note } : {}) }, { action: 'lead.updated', actorId: actor.userId, requestId: actor.requestId });
     if (!l) throw new DomainError('NOT_FOUND', 'Lead not found');
     return l;
   }

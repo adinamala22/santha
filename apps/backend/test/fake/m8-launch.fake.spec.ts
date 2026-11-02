@@ -10,6 +10,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { everyDay } from '../../src/common/hours';
 import { SEED_MERCHANTS, SEED_MICRO_MARKETS } from '../../src/dev/seed-data';
 import { GrowthService } from '../../src/modules/analytics-config/growth/growth.service';
+import { AddressesService } from '../../src/modules/identity-kyc/addresses.service';
+import { NotificationRepository } from '../../src/modules/notifications/notifications.repository';
 import { bootFakeApp, type FakeApp, type Session } from './harness';
 
 const kirana = SEED_MERCHANTS.find((m) => m.name === 'Ramesh Stores')!;
@@ -69,6 +71,9 @@ describe('M8 · trust & safety, DPDP, analytics, launch (fake mode)', () => {
     expect(leads.map((l) => l.name)).toEqual(['Sri Rama Kirana']);
     expect(leads[0]).toMatchObject({ phone: '+919876501001', locale: 'te' });
     await http().patch(`/v1/ops/leads/${leads[0]!.id}`).set(ops).send({ status: 'contacted', note: 'Visit on Friday' }).expect(200);
+    const audit = (await http().get(`/v1/ops/audit?entity=lead&entityId=${leads[0]!.id}`).set(ops).expect(200)).body.items as Array<{ action: string; before: unknown; after: unknown }>;
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({ action: 'lead.updated', before: { status: 'new' }, after: { status: 'contacted', note: 'Visit on Friday' } });
     for (let i = 0; i < 5; i++) await http().post('/v1/leads').send({ kind: 'home_kitchen', name: `Kitchen ${i}`, phone: `98765020${10 + i}` });
     expect((await http().post('/v1/leads').send({ kind: 'home_kitchen', name: 'One more', phone: '9876502099' }).expect(429)).body.error.code).toBe('RATE_LIMITED');
   });
@@ -103,6 +108,8 @@ describe('M8 · trust & safety, DPDP, analytics, launch (fake mode)', () => {
   it('DPDP data requests: export at once; erasure waits for open orders, then anonymises and signs out', async () => {
     const c = await customer('9876501301');
     await delivered(c);
+    await http().put('/v1/me/push-token').set(c.headers).send({ token: 'fcm-erase-me', platform: 'android' }).expect(204);
+    expect(await fake.app.get(NotificationRepository).tokensFor(c.user.id)).toHaveLength(1);
     const access = (await http().post('/v1/me/data-requests').set(c.headers).send({ type: 'access' }).expect(201)).body;
     expect(access).toMatchObject({ status: 'completed', exportReady: true });
     const file = await http().get(`/v1/me/data-requests/${access.id}/export`).set(c.headers).expect(200);
@@ -119,6 +126,8 @@ describe('M8 · trust & safety, DPDP, analytics, launch (fake mode)', () => {
     await http().post(`/v1/orders/${open.id}/cancel`).set(c.headers).send({ reason: 'changed_mind' }).expect(200);
     expect((await http().post(`/v1/ops/data-requests/${erase.id}/decide`).set(ops).send({ decision: 'complete', note: 'Verified by phone' }).expect(200)).body.status).toBe('completed');
     await http().get('/v1/me').set(c.headers).expect(401); // sessions revoked
+    expect(await fake.app.get(AddressesService).list(c.user.id)).toEqual([]);
+    expect(await fake.app.get(NotificationRepository).tokensFor(c.user.id)).toEqual([]);
     // The phone number is free again: signing in creates a fresh account.
     const again = await fake.signIn('9876501301', 'consumer');
     expect(again.user.id).not.toBe(c.user.id);

@@ -4,6 +4,7 @@ import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
 import { ObjectStorage } from '../../infra/storage/object-storage';
 import { AddressesService } from '../identity-kyc/addresses.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { AuthService } from '../identity-kyc/auth.service';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { OrdersService } from '../orders/orders.service';
@@ -44,6 +45,7 @@ export class ComplianceService {
     private readonly orders: OrdersService,
     private readonly payments: PaymentsService,
     private readonly merchants: MerchantsService,
+    private readonly notifications: NotificationsService,
     private readonly storage: ObjectStorage,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
@@ -70,6 +72,7 @@ export class ComplianceService {
       status: 'open',
       ackDueAt: new Date(now.getTime() + GRIEVANCE_ACK_H * H),
       resolveDueAt: new Date(now.getTime() + GRIEVANCE_RESOLVE_DAYS * 24 * H),
+      createdAt: now, // one clock for the record and its legal deadlines
     });
   }
 
@@ -171,6 +174,9 @@ export class ComplianceService {
     if (decision === 'complete' && r.type === 'erasure') {
       const open = (await this.orders.list(r.userId)).filter((v) => OPEN_ORDER.includes(v.order.state));
       if (open.length) throw new DomainError('INVALID_STATE', 'The customer has an order in progress; erase after it closes.', { openOrders: open.length });
+      // Addresses through their owner (both stores), then push tokens and opt-ins, then the account itself.
+      for (const a of await this.addresses.list(r.userId)) await this.addresses.remove(r.userId, a.address.id);
+      await this.notifications.forgetUser(r.userId);
       await this.auth.erase(r.userId);
     }
     const next = (await this.repo.updateDataRequest(id, { status: decision === 'complete' ? 'completed' : 'rejected', note, completedAt: this.clock(), completedBy: actor.userId }))!;

@@ -46,7 +46,7 @@ export interface DataRequestRecord {
 
 /** Storage port for trust-safety compliance (M8): grievances, the consent ledger, data-principal requests. */
 export abstract class ComplianceRepository {
-  abstract createGrievance(g: Omit<GrievanceRecord, 'createdAt' | 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>): Promise<GrievanceRecord>;
+  abstract createGrievance(g: Omit<GrievanceRecord, 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>): Promise<GrievanceRecord>;
   abstract grievance(id: string): Promise<GrievanceRecord | null>;
   abstract updateGrievance(id: string, expected: readonly GrievanceRecord['status'][], patch: Partial<Pick<GrievanceRecord, 'status' | 'resolution' | 'acknowledgedAt' | 'resolvedAt' | 'handledBy'>>): Promise<GrievanceRecord | null>;
   abstract grievances(q: { userId?: string; statuses?: readonly GrievanceRecord['status'][]; limit: number }): Promise<GrievanceRecord[]>;
@@ -69,7 +69,7 @@ export class PrismaComplianceRepository extends ComplianceRepository {
     super();
   }
 
-  async createGrievance(g: Omit<GrievanceRecord, 'createdAt' | 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>) {
+  async createGrievance(g: Omit<GrievanceRecord, 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>) {
     return (await this.prisma.grievance.create({ data: g })) as GrievanceRecord;
   }
 
@@ -138,8 +138,8 @@ export class InMemoryComplianceRepository extends ComplianceRepository {
     return structuredClone(v);
   }
 
-  async createGrievance(x: Omit<GrievanceRecord, 'createdAt' | 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>) {
-    const rec: GrievanceRecord = { ...this.clone(x), resolution: null, acknowledgedAt: null, resolvedAt: null, handledBy: null, createdAt: new Date() };
+  async createGrievance(x: Omit<GrievanceRecord, 'acknowledgedAt' | 'resolvedAt' | 'handledBy' | 'resolution'>) {
+    const rec: GrievanceRecord = { ...this.clone(x), resolution: null, acknowledgedAt: null, resolvedAt: null, handledBy: null };
     this.g.push(rec);
     return this.clone(rec);
   }

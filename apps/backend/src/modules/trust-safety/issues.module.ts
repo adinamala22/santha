@@ -9,6 +9,7 @@ import { SettlementModule } from '../payments-settlement/settlement/settlement.m
 import { AnalyticsConfigModule } from '../analytics-config/analytics-config.module';
 import { IdentityKycModule } from '../identity-kyc/identity-kyc.module';
 import { PaymentsSettlementModule } from '../payments-settlement/payments-settlement.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { FakeSinks } from '../../infra/fake/fake-sinks';
 import { ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController } from './compliance.controller';
 import { ComplianceRepository, InMemoryComplianceRepository, PrismaComplianceRepository } from './compliance.repository';
@@ -23,7 +24,7 @@ import { IssuesService } from './issues.service';
  * (screening), which the catalogue imports, to keep the module graph acyclic.
  */
 @Module({
-  imports: [OrdersModule, MerchantCatalogueModule, DispatchTrackingModule, SettlementModule, PaymentsSettlementModule, IdentityKycModule, AnalyticsConfigModule],
+  imports: [OrdersModule, MerchantCatalogueModule, DispatchTrackingModule, SettlementModule, PaymentsSettlementModule, IdentityKycModule, AnalyticsConfigModule, NotificationsModule],
   controllers: [IssuesController, OpsIssuesController, ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController],
   providers: [
     {
