@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       update_goldens:
-        description: Regenerate santha_ui goldens on the CI renderer and upload them as an artifact
+        description: Regenerate goldens (santha_ui, consumer) on the CI renderer and upload them as an artifact
         type: boolean
         default: false
 
@@ -35,7 +35,7 @@ jobs:
         run: melos run golden:update
       - uses: actions/upload-artifact@v4
         if: ${{ inputs.update_goldens }}
-        with: { name: santha-ui-goldens, path: packages/santha_ui/test/goldens/ }
+        with: { name: santha-goldens, path: "**/test/goldens/" }
       - run: melos run analyze
       - run: melos run test
       - uses: actions/upload-artifact@v4
