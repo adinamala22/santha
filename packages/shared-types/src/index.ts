@@ -69,6 +69,13 @@ export type PromoList = Schemas['PromoListDto_Output'];
 export type PromoInput = Schemas['PromoInputDto'];
 export type PromoPatch = Schemas['PromoPatchDto'];
 
+// M5 — order lifecycle
+export type MerchantOrder = Schemas['MerchantOrderDto_Output'];
+export type MerchantOrderList = Schemas['MerchantOrderListDto_Output'];
+export type OpsOrderList = Schemas['OpsOrderListDto_Output'];
+export type OpsOrderDetail = Schemas['OpsOrderDetailDto_Output'];
+export type OpsOrder = OpsOrderList['items'][number];
+
 /** Error envelope returned by every non-2xx response. */
 export interface ApiError {
   error: { code: string; message: string; details?: Record<string, unknown>; requestId?: string };

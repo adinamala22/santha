@@ -1,0 +1,135 @@
+{
+ "items": [
+  {
+   "id": "900f9346-c32b-40b3-9f95-7f1dc07b1fe7",
+   "code": "SNBPVJUR",
+   "state": "PLACED",
+   "paymentMethod": "online",
+   "fulfilmentMode": null,
+   "itemCount": 3,
+   "itemsPaise": 29700,
+   "totalPaise": 24290,
+   "refundedPaise": 0,
+   "codDuePaise": 0,
+   "when": {
+    "mode": "asap",
+    "slotDate": null,
+    "slotStartsAt": null
+   },
+   "distanceM": 445,
+   "address": null,
+   "instructions": null,
+   "lines": [
+    {
+     "itemId": "40000000-0000-4000-8000-201000000001",
+     "variantId": "70000000-0000-4000-8000-201000000100",
+     "name": "Annapoorna Chakki Atta",
+     "variantLabel": "1 kg",
+     "quantity": 2,
+     "unitPricePaise": 6000,
+     "linePaise": 12000,
+     "substitution": "similar",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "substituteUnitPaise": null,
+     "refundPaise": 0
+    },
+    {
+     "itemId": "40000000-0000-4000-8000-201000000003",
+     "variantId": "70000000-0000-4000-8000-201000000300",
+     "name": "Annapoorna Basmati Rice",
+     "variantLabel": "1 kg",
+     "quantity": 1,
+     "unitPricePaise": 17700,
+     "linePaise": 17700,
+     "substitution": "call_me",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "substituteUnitPaise": null,
+     "refundPaise": 0
+    }
+   ],
+   "placedAt": "2026-11-02T15:33:47.774Z",
+   "acceptBy": "2026-11-02T15:34:07.774Z",
+   "expiresAt": "2026-11-02T15:35:47.774Z",
+   "acceptedAt": null,
+   "packBy": null,
+   "readyAt": null,
+   "outcomeReason": null
+  },
+  {
+   "id": "6b93ec5d-90b1-4068-98c3-0644151b9754",
+   "code": "SNDBTX69",
+   "state": "PLACED",
+   "paymentMethod": "cod",
+   "fulfilmentMode": null,
+   "itemCount": 3,
+   "itemsPaise": 29700,
+   "totalPaise": 30290,
+   "refundedPaise": 0,
+   "codDuePaise": 30290,
+   "when": {
+    "mode": "asap",
+    "slotDate": null,
+    "slotStartsAt": null
+   },
+   "distanceM": 445,
+   "address": null,
+   "instructions": null,
+   "lines": [
+    {
+     "itemId": "40000000-0000-4000-8000-201000000001",
+     "variantId": "70000000-0000-4000-8000-201000000100",
+     "name": "Annapoorna Chakki Atta",
+     "variantLabel": "1 kg",
+     "quantity": 2,
+     "unitPricePaise": 6000,
+     "linePaise": 12000,
+     "substitution": "similar",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "substituteUnitPaise": null,
+     "refundPaise": 0
+    },
+    {
+     "itemId": "40000000-0000-4000-8000-201000000003",
+     "variantId": "70000000-0000-4000-8000-201000000300",
+     "name": "Annapoorna Basmati Rice",
+     "variantLabel": "1 kg",
+     "quantity": 1,
+     "unitPricePaise": 17700,
+     "linePaise": 17700,
+     "substitution": "remove",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "substituteUnitPaise": null,
+     "refundPaise": 0
+    }
+   ],
+   "placedAt": "2026-11-02T15:34:54.785Z",
+   "acceptBy": "2026-11-02T15:35:14.785Z",
+   "expiresAt": "2026-11-02T15:36:54.785Z",
+   "acceptedAt": null,
+   "packBy": null,
+   "readyAt": null,
+   "outcomeReason": null
+  }
+ ],
+ "counts": {
+  "new": 2,
+  "preparing": 0,
+  "ready": 0,
+  "out": 0,
+  "done": 0
+ },
+ "summary": {
+  "orders": 0,
+  "itemsPaise": 0,
+  "acceptanceRate": null,
+  "avgPrepMin": null
+ }
+}

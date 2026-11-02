@@ -43,6 +43,7 @@ export const UpdateMerchantSchema = z
   })
   .partial();
 export class UpdateMerchantDto extends createZodDto(UpdateMerchantSchema) {}
+export class AvailabilityDto extends createZodDto(z.object({ open: z.boolean().describe('true = taking orders') })) {}
 
 export class PanDto extends createZodDto(z.object({ pan: z.string().trim().min(10).max(10), name: z.string().trim().min(2).max(100) })) {}
 export class AadhaarStartDto extends createZodDto(z.object({ aadhaar: z.string().trim().min(12).max(14) })) {}
@@ -105,6 +106,8 @@ export const MerchantSchema = z.object({
   rejectionCode: z.string().nullable(),
   rejectionNote: z.string().nullable(),
   liveAt: iso.nullable(),
+  acceptingOrders: z.boolean(),
+  pausedReason: z.string().nullable().describe('missed_orders (auto-pause) | merchant | ops'),
   createdAt: iso,
 });
 
@@ -186,6 +189,8 @@ export const toViewDto = (v: MerchantView) => {
       rejectionCode: m.rejectionCode,
       rejectionNote: m.rejectionNote,
       liveAt: isoOrNull(m.liveAt),
+      acceptingOrders: m.acceptingOrders,
+      pausedReason: m.pausedReason,
       createdAt: m.createdAt.toISOString(),
     },
     microMarket: v.microMarket,

@@ -7,6 +7,7 @@ import { DomainError } from '../../common/errors/domain-error';
 import { ENV } from '../../config/config.module';
 import type { Env } from '../../config/env';
 import { CheckoutDto, CheckoutInputDto, OrderDto, OrderListDto, PlaceOrderDto, toCheckoutDto, toOrderDto } from './dto/orders.dto';
+import { MemoryTimers, Timers } from '../../infra/timers/timers';
 import { OrdersService } from './orders.service';
 
 /** Checkout and the consumer's orders. */
@@ -60,8 +61,17 @@ export class OrdersController {
 export class DevOrderJobsController {
   constructor(
     private readonly orders: OrdersService,
+    private readonly timers: Timers,
     @Inject(ENV) private readonly env: Env,
   ) {}
+
+  /** Fake mode: fire every timer due at the dev clock (accept windows, reminders, sweeps). */
+  @Post('timers')
+  @HttpCode(200)
+  async timersDue() {
+    if (!(this.timers instanceof MemoryTimers)) throw new DomainError('NOT_FOUND', 'Not found');
+    return { ran: await this.timers.runDue(), pending: this.timers.pending().length };
+  }
 
   @Post('payment-expiry')
   @HttpCode(200)

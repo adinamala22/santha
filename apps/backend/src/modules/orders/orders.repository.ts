@@ -30,6 +30,14 @@ export interface OrderLineRecord {
   mrpPaise: number | null;
   linePaise: number;
   substitution: string;
+  /** ok | removed | substituted (M5). */
+  status?: 'ok' | 'removed' | 'substituted';
+  substituteItemId?: string | null;
+  substituteVariantId?: string | null;
+  substituteName?: string | null;
+  substituteVariantLabel?: string | null;
+  substituteUnitPaise?: number | null;
+  refundPaise?: number;
 }
 
 export interface OrderRecord<Q = unknown> {
@@ -56,12 +64,30 @@ export interface OrderRecord<Q = unknown> {
   idempotencyKey: string;
   placedAt: Date | null;
   paymentDueAt: Date | null;
+  /** M5 lifecycle. */
+  fulfilmentMode: 'self' | 'rider' | null;
+  acceptedAt: Date | null;
+  readyAt: Date | null;
+  packBy: Date | null;
+  refundedPaise: number;
+  outcomeReason: string | null;
   createdAt: Date;
   updatedAt: Date;
   lines: OrderLineRecord[];
 }
 
-export type NewOrder<Q = unknown> = Omit<OrderRecord<Q>, 'createdAt' | 'updatedAt'>;
+/** Columns that may change together with a state transition. */
+export interface TransitionSet {
+  placedAt?: Date;
+  fulfilmentMode?: 'self' | 'rider';
+  acceptedAt?: Date;
+  readyAt?: Date;
+  packBy?: Date;
+  outcomeReason?: string;
+}
+
+export type NewOrder<Q = unknown> = Omit<OrderRecord<Q>, 'createdAt' | 'updatedAt' | 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason'> &
+  Partial<Pick<OrderRecord<Q>, 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason'>>;
 
 export interface TransitionRecord {
   from: OrderState | null;
@@ -78,13 +104,18 @@ export interface TransitionInput {
   actor: { type: string; id: string | null };
   reason?: string | null;
   /** Columns that change with the move (e.g. placedAt when it becomes PLACED). */
-  set?: { placedAt?: Date };
+  set?: TransitionSet;
 }
 
 export interface OrderTx {
   insert<Q>(o: NewOrder<Q>, actor: { type: string; id: string | null }): Promise<OrderRecord<Q>>;
   /** Compare-and-swap on the current state. False when the order is no longer in `from`. */
   transition(orderId: string, t: TransitionInput): Promise<boolean>;
+  /** Locks the order row for the rest of the transaction (line edits must not race transitions). */
+  lock(orderId: string): Promise<OrderRecord | null>;
+  /** Replaces one line's availability outcome and adds to the order's refunded total. */
+  updateLine(orderId: string, variantId: string, patch: Pick<OrderLineRecord, 'status' | 'substituteItemId' | 'substituteVariantId' | 'substituteName' | 'substituteVariantLabel' | 'substituteUnitPaise' | 'refundPaise'>): Promise<void>;
+  addRefund(orderId: string, paise: number): Promise<void>;
   appendEvent<P>(e: NewEvent<P>): Promise<void>;
   appendAudit(a: AuditEntry): Promise<void>;
 }
@@ -107,6 +138,10 @@ export abstract class OrderRepository {
   abstract itemPortions(merchantId: string, date: string): Promise<Map<string, number>>;
   /** Online orders whose payment window has passed. */
   abstract awaitingPaymentDue(now: Date, limit: number): Promise<OrderRecord[]>;
+  /** A store's orders (newest first), optionally only some states or since a time. */
+  abstract listForMerchant(merchantId: string, q: { states?: OrderState[]; since?: Date; limit: number }): Promise<OrderRecord[]>;
+  /** Ops: most recent orders, optionally in some states / one micro-market. */
+  abstract listRecent(q: { states?: OrderState[]; microMarketId?: string; limit: number }): Promise<OrderRecord[]>;
 }
 
 /** States that hold capacity: live orders plus ones still waiting for payment. */
@@ -140,6 +175,12 @@ const toRecord = (o: OrderRow): OrderRecord => ({
   idempotencyKey: o.idempotencyKey,
   placedAt: o.placedAt,
   paymentDueAt: o.paymentDueAt,
+  fulfilmentMode: (o.fulfilmentMode as 'self' | 'rider' | null) ?? null,
+  acceptedAt: o.acceptedAt,
+  readyAt: o.readyAt,
+  packBy: o.packBy,
+  refundedPaise: o.refundedPaise,
+  outcomeReason: o.outcomeReason,
   createdAt: o.createdAt,
   updatedAt: o.updatedAt,
   lines: [...o.lines]
@@ -154,6 +195,13 @@ const toRecord = (o: OrderRow): OrderRecord => ({
       mrpPaise: l.mrpPaise,
       linePaise: l.linePaise,
       substitution: l.substitution,
+      status: l.status as 'ok' | 'removed' | 'substituted',
+      substituteItemId: l.substituteItemId,
+      substituteVariantId: l.substituteVariantId,
+      substituteName: l.substituteName,
+      substituteVariantLabel: l.substituteVariantLabel,
+      substituteUnitPaise: l.substituteUnitPaise,
+      refundPaise: l.refundPaise,
     })),
 });
 
@@ -169,7 +217,7 @@ class PrismaOrderTx implements OrderTx {
         ...rest,
         address: address as unknown as Prisma.InputJsonValue,
         quote: quote as unknown as Prisma.InputJsonValue,
-        lines: { create: lines.map((l, position) => ({ ...l, position })) },
+        lines: { create: lines.map((l, position) => ({ ...l, status: l.status ?? 'ok', refundPaise: l.refundPaise ?? 0, position })) },
         history: { create: { from: null, to: o.state, actorType: actor.type, actorId: actor.id } },
       },
       include: withLines,
@@ -185,6 +233,20 @@ class PrismaOrderTx implements OrderTx {
     if (count !== 1) return false;
     await this.tx.orderTransition.create({ data: { orderId, from: t.from, to: t.to, actorType: t.actor.type, actorId: t.actor.id, reason: t.reason ?? null } });
     return true;
+  }
+
+  async lock(orderId: string) {
+    await this.tx.$queryRaw`SELECT id FROM orders WHERE id = ${orderId}::uuid FOR UPDATE`;
+    const o = await this.tx.order.findUnique({ where: { id: orderId }, include: withLines });
+    return o ? toRecord(o) : null;
+  }
+
+  async updateLine(orderId: string, variantId: string, patch: Parameters<OrderTx['updateLine']>[2]) {
+    await this.tx.orderLine.updateMany({ where: { orderId, variantId }, data: patch });
+  }
+
+  async addRefund(orderId: string, paise: number) {
+    await this.tx.order.update({ where: { id: orderId }, data: { refundedPaise: { increment: paise }, updatedAt: new Date() } });
   }
 
   async appendEvent<P>(e: NewEvent<P>) {
@@ -262,6 +324,28 @@ export class PrismaOrderRepository extends OrderRepository {
       await this.prisma.order.findMany({ where: { state: 'AWAITING_PAYMENT', paymentDueAt: { lte: now } }, orderBy: { paymentDueAt: 'asc' }, take: limit, include: withLines })
     ).map(toRecord);
   }
+
+  async listForMerchant(merchantId: string, q: { states?: OrderState[]; since?: Date; limit: number }) {
+    return (
+      await this.prisma.order.findMany({
+        where: { merchantId, ...(q.states ? { state: { in: q.states } } : {}), ...(q.since ? { createdAt: { gte: q.since } } : {}) },
+        orderBy: { createdAt: 'desc' },
+        take: q.limit,
+        include: withLines,
+      })
+    ).map(toRecord);
+  }
+
+  async listRecent(q: { states?: OrderState[]; microMarketId?: string; limit: number }) {
+    return (
+      await this.prisma.order.findMany({
+        where: { ...(q.states ? { state: { in: q.states } } : {}), ...(q.microMarketId ? { microMarketId: q.microMarketId } : {}) },
+        orderBy: { createdAt: 'desc' },
+        take: q.limit,
+        include: withLines,
+      })
+    ).map(toRecord);
+  }
 }
 
 // ───────────── in-memory (fake mode + tests) ─────────────
@@ -289,7 +373,18 @@ class OrderStore extends MemoryStore<State> {
           // Strictly increasing timestamps, like Postgres' microsecond now().
           const last = Math.max(0, ...this.state.orders.map((r) => r.createdAt.getTime()));
           const now = new Date(Math.max(Date.now(), last + 1));
-          const rec = { ...this.clone(o), createdAt: now, updatedAt: now } as OrderRecord;
+          const rec = {
+            fulfilmentMode: null,
+            acceptedAt: null,
+            readyAt: null,
+            packBy: null,
+            refundedPaise: 0,
+            outcomeReason: null,
+            ...this.clone(o),
+            lines: o.lines.map((l) => ({ status: 'ok' as const, substituteItemId: null, substituteVariantId: null, substituteName: null, substituteVariantLabel: null, substituteUnitPaise: null, refundPaise: 0, ...this.clone(l) })),
+            createdAt: now,
+            updatedAt: now,
+          } as OrderRecord;
           this.state.orders.push(rec);
           this.state.history.push({ orderId: o.id, from: null, to: o.state, actorType: actor.type, actorId: actor.id, reason: null, at: now });
           return this.clone(rec) as never;
@@ -299,9 +394,23 @@ class OrderStore extends MemoryStore<State> {
           if (!o || o.state !== t.from) return false;
           o.state = t.to;
           o.updatedAt = new Date();
-          if (t.set?.placedAt) o.placedAt = t.set.placedAt;
+          Object.assign(o, this.clone(t.set ?? {}));
           this.state.history.push({ orderId, from: t.from, to: t.to, actorType: t.actor.type, actorId: t.actor.id, reason: t.reason ?? null, at: new Date() });
           return true;
+        },
+        lock: async (orderId) => this.clone(this.state.orders.find((x) => x.id === orderId) ?? null),
+        updateLine: async (orderId, variantId, patch) => {
+          const o = this.state.orders.find((x) => x.id === orderId);
+          const l = o?.lines.find((x) => x.variantId === variantId);
+          if (l) Object.assign(l, this.clone(patch));
+          if (o) o.updatedAt = new Date();
+        },
+        addRefund: async (orderId, paise) => {
+          const o = this.state.orders.find((x) => x.id === orderId);
+          if (o) {
+            o.refundedPaise += paise;
+            o.updatedAt = new Date();
+          }
         },
         appendEvent: async (e) => fx.event(e),
         appendAudit: async (a) => fx.audit(a),
@@ -375,6 +484,24 @@ export class InMemoryOrderRepository extends OrderRepository {
         .filter((o) => o.state === 'AWAITING_PAYMENT' && o.paymentDueAt && o.paymentDueAt <= now)
         .sort((a, b) => a.paymentDueAt!.getTime() - b.paymentDueAt!.getTime())
         .slice(0, limit),
+    );
+  }
+
+  async listForMerchant(merchantId: string, q: { states?: OrderState[]; since?: Date; limit: number }) {
+    return this.store.read((s) =>
+      s.orders
+        .filter((o) => o.merchantId === merchantId && (!q.states || q.states.includes(o.state)) && (!q.since || o.createdAt >= q.since))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, q.limit),
+    );
+  }
+
+  async listRecent(q: { states?: OrderState[]; microMarketId?: string; limit: number }) {
+    return this.store.read((s) =>
+      s.orders
+        .filter((o) => (!q.states || q.states.includes(o.state)) && (!q.microMarketId || o.microMarketId === q.microMarketId))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, q.limit),
     );
   }
 }

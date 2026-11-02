@@ -6,6 +6,7 @@ import 'package:santha_ui/santha_ui.dart';
 
 import '../../../common/widgets.dart';
 import '../../../data/discovery_providers.dart';
+import '../../../data/order_providers.dart';
 import '../../../data/providers.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../location/location_page.dart';
@@ -69,6 +70,7 @@ class AccountPage extends ConsumerWidget {
           trailing: TextButton(onPressed: () => ref.read(localeControllerProvider.notifier).toggle(), child: Text(l.switchLanguage)),
         ),
         const WalletTile(),
+        const _WhatsappTile(),
         const Divider(),
         Text(l.manageAddresses, style: text.titleMedium),
         switch (addresses) {
@@ -98,6 +100,31 @@ class AccountPage extends ConsumerWidget {
         const SizedBox(height: SanthaSpacing.s6),
         SanthaButton(label: l.signOut, variant: SanthaButtonVariant.outline, onPressed: () => ref.read(authControllerProvider.notifier).signOut()),
       ]),
+    );
+  }
+}
+
+class _WhatsappTile extends ConsumerWidget {
+  const _WhatsappTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final on = ref.watch(whatsappUpdatesProvider).value;
+    return SwitchListTile(
+      key: const ValueKey('whatsapp-updates'),
+      contentPadding: EdgeInsets.zero,
+      secondary: const Icon(Icons.chat_outlined),
+      title: Text(l.whatsappUpdates),
+      subtitle: Text(l.whatsappUpdatesSub),
+      value: on ?? false,
+      onChanged: on == null
+          ? null
+          : (v) async {
+              await ref.read(checkoutApiProvider).setWhatsappUpdates(v);
+              ref.read(analyticsProvider).track('whatsapp_opt_in_changed', {'on': v});
+              ref.invalidate(whatsappUpdatesProvider);
+            },
     );
   }
 }

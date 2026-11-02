@@ -12,5 +12,6 @@ export 'src/discovery_api.dart';
 export 'src/discovery_models.dart';
 export 'src/merchant_api.dart';
 export 'src/merchant_models.dart';
+export 'src/merchant_orders.dart';
 export 'src/models.dart';
 export 'src/token_store.dart';

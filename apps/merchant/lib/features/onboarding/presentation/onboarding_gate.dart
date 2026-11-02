@@ -8,10 +8,11 @@ import 'package:santha_ui/santha_ui.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/onboarding_controller.dart';
 import 'copy.dart';
+import '../../orders/presentation/merchant_home.dart';
 import 'start_page.dart';
 import 'widgets.dart';
 
-/// Merchant home in M1: start → checklist → under review → live, driven by GET /merchants/me.
+/// Merchant home: start → checklist → under review → live (orders home, M5), driven by GET /merchants/me.
 class OnboardingGate extends ConsumerWidget {
   const OnboardingGate({super.key});
 
@@ -24,6 +25,7 @@ class OnboardingGate extends ConsumerWidget {
           data: (view) => switch (view?.merchant.status) {
             null => const StartPage(),
             MerchantStatus.draft || MerchantStatus.rejected => ChecklistPage(view: view!),
+            MerchantStatus.live => MerchantHome(view: view!),
             _ => StatusPage(view: view!),
           },
         );

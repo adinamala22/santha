@@ -1,0 +1,108 @@
+/**
+ * Ops console copy for live orders (M5, /admin/orders). English + Telugu with identical keys and
+ * placeholders (see orders.test.ts).
+ */
+export const orderMessages = {
+  en: {
+    nav: 'Orders',
+    title: 'Orders',
+    sub: 'Every order in the city, newest first, with its timeline and messages sent',
+    empty: 'No orders match this filter.',
+    filters: { open: 'Open', placed: 'Waiting for store', preparing: 'Preparing', ready: 'Ready', closed: 'Closed', all: 'All' },
+    cols: { code: 'Order', store: 'Store', state: 'State', total: 'Total', payment: 'Payment', placed: 'Placed' },
+    stats: { waiting: 'Waiting for store', preparing: 'Being prepared', refunded: 'Refunded today' },
+    payment: { online: 'Online', cod: 'Cash on delivery' },
+    states: {
+      AWAITING_PAYMENT: 'Awaiting payment',
+      PAYMENT_FAILED: 'Payment failed',
+      PLACED: 'Placed',
+      ACCEPTED: 'Accepted',
+      PREPARING: 'Preparing',
+      READY: 'Ready',
+      PICKED_UP: 'Picked up',
+      OUT_FOR_DELIVERY: 'Out for delivery',
+      DELIVERED: 'Delivered',
+      CANCELLED: 'Cancelled',
+      REJECTED: 'Rejected',
+      EXPIRED: 'Missed by store',
+      FAILED_DELIVERY: 'Delivery failed',
+    },
+    actors: { customer: 'Customer', merchant: 'Store', system: 'System', ops: 'Ops', rider: 'Rider', payment: 'Payment' },
+    detail: {
+      back: 'All orders',
+      items: 'Items',
+      timeline: 'Timeline',
+      comms: 'Messages sent',
+      noComms: 'No messages sent for this order.',
+      address: 'Delivery address',
+      instructions: 'Instructions',
+      paymentTitle: 'Payment',
+      refunded: '{amount} refunded to the customer wallet',
+      outcome: 'Reason: {reason}',
+      removed: 'removed · {amount} refunded',
+      substituted: 'replaced with {name}',
+      to: { customer: 'to customer', merchant: 'to store' },
+      paymentLine: '{status} · {provider} · {amount}',
+    },
+  },
+  te: {
+    nav: 'ఆర్డర్లు',
+    title: 'ఆర్డర్లు',
+    sub: 'నగరంలోని ప్రతి ఆర్డర్, కొత్తవి ముందు, దాని టైమ్‌లైన్ మరియు పంపిన సందేశాలతో',
+    empty: 'ఈ ఫిల్టర్‌కు సరిపోయే ఆర్డర్లు లేవు.',
+    filters: { open: 'తెరిచినవి', placed: 'షాప్ కోసం వేచి ఉంది', preparing: 'సిద్ధం చేస్తున్నారు', ready: 'సిద్ధం', closed: 'ముగిసినవి', all: 'అన్నీ' },
+    cols: { code: 'ఆర్డర్', store: 'షాప్', state: 'స్థితి', total: 'మొత్తం', payment: 'చెల్లింపు', placed: 'పెట్టిన సమయం' },
+    stats: { waiting: 'షాప్ కోసం వేచి ఉంది', preparing: 'సిద్ధం అవుతున్నవి', refunded: 'ఈరోజు రీఫండ్' },
+    payment: { online: 'ఆన్‌లైన్', cod: 'క్యాష్ ఆన్ డెలివరీ' },
+    states: {
+      AWAITING_PAYMENT: 'చెల్లింపు కోసం వేచి ఉంది',
+      PAYMENT_FAILED: 'చెల్లింపు విఫలమైంది',
+      PLACED: 'పెట్టారు',
+      ACCEPTED: 'అంగీకరించారు',
+      PREPARING: 'సిద్ధం చేస్తున్నారు',
+      READY: 'సిద్ధం',
+      PICKED_UP: 'పికప్ చేశారు',
+      OUT_FOR_DELIVERY: 'డెలివరీకి బయలుదేరింది',
+      DELIVERED: 'డెలివరీ అయింది',
+      CANCELLED: 'రద్దయింది',
+      REJECTED: 'తిరస్కరించారు',
+      EXPIRED: 'షాప్ మిస్ చేసింది',
+      FAILED_DELIVERY: 'డెలివరీ విఫలమైంది',
+    },
+    actors: { customer: 'కస్టమర్', merchant: 'షాప్', system: 'సిస్టమ్', ops: 'ఆప్స్', rider: 'రైడర్', payment: 'చెల్లింపు' },
+    detail: {
+      back: 'అన్ని ఆర్డర్లు',
+      items: 'వస్తువులు',
+      timeline: 'టైమ్‌లైన్',
+      comms: 'పంపిన సందేశాలు',
+      noComms: 'ఈ ఆర్డర్‌కు సందేశాలు పంపలేదు.',
+      address: 'డెలివరీ చిరునామా',
+      instructions: 'సూచనలు',
+      paymentTitle: 'చెల్లింపు',
+      refunded: '{amount} కస్టమర్ వాలెట్‌కు రీఫండ్ అయింది',
+      outcome: 'కారణం: {reason}',
+      removed: 'తీసివేశారు · {amount} రీఫండ్',
+      substituted: '{name}తో మార్చారు',
+      to: { customer: 'కస్టమర్‌కు', merchant: 'షాప్‌కు' },
+      paymentLine: '{status} · {provider} · {amount}',
+    },
+  },
+} as const;
+
+export type OrderCopy = (typeof orderMessages)['en'];
+export const orderCopy = (locale: 'en' | 'te'): OrderCopy => orderMessages[locale] as unknown as OrderCopy;
+
+/** Filter → backend states. */
+export const ORDER_FILTERS = {
+  open: ['PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'PICKED_UP', 'OUT_FOR_DELIVERY'],
+  placed: ['PLACED'],
+  preparing: ['ACCEPTED', 'PREPARING'],
+  ready: ['READY'],
+  closed: ['DELIVERED', 'CANCELLED', 'REJECTED', 'EXPIRED', 'FAILED_DELIVERY', 'PAYMENT_FAILED'],
+  all: [],
+} as const;
+export type OrderFilter = keyof typeof ORDER_FILTERS;
+
+/** Chip tone for an order state. */
+export const stateTone = (s: string) =>
+  ({ PLACED: 'submitted', ACCEPTED: 'approved', PREPARING: 'approved', READY: 'live', DELIVERED: 'live', REJECTED: 'failed', EXPIRED: 'failed', PAYMENT_FAILED: 'failed', FAILED_DELIVERY: 'failed' })[s] ?? 'draft';

@@ -15,6 +15,7 @@ import { QueuesModule } from './infra/queues/queues.module';
 import { RedisModule } from './infra/redis/redis.module';
 import { StorageModule } from './infra/storage/object-storage';
 import { CacheModule } from './infra/cache/kv-cache';
+import { TimersModule } from './infra/timers/timers';
 import { DevModule } from './dev/dev.module';
 import { AnalyticsConfigModule } from './modules/analytics-config/analytics-config.module';
 import { CartPricingModule } from './modules/cart-pricing/cart-pricing.module';
@@ -56,6 +57,7 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     QueuesModule,
     StorageModule,
     CacheModule,
+    TimersModule,
     OutboxModule,
     AuditModule,
     IdentityKycModule,

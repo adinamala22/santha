@@ -311,6 +311,11 @@ model Merchant {
   rejectionCode     String?                                @map("rejection_code")
   rejectionNote     String?                                @map("rejection_note")
   liveAt            DateTime?                              @map("live_at") @db.Timestamptz(6)
+  /// Store toggle (merchant app) and auto-pause after two missed orders in a row (M5).
+  acceptingOrders   Boolean                                @default(true) @map("accepting_orders")
+  pausedReason      String?                                @map("paused_reason")
+  pausedAt          DateTime?                              @map("paused_at") @db.Timestamptz(6)
+  missedInARow      Int                                    @default(0) @map("missed_in_a_row")
   createdAt         DateTime                               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt         DateTime                               @updatedAt @map("updated_at") @db.Timestamptz(6)
 
@@ -721,6 +726,14 @@ model Order {
   idempotencyKey String        @map("idempotency_key")
   placedAt       DateTime?     @map("placed_at") @db.Timestamptz(6)
   paymentDueAt   DateTime?     @map("payment_due_at") @db.Timestamptz(6)
+  /// M5 lifecycle: how the merchant fulfils (self | rider), when it was accepted / ready, refunds so far.
+  fulfilmentMode String?       @map("fulfilment_mode")
+  acceptedAt     DateTime?     @map("accepted_at") @db.Timestamptz(6)
+  readyAt        DateTime?     @map("ready_at") @db.Timestamptz(6)
+  packBy         DateTime?     @map("pack_by") @db.Timestamptz(6)
+  refundedPaise  Int           @default(0) @map("refunded_paise")
+  /// Reject / cancel reason code.
+  outcomeReason  String?       @map("outcome_reason")
   createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
 
@@ -736,19 +749,28 @@ model Order {
 }
 
 model OrderLine {
-  id             String @id @default(uuid()) @db.Uuid
-  orderId        String @map("order_id") @db.Uuid
-  itemId         String @map("item_id") @db.Uuid
-  variantId      String @map("variant_id") @db.Uuid
-  name           String
-  variantLabel   String @map("variant_label")
-  quantity       Int
-  unitPricePaise Int    @map("unit_price_paise")
-  mrpPaise       Int?   @map("mrp_paise")
-  linePaise      Int    @map("line_paise")
+  id                     String  @id @default(uuid()) @db.Uuid
+  orderId                String  @map("order_id") @db.Uuid
+  itemId                 String  @map("item_id") @db.Uuid
+  variantId              String  @map("variant_id") @db.Uuid
+  name                   String
+  variantLabel           String  @map("variant_label")
+  quantity               Int
+  unitPricePaise         Int     @map("unit_price_paise")
+  mrpPaise               Int?    @map("mrp_paise")
+  linePaise              Int     @map("line_paise")
   /// call_me | similar | remove: what to do if the item is unavailable when packing.
-  substitution   String
-  position       Int    @default(0)
+  substitution           String
+  position               Int     @default(0)
+  /// ok | removed | substituted (merchant marks unavailable items while packing).
+  status                 String  @default("ok")
+  substituteItemId       String? @map("substitute_item_id") @db.Uuid
+  substituteVariantId    String? @map("substitute_variant_id") @db.Uuid
+  substituteName         String? @map("substitute_name")
+  substituteVariantLabel String? @map("substitute_variant_label")
+  substituteUnitPaise    Int?    @map("substitute_unit_paise")
+  /// Money given back for this line (removed, or substituted for less).
+  refundPaise            Int     @default(0) @map("refund_paise")
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
@@ -829,4 +851,49 @@ model WalletEntry {
 
   @@index([userId, createdAt])
   @@map("wallet_entries")
+}
+
+// ───────────── notifications (M5) ─────────────
+
+/// Every message sent to a customer, merchant or rider, per channel — the ops comms log.
+model Notification {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String?  @map("user_id") @db.Uuid
+  merchantId String?  @map("merchant_id") @db.Uuid
+  orderId    String?  @map("order_id") @db.Uuid
+  /// push | sms | whatsapp | voice | socket
+  channel    String
+  template   String
+  locale     String
+  body       String
+  /// sent | failed | skipped
+  status     String
+  provider   String
+  error      String?
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([orderId, createdAt])
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+/// FCM registration tokens per device.
+model PushToken {
+  deviceId  String   @id @map("device_id")
+  userId    String   @map("user_id") @db.Uuid
+  token     String
+  platform  String
+  updatedAt DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+/// Opt-ins (WhatsApp order updates need explicit consent).
+model NotificationPreference {
+  userId          String   @id @map("user_id") @db.Uuid
+  whatsappUpdates Boolean  @default(false) @map("whatsapp_updates")
+  updatedAt       DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("notification_preferences")
 }

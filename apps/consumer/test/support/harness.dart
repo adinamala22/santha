@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:consumer/app.dart';
+import 'package:consumer/data/order_providers.dart';
 import 'package:consumer/data/providers.dart';
 import 'package:consumer/flavors.dart';
 import 'package:dio/dio.dart';
@@ -32,12 +33,28 @@ class FakeBackend implements HttpClientAdapter {
   bool codOrder = false;
   final bodies = <String, Object?>{};
 
+  // M5 state
+  String? cancelReason;
+  bool whatsapp = false;
+  /// Applied to every order response (e.g. {'state': 'PREPARING'} to simulate the store moving it on).
+  Map<String, dynamic> orderPatch = {};
+
   Map<String, dynamic> _order() {
+    final Map<String, dynamic> o;
     if (codOrder) {
-      final o = fixture('order_placed');
-      return {...o, 'paymentMethod': 'cod', 'payment': null};
+      o = {...fixture('order_placed'), 'paymentMethod': 'cod', 'payment': null};
+    } else {
+      o = fixture(paid ? 'order_placed' : 'order_awaiting_payment');
     }
-    return fixture(paid ? 'order_placed' : 'order_awaiting_payment');
+    final state = cancelReason != null ? 'CANCELLED' : (orderPatch['state'] ?? o['state']);
+    return {
+      ...o,
+      'canCancel': state == 'PLACED',
+      'refundedPaise': cancelReason != null && !codOrder ? o['totalPaise'] : 0,
+      'outcomeReason': cancelReason,
+      ...orderPatch,
+      'state': state,
+    };
   }
 
   @override
@@ -58,6 +75,14 @@ class FakeBackend implements HttpClientAdapter {
       'GET /v1/orders' => (200, {'items': [_order()]}),
       'GET /v1/wallet' => (200, fixture('wallet')),
       final r when r.startsWith('GET /v1/orders/') => (200, _order()),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/cancel') => _order()['state'] == 'PLACED'
+          ? (200, (() {
+              cancelReason = (o.data as Map)['reason'] as String;
+              return _order();
+            })())
+          : (409, <String, Object?>{'error': {'code': 'INVALID_STATE', 'message': 'The store has already started on this order.'}}),
+      'GET /v1/me/notification-preferences' => (200, {'whatsappUpdates': whatsapp}),
+      'PUT /v1/me/notification-preferences' => (200, {'whatsappUpdates': whatsapp = (o.data as Map)['whatsappUpdates'] as bool}),
       final r when r.startsWith('POST /v1/dev/payments/') =>
         (200, {...(fixture('order_placed')['payment'] as Map<String, dynamic>), 'status': path.endsWith('/succeed') ? 'captured' : 'created', 'lastFailure': path.endsWith('/fail') ? 'Payment declined by the bank (mock)' : null}),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/abandon-payment') => (200, {...fixture('order_awaiting_payment'), 'state': 'PAYMENT_FAILED'}),
@@ -98,7 +123,8 @@ class FakeBackend implements HttpClientAdapter {
 }
 
 class Harness {
-  Harness(this.container, this.backend, this.analytics);
+  Harness(this.container, this.backend, this.analytics, [this.realtime]);
+  final FakeRealtime? realtime;
   final ProviderContainer container;
   final FakeBackend backend;
   final DebugAnalytics analytics;
@@ -112,7 +138,7 @@ Future<void> settle(WidgetTester tester, [int frames = 12]) async {
 }
 
 /// Boots the app on a phone-sized screen. With [signIn], walks the OTP flow first.
-Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}}) async {
+Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime}) async {
   tester.view.physicalSize = const Size(1080, 3000); // 360 × 1000 dp
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
@@ -124,6 +150,8 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
       appConfigProvider.overrideWithValue(configFor(Flavor.dev)),
       keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore({'santha.locale': locale, ...kv})),
       deviceIdProvider.overrideWithValue('test-device-0001'),
+      realtimeProvider.overrideWithValue(realtime ?? FakeRealtime()),
+      orderPollEveryProvider.overrideWithValue(null),
       analyticsProvider.overrideWithValue(analytics),
       jsonCacheProvider.overrideWith((ref) async => JsonCache(MemoryCacheStorage())),
       apiClientProvider.overrideWith(
@@ -151,12 +179,12 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
     await tester.pump(const Duration(seconds: 31)); // resend countdown timer
     await settle(tester);
   }
-  return Harness(container, backend, analytics);
+  return Harness(container, backend, analytics, realtime);
 }
 
 /// Signs in and picks the seeded default address (Dargamitta) → home.
-Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}}) async {
-  final h = await pumpApp(tester, locale: locale, kv: kv);
+Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime}) async {
+  final h = await pumpApp(tester, locale: locale, kv: kv, realtime: realtime);
   await tester.tap(find.textContaining('Sai Residency'));
   await settle(tester, 20);
   return h;

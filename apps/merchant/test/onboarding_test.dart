@@ -13,6 +13,8 @@ import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
+import 'support/fake_orders.dart';
+
 /// Answers GET /v1/me so the session restores as a signed-in merchant.
 class _MeBackend implements HttpClientAdapter {
   @override
@@ -116,6 +118,10 @@ Future<(ProviderContainer, FakeMerchantApi)> pumpSignedIn(
   String locale = 'en',
   LocationReader? location,
   List<Override> overrides = const [],
+  List<Map<String, dynamic>> orders = const [],
+  void Function(FakeMerchantOrdersApi)? onOrdersApi,
+  FakeRealtime? realtime,
+  AlertCounter? alerts,
 }) async {
   late FakeMerchantApi api;
   final tokens = MemoryTokenStore();
@@ -137,6 +143,7 @@ Future<(ProviderContainer, FakeMerchantApi)> pumpSignedIn(
         )),
     merchantApiProvider.overrideWith((ref) => api = FakeMerchantApi(ref.watch(apiClientProvider), view: view)),
     if (location != null) locationReaderProvider.overrideWithValue(location),
+    ...orderOverrides(orders: [...orders], view: view ?? const {}, onApi: onOrdersApi ?? (_) {}, realtime: realtime, alerts: alerts),
     ...overrides,
   ]);
   addTearDown(container.dispose);
@@ -238,6 +245,8 @@ void main() {
       locale: 'te',
       view: FakeMerchantApi.build(status: 'live', microMarket: {'id': 'mm1', 'slug': 'dargamitta', 'name': 'Dargamitta', 'nameTe': 'దర్గామిట్ట'}),
     );
+    await tester.tap(find.text('మరిన్ని'));
+    await tester.pumpAndSettle();
     expect(find.text('మీరు సంతలో లైవ్‌లో ఉన్నారు'), findsOneWidget);
     expect(find.textContaining('దర్గామిట్ట'), findsOneWidget);
   });
