@@ -70,6 +70,12 @@ Indian mobile number signs in with code `123456` (new numbers get the role of th
 | Merchant owner | 9000000201 – 9000000212 |
 | Ops admin | 9000000900 |
 
+**Ops console** (http://localhost:3000/admin/login): `admin@santha.local` / `santha-admin-dev` (dev-only seed
+password, `SEED_OPS_PASSWORD`), then OTP `123456`. **Mock KYC**: Aadhaar OTP `123456`; numbers containing `0000`
+(PAN digits, Aadhaar/account/FSSAI ending) fail, so failure paths are easy to try. Demo data: Nellore, four
+approximate micro-markets (Magunta Layout, Dargamitta, Balaji Nagar, Vedayapalem) and 12 merchants
+(8 live, 3 waiting for review, 1 draft).
+
 ## Checks (what CI runs)
 ```bash
 pnpm lint && pnpm typecheck && pnpm test   # backend, web, shared-types

@@ -1,4 +1,4 @@
-// Auth models mirroring apps/backend/openapi.json. Replaced by generated models from M1.
+// Auth models mirroring apps/backend/openapi.json (hand-written; see ADR-006).
 
 typedef Json = Map<String, dynamic>;
 

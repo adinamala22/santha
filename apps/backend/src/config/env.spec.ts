@@ -35,6 +35,13 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...base, OTP_PROVIDER: 'msg91' })).toThrow(/MSG91_AUTH_KEY/);
   });
 
+  it('treats empty values from .env as unset', () => {
+    const env = parseEnv({ ...base, POSTHOG_HOST: '', POSTHOG_KEY: '', FLAG_OVERRIDES: '', MOCK_OTP_CODE: '' });
+    expect(env.POSTHOG_HOST).toBeUndefined();
+    expect(env.FLAG_OVERRIDES).toEqual({});
+    expect(env.MOCK_OTP_CODE).toBeUndefined();
+  });
+
   it('parses boolean flags', () => {
     expect(parseEnv({ ...base, RUN_WORKERS: 'false' }).RUN_WORKERS).toBe(false);
   });

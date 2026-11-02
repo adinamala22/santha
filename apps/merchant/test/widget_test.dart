@@ -77,7 +77,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
 
     expect(container.read(authControllerProvider), isA<AuthSignedIn>());
-    expect(find.text('Signed in as +9198******10'), findsOneWidget);
+    await tester.pumpAndSettle(); // signed in → onboarding; the fake backend has no store yet
+    expect(find.text('Set up your shop'), findsOneWidget);
     await tester.pump(const Duration(seconds: 31)); // let the resend countdown finish
   });
 

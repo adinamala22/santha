@@ -2,7 +2,7 @@
 Naming: `<aggregate>.<past_tense_verb>`, snake_case, versioned payload (`v: 1`), always includes `event_id`, `occurred_at`, `micro_market_id`, actor.
 
 identity: user.registered · user.role_granted
-merchant: merchant.created · merchant.kyc_updated · merchant.went_live · merchant.availability_changed · merchant.auto_paused · merchant.staff_added
+merchant: merchant.created · merchant.kyc_updated · merchant.submitted · merchant.approved · merchant.rejected · merchant.went_live · merchant.availability_changed · merchant.auto_paused · merchant.staff_added
 catalogue: item.created · item.updated · item.stock_changed · item.flagged · menu.slot_changed
 orders: order.placed · order.accepted · order.rejected · order.item_substituted · order.item_removed · order.preparing · order.ready · order.out_for_delivery · order.delivered · order.cancelled · delivery.failed
 fulfilment: fulfilment.requested · fulfilment.offered · fulfilment.offer_declined · fulfilment.assigned · fulfilment.fallback_triggered · fulfilment.picked_up · fulfilment.proof_captured

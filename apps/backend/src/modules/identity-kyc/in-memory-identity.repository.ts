@@ -50,18 +50,27 @@ export class InMemoryIdentityRepository extends IdentityRepository {
     super();
   }
 
-  /** Loads demo users (same list as the Postgres seed). Idempotent. */
-  seed(people: readonly SeedPerson[]): void {
+  /** email → { userId, passwordHash } for ops console accounts. */
+  opsAccounts = new Map<string, { userId: string; passwordHash: string }>();
+
+  /** Loads demo users (same list and ids as the Postgres seed). Idempotent. */
+  seed(people: readonly SeedPerson[], opsPasswordHash?: string): void {
     for (const p of people) {
       const existing = [...this.users.values()].find((u) => u.phone === p.phone);
       if (existing) {
         existing.name = p.name;
         for (const r of p.roles) if (!existing.roles.includes(r)) existing.roles.push(r);
-        continue;
+      } else {
+        this.users.set(p.id, { id: p.id, phone: p.phone, name: p.name, locale: 'en', status: 'active', roles: [...p.roles] });
       }
-      const id = randomUUID();
-      this.users.set(id, { id, phone: p.phone, name: p.name, locale: 'en', status: 'active', roles: [...p.roles] });
+      if (p.email && opsPasswordHash) this.opsAccounts.set(p.email, { userId: existing?.id ?? p.id, passwordHash: opsPasswordHash });
     }
+  }
+
+  async findOpsAccount(email: string): Promise<{ user: UserRecord; passwordHash: string | null } | null> {
+    const a = this.opsAccounts.get(email);
+    const u = a && this.users.get(a.userId);
+    return u ? { user: structuredClone(u), passwordHash: a.passwordHash } : null;
   }
 
   transaction<T>(fn: (tx: IdentityTx) => Promise<T>): Promise<T> {

@@ -10,7 +10,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { configureApp } from '../../src/app.factory';
 import { AppModule } from '../../src/app.module';
-import { SEED_PEOPLE, type SeedPerson } from '../../src/dev/seed-data';
+import { SEED_OPS_PASSWORD, SEED_PEOPLE, type SeedPerson } from '../../src/dev/seed-data';
 
 export const FAKE_OTP = '123456';
 
@@ -31,6 +31,8 @@ export interface FakeApp {
   http: () => ReturnType<typeof request>;
   /** OTP request → verify with the fixed mock code; returns tokens and ready-made headers. */
   signIn: (phone: string, app: AppId, deviceId?: string) => Promise<Session>;
+  /** Ops console sign-in (email + password, then OTP) as the seeded admin unless told otherwise. */
+  opsSignIn: (email?: string, password?: string) => Promise<Session>;
   /** First seeded person with the role (see src/dev/seed-data.ts). */
   seeded: (role: string) => SeedPerson;
   close: () => Promise<void>;
@@ -81,6 +83,20 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     };
   };
 
+  const opsSignIn = async (email = 'admin@santha.local', password = SEED_OPS_PASSWORD): Promise<Session> => {
+    const deviceId = `ops-console-${++deviceSeq}`;
+    const login = await http().post('/v1/auth/ops/login').send({ email, password, deviceId }).expect(200);
+    const res = await http()
+      .post('/v1/auth/ops/verify')
+      .send({ challengeId: login.body.challengeId, code: FAKE_OTP, deviceId })
+      .expect(200);
+    return {
+      ...res.body,
+      deviceId,
+      headers: { Authorization: `Bearer ${res.body.accessToken}`, 'X-Device-Id': deviceId },
+    };
+  };
+
   const seeded = (role: string): SeedPerson => {
     const p = SEED_PEOPLE.find((x) => x.roles.includes(role as SeedPerson['roles'][number]));
     if (!p) throw new Error(`No seeded person with role ${role}`);
@@ -91,6 +107,7 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     app,
     http,
     signIn,
+    opsSignIn,
     seeded,
     close: async () => {
       await app.close();

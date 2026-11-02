@@ -36,6 +36,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/audit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AuditController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/auth/otp/request": {
         parameters: {
             query?: never;
@@ -62,6 +78,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["AuthController_verifyOtp"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/ops/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_opsLogin"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/ops/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["AuthController_opsVerify"];
         delete?: never;
         options?: never;
         head?: never;
@@ -116,6 +164,374 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantsController_mine"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["MerchantsController_update"];
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/pan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_pan"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/aadhaar/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantsController_aadhaarStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/aadhaar/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantsController_aadhaarVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/gstin": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_gstin"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/gst-exemption": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_gstExemption"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/fssai": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_fssai"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/drug-licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_drugLicence"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/kyc/bank": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantsController_bank"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/staff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantsController_addStaff"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/staff/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["MerchantsController_removeStaff"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantsController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMerchantsController_queue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMerchantsController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMerchantsController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMerchantsController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants/{id}/go-live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMerchantsController_goLive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/micro-markets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMicroMarketsController_list"];
+        put?: never;
+        post: operations["OpsMicroMarketsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/micro-markets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMicroMarketsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/micro-markets/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMicroMarketsController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/serviceability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigController_serviceability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/config/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigController_flagsFor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -139,6 +555,21 @@ export interface components {
                     detail?: string;
                 };
             };
+        };
+        AuditListDto_Output: {
+            items: {
+                id: string;
+                entity: string;
+                entityId: string;
+                action: string;
+                actorId: string | null;
+                microMarketId: string | null;
+                before: unknown;
+                after: unknown;
+                requestId: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
         };
         OtpRequestDto: {
             /** @description Indian mobile; normalised to +91XXXXXXXXXX */
@@ -194,6 +625,28 @@ export interface components {
             };
             isNewUser: boolean;
         };
+        OpsLoginDto: {
+            /** Format: email */
+            email: string;
+            password: string;
+            /** @description Stable per-install id generated by the app and kept in secure storage */
+            deviceId: string;
+        };
+        OpsChallengeDto_Output: {
+            /** Format: uuid */
+            challengeId: string;
+            expiresInSec: number;
+            resendAfterSec: number;
+            /** @description Where the second-factor code was sent */
+            phoneMasked: string;
+        };
+        OpsVerifyDto: {
+            /** Format: uuid */
+            challengeId: string;
+            code: string;
+            /** @description Stable per-install id generated by the app and kept in secure storage */
+            deviceId: string;
+        };
         RefreshDto: {
             refreshToken: string;
             /** @description Stable per-install id generated by the app and kept in secure storage */
@@ -214,6 +667,947 @@ export interface components {
             name: string[];
             locale: string;
             roles: ("consumer" | "merchant" | "merchant_staff" | "rider" | "admin" | "ops" | "finance" | "support")[];
+        };
+        CreateMerchantDto: {
+            /** @enum {string} */
+            type: "retail" | "fashion" | "home_business" | "home_kitchen";
+            name: string;
+            /** @description Retail/home business that sells food (needs FSSAI). Always true for home kitchens. */
+            sellsFood?: boolean;
+            /**
+             * @description Retail only
+             * @enum {string|null}
+             */
+            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
+        };
+        MerchantViewDto_Output: {
+            merchant: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                sellsFood: boolean;
+                category: string | null;
+                name: string;
+                nameTe: string | null;
+                description: string | null;
+                addressLine: string | null;
+                landmark: string | null;
+                pincode: string | null;
+                location: {
+                    lat: number;
+                    lng: number;
+                } | null;
+                radiusM: number;
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                } | null;
+                movPaise: number;
+                /** @enum {string} */
+                defaultFulfilment: "self" | "rider";
+                returnPolicy: string | null;
+                /** Format: date-time */
+                hygieneDeclaredAt: string | null;
+                /** @enum {string} */
+                status: "draft" | "submitted" | "approved" | "rejected" | "live";
+                /** Format: date-time */
+                submittedAt: string | null;
+                /** Format: date-time */
+                decidedAt: string | null;
+                rejectionCode: string | null;
+                rejectionNote: string | null;
+                /** Format: date-time */
+                liveAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            };
+            microMarket: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+            } | null;
+            staff: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                phoneMasked: string;
+                active: boolean;
+            }[];
+            kyc: {
+                /** @enum {string} */
+                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                /** @enum {string} */
+                status: "pending" | "verified" | "failed";
+                valueMasked: string | null;
+                valuePublic: string | null;
+                nameOnRecord: string | null;
+                provider: string;
+                failureReason: string | null;
+                details: {
+                    [key: string]: unknown;
+                } | null;
+                /** Format: date-time */
+                verifiedAt: string | null;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            checklist: {
+                key: string;
+                done: boolean;
+            }[];
+            canSubmit: boolean;
+        };
+        UpdateMerchantDto: {
+            /** @enum {string} */
+            type?: "retail" | "fashion" | "home_business" | "home_kitchen";
+            sellsFood?: boolean;
+            /** @enum {string|null} */
+            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            location?: {
+                lat: number;
+                lng: number;
+            };
+            addressLine?: string;
+            landmark?: string | null;
+            pincode?: string;
+            returnPolicy?: string | null;
+            /** @description Home kitchens: hygiene self-declaration (FR-TRS-2) */
+            hygieneDeclared?: boolean;
+            hours?: {
+                mon: {
+                    open: string;
+                    close: string;
+                }[];
+                tue: {
+                    open: string;
+                    close: string;
+                }[];
+                wed: {
+                    open: string;
+                    close: string;
+                }[];
+                thu: {
+                    open: string;
+                    close: string;
+                }[];
+                fri: {
+                    open: string;
+                    close: string;
+                }[];
+                sat: {
+                    open: string;
+                    close: string;
+                }[];
+                sun: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+            radiusM?: number;
+            /** @description Minimum order value, paise */
+            movPaise?: number;
+            /** @enum {string} */
+            defaultFulfilment?: "self" | "rider";
+        };
+        PanDto: {
+            pan: string;
+            name: string;
+        };
+        KycCheckDto_Output: {
+            /** @enum {string} */
+            kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+            /** @enum {string} */
+            status: "pending" | "verified" | "failed";
+            valueMasked: string[];
+            valuePublic: string[];
+            nameOnRecord: string[];
+            provider: string;
+            failureReason: string[];
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            verifiedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AadhaarStartDto: {
+            aadhaar: string;
+        };
+        AadhaarVerifyDto: {
+            otp: string;
+        };
+        GstinDto: {
+            gstin: string;
+        };
+        GstExemptionDto: {
+            /** @description e.g. turnover below the GST threshold */
+            reason: string;
+        };
+        LicenceNumberDto: {
+            number: string;
+        };
+        BankDto: {
+            accountNumber: string;
+            ifsc: string;
+            holderName: string;
+        };
+        AddStaffDto: {
+            name: string;
+            phone: string;
+        };
+        StaffDto_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phoneMasked: string;
+            active: boolean;
+        };
+        MerchantListDto_Output: {
+            items: {
+                merchant: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                    sellsFood: boolean;
+                    category: string | null;
+                    name: string;
+                    nameTe: string | null;
+                    description: string | null;
+                    addressLine: string | null;
+                    landmark: string | null;
+                    pincode: string | null;
+                    location: {
+                        lat: number;
+                        lng: number;
+                    } | null;
+                    radiusM: number;
+                    hours: {
+                        mon: {
+                            open: string;
+                            close: string;
+                        }[];
+                        tue: {
+                            open: string;
+                            close: string;
+                        }[];
+                        wed: {
+                            open: string;
+                            close: string;
+                        }[];
+                        thu: {
+                            open: string;
+                            close: string;
+                        }[];
+                        fri: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sat: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sun: {
+                            open: string;
+                            close: string;
+                        }[];
+                    } | null;
+                    movPaise: number;
+                    /** @enum {string} */
+                    defaultFulfilment: "self" | "rider";
+                    returnPolicy: string | null;
+                    /** Format: date-time */
+                    hygieneDeclaredAt: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "submitted" | "approved" | "rejected" | "live";
+                    /** Format: date-time */
+                    submittedAt: string | null;
+                    /** Format: date-time */
+                    decidedAt: string | null;
+                    rejectionCode: string | null;
+                    rejectionNote: string | null;
+                    /** Format: date-time */
+                    liveAt: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                };
+                microMarket: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    nameTe: string;
+                } | null;
+                staff: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    phoneMasked: string;
+                    active: boolean;
+                }[];
+                kyc: {
+                    /** @enum {string} */
+                    kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                    /** @enum {string} */
+                    status: "pending" | "verified" | "failed";
+                    valueMasked: string | null;
+                    valuePublic: string | null;
+                    nameOnRecord: string | null;
+                    provider: string;
+                    failureReason: string | null;
+                    details: {
+                        [key: string]: unknown;
+                    } | null;
+                    /** Format: date-time */
+                    verifiedAt: string | null;
+                    /** Format: date-time */
+                    updatedAt: string;
+                }[];
+                checklist: {
+                    key: string;
+                    done: boolean;
+                }[];
+                canSubmit: boolean;
+            }[];
+        };
+        ApproveDto: {
+            note?: string;
+        };
+        RejectDto: {
+            /** @enum {string} */
+            reasonCode: "kyc_mismatch" | "fssai_invalid" | "documents_unclear" | "outside_serviceable_area" | "restricted_category" | "duplicate_merchant" | "other";
+            note?: string;
+        };
+        MicroMarketListDto_Output: {
+            cities: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+                state: string;
+            }[];
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                cityId: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+                currentVersion: number | null;
+                versionCount: number;
+                current: {
+                    /** Format: uuid */
+                    id: string;
+                    version: number;
+                    /** Format: date-time */
+                    effectiveFrom: string;
+                    /** Format: date-time */
+                    effectiveTo: string | null;
+                    /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+                    polygon: {
+                        /** @enum {string} */
+                        type: "Polygon";
+                        coordinates: [
+                            [
+                                number,
+                                number
+                            ][]
+                        ];
+                    };
+                    hours: {
+                        mon: {
+                            open: string;
+                            close: string;
+                        }[];
+                        tue: {
+                            open: string;
+                            close: string;
+                        }[];
+                        wed: {
+                            open: string;
+                            close: string;
+                        }[];
+                        thu: {
+                            open: string;
+                            close: string;
+                        }[];
+                        fri: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sat: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sun: {
+                            open: string;
+                            close: string;
+                        }[];
+                    };
+                    fees: {
+                        /** @description integer paise */
+                        deliveryBasePaise: number;
+                        /** @description integer paise */
+                        deliveryPerKmPaise: number;
+                        /** @description integer paise */
+                        freeDeliveryAbovePaise: number;
+                        /** @description integer paise */
+                        smallOrderThresholdPaise: number;
+                        /** @description integer paise */
+                        smallOrderFeePaise: number;
+                        /** @description integer paise */
+                        platformFeePaise: number;
+                        /** @description integer paise */
+                        packagingFeeCapPaise: number;
+                    };
+                    cod: {
+                        enabled: boolean;
+                        /** @description integer paise */
+                        maxOrderPaise: number;
+                        allowedTypes: ("retail" | "fashion")[];
+                    };
+                    sla: {
+                        merchantAcceptSec: number;
+                        etaBufferMin: number;
+                        riderFallbackMin: number;
+                        staleCatalogueHours: number;
+                    };
+                    riderPay: {
+                        /** @description integer paise */
+                        basePaise: number;
+                        /** @description integer paise */
+                        perKmPaise: number;
+                        /** @description integer paise */
+                        waitPerMinPaise: number;
+                        /** @description integer paise */
+                        batchBonusPaise: number;
+                    };
+                    note: string | null;
+                    createdBy: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                } | null;
+            }[];
+        };
+        MicroMarketDetailDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            cityId: string;
+            slug: string;
+            name: string;
+            nameTe: string;
+            current: {
+                /** Format: uuid */
+                id: string;
+                version: number;
+                /** Format: date-time */
+                effectiveFrom: string;
+                /** Format: date-time */
+                effectiveTo: string | null;
+                /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+                polygon: {
+                    /** @enum {string} */
+                    type: "Polygon";
+                    coordinates: [
+                        [
+                            number,
+                            number
+                        ][]
+                    ];
+                };
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                };
+                fees: {
+                    /** @description integer paise */
+                    deliveryBasePaise: number;
+                    /** @description integer paise */
+                    deliveryPerKmPaise: number;
+                    /** @description integer paise */
+                    freeDeliveryAbovePaise: number;
+                    /** @description integer paise */
+                    smallOrderThresholdPaise: number;
+                    /** @description integer paise */
+                    smallOrderFeePaise: number;
+                    /** @description integer paise */
+                    platformFeePaise: number;
+                    /** @description integer paise */
+                    packagingFeeCapPaise: number;
+                };
+                cod: {
+                    enabled: boolean;
+                    /** @description integer paise */
+                    maxOrderPaise: number;
+                    allowedTypes: ("retail" | "fashion")[];
+                };
+                sla: {
+                    merchantAcceptSec: number;
+                    etaBufferMin: number;
+                    riderFallbackMin: number;
+                    staleCatalogueHours: number;
+                };
+                riderPay: {
+                    /** @description integer paise */
+                    basePaise: number;
+                    /** @description integer paise */
+                    perKmPaise: number;
+                    /** @description integer paise */
+                    waitPerMinPaise: number;
+                    /** @description integer paise */
+                    batchBonusPaise: number;
+                };
+                note: string | null;
+                createdBy: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            } | null;
+            versions: {
+                /** Format: uuid */
+                id: string;
+                version: number;
+                /** Format: date-time */
+                effectiveFrom: string;
+                /** Format: date-time */
+                effectiveTo: string | null;
+                /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+                polygon: {
+                    /** @enum {string} */
+                    type: "Polygon";
+                    coordinates: [
+                        [
+                            number,
+                            number
+                        ][]
+                    ];
+                };
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                };
+                fees: {
+                    /** @description integer paise */
+                    deliveryBasePaise: number;
+                    /** @description integer paise */
+                    deliveryPerKmPaise: number;
+                    /** @description integer paise */
+                    freeDeliveryAbovePaise: number;
+                    /** @description integer paise */
+                    smallOrderThresholdPaise: number;
+                    /** @description integer paise */
+                    smallOrderFeePaise: number;
+                    /** @description integer paise */
+                    platformFeePaise: number;
+                    /** @description integer paise */
+                    packagingFeeCapPaise: number;
+                };
+                cod: {
+                    enabled: boolean;
+                    /** @description integer paise */
+                    maxOrderPaise: number;
+                    allowedTypes: ("retail" | "fashion")[];
+                };
+                sla: {
+                    merchantAcceptSec: number;
+                    etaBufferMin: number;
+                    riderFallbackMin: number;
+                    staleCatalogueHours: number;
+                };
+                riderPay: {
+                    /** @description integer paise */
+                    basePaise: number;
+                    /** @description integer paise */
+                    perKmPaise: number;
+                    /** @description integer paise */
+                    waitPerMinPaise: number;
+                    /** @description integer paise */
+                    batchBonusPaise: number;
+                };
+                note: string | null;
+                createdBy: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        CreateMicroMarketDto: {
+            citySlug: string;
+            slug: string;
+            name: string;
+            /** @description Telugu name */
+            nameTe: string;
+            config: {
+                /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+                polygon: {
+                    /** @enum {string} */
+                    type: "Polygon";
+                    coordinates: [
+                        [
+                            number,
+                            number
+                        ][]
+                    ];
+                };
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                };
+                fees: {
+                    /** @description integer paise */
+                    deliveryBasePaise: number;
+                    /** @description integer paise */
+                    deliveryPerKmPaise: number;
+                    /** @description integer paise */
+                    freeDeliveryAbovePaise: number;
+                    /** @description integer paise */
+                    smallOrderThresholdPaise: number;
+                    /** @description integer paise */
+                    smallOrderFeePaise: number;
+                    /** @description integer paise */
+                    platformFeePaise: number;
+                    /** @description integer paise */
+                    packagingFeeCapPaise: number;
+                };
+                cod: {
+                    enabled: boolean;
+                    /** @description integer paise */
+                    maxOrderPaise: number;
+                    allowedTypes: ("retail" | "fashion")[];
+                };
+                sla: {
+                    merchantAcceptSec: number;
+                    etaBufferMin: number;
+                    riderFallbackMin: number;
+                    staleCatalogueHours: number;
+                };
+                riderPay: {
+                    /** @description integer paise */
+                    basePaise: number;
+                    /** @description integer paise */
+                    perKmPaise: number;
+                    /** @description integer paise */
+                    waitPerMinPaise: number;
+                    /** @description integer paise */
+                    batchBonusPaise: number;
+                };
+            };
+            /**
+             * Format: date-time
+             * @description ISO-8601. Default: now. Cannot be in the past.
+             */
+            effectiveFrom?: string;
+            note?: string;
+        };
+        PublishVersionDto: {
+            config: {
+                /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+                polygon: {
+                    /** @enum {string} */
+                    type: "Polygon";
+                    coordinates: [
+                        [
+                            number,
+                            number
+                        ][]
+                    ];
+                };
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                };
+                fees: {
+                    /** @description integer paise */
+                    deliveryBasePaise: number;
+                    /** @description integer paise */
+                    deliveryPerKmPaise: number;
+                    /** @description integer paise */
+                    freeDeliveryAbovePaise: number;
+                    /** @description integer paise */
+                    smallOrderThresholdPaise: number;
+                    /** @description integer paise */
+                    smallOrderFeePaise: number;
+                    /** @description integer paise */
+                    platformFeePaise: number;
+                    /** @description integer paise */
+                    packagingFeeCapPaise: number;
+                };
+                cod: {
+                    enabled: boolean;
+                    /** @description integer paise */
+                    maxOrderPaise: number;
+                    allowedTypes: ("retail" | "fashion")[];
+                };
+                sla: {
+                    merchantAcceptSec: number;
+                    etaBufferMin: number;
+                    riderFallbackMin: number;
+                    staleCatalogueHours: number;
+                };
+                riderPay: {
+                    /** @description integer paise */
+                    basePaise: number;
+                    /** @description integer paise */
+                    perKmPaise: number;
+                    /** @description integer paise */
+                    waitPerMinPaise: number;
+                    /** @description integer paise */
+                    batchBonusPaise: number;
+                };
+            };
+            /**
+             * Format: date-time
+             * @description ISO-8601. Default: now. Must be after the latest version start.
+             */
+            effectiveFrom?: string;
+            note?: string;
+        };
+        VersionDto_Output: {
+            /** Format: uuid */
+            id: string;
+            version: number;
+            /** Format: date-time */
+            effectiveFrom: string;
+            /** Format: date-time */
+            effectiveTo: string | null;
+            /** @description GeoJSON Polygon, one outer ring, [lng, lat] positions, first point repeated at the end */
+            polygon: {
+                /** @enum {string} */
+                type: "Polygon";
+                coordinates: [
+                    [
+                        number,
+                        number
+                    ][]
+                ];
+            };
+            hours: {
+                mon: {
+                    open: string;
+                    close: string;
+                }[];
+                tue: {
+                    open: string;
+                    close: string;
+                }[];
+                wed: {
+                    open: string;
+                    close: string;
+                }[];
+                thu: {
+                    open: string;
+                    close: string;
+                }[];
+                fri: {
+                    open: string;
+                    close: string;
+                }[];
+                sat: {
+                    open: string;
+                    close: string;
+                }[];
+                sun: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+            fees: {
+                /** @description integer paise */
+                deliveryBasePaise: number;
+                /** @description integer paise */
+                deliveryPerKmPaise: number;
+                /** @description integer paise */
+                freeDeliveryAbovePaise: number;
+                /** @description integer paise */
+                smallOrderThresholdPaise: number;
+                /** @description integer paise */
+                smallOrderFeePaise: number;
+                /** @description integer paise */
+                platformFeePaise: number;
+                /** @description integer paise */
+                packagingFeeCapPaise: number;
+            };
+            cod: {
+                enabled: boolean;
+                /** @description integer paise */
+                maxOrderPaise: number;
+                allowedTypes: ("retail" | "fashion")[];
+            };
+            sla: {
+                merchantAcceptSec: number;
+                etaBufferMin: number;
+                riderFallbackMin: number;
+                staleCatalogueHours: number;
+            };
+            riderPay: {
+                /** @description integer paise */
+                basePaise: number;
+                /** @description integer paise */
+                perKmPaise: number;
+                /** @description integer paise */
+                waitPerMinPaise: number;
+                /** @description integer paise */
+                batchBonusPaise: number;
+            };
+            note: string[];
+            createdBy: string[];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        ServiceabilityDto_Output: {
+            serviceable: boolean;
+            microMarket: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+            } | null;
+            /** @description Show the "join waitlist" CTA when not serviceable */
+            waitlist: boolean;
+        };
+        FlagsDto_Output: {
+            flags: {
+                [key: string]: boolean;
+            };
         };
     };
     responses: never;
@@ -262,6 +1656,31 @@ export interface operations {
             };
         };
     };
+    AuditController_list: {
+        parameters: {
+            query?: {
+                entity?: string;
+                entityId?: string;
+                limit?: number;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuditListDto_Output"];
+                };
+            };
+        };
+    };
     AuthController_requestOtp: {
         parameters: {
             query?: never;
@@ -300,6 +1719,54 @@ export interface operations {
         };
         responses: {
             /** @description Signed in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AuthSessionDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_opsLogin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsLoginDto"];
+            };
+        };
+        responses: {
+            /** @description Password accepted; second-factor code sent */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsChallengeDto_Output"];
+                };
+            };
+        };
+    };
+    AuthController_opsVerify: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsVerifyDto"];
+            };
+        };
+        responses: {
+            /** @description Signed in to the ops console */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -370,6 +1837,615 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMerchantDto"];
+            };
+        };
+        responses: {
+            /** @description Store created as a draft */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_mine: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateMerchantDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_pan: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PanDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_aadhaarStart: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AadhaarStartDto"];
+            };
+        };
+        responses: {
+            /** @description OTP sent to the Aadhaar-linked mobile; status pending */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_aadhaarVerify: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AadhaarVerifyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_gstin: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GstinDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_gstExemption: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GstExemptionDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_fssai: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenceNumberDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_drugLicence: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LicenceNumberDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_bank: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_addStaff: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddStaffDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StaffDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantsController_removeStaff: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantsController_submit: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Submitted for review */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_queue: {
+        parameters: {
+            query?: {
+                status?: "draft" | "submitted" | "approved" | "rejected" | "live";
+                microMarketId?: string;
+                limit?: number;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_detail: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApproveDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_reject: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_goLive: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMicroMarketDto"];
+            };
+        };
+        responses: {
+            /** @description Created with version 1 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_publish: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishVersionDto"];
+            };
+        };
+        responses: {
+            /** @description New version published */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionDto_Output"];
+                };
+            };
+        };
+    };
+    ConfigController_serviceability: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceabilityDto_Output"];
+                };
+            };
+        };
+    };
+    ConfigController_flagsFor: {
+        parameters: {
+            query?: {
+                microMarketId?: string;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagsDto_Output"];
                 };
             };
         };

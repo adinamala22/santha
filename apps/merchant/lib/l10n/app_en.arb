@@ -52,5 +52,192 @@
       }
     }
   },
-  "signOut": "Sign out"
+  "signOut": "Sign out",
+  "onbStartTitle": "Set up your shop",
+  "onbStartSub": "Tell us what you sell. You can change this until you submit.",
+  "onbTypeRetail": "Shop / store",
+  "onbTypeRetailSub": "Kirana, supermarket, pharmacy, bakery, fruits, electronics…",
+  "onbTypeFashion": "Fashion & lifestyle",
+  "onbTypeFashionSub": "Boutique, sarees, footwear, cosmetics…",
+  "onbTypeHomeBusiness": "Home business",
+  "onbTypeHomeBusinessSub": "Pickles, home bakery, crafts, décor…",
+  "onbTypeHomeKitchen": "Home kitchen",
+  "onbTypeHomeKitchenSub": "Tiffins, meals, sweets — cooked at home",
+  "onbShopName": "Shop name",
+  "onbShopNameHint": "e.g. Ramesh Stores",
+  "onbSellsFood": "I sell food items",
+  "onbSellsFoodSub": "Needs an FSSAI registration or licence",
+  "onbCategory": "Category",
+  "catKirana": "Kirana / general store",
+  "catSupermarket": "Supermarket",
+  "catPharmacy": "Pharmacy",
+  "catBakery": "Bakery",
+  "catMeatFish": "Meat & fish",
+  "catFruitsVegetables": "Fruits & vegetables",
+  "catStationery": "Stationery",
+  "catElectronics": "Electronics & mobiles",
+  "catOther": "Other",
+  "onbContinue": "Continue",
+  "onbChecklistTitle": "Finish setting up",
+  "onbChecklistSub": "{done} of {total} done. Santha checks your details before your shop goes live.",
+  "@onbChecklistSub": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "stepBusiness": "Shop details",
+  "stepLocation": "Shop location",
+  "stepHours": "Hours and delivery",
+  "stepPan": "PAN",
+  "stepAadhaar": "Aadhaar",
+  "stepGst": "GST",
+  "stepFssai": "FSSAI licence",
+  "stepDrugLicence": "Drug licence",
+  "stepBank": "Bank account",
+  "stepHygiene": "Hygiene declaration",
+  "stepReturnPolicy": "Return policy",
+  "stepDone": "Done",
+  "stepTodo": "To do",
+  "stepFailed": "Check again",
+  "onbStaff": "Staff who deliver (optional)",
+  "onbStaffSub": "Add people from your shop who can deliver orders themselves.",
+  "onbSubmit": "Submit for review",
+  "onbSubmitHint": "Finish every step to submit.",
+  "onbRejectedTitle": "Changes needed",
+  "reasonKycMismatch": "Your KYC details do not match.",
+  "reasonFssaiInvalid": "Your FSSAI number is invalid or expired.",
+  "reasonDocumentsUnclear": "Some details are unclear or incomplete.",
+  "reasonOutsideArea": "Your shop is outside the area Santha serves.",
+  "reasonRestricted": "This category cannot be sold on Santha.",
+  "reasonDuplicate": "This shop is already registered.",
+  "reasonOther": "Santha needs a few changes.",
+  "fieldNameTe": "Shop name in Telugu (optional)",
+  "fieldDescription": "About your shop (optional)",
+  "save": "Save",
+  "saved": "Saved",
+  "locTitle": "Where is your shop?",
+  "locSub": "Stand at your shop and use your current location.",
+  "locUseGps": "Use my current location",
+  "locLocating": "Finding your location…",
+  "locFound": "Your shop is in {market}",
+  "@locFound": {
+    "placeholders": {
+      "market": {
+        "type": "String"
+      }
+    }
+  },
+  "locNotServiceable": "Santha is not in this area yet. You can finish setting up; we will tell you when we start here.",
+  "locPermissionDenied": "Allow location access to place your shop on the map.",
+  "locServiceOff": "Turn on location (GPS) and try again.",
+  "locAddress": "Shop address",
+  "locLandmark": "Landmark (optional)",
+  "locPincode": "Pincode",
+  "errPincode": "Enter the 6-digit pincode.",
+  "errAddress": "Enter the shop address.",
+  "errLocationFirst": "Use your current location first.",
+  "hoursOpen": "Opens at",
+  "hoursClose": "Closes at",
+  "hoursClosedOn": "Closed on",
+  "dayMon": "Mon",
+  "dayTue": "Tue",
+  "dayWed": "Wed",
+  "dayThu": "Thu",
+  "dayFri": "Fri",
+  "daySat": "Sat",
+  "daySun": "Sun",
+  "errHours": "Closing time must be after opening time, and the shop must open at least one day.",
+  "radius": "Deliver up to {km} km",
+  "@radius": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "mov": "Minimum order (₹)",
+  "deliveryDefault": "Who delivers your orders?",
+  "deliverySelf": "We deliver ourselves",
+  "deliveryRider": "A Santha rider",
+  "deliveryHint": "You can choose for each order. Self-delivery earns a lower commission.",
+  "panNumber": "PAN",
+  "panName": "Name as on PAN",
+  "aadhaarNumber": "Aadhaar number",
+  "aadhaarSendOtp": "Send OTP",
+  "aadhaarOtpSent": "We sent an OTP to the mobile linked to your Aadhaar.",
+  "aadhaarOtp": "Aadhaar OTP",
+  "gstHaveGstin": "I have a GSTIN",
+  "gstExempt": "I am not registered for GST",
+  "gstin": "GSTIN",
+  "gstExemptReason": "Reason",
+  "gstExemptDefault": "My turnover is below the GST threshold",
+  "gstDeclare": "Declare",
+  "fssaiNumber": "FSSAI licence / registration number",
+  "fssaiHelp": "14 digits, printed on your FSSAI certificate. Food sellers cannot go live without it.",
+  "drugNumber": "Drug licence number",
+  "drugHelp": "As printed on your licence. Santha checks it before you go live.",
+  "bankAccount": "Account number",
+  "bankConfirm": "Re-enter account number",
+  "bankIfsc": "IFSC",
+  "bankHolder": "Account holder name",
+  "bankMismatch": "Account numbers do not match.",
+  "bankNote": "We send ₹1 to check the account. Your payouts go here.",
+  "hygieneTitle": "Kitchen hygiene",
+  "hygiene1": "My kitchen and utensils are cleaned every day.",
+  "hygiene2": "Food and ingredients are stored covered, away from pests.",
+  "hygiene3": "I use safe drinking water for cooking.",
+  "hygiene4": "I will label allergens and veg / non-veg on every item.",
+  "hygieneConfirm": "I confirm all of the above",
+  "returnPolicyLabel": "Your return policy",
+  "returnPolicyHint": "e.g. Size exchange within 48 hours if unused, tags on.",
+  "errReturnPolicy": "Write at least one sentence.",
+  "kycVerified": "Verified",
+  "kycFailed": "Not verified: {reason}",
+  "@kycFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "kycFailedGeneric": "Not verified. Check the number and try again.",
+  "kycPending": "Waiting for review",
+  "staffName": "Name",
+  "staffPhone": "Mobile number",
+  "staffAdd": "Add",
+  "staffRemove": "Remove {name}",
+  "@staffRemove": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "statusSubmittedTitle": "Thanks! We are checking your details",
+  "statusSubmittedSub": "This usually takes 1 to 3 days. We will call you if anything is missing.",
+  "statusApprovedTitle": "Approved",
+  "statusApprovedSub": "Your shop will go live shortly.",
+  "statusLiveTitle": "You are live on Santha",
+  "statusLiveSub": "Customers in {market} can now find your shop. Your catalogue and orders come next.",
+  "@statusLiveSub": {
+    "placeholders": {
+      "market": {
+        "type": "String"
+      }
+    }
+  },
+  "refresh": "Refresh",
+  "errValidation": "Please check the details and try again.",
+  "errLocked": "Your details are locked while Santha reviews them.",
+  "errProvider": "Verification is not available right now. Please try again later.",
+  "errChecklist": "Some steps still need attention.",
+  "errDuplicateStaff": "This person is already on your list.",
+  "errRequired": "This is required.",
+  "retry": "Try again",
+  "kycVerify": "Verify"
 }

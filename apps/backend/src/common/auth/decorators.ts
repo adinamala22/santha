@@ -18,6 +18,12 @@ export interface AuthUser {
   app: string;
 }
 
+/** Request id assigned by pino-http (also returned as `x-request-id`); stored on audit rows. */
+export const RequestId = createParamDecorator((_: unknown, ctx: ExecutionContext): string | null => {
+  const req = ctx.switchToHttp().getRequest<{ id?: unknown }>();
+  return typeof req.id === 'string' ? req.id : null;
+});
+
 export const CurrentUser = createParamDecorator((_: unknown, ctx: ExecutionContext): AuthUser => {
   const req = ctx.switchToHttp().getRequest<{ user?: AuthUser }>();
   if (!req.user) throw new Error('CurrentUser used on a public route');

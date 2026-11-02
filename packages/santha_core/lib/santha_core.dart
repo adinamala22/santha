@@ -1,6 +1,7 @@
 /// Santha app core: config, storage, session and sign-in.
 library;
 
+export 'src/analytics/analytics.dart';
 export 'src/auth/auth_controller.dart';
 export 'src/auth/otp_login_screen.dart';
 export 'src/auth/session_storage.dart';

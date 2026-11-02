@@ -1,7 +1,6 @@
 'use client';
 
 import { FormEvent, useId, useState } from 'react';
-import { postJson } from '@/lib/api';
 import type { Messages } from '@/i18n/messages';
 
 type Step = 'credentials' | 'otp';
@@ -9,25 +8,43 @@ type Copy = Messages['admin'];
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+type Result<T> = { ok: true; data: T } | { ok: false; status: number; code: string };
+
+/** Same-origin call to the console's own route handlers (they hold the tokens in httpOnly cookies). */
+async function post<T>(path: string, body: unknown): Promise<Result<T>> {
+  try {
+    const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) });
+    const json = (await res.json().catch(() => null)) as (T & { error?: { code?: string } }) | null;
+    return res.ok ? { ok: true, data: json as T } : { ok: false, status: res.status, code: json?.error?.code ?? 'HTTP_ERROR' };
+  } catch {
+    return { ok: false, status: 0, code: 'NETWORK' };
+  }
+}
+
 function errorFor(code: string, status: number, copy: Copy): string {
-  if (code === 'NETWORK') return copy.errors.network;
-  if (status === 404) return copy.errors.unavailable; // backend ops login lands in M1
-  if (status === 401) return copy.errors.credentials;
+  if (code === 'NETWORK' || status === 502) return copy.errors.network;
+  if (code === 'INVALID_CREDENTIALS' || status === 401) return copy.errors.credentials;
+  if (code === 'OTP_INVALID' || code === 'OTP_EXPIRED') return copy.errors.otpWrong;
+  if (status === 429) return copy.errors.rateLimited;
   return copy.errors.unavailable;
 }
 
+/** Only same-site console paths are allowed as a post-login destination. */
+const safeNext = (next: string | undefined) => (next && next.startsWith('/admin') && !next.startsWith('//') ? next : '/admin');
+
 /**
- * Ops sign-in: email + password, then a one-time code (second factor).
- * Backend: POST /v1/auth/ops/login → { challengeId }, POST /v1/auth/ops/verify → httpOnly session cookie.
- * The endpoints are implemented in M1 (with NextAuth); until then the form reports "not available".
+ * Ops sign-in: email + password, then a one-time code sent to the account phone (second factor).
+ * Calls /api/ops/login and /api/ops/verify (route handlers), which talk to the backend and keep the
+ * tokens in httpOnly cookies (ADR-007).
  */
-export function LoginForm({ copy }: { copy: Copy }) {
+export function LoginForm({ copy, next }: { copy: Copy; next?: string }) {
   const ids = { email: useId(), password: useId(), otp: useId(), error: useId() };
   const [step, setStep] = useState<Step>('credentials');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState('');
   const [challengeId, setChallengeId] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -37,10 +54,11 @@ export function LoginForm({ copy }: { copy: Copy }) {
     if (!password) return setError(copy.errors.passwordRequired);
     setError(null);
     setBusy(true);
-    const r = await postJson<{ challengeId: string }>('/v1/auth/ops/login', { email: email.trim(), password });
+    const r = await post<{ challengeId: string; phoneMasked?: string }>('/api/ops/login', { email: email.trim(), password });
     setBusy(false);
     if (!r.ok) return setError(errorFor(r.code, r.status, copy));
     setChallengeId(r.data.challengeId);
+    setSentTo(r.data.phoneMasked ?? null);
     setStep('otp');
   }
 
@@ -49,10 +67,10 @@ export function LoginForm({ copy }: { copy: Copy }) {
     if (!/^\d{6}$/.test(otp)) return setError(copy.errors.otpInvalid);
     setError(null);
     setBusy(true);
-    const r = await postJson('/v1/auth/ops/verify', { challengeId, code: otp });
+    const r = await post('/api/ops/verify', { challengeId, code: otp });
     setBusy(false);
     if (!r.ok) return setError(errorFor(r.code, r.status, copy));
-    window.location.assign('/admin');
+    window.location.assign(safeNext(next));
   }
 
   const inputCls =
@@ -67,7 +85,7 @@ export function LoginForm({ copy }: { copy: Copy }) {
     return (
       <form onSubmit={submitOtp} noValidate aria-describedby={error ? ids.error : undefined}>
         <h1 className="text-4xl font-bold text-indigo">{copy.otpTitle}</h1>
-        <p className="mt-2 text-slate">{copy.otpSub}</p>
+        <p className="mt-2 text-slate">{sentTo ? copy.sentTo.replace('{phone}', sentTo) : copy.otpSub}</p>
         <label htmlFor={ids.otp} className="mt-10 block text-sm font-medium text-ink">
           {copy.otpLabel}
         </label>
