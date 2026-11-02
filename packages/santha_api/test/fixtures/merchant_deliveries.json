@@ -1,0 +1,21 @@
+{
+ "items": [
+  {
+   "orderId": "6f2ca5bf-335a-4c70-a77f-6f9800e83a63",
+   "mode": "rider",
+   "state": "assigned",
+   "pickupCode": "6516",
+   "courier": {
+    "kind": "rider",
+    "name": "Demo Rider 2",
+    "callNumber": "+918047110199"
+   },
+   "staffLink": null,
+   "deliveryOtp": null,
+   "fallbackStage": "none",
+   "selfBonusPaise": 0,
+   "promisedAt": "2026-11-02T16:47:16.910Z",
+   "etaAt": null
+  }
+ ]
+}

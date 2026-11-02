@@ -1,0 +1,65 @@
+{
+ "name": "Demo Rider 2",
+ "vehicle": "bike",
+ "online": true,
+ "zones": [
+  {
+   "id": "2769d95d-874d-4860-8993-7be4a83750c6",
+   "name": "Dargamitta",
+   "nameTe": "దర్గామిట్ట"
+  }
+ ],
+ "allZones": [
+  {
+   "id": "f29b3ba1-41d7-403a-bb1f-8edade35ee40",
+   "name": "Balaji Nagar",
+   "nameTe": "బాలాజీ నగర్"
+  },
+  {
+   "id": "2769d95d-874d-4860-8993-7be4a83750c6",
+   "name": "Dargamitta",
+   "nameTe": "దర్గామిట్ట"
+  },
+  {
+   "id": "e4cfa2e6-7a6e-4539-b325-0cba2b70e828",
+   "name": "Magunta Layout",
+   "nameTe": "మాగుంట లేఅవుట్"
+  },
+  {
+   "id": "0c821aac-45e5-4f96-b63d-f7012e65162d",
+   "name": "Vedayapalem",
+   "nameTe": "వేదాయపాలెం"
+  }
+ ],
+ "rating": 4.6,
+ "today": {
+  "deliveries": 0,
+  "earningsPaise": 0,
+  "onlineMin": 0
+ },
+ "offer": {
+  "id": "10064a67-0b15-48f2-a2f6-7b3f7dd81f9b",
+  "expiresAt": "2026-11-02T16:27:46.914Z",
+  "payPaise": 3630,
+  "payLines": [
+   {
+    "code": "base",
+    "amountPaise": 3000
+   },
+   {
+    "code": "distance",
+    "amountPaise": 630
+   }
+  ],
+  "pickup": {
+   "name": "Ramesh Stores",
+   "distanceM": 400,
+   "readyInMin": 10
+  },
+  "drop": {
+   "area": "Dargamitta",
+   "distanceM": 445
+  }
+ },
+ "jobs": []
+}
