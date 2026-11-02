@@ -14,6 +14,8 @@ export default defineConfig({
           include: ['src/**/*.spec.ts', 'test/e2e/**/*.spec.ts'],
           environment: 'node',
           setupFiles: ['test/setup-env.ts'],
+          // HTTP suites boot the whole AppModule in beforeAll; CI runners need more than the 10 s default.
+          hookTimeout: 60_000,
         },
       },
       {

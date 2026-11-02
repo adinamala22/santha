@@ -1,8 +1,8 @@
 {
  "items": [
   {
-   "id": "974bdf9d-94f3-4b0e-8689-7073b10ee3ff",
-   "code": "SNCDAXQ8",
+   "id": "900f9346-c32b-40b3-9f95-7f1dc07b1fe7",
+   "code": "SNBPVJUR",
    "state": "PLACED",
    "merchant": {
     "id": "10000000-0000-4000-8000-000000000201",
@@ -37,7 +37,11 @@
      "unitPricePaise": 6000,
      "mrpPaise": 6200,
      "linePaise": 12000,
-     "substitution": "similar"
+     "substitution": "similar",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "refundPaise": 0
     },
     {
      "itemId": "40000000-0000-4000-8000-201000000003",
@@ -48,7 +52,11 @@
      "unitPricePaise": 17700,
      "mrpPaise": 18900,
      "linePaise": 17700,
-     "substitution": "call_me"
+     "substitution": "call_me",
+     "status": "ok",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "refundPaise": 0
     }
    ],
    "bill": {
@@ -126,15 +134,18 @@
    "taxPaise": 90,
    "discountPaise": 6000,
    "totalPaise": 24290,
+   "refundedPaise": 0,
+   "outcomeReason": null,
+   "canCancel": true,
    "promoCode": "TINY",
-   "placedAt": "2026-11-02T11:18:23.731Z",
-   "paymentDueAt": "2026-11-02T11:33:23.716Z",
-   "createdAt": "2026-11-02T11:18:23.717Z",
+   "placedAt": "2026-11-02T15:33:47.774Z",
+   "paymentDueAt": "2026-11-02T15:48:47.758Z",
+   "createdAt": "2026-11-02T15:33:47.760Z",
    "history": [],
    "payment": {
-    "intentId": "6d6439c8-56c1-44f3-b1d8-cc3090e7a55e",
+    "intentId": "70288028-22e1-4019-a759-ba8309a38dd0",
     "provider": "mock",
-    "providerOrderId": "order_mock_278700dba652d4",
+    "providerOrderId": "order_mock_c8628204ec4a1b",
     "keyId": null,
     "amountPaise": 24290,
     "currency": "INR",

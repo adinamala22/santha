@@ -33,6 +33,11 @@ export interface MerchantRecord {
   rejectionCode: string | null;
   rejectionNote: string | null;
   liveAt: Date | null;
+  /** Store toggle; false also when auto-paused after two missed orders in a row. */
+  acceptingOrders: boolean;
+  pausedReason: string | null;
+  pausedAt: Date | null;
+  missedInARow: number;
   /** Store photos (media ids in display order); consumers see the approved ones. */
   photoIds: string[];
   createdAt: Date;

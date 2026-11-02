@@ -56,3 +56,10 @@ import { PrismaPaymentsRepository } from '../../src/modules/payments-settlement/
 orderRepositoryContract('prisma', async () => new PrismaOrderRepository(prisma));
 promoRepositoryContract('prisma', async () => new PrismaCartPricingRepository(prisma));
 paymentsRepositoryContract('prisma', async () => new PrismaPaymentsRepository(prisma));
+
+// M5
+import { notificationRepositoryContract, orderLifecycleContract } from '../contracts/m5.contract';
+import { PrismaNotificationRepository } from '../../src/modules/notifications/notifications.repository';
+
+orderLifecycleContract('prisma', async () => new PrismaOrderRepository(prisma));
+notificationRepositoryContract('prisma', async () => ({ repo: new PrismaNotificationRepository(prisma), userId: async () => (await prisma.user.create({ data: { phone: `+9197${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id }));

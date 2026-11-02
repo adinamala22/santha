@@ -300,5 +300,19 @@
   "deliverySlot": "డెలివరీ స్లాట్",
   "ordersLoadError": "మీ ఆర్డర్లు లోడ్ కాలేదు.",
   "wallet": "సంత వాలెట్",
-  "walletSub": "రీఫండ్ క్రెడిట్లు, తదుపరి అప్‌డేట్‌లో ఆటోమేటిక్‌గా వాడతాము"
+  "walletSub": "రీఫండ్ క్రెడిట్లు, తదుపరి అప్‌డేట్‌లో ఆటోమేటిక్‌గా వాడతాము",
+  "cancelTitle": "ఎందుకు రద్దు చేయాలనుకుంటున్నారు?",
+  "cancelChangedMind": "నా మనసు మారింది",
+  "cancelMistake": "పొరపాటున ఆర్డర్ చేశాను",
+  "cancelTooLong": "చాలా ఆలస్యం అవుతోంది",
+  "cancelOther": "ఇతర కారణం",
+  "cancelHint": "షాప్ అంగీకరించే వరకు రద్దు చేయవచ్చు.",
+  "cancelFailed": "షాప్ ఇప్పటికే ఈ ఆర్డర్ మొదలుపెట్టింది.",
+  "refundedToWallet": "{amount} మీ సంత వాలెట్‌కు రీఫండ్ అయింది",
+  "lineRemovedByStore": "అందుబాటులో లేదు · {amount} రీఫండ్",
+  "lineSubstitutedBy": "{name}తో మార్చారు",
+  "outcomeStoreRejected": "షాప్ ఈ ఆర్డర్ తీసుకోలేకపోయింది.",
+  "outcomeTimedOut": "షాప్ సమయానికి స్పందించలేదు.",
+  "whatsappUpdates": "WhatsAppలో ఆర్డర్ అప్‌డేట్లు",
+  "whatsappUpdatesSub": "మీరు దీన్ని ఆన్ చేస్తేనే పంపుతాం."
 }

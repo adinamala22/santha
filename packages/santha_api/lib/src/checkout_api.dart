@@ -68,6 +68,17 @@ class CheckoutApi {
         return PaymentCheckout.fromJson(r.data!);
       });
 
+  /// Cancel before the store accepts; reason: changed_mind | ordered_by_mistake | taking_too_long | other.
+  /// Online payments are refunded to the wallet at once.
+  Future<Order> cancelOrder(String orderId, String reason) =>
+      _call(() async => Order.fromJson((await _dio.post<Json>('/v1/orders/$orderId/cancel', data: {'reason': reason})).data!));
+
+  /// WhatsApp order updates (explicit opt-in, off by default).
+  Future<bool> whatsappUpdates() => _call(() async => (await _dio.get<Json>('/v1/me/notification-preferences')).data!['whatsappUpdates'] as bool);
+
+  Future<bool> setWhatsappUpdates(bool on) =>
+      _call(() async => (await _dio.put<Json>('/v1/me/notification-preferences', data: {'whatsappUpdates': on})).data!['whatsappUpdates'] as bool);
+
   Future<Wallet> wallet() => _call(() async => Wallet.fromJson((await _dio.get<Json>('/v1/wallet')).data!));
 
   Future<T> _call<T>(Future<T> Function() fn) async {

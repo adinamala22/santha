@@ -1,12 +1,16 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:santha_api/santha_api.dart';
+import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../../common/widgets.dart';
 import '../../data/format.dart';
 import '../../data/order_providers.dart';
+import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../checkout/bill_view.dart';
 import '../checkout/checkout_page.dart';
@@ -94,8 +98,9 @@ class OrdersPage extends ConsumerWidget {
   }
 }
 
-/// Order detail; after checkout it opens with the "Order placed!" confirmation.
-class OrderDetailPage extends ConsumerWidget {
+/// Order detail; after checkout it opens with the "Order placed!" confirmation. Live: refreshes on
+/// realtime order.updated for this order, and polls while the order is still moving.
+class OrderDetailPage extends ConsumerStatefulWidget {
   const OrderDetailPage({super.key, required this.id, this.justPlaced = false});
   final String id;
   final bool justPlaced;
@@ -103,7 +108,66 @@ class OrderDetailPage extends ConsumerWidget {
   static const _steps = [OrderState.placed, OrderState.accepted, OrderState.preparing, OrderState.outForDelivery, OrderState.delivered];
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<OrderDetailPage> createState() => _OrderDetailPageState();
+}
+
+class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
+  Timer? _poll;
+
+  String get id => widget.id;
+  bool get justPlaced => widget.justPlaced;
+
+  @override
+  void initState() {
+    super.initState();
+    final every = ref.read(orderPollEveryProvider);
+    if (every != null) {
+      _poll = Timer.periodic(every, (_) {
+        final o = ref.read(orderProvider(id)).value;
+        if (o != null && !o.state.isTerminal) ref.invalidate(orderProvider(id));
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _poll?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _cancel(Order order) async {
+    final l = AppLocalizations.of(context);
+    final reason = await showModalBottomSheet<String>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Padding(padding: const EdgeInsets.all(SanthaSpacing.s4), child: Text(l.cancelTitle, style: Theme.of(ctx).textTheme.titleMedium)),
+          for (final (r, label) in [('changed_mind', l.cancelChangedMind), ('ordered_by_mistake', l.cancelMistake), ('taking_too_long', l.cancelTooLong), ('other', l.cancelOther)])
+            ListTile(key: ValueKey('cancel-$r'), title: Text(label), onTap: () => Navigator.pop(ctx, r)),
+        ]),
+      ),
+    );
+    if (reason == null || !mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(checkoutApiProvider).cancelOrder(order.id, reason);
+      ref.read(analyticsProvider).track('order_cancelled', {'order_id': order.id, 'reason': reason});
+    } on ApiException catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e.code == 'INVALID_STATE' ? l.cancelFailed : l.ordersLoadError)));
+    }
+    ref.invalidate(orderProvider(id));
+    ref.invalidate(ordersProvider);
+    ref.invalidate(walletProvider);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen(realtimeEventsProvider, (_, next) {
+      if (next.value?.orderId == id) {
+        ref.invalidate(orderProvider(id));
+        ref.invalidate(ordersProvider);
+      }
+    });
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final order = ref.watch(orderProvider(id));
@@ -157,13 +221,36 @@ class OrderDetailPage extends ConsumerWidget {
                 },
               ),
             ],
+            if (value.state == OrderState.rejected || value.state == OrderState.expired)
+              Padding(
+                padding: const EdgeInsets.only(top: SanthaSpacing.s2),
+                child: Text(value.state == OrderState.expired ? l.outcomeTimedOut : l.outcomeStoreRejected, key: const ValueKey('outcome'), style: text.bodyMedium),
+              ),
+            if (value.refundedPaise > 0)
+              Padding(
+                padding: const EdgeInsets.only(top: SanthaSpacing.s2),
+                child: Text(l.refundedToWallet(rupees(value.refundedPaise)), key: const ValueKey('refunded'), style: text.bodyMedium?.copyWith(color: SanthaColors.leaf)),
+              ),
+            if (value.canCancel) ...[
+              const SizedBox(height: SanthaSpacing.s3),
+              SanthaButton(key: const ValueKey('cancel-placed-order'), label: l.cancelOrder, variant: SanthaButtonVariant.outline, onPressed: () => _cancel(value)),
+              Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text(l.cancelHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
+            ],
             const SizedBox(height: SanthaSpacing.s5),
             for (final line in value.lines)
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 2),
-                child: Row(children: [
-                  Expanded(child: Text('${line.quantity} × ${line.name} (${line.variantLabel})', style: text.bodyMedium)),
-                  Text(rupees(line.linePaise), style: text.bodyMedium),
+                child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Row(children: [
+                    Expanded(
+                      child: Text('${line.quantity} × ${line.name} (${line.variantLabel})',
+                          style: text.bodyMedium?.copyWith(decoration: line.status == 'removed' ? TextDecoration.lineThrough : null)),
+                    ),
+                    Text(rupees(line.linePaise), style: text.bodyMedium),
+                  ]),
+                  if (line.status == 'removed') Text(l.lineRemovedByStore(rupees(line.refundPaise)), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
+                  if (line.status == 'substituted')
+                    Text(l.lineSubstitutedBy('${line.substituteName} (${line.substituteVariantLabel})'), style: text.bodySmall?.copyWith(color: SanthaColors.marigold600)),
                 ]),
               ),
             const SizedBox(height: SanthaSpacing.s3),

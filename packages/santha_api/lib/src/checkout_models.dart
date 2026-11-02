@@ -363,12 +363,35 @@ enum OrderState {
 }
 
 class OrderLine {
-  const OrderLine({required this.name, required this.variantLabel, required this.quantity, required this.linePaise});
-  factory OrderLine.fromJson(Json j) => OrderLine(name: j['name'] as String, variantLabel: j['variantLabel'] as String, quantity: j['quantity'] as int, linePaise: j['linePaise'] as int);
+  const OrderLine({
+    required this.name,
+    required this.variantLabel,
+    required this.quantity,
+    required this.linePaise,
+    this.status = 'ok',
+    this.substituteName,
+    this.substituteVariantLabel,
+    this.refundPaise = 0,
+  });
+  factory OrderLine.fromJson(Json j) => OrderLine(
+        name: j['name'] as String,
+        variantLabel: j['variantLabel'] as String,
+        quantity: j['quantity'] as int,
+        linePaise: j['linePaise'] as int,
+        status: j['status'] as String? ?? 'ok',
+        substituteName: j['substituteName'] as String?,
+        substituteVariantLabel: j['substituteVariantLabel'] as String?,
+        refundPaise: j['refundPaise'] as int? ?? 0,
+      );
   final String name;
   final String variantLabel;
   final int quantity;
   final int linePaise;
+  /// ok | removed | substituted (the store changed it while packing, M5).
+  final String status;
+  final String? substituteName;
+  final String? substituteVariantLabel;
+  final int refundPaise;
 }
 
 class OrderStep {
@@ -398,6 +421,9 @@ class Order {
     this.placedAt,
     this.paymentDueAt,
     this.payment,
+    this.refundedPaise = 0,
+    this.outcomeReason,
+    this.canCancel = false,
   });
   factory Order.fromJson(Json j) {
     final m = j['merchant'] as Json;
@@ -422,6 +448,9 @@ class Order {
       addressLine: (j['address'] as Json)['line'] as String,
       history: _list(j['history'], (h) => OrderStep(OrderState.parse(h['to'] as String), DateTime.parse(h['at'] as String))),
       payment: j['payment'] == null ? null : PaymentCheckout.fromJson(j['payment'] as Json),
+      refundedPaise: j['refundedPaise'] as int? ?? 0,
+      outcomeReason: j['outcomeReason'] as String?,
+      canCancel: j['canCancel'] as bool? ?? false,
     );
   }
   final String id;
@@ -443,6 +472,11 @@ class Order {
   final String addressLine;
   final List<OrderStep> history;
   final PaymentCheckout? payment;
+  /// Refunded to the wallet so far (M5).
+  final int refundedPaise;
+  final String? outcomeReason;
+  /// True until the store accepts.
+  final bool canCancel;
   int get itemCount => lines.fold(0, (n, l) => n + l.quantity);
 }
 

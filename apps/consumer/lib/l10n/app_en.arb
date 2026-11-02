@@ -699,5 +699,40 @@
   "deliverySlot": "Delivery slot",
   "ordersLoadError": "We couldn't load your orders.",
   "wallet": "Santha wallet",
-  "walletSub": "Refund credits, used automatically in a future update"
+  "walletSub": "Refund credits, used automatically in a future update",
+  "cancelTitle": "Why do you want to cancel?",
+  "cancelChangedMind": "I changed my mind",
+  "cancelMistake": "Ordered by mistake",
+  "cancelTooLong": "It is taking too long",
+  "cancelOther": "Another reason",
+  "cancelHint": "You can cancel until the store accepts.",
+  "cancelFailed": "The store has already started on this order.",
+  "refundedToWallet": "{amount} refunded to your Santha wallet",
+  "@refundedToWallet": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lineRemovedByStore": "Not available · {amount} refunded",
+  "@lineRemovedByStore": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lineSubstitutedBy": "Replaced with {name}",
+  "@lineSubstitutedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "outcomeStoreRejected": "The store could not take this order.",
+  "outcomeTimedOut": "The store did not respond in time.",
+  "whatsappUpdates": "Order updates on WhatsApp",
+  "whatsappUpdatesSub": "We send these only if you turn this on."
 }
