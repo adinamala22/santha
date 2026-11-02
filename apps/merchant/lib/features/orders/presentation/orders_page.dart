@@ -119,7 +119,9 @@ String _countdown(Duration d) {
   return '${s ~/ 60}:${(s % 60).toString().padLeft(2, '0')}';
 }
 
-String _time(BuildContext context, DateTime t) => MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(t.toLocal()));
+/// Clock time in IST: every store is in Nellore, whatever time zone the phone (or CI) is set to.
+String _time(BuildContext context, DateTime t) =>
+    MaterialLocalizations.of(context).formatTimeOfDay(TimeOfDay.fromDateTime(t.toUtc().add(const Duration(hours: 5, minutes: 30))));
 
 class _NewOrderCard extends ConsumerWidget {
   const _NewOrderCard({required this.order});
