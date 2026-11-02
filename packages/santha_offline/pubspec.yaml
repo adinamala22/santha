@@ -1,8 +1,12 @@
 name: santha_offline
-description: Drift DB + sync queue + conflict rules (built in M3/M5).
+description: Offline cache for API responses (consumer catalogue, M3) and, from M5, the merchant action queue.
 version: 0.1.0
 publish_to: none
 resolution: workspace
 
 environment:
   sdk: ^3.8.0
+
+dev_dependencies:
+  test: ^1.25.0
+  lints: ^6.0.0
