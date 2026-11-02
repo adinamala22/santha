@@ -19,6 +19,8 @@ import {
   type RejectionCode,
   type StaffRecord,
 } from './domain/merchant';
+import { MAX_STORE_PHOTOS } from './domain/catalogue';
+import { MediaService, type MediaView } from './media.service';
 import { MAX_LIST, MerchantRepository, type MerchantPatch, type MerchantQuery } from './merchants.repository';
 
 export interface MerchantView {
@@ -27,6 +29,7 @@ export interface MerchantView {
   kyc: KycCheckRecord[];
   checklist: ChecklistItem[];
   microMarket: { id: string; slug: string; name: string; nameTe: string } | null;
+  photos: MediaView[];
 }
 
 export interface CreateMerchantInput {
@@ -70,6 +73,7 @@ export class MerchantsService {
     private readonly repo: MerchantRepository,
     private readonly kyc: KycService,
     private readonly markets: MicroMarketsService,
+    private readonly media: MediaService,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
@@ -131,8 +135,67 @@ export class MerchantsService {
     }
     for (const k of ['hours', 'radiusM', 'movPaise', 'defaultFulfilment'] as const) if (input[k] !== undefined) (patch as Record<string, unknown>)[k] = input[k];
 
-    const merchant = await this.repo.transaction((tx) => tx.update(current.id, patch));
+    const merchant = await this.repo.transaction(async (tx) => {
+      const updated = await tx.update(current.id, patch);
+      await tx.appendEvent({
+        type: 'merchant.updated',
+        aggregate: { type: 'merchant', id: current.id },
+        microMarketId: updated.microMarketId,
+        actor: { type: 'user', id: ownerUserId },
+        payload: { merchant_id: current.id, fields: Object.keys(patch) },
+      });
+      return updated;
+    });
     return this.view(merchant);
+  }
+
+  /**
+   * Store photos (ADR-006, moved from M1). Photos can change at any time; consumers only see the
+   * approved ones, and ops review new ones in the moderation queue.
+   */
+  async setPhotos(ownerUserId: string, mediaIds: string[]): Promise<MerchantView> {
+    const m = await this.owned(ownerUserId);
+    const ids = [...new Set(mediaIds)];
+    if (ids.length > MAX_STORE_PHOTOS) throw new DomainError('VALIDATION_FAILED', `Up to ${MAX_STORE_PHOTOS} store photos.`);
+    await this.media.assertUsable(m.id, ids, 'store');
+    const merchant = await this.repo.transaction(async (tx) => {
+      const updated = await tx.update(m.id, { photoIds: ids });
+      await tx.appendEvent({
+        type: 'merchant.updated',
+        aggregate: { type: 'merchant', id: m.id },
+        microMarketId: m.microMarketId,
+        actor: { type: 'user', id: ownerUserId },
+        payload: { merchant_id: m.id, fields: ['photoIds'] },
+      });
+      return updated;
+    });
+    return this.view(merchant);
+  }
+
+  // ───────── for the catalogue and search-discovery (same module / exported) ─────────
+
+  /** The caller's store, or NOT_FOUND. */
+  ownedBy(ownerUserId: string): Promise<MerchantRecord> {
+    return this.owned(ownerUserId);
+  }
+
+  async record(id: string): Promise<MerchantRecord> {
+    const m = await this.repo.get(id);
+    if (!m) throw new DomainError('NOT_FOUND', 'Merchant not found');
+    return m;
+  }
+
+  /** Every live merchant (search reindex). */
+  async live(): Promise<MerchantRecord[]> {
+    // Stores outside every micro-market can never be live, so listing per micro-market is complete.
+    const markets = await this.markets.list();
+    const pages = await Promise.all(markets.map((x) => this.repo.list({ status: 'live', microMarketId: x.market.id, limit: 10_000 })));
+    return pages.flat();
+  }
+
+  /** Approved store photo URLs, in order (consumer-facing). */
+  async approvedPhotos(m: MerchantRecord): Promise<MediaView[]> {
+    return (await this.media.views(m.photoIds)).filter((p) => p.status === 'approved');
   }
 
   /** KYC steps run through identity-kyc; allowed only while the profile is editable. */
@@ -306,10 +369,11 @@ export class MerchantsService {
   }
 
   private async view(m: MerchantRecord): Promise<MerchantView> {
-    const [staff, kyc, mm] = await Promise.all([
+    const [staff, kyc, mm, photos] = await Promise.all([
       this.repo.staff(m.id),
       this.kyc.list({ type: 'merchant', id: m.id }),
       m.microMarketId ? this.markets.get(m.microMarketId).catch(() => null) : Promise.resolve(null),
+      this.media.views(m.photoIds),
     ]);
     return {
       merchant: m,
@@ -317,6 +381,7 @@ export class MerchantsService {
       kyc,
       checklist: checklist(m, kyc),
       microMarket: mm ? { id: mm.market.id, slug: mm.market.slug, name: mm.market.name, nameTe: mm.market.nameTe } : null,
+      photos,
     };
   }
 }

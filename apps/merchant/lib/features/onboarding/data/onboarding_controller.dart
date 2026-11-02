@@ -3,6 +3,8 @@ import 'package:geolocator/geolocator.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
+import '../../catalogue/data/catalogue_controller.dart';
+
 final merchantApiProvider = Provider<MerchantApi>((ref) => MerchantApi(ref.watch(apiClientProvider)));
 
 /// The signed-in owner's store (null = not started). Every mutation refreshes it from the server,
@@ -52,6 +54,13 @@ class OnboardingController extends AsyncNotifier<MerchantView?> {
   Future<void> removeStaff(String id) async {
     await _api.removeStaff(id);
     state = AsyncData(await _api.mine());
+  }
+
+  /// Store photos in display order (step `photos`).
+  Future<MerchantView> setPhotos(List<String> mediaIds) async {
+    final v = await ref.read(catalogueApiProvider).setStorePhotos(mediaIds);
+    state = AsyncData(v);
+    return v;
   }
 
   Future<MerchantView> submit() async {

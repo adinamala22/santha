@@ -47,6 +47,7 @@ describe('M1 on Postgres/PostGIS + Redis', () => {
       DATABASE_URL: dbUrl,
       REDIS_URL: redisUrl,
       DATA_STORE: 'postgres',
+      SEARCH_ENGINE: 'memory', // search is covered by m2.int.spec.ts against Typesense
       RUN_WORKERS: 'false',
       MOCK_OTP_CODE: '123456',
       OTP_RESEND_COOLDOWN_SEC: '0',
@@ -119,6 +120,13 @@ describe('M1 on Postgres/PostGIS + Redis', () => {
       .expect(200);
     expect(located.body.microMarket.slug).toBe('dargamitta'); // resolved by PostGIS
     expect(located.body.merchant.location.lat).toBeCloseTo(14.4525, 6);
+
+    // Store photo (M2 checklist step). No object storage in this test: a processed media row stands in.
+    const mid = located.body.merchant.id as string;
+    const photo = await prisma.media.create({
+      data: { merchantId: mid, purpose: 'store', status: 'pending_review', contentType: 'image/png', originalKey: `originals/${mid}/int` },
+    });
+    await http().put('/v1/merchants/me/photos').set(auth(owner)).send({ mediaIds: [photo.id] }).expect(200);
 
     const aadhaar = '34567890123' + verhoeffCheckDigit('34567890123');
     await http().put('/v1/merchants/me/kyc/pan').set(auth(owner)).send({ pan: 'ABCPK1234L', name: 'Int Owner' }).expect(200);

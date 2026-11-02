@@ -40,7 +40,7 @@ describe('M1 · merchant onboarding → review → live (fake mode)', () => {
       .send({ type: 'home_kitchen', name: "Lakshmi's Kitchen", sellsFood: false })
       .expect(201);
     expect(res.body.merchant).toMatchObject({ status: 'draft', type: 'home_kitchen', sellsFood: true }); // kitchens always sell food
-    expect(missing(res.body)).toEqual(['location', 'hours', 'pan', 'aadhaar', 'gst', 'fssai', 'bank', 'hygiene']);
+    expect(missing(res.body)).toEqual(['location', 'hours', 'photos', 'pan', 'aadhaar', 'gst', 'fssai', 'bank', 'hygiene']);
     expect(res.body.canSubmit).toBe(false);
     await http().post('/v1/merchants').set(owner.headers).send({ type: 'retail', name: 'Second store' }).expect(409);
   });
@@ -68,6 +68,14 @@ describe('M1 · merchant onboarding → review → live (fake mode)', () => {
       })
       .expect(200);
     expect(res.body.microMarket.slug).toBe('dargamitta');
+    expect(missing(res.body)).toEqual(['photos', 'pan', 'aadhaar', 'gst', 'fssai', 'bank']);
+  });
+
+  it('store photo: uploaded through the media pipeline, pending moderation, completes the step (ADR-006)', async () => {
+    const photo = await fake.uploadPhoto(owner, 'store');
+    expect(photo).toMatchObject({ status: 'pending_review', thumbUrl: expect.stringContaining('thumb.webp') });
+    const res = await http().put('/v1/merchants/me/photos').set(owner.headers).send({ mediaIds: [photo.id] }).expect(200);
+    expect(res.body.photos.map((p: { id: string }) => p.id)).toEqual([photo.id]);
     expect(missing(res.body)).toEqual(['pan', 'aadhaar', 'gst', 'fssai', 'bank']);
   });
 

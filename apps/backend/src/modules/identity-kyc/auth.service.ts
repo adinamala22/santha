@@ -139,8 +139,8 @@ export class AuthService {
   async opsLogin(input: OpsLoginInput) {
     const email = input.email.trim().toLowerCase();
     for (const [key, limit] of [
-      ['opslogin:email:' + email, 10],
-      ['opslogin:ip:' + input.ip, 30],
+      ['opslogin:email:' + email, this.env.OPS_LOGIN_LIMIT_PER_EMAIL_HOUR],
+      ['opslogin:ip:' + input.ip, this.env.OPS_LOGIN_LIMIT_PER_IP_HOUR],
     ] as const) {
       const r = await this.limiter.hit(key, limit, HOUR);
       if (!r.allowed) throw this.rateLimited(r.retryAfterSec);

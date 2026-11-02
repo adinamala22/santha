@@ -4,6 +4,10 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Santha Partner uses your location once to place your shop on the map so nearby customers can find it.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Santha Partner uses the camera to scan product barcodes and take photos of your shop and products.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Santha Partner lets you choose photos of your shop and products from your gallery.</string>
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>

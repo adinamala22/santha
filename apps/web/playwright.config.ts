@@ -31,12 +31,16 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
       timeout: 120_000,
       cwd: '../..',
+      // Every test signs in (ops + merchant OTPs from one IP): relax the fake backend's OTP limits.
+      env: { OTP_RESEND_COOLDOWN_SEC: '0', OTP_LIMIT_PER_PHONE_HOUR: '1000', OTP_LIMIT_PER_DEVICE_HOUR: '1000', OTP_LIMIT_PER_IP_HOUR: '10000', OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: '1000', OPS_LOGIN_LIMIT_PER_IP_HOUR: '1000' },
     },
     {
-      command: 'pnpm --filter web dev',
+      // A production build: stable under a long suite (dev-mode compile workers can crash) and closer
+      // to what ships. Locally a running `pnpm dev` on :3000 is reused instead.
+      command: 'pnpm --filter web build && pnpm --filter web start',
       url: `${web}/admin/login`,
       reuseExistingServer: !process.env.CI,
-      timeout: 180_000,
+      timeout: 420_000,
       cwd: '../..',
       env: { API_URL: backend },
     },

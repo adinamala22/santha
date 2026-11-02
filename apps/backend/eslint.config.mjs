@@ -10,7 +10,7 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/no-floating-promises': 'error',
       '@typescript-eslint/consistent-type-imports': 'off', // Nest DI needs runtime imports for injected classes
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true }],
       // Module boundaries: a module may not import another module's internals (repositories, services
       // not exported via its module). Cross-module access goes through exported services or events.
       'no-restricted-imports': [

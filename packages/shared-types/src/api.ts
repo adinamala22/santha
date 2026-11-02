@@ -452,6 +452,406 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchants/me/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantCatalogueController_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantCatalogueController_list"];
+        put?: never;
+        post: operations["MerchantCatalogueController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/items/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantCatalogueController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/items/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantCatalogueController_import"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/items/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantCatalogueController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantCatalogueController_get"];
+        put?: never;
+        post?: never;
+        delete: operations["MerchantCatalogueController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["MerchantCatalogueController_update"];
+        trace?: never;
+    };
+    "/v1/merchants/me/items/{id}/stock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantCatalogueController_stock"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/slots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantCatalogueController_slots"];
+        put: operations["MerchantCatalogueController_replaceSlots"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["MerchantCatalogueController_photos"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantCatalogueController_upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/media/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantCatalogueController_complete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalogue/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MasterCatalogueController_categories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalogue/barcodes/{code}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MasterCatalogueController_barcode"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/catalogue/master": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MasterCatalogueController_master"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsCatalogueController_summary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsCatalogueController_items"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/items/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_reviewItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/media": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsCatalogueController_mediaQueue"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/media/{id}/review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_reviewMedia"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/barcode-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsCatalogueController_requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/master": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_enrich"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/merchants/{merchantId}/items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_assistedCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/merchants/{merchantId}/items/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["OpsCatalogueController_assistedUpdate"];
+        trace?: never;
+    };
+    "/v1/ops/catalogue/merchants/{merchantId}/items/import": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_assistedImport"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/catalogue/staleness-sweep": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsCatalogueController_sweep"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ops/micro-markets": {
         parameters: {
             query?: never;
@@ -524,6 +924,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ConfigController_flagsFor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DiscoveryController_feed"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DiscoveryController_search"];
         put?: never;
         post?: never;
         delete?: never;
@@ -785,6 +1217,20 @@ export interface components {
                 done: boolean;
             }[];
             canSubmit: boolean;
+            photos: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
         };
         UpdateMerchantDto: {
             /** @enum {string} */
@@ -1001,6 +1447,20 @@ export interface components {
                     done: boolean;
                 }[];
                 canSubmit: boolean;
+                photos: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    purpose: "item" | "store";
+                    /** @enum {string} */
+                    status: "uploading" | "pending_review" | "approved" | "rejected";
+                    rejectReason: string | null;
+                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                    thumbUrl: string | null;
+                    mediumUrl: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                }[];
             }[];
         };
         ApproveDto: {
@@ -1010,6 +1470,483 @@ export interface components {
             /** @enum {string} */
             reasonCode: "kyc_mismatch" | "fssai_invalid" | "documents_unclear" | "outside_serviceable_area" | "restricted_category" | "duplicate_merchant" | "other";
             note?: string;
+        };
+        CategoryListDto_Output: {
+            items: {
+                slug: string;
+                name: string;
+                nameTe: string;
+            }[];
+        };
+        ItemPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                merchantId: string;
+                /** Format: uuid */
+                masterProductId: string | null;
+                name: string;
+                nameTe: string | null;
+                description: string | null;
+                brand: string | null;
+                categorySlug: string;
+                /** @enum {string|null} */
+                foodMark: "veg" | "non_veg" | "egg" | null;
+                allergens: string[];
+                madeToOrder: boolean;
+                leadTimeMin: number | null;
+                maxPerOrder: number | null;
+                availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                dailyCapacity: number | null;
+                specialOn: string | null;
+                /** @enum {string} */
+                status: "pending_merchant" | "in_review" | "active" | "hidden";
+                reviewReason: string | null;
+                /** @enum {string} */
+                source: "merchant" | "master" | "import" | "ops";
+                images: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    purpose: "item" | "store";
+                    /** @enum {string} */
+                    status: "uploading" | "pending_review" | "approved" | "rejected";
+                    rejectReason: string | null;
+                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                    thumbUrl: string | null;
+                    mediumUrl: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                }[];
+                imageUrl: string | null;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+                /** @description Not confirmed within the staleness window (72 h); confirm to clear */
+                stale: boolean;
+                /** Format: date-time */
+                confirmedAt: string;
+                variants: {
+                    /** Format: uuid */
+                    id: string;
+                    label: string;
+                    /** @enum {string} */
+                    unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                    unitQty: number;
+                    pricePaise: number;
+                    mrpPaise: number | null;
+                    /** @enum {string} */
+                    stock: "in" | "low" | "out";
+                }[];
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            total: number;
+        };
+        CreateItemDto: {
+            /**
+             * Format: uuid
+             * @description From a barcode scan or master search; pre-fills name, brand, category, MRP
+             */
+            masterProductId?: string | null;
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            brand?: string | null;
+            categorySlug?: string;
+            /** @enum {string|null} */
+            foodMark?: "veg" | "non_veg" | "egg" | null;
+            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
+            madeToOrder?: boolean;
+            leadTimeMin?: number | null;
+            maxPerOrder?: number | null;
+            /** @description Home kitchens: menu days (empty = every day) */
+            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            /** @description Home kitchens: portions per day */
+            dailyCapacity?: number | null;
+            /**
+             * Format: date
+             * @description Home kitchens: the date it is today's special
+             */
+            specialOn?: string | null;
+            imageIds?: string[];
+            variants: {
+                /**
+                 * Format: uuid
+                 * @description Existing variant (keep its id when editing)
+                 */
+                id?: string;
+                /** @description "500 g", "Large", "Serves 2" */
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                /** @description integer paise */
+                pricePaise: number;
+                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
+                mrpPaise?: number | null;
+                /** @enum {string} */
+                stock?: "in" | "low" | "out";
+            }[];
+        };
+        ItemDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            merchantId: string;
+            /** Format: uuid */
+            masterProductId: string | null;
+            name: string;
+            nameTe: string[];
+            description: string[];
+            brand: string[];
+            categorySlug: string;
+            /** @enum {string|null} */
+            foodMark: "veg" | "non_veg" | "egg" | null;
+            allergens: string[];
+            madeToOrder: boolean;
+            leadTimeMin: number | null;
+            maxPerOrder: number | null;
+            availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            dailyCapacity: number | null;
+            specialOn: string[];
+            /** @enum {string} */
+            status: "pending_merchant" | "in_review" | "active" | "hidden";
+            reviewReason: string[];
+            /** @enum {string} */
+            source: "merchant" | "master" | "import" | "ops";
+            images: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            imageUrl: string[];
+            /** @enum {string} */
+            stock: "in" | "low" | "out";
+            /** @description Not confirmed within the staleness window (72 h); confirm to clear */
+            stale: boolean;
+            /** Format: date-time */
+            confirmedAt: string;
+            variants: {
+                /** Format: uuid */
+                id: string;
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                pricePaise: number;
+                mrpPaise: number | null;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+            }[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ConfirmResultDto_Output: {
+            confirmed: number;
+        };
+        ImportDto: {
+            /** @description CSV text: name,name_te,category,size,unit,qty,price,mrp,stock,food_mark,allergens,barcode,description */
+            csv: string;
+            /**
+             * @description Validate only and return the report
+             * @default false
+             */
+            dryRun: boolean;
+        };
+        ImportReportDto_Output: {
+            dryRun: boolean;
+            rows: number;
+            created: number;
+            held: number;
+            items: {
+                lines: number[];
+                name: string;
+                /** Format: uuid */
+                itemId: string | null;
+            }[];
+            rejected: {
+                line: number;
+                reasons: string[];
+            }[];
+        };
+        ApprovePendingDto: {
+            /** @description Item ids, or "all" */
+            ids: string[] | "all";
+        };
+        ApprovePendingResultDto_Output: {
+            approved: number;
+            held: number;
+        };
+        UpdateItemDto: {
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            brand?: string | null;
+            categorySlug?: string;
+            /** @enum {string|null} */
+            foodMark?: "veg" | "non_veg" | "egg" | null;
+            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
+            madeToOrder?: boolean;
+            leadTimeMin?: number | null;
+            maxPerOrder?: number | null;
+            /** @description Home kitchens: menu days (empty = every day) */
+            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            /** @description Home kitchens: portions per day */
+            dailyCapacity?: number | null;
+            /**
+             * Format: date
+             * @description Home kitchens: the date it is today's special
+             */
+            specialOn?: string | null;
+            imageIds?: string[];
+            variants?: {
+                /**
+                 * Format: uuid
+                 * @description Existing variant (keep its id when editing)
+                 */
+                id?: string;
+                /** @description "500 g", "Large", "Serves 2" */
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                /** @description integer paise */
+                pricePaise: number;
+                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
+                mrpPaise?: number | null;
+                /** @enum {string} */
+                stock?: "in" | "low" | "out";
+            }[];
+            /** @description Hide from customers without deleting */
+            hidden?: boolean;
+        };
+        StockDto: {
+            /** @enum {string} */
+            stock: "in" | "low" | "out";
+            /**
+             * Format: uuid
+             * @description Omit for every size
+             */
+            variantId?: string | null;
+        };
+        SlotListDto_Output: {
+            slots: {
+                label: string | null;
+                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                start: string;
+                end: string;
+                /** @description Orders close this many minutes before the slot starts */
+                cutoffMin: number;
+                /** @description Orders per slot per day */
+                capacity: number;
+                /** Format: uuid */
+                id: string;
+            }[];
+            occurrences: {
+                /** Format: uuid */
+                slotId: string;
+                date: string;
+                start: string;
+                end: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                cutoffAt: string;
+                capacity: number;
+                booked: number;
+                /** @enum {string} */
+                state: "open" | "closed" | "full";
+            }[];
+            nextOpen: {
+                /** Format: uuid */
+                slotId: string;
+                date: string;
+                start: string;
+                end: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                cutoffAt: string;
+                capacity: number;
+                booked: number;
+                /** @enum {string} */
+                state: "open" | "closed" | "full";
+            } | null;
+        };
+        SlotsDto: {
+            slots: {
+                label?: string | null;
+                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                start: string;
+                end: string;
+                /** @description Orders close this many minutes before the slot starts */
+                cutoffMin: number;
+                /** @description Orders per slot per day */
+                capacity: number;
+            }[];
+        };
+        PhotosDto: {
+            mediaIds: string[];
+        };
+        UploadRequestDto: {
+            /** @enum {string} */
+            purpose: "item" | "store";
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+        };
+        UploadTicketDto_Output: {
+            media: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            };
+            upload: {
+                url: string;
+                /** @enum {string} */
+                method: "PUT";
+                headers: {
+                    [key: string]: string;
+                };
+                /** Format: date-time */
+                expiresAt: string;
+            };
+        };
+        MediaDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            purpose: "item" | "store";
+            /** @enum {string} */
+            status: "uploading" | "pending_review" | "approved" | "rejected";
+            rejectReason: string[];
+            /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+            thumbUrl: string[];
+            mediumUrl: string[];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BarcodeResultDto_Output: {
+            /** @enum {string} */
+            source: "master" | "open_barcode";
+            product: {
+                /** Format: uuid */
+                id: string;
+                barcode: string;
+                name: string;
+                brand: string | null;
+                mrpPaise: number | null;
+                packLabel: string | null;
+                /** @enum {string|null} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
+                unitQty: number | null;
+                categorySlug: string;
+                imageUrl: string | null;
+                /** @enum {string} */
+                source: "seed" | "import" | "open_barcode" | "ops";
+            };
+            /** Format: uuid */
+            existingItemId: string | null;
+        };
+        MasterListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                barcode: string;
+                name: string;
+                brand: string | null;
+                mrpPaise: number | null;
+                packLabel: string | null;
+                /** @enum {string|null} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
+                unitQty: number | null;
+                categorySlug: string;
+                imageUrl: string | null;
+                /** @enum {string} */
+                source: "seed" | "import" | "open_barcode" | "ops";
+            }[];
+        };
+        QaSummaryDto_Output: {
+            heldItems: number;
+            pendingMerchantApproval: number;
+            staleItems: number;
+            photosToReview: number;
+            barcodeRequests: number;
+        };
+        ReviewItemDto: {
+            /** @enum {string} */
+            decision: "release" | "reject";
+            note?: string;
+        };
+        MediaListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: uuid */
+                merchantId: string;
+            }[];
+        };
+        ReviewMediaDto: {
+            /** @enum {string} */
+            decision: "approve" | "reject";
+            reason?: string;
+        };
+        BarcodeRequestListDto_Output: {
+            items: {
+                barcode: string;
+                scanCount: number;
+                lastMerchantId: string | null;
+                /** @enum {string} */
+                status: "open" | "resolved";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        EnrichBarcodeDto: {
+            barcode: string;
+            name: string;
+            brand?: string | null;
+            /** @description integer paise */
+            mrpPaise?: number | null;
+            packLabel?: string | null;
+            categorySlug: string;
+            /** Format: uri */
+            imageUrl?: string | null;
+        };
+        SweepResultDto_Output: {
+            flagged: number;
         };
         MicroMarketListDto_Output: {
             cities: {
@@ -1117,6 +2054,44 @@ export interface components {
                         /** @description integer paise */
                         batchBonusPaise: number;
                     };
+                    discovery: {
+                        /**
+                         * @default {
+                         *       "distance": 0.3,
+                         *       "eta": 0.25,
+                         *       "rating": 0.2,
+                         *       "acceptance": 0.1,
+                         *       "freshness": 0.15
+                         *     }
+                         */
+                        weights: {
+                            distance: number;
+                            eta: number;
+                            rating: number;
+                            acceptance: number;
+                            freshness: number;
+                        };
+                        /** @default 0.6 */
+                        textWeight: number;
+                        /**
+                         * @default {
+                         *       "retail": 10,
+                         *       "fashion": 15,
+                         *       "home_business": 20,
+                         *       "home_kitchen": 30
+                         *     }
+                         */
+                        defaultPrepMin: {
+                            retail: number;
+                            fashion: number;
+                            home_business: number;
+                            home_kitchen: number;
+                        };
+                        /** @default 5 */
+                        etaRangeMin: number;
+                        /** @default 4.2 */
+                        newStoreRating: number;
+                    };
                     note: string | null;
                     createdBy: string | null;
                     /** Format: date-time */
@@ -1219,6 +2194,44 @@ export interface components {
                     /** @description integer paise */
                     batchBonusPaise: number;
                 };
+                discovery: {
+                    /**
+                     * @default {
+                     *       "distance": 0.3,
+                     *       "eta": 0.25,
+                     *       "rating": 0.2,
+                     *       "acceptance": 0.1,
+                     *       "freshness": 0.15
+                     *     }
+                     */
+                    weights: {
+                        distance: number;
+                        eta: number;
+                        rating: number;
+                        acceptance: number;
+                        freshness: number;
+                    };
+                    /** @default 0.6 */
+                    textWeight: number;
+                    /**
+                     * @default {
+                     *       "retail": 10,
+                     *       "fashion": 15,
+                     *       "home_business": 20,
+                     *       "home_kitchen": 30
+                     *     }
+                     */
+                    defaultPrepMin: {
+                        retail: number;
+                        fashion: number;
+                        home_business: number;
+                        home_kitchen: number;
+                    };
+                    /** @default 5 */
+                    etaRangeMin: number;
+                    /** @default 4.2 */
+                    newStoreRating: number;
+                };
                 note: string | null;
                 createdBy: string | null;
                 /** Format: date-time */
@@ -1310,6 +2323,44 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                };
+                discovery: {
+                    /**
+                     * @default {
+                     *       "distance": 0.3,
+                     *       "eta": 0.25,
+                     *       "rating": 0.2,
+                     *       "acceptance": 0.1,
+                     *       "freshness": 0.15
+                     *     }
+                     */
+                    weights: {
+                        distance: number;
+                        eta: number;
+                        rating: number;
+                        acceptance: number;
+                        freshness: number;
+                    };
+                    /** @default 0.6 */
+                    textWeight: number;
+                    /**
+                     * @default {
+                     *       "retail": 10,
+                     *       "fashion": 15,
+                     *       "home_business": 20,
+                     *       "home_kitchen": 30
+                     *     }
+                     */
+                    defaultPrepMin: {
+                        retail: number;
+                        fashion: number;
+                        home_business: number;
+                        home_kitchen: number;
+                    };
+                    /** @default 5 */
+                    etaRangeMin: number;
+                    /** @default 4.2 */
+                    newStoreRating: number;
                 };
                 note: string | null;
                 createdBy: string | null;
@@ -1403,6 +2454,64 @@ export interface components {
                     /** @description integer paise */
                     batchBonusPaise: number;
                 };
+                /**
+                 * @default {
+                 *       "weights": {
+                 *         "distance": 0.3,
+                 *         "eta": 0.25,
+                 *         "rating": 0.2,
+                 *         "acceptance": 0.1,
+                 *         "freshness": 0.15
+                 *       },
+                 *       "textWeight": 0.6,
+                 *       "defaultPrepMin": {
+                 *         "retail": 10,
+                 *         "fashion": 15,
+                 *         "home_business": 20,
+                 *         "home_kitchen": 30
+                 *       },
+                 *       "etaRangeMin": 5,
+                 *       "newStoreRating": 4.2
+                 *     }
+                 */
+                discovery: {
+                    /**
+                     * @default {
+                     *       "distance": 0.3,
+                     *       "eta": 0.25,
+                     *       "rating": 0.2,
+                     *       "acceptance": 0.1,
+                     *       "freshness": 0.15
+                     *     }
+                     */
+                    weights: {
+                        distance: number;
+                        eta: number;
+                        rating: number;
+                        acceptance: number;
+                        freshness: number;
+                    };
+                    /** @default 0.6 */
+                    textWeight: number;
+                    /**
+                     * @default {
+                     *       "retail": 10,
+                     *       "fashion": 15,
+                     *       "home_business": 20,
+                     *       "home_kitchen": 30
+                     *     }
+                     */
+                    defaultPrepMin: {
+                        retail: number;
+                        fashion: number;
+                        home_business: number;
+                        home_kitchen: number;
+                    };
+                    /** @default 5 */
+                    etaRangeMin: number;
+                    /** @default 4.2 */
+                    newStoreRating: number;
+                };
             };
             /**
              * Format: date-time
@@ -1491,6 +2600,64 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                };
+                /**
+                 * @default {
+                 *       "weights": {
+                 *         "distance": 0.3,
+                 *         "eta": 0.25,
+                 *         "rating": 0.2,
+                 *         "acceptance": 0.1,
+                 *         "freshness": 0.15
+                 *       },
+                 *       "textWeight": 0.6,
+                 *       "defaultPrepMin": {
+                 *         "retail": 10,
+                 *         "fashion": 15,
+                 *         "home_business": 20,
+                 *         "home_kitchen": 30
+                 *       },
+                 *       "etaRangeMin": 5,
+                 *       "newStoreRating": 4.2
+                 *     }
+                 */
+                discovery: {
+                    /**
+                     * @default {
+                     *       "distance": 0.3,
+                     *       "eta": 0.25,
+                     *       "rating": 0.2,
+                     *       "acceptance": 0.1,
+                     *       "freshness": 0.15
+                     *     }
+                     */
+                    weights: {
+                        distance: number;
+                        eta: number;
+                        rating: number;
+                        acceptance: number;
+                        freshness: number;
+                    };
+                    /** @default 0.6 */
+                    textWeight: number;
+                    /**
+                     * @default {
+                     *       "retail": 10,
+                     *       "fashion": 15,
+                     *       "home_business": 20,
+                     *       "home_kitchen": 30
+                     *     }
+                     */
+                    defaultPrepMin: {
+                        retail: number;
+                        fashion: number;
+                        home_business: number;
+                        home_kitchen: number;
+                    };
+                    /** @default 5 */
+                    etaRangeMin: number;
+                    /** @default 4.2 */
+                    newStoreRating: number;
                 };
             };
             /**
@@ -1587,6 +2754,44 @@ export interface components {
                 /** @description integer paise */
                 batchBonusPaise: number;
             };
+            discovery: {
+                /**
+                 * @default {
+                 *       "distance": 0.3,
+                 *       "eta": 0.25,
+                 *       "rating": 0.2,
+                 *       "acceptance": 0.1,
+                 *       "freshness": 0.15
+                 *     }
+                 */
+                weights: {
+                    distance: number;
+                    eta: number;
+                    rating: number;
+                    acceptance: number;
+                    freshness: number;
+                };
+                /** @default 0.6 */
+                textWeight: number;
+                /**
+                 * @default {
+                 *       "retail": 10,
+                 *       "fashion": 15,
+                 *       "home_business": 20,
+                 *       "home_kitchen": 30
+                 *     }
+                 */
+                defaultPrepMin: {
+                    retail: number;
+                    fashion: number;
+                    home_business: number;
+                    home_kitchen: number;
+                };
+                /** @default 5 */
+                etaRangeMin: number;
+                /** @default 4.2 */
+                newStoreRating: number;
+            };
             note: string[];
             createdBy: string[];
             /** Format: date-time */
@@ -1608,6 +2813,180 @@ export interface components {
             flags: {
                 [key: string]: boolean;
             };
+        };
+        FeedDto_Output: {
+            serviceability: {
+                serviceable: boolean;
+                microMarket: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    nameTe: string;
+                } | null;
+            };
+            tab: string;
+            tabs: {
+                key: string;
+                count: number;
+            }[];
+            stores: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                /** @enum {string} */
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                category: string | null;
+                photoUrl: string | null;
+                distanceM: number;
+                eta: {
+                    /** @enum {string} */
+                    mode: "asap";
+                    minMin: number;
+                    maxMin: number;
+                } | {
+                    /** @enum {string} */
+                    mode: "scheduled";
+                    nextSlot: {
+                        date: string;
+                        start: string;
+                        end: string;
+                        /** Format: date-time */
+                        cutoffAt: string;
+                    } | null;
+                };
+                open: boolean;
+                /** Format: date-time */
+                nextOpenAt: string | null;
+                /** Format: date-time */
+                closesAt: string | null;
+                selfDelivers: boolean;
+                hygieneDeclared: boolean;
+                rating: number | null;
+                ratingCount: number;
+                movPaise: number;
+                itemCount: number;
+                /** @description Ranking score 0..1 (for debugging ranking weights) */
+                score: number;
+            }[];
+        };
+        SearchDto_Output: {
+            serviceability: {
+                serviceable: boolean;
+                microMarket: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    nameTe: string;
+                } | null;
+            };
+            query: string;
+            groups: {
+                store: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    nameTe: string | null;
+                    /** @enum {string} */
+                    type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                    category: string | null;
+                    photoUrl: string | null;
+                    distanceM: number;
+                    eta: {
+                        /** @enum {string} */
+                        mode: "asap";
+                        minMin: number;
+                        maxMin: number;
+                    } | {
+                        /** @enum {string} */
+                        mode: "scheduled";
+                        nextSlot: {
+                            date: string;
+                            start: string;
+                            end: string;
+                            /** Format: date-time */
+                            cutoffAt: string;
+                        } | null;
+                    };
+                    open: boolean;
+                    /** Format: date-time */
+                    nextOpenAt: string | null;
+                    /** Format: date-time */
+                    closesAt: string | null;
+                    selfDelivers: boolean;
+                    hygieneDeclared: boolean;
+                    rating: number | null;
+                    ratingCount: number;
+                    movPaise: number;
+                    itemCount: number;
+                    /** @description Ranking score 0..1 (for debugging ranking weights) */
+                    score: number;
+                };
+                score: number;
+                items: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    nameTe: string | null;
+                    brand: string | null;
+                    categorySlug: string;
+                    pricePaise: number;
+                    mrpPaise: number | null;
+                    /** @enum {string|null} */
+                    foodMark: "veg" | "non_veg" | "egg" | null;
+                    imageUrl: string | null;
+                    variantCount: number;
+                    stale: boolean;
+                    madeToOrder: boolean;
+                }[];
+                more: number;
+            }[];
+            /** @description Stores whose name matches the query */
+            stores: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                /** @enum {string} */
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                category: string | null;
+                photoUrl: string | null;
+                distanceM: number;
+                eta: {
+                    /** @enum {string} */
+                    mode: "asap";
+                    minMin: number;
+                    maxMin: number;
+                } | {
+                    /** @enum {string} */
+                    mode: "scheduled";
+                    nextSlot: {
+                        date: string;
+                        start: string;
+                        end: string;
+                        /** Format: date-time */
+                        cutoffAt: string;
+                    } | null;
+                };
+                open: boolean;
+                /** Format: date-time */
+                nextOpenAt: string | null;
+                /** Format: date-time */
+                closesAt: string | null;
+                selfDelivers: boolean;
+                hygieneDeclared: boolean;
+                rating: number | null;
+                ratingCount: number;
+                movPaise: number;
+                itemCount: number;
+                /** @description Ranking score 0..1 (for debugging ranking weights) */
+                score: number;
+            }[];
+            totalItems: number;
+            zeroResult: boolean;
+            tookMs: number;
         };
     };
     responses: never;
@@ -2307,6 +3686,731 @@ export interface operations {
             };
         };
     };
+    MerchantCatalogueController_categories: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Platform categories for this store type (FR-DIS-3) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_list: {
+        parameters: {
+            query?: {
+                status?: "pending_merchant" | "in_review" | "active" | "hidden";
+                q?: string;
+                category?: string;
+                stale?: "true" | "false";
+                limit?: number;
+                offset?: number;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPageDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateItemDto"];
+            };
+        };
+        responses: {
+            /** @description Created; status in_review if held by the prohibited-item check */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Daily check: every item is as listed (clears stale flags) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmResultDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_import: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportDto"];
+            };
+        };
+        responses: {
+            /** @description Bulk CSV upload with a validation report (FR-CAT-4) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReportDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ApprovePendingDto"];
+            };
+        };
+        responses: {
+            /** @description Approve items Santha built for you (FR-CAT-3) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApprovePendingResultDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_remove: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantCatalogueController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_stock: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StockDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_slots: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Home-kitchen delivery slots and the next two days of occurrences */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlotListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_replaceSlots: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SlotsDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SlotListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_photos: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PhotosDto"];
+            };
+        };
+        responses: {
+            /** @description Store photos in display order */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_upload: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Presigned upload: PUT the image bytes to upload.url, then call complete */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UploadTicketDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantCatalogueController_complete: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Makes WebP thumb + medium and queues the photo for moderation */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto_Output"];
+                };
+            };
+        };
+    };
+    MasterCatalogueController_categories: {
+        parameters: {
+            query: {
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Platform taxonomy for a supply type (en + te) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CategoryListDto_Output"];
+                };
+            };
+        };
+    };
+    MasterCatalogueController_barcode: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                code: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Scan → master product (open-barcode fallback). 404 BARCODE_UNKNOWN → create-SKU flow */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeResultDto_Output"];
+                };
+            };
+        };
+    };
+    MasterCatalogueController_master: {
+        parameters: {
+            query: {
+                q: string;
+                limit?: number;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Name search in the master catalogue */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MasterListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_summary: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QaSummaryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_items: {
+        parameters: {
+            query?: {
+                status?: "pending_merchant" | "in_review" | "active" | "hidden";
+                q?: string;
+                category?: string;
+                stale?: "true" | "false";
+                limit?: number;
+                offset?: number;
+                merchantId?: string;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Catalogue QA: filter by status (in_review = held) or merchant */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemPageDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_reviewItem: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewItemDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_mediaQueue: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Photos waiting for moderation, oldest first */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_reviewMedia: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReviewMediaDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MediaDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_requests: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Enrichment queue: scanned barcodes nobody knew */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeRequestListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_enrich: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EnrichBarcodeDto"];
+            };
+        };
+        responses: {
+            /** @description Add a product to the master catalogue (resolves its enrichment request) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BarcodeResultDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_assistedCreate: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                merchantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateItemDto"];
+            };
+        };
+        responses: {
+            /** @description Assisted entry: builds an item for the merchant's approval (FR-CAT-3) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_assistedUpdate: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                merchantId: string;
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateItemDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ItemDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_assistedImport: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                merchantId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportDto"];
+            };
+        };
+        responses: {
+            /** @description Assisted bulk entry from a merchant's list; items await their approval */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportReportDto_Output"];
+                };
+            };
+        };
+    };
+    OpsCatalogueController_sweep: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Run the staleness sweep now (it also runs on a schedule) */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SweepResultDto_Output"];
+                };
+            };
+        };
+    };
     OpsMicroMarketsController_list: {
         parameters: {
             query?: never;
@@ -2446,6 +4550,70 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FlagsDto_Output"];
+                };
+            };
+        };
+    };
+    DiscoveryController_feed: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+                tab?: "stores" | "fashion" | "home_kitchens" | "home_businesses";
+                /** @description Only stores open now */
+                openNow?: "true" | "false";
+                /** @description Veg items only (search) */
+                veg?: "true" | "false";
+                /** @description Only stores that deliver themselves */
+                selfDelivered?: "true" | "false";
+                /** @description Delivers within N minutes (30/45/60) */
+                maxEta?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Home feed: stores of one supply type that deliver here, ranked, with ETA chips */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FeedDto_Output"];
+                };
+            };
+        };
+    };
+    DiscoveryController_search: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+                q: string;
+                /** @description Only stores open now */
+                openNow?: "true" | "false";
+                /** @description Veg items only (search) */
+                veg?: "true" | "false";
+                /** @description Only stores that deliver themselves */
+                selfDelivered?: "true" | "false";
+                /** @description Delivers within N minutes (30/45/60) */
+                maxEta?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Search items and stores nearby, grouped by store (typo-tolerant, Telugu synonyms) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SearchDto_Output"];
                 };
             };
         };

@@ -31,6 +31,28 @@ export type KycCheck = Schemas['KycCheckDto_Output'];
 export type AuditList = Schemas['AuditListDto_Output'];
 export type AuditRow = AuditList['items'][number];
 
+// M2 — catalogue, media, search and discovery
+export type Item = Schemas['ItemDto_Output'];
+export type ItemVariant = Item['variants'][number];
+export type ItemPage = Schemas['ItemPageDto_Output'];
+export type ItemStatus = Item['status'];
+export type CreateItem = Schemas['CreateItemDto'];
+export type UpdateItem = Schemas['UpdateItemDto'];
+export type Media = Schemas['MediaDto_Output'];
+export type MediaList = Schemas['MediaListDto_Output'];
+export type QaSummary = Schemas['QaSummaryDto_Output'];
+export type BarcodeRequestList = Schemas['BarcodeRequestListDto_Output'];
+export type BarcodeResult = Schemas['BarcodeResultDto_Output'];
+export type MasterProduct = BarcodeResult['product'];
+export type MasterList = Schemas['MasterListDto_Output'];
+export type EnrichBarcode = Schemas['EnrichBarcodeDto'];
+export type ImportReport = Schemas['ImportReportDto_Output'];
+export type CategoryList = Schemas['CategoryListDto_Output'];
+export type SlotList = Schemas['SlotListDto_Output'];
+export type Feed = Schemas['FeedDto_Output'];
+export type StoreCard = Feed['stores'][number];
+export type SearchResult = Schemas['SearchDto_Output'];
+
 /** Error envelope returned by every non-2xx response. */
 export interface ApiError {
   error: { code: string; message: string; details?: Record<string, unknown>; requestId?: string };

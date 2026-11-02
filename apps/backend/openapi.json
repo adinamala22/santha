@@ -1187,6 +1187,1419 @@
         ]
       }
     },
+    "/v1/merchants/me/categories": {
+      "get": {
+        "operationId": "MerchantCatalogueController_categories",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Platform categories for this store type (FR-DIS-3)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items": {
+      "get": {
+        "operationId": "MerchantCatalogueController_list",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_merchant",
+                "in_review",
+                "active",
+                "hidden"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "name": "stale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      },
+      "post": {
+        "operationId": "MerchantCatalogueController_create",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created; status in_review if held by the prohibited-item check",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items/confirm": {
+      "post": {
+        "operationId": "MerchantCatalogueController_confirm",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Daily check: every item is as listed (clears stale flags)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConfirmResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items/import": {
+      "post": {
+        "operationId": "MerchantCatalogueController_import",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Bulk CSV upload with a validation report (FR-CAT-4)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items/approve": {
+      "post": {
+        "operationId": "MerchantCatalogueController_approve",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovePendingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Approve items Santha built for you (FR-CAT-3)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovePendingResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items/{id}": {
+      "get": {
+        "operationId": "MerchantCatalogueController_get",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      },
+      "patch": {
+        "operationId": "MerchantCatalogueController_update",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      },
+      "delete": {
+        "operationId": "MerchantCatalogueController_remove",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/items/{id}/stock": {
+      "put": {
+        "operationId": "MerchantCatalogueController_stock",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/slots": {
+      "get": {
+        "operationId": "MerchantCatalogueController_slots",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Home-kitchen delivery slots and the next two days of occurrences",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlotListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      },
+      "put": {
+        "operationId": "MerchantCatalogueController_replaceSlots",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SlotsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SlotListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/photos": {
+      "put": {
+        "operationId": "MerchantCatalogueController_photos",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PhotosDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Store photos in display order",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/media": {
+      "post": {
+        "operationId": "MerchantCatalogueController_upload",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Presigned upload: PUT the image bytes to upload.url, then call complete",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadTicketDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/merchants/me/media/{id}/complete": {
+      "post": {
+        "operationId": "MerchantCatalogueController_complete",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Makes WebP thumb + medium and queues the photo for moderation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/catalogue/categories": {
+      "get": {
+        "operationId": "MasterCatalogueController_categories",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "retail",
+                "fashion",
+                "home_business",
+                "home_kitchen"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Platform taxonomy for a supply type (en + te)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/catalogue/barcodes/{code}": {
+      "get": {
+        "operationId": "MasterCatalogueController_barcode",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "code",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Scan → master product (open-barcode fallback). 404 BARCODE_UNKNOWN → create-SKU flow",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarcodeResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/catalogue/master": {
+      "get": {
+        "operationId": "MasterCatalogueController_master",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 2,
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "default": 20,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Name search in the master catalogue",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MasterListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "catalogue"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/summary": {
+      "get": {
+        "operationId": "OpsCatalogueController_summary",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QaSummaryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/items": {
+      "get": {
+        "operationId": "OpsCatalogueController_items",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "pending_merchant",
+                "in_review",
+                "active",
+                "hidden"
+              ]
+            }
+          },
+          {
+            "name": "q",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 60,
+              "type": "string"
+            }
+          },
+          {
+            "name": "category",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maxLength": 40,
+              "type": "string"
+            }
+          },
+          {
+            "name": "stale",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 200,
+              "default": 50,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "merchantId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Catalogue QA: filter by status (in_review = held) or merchant",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemPageDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/items/{id}/review": {
+      "post": {
+        "operationId": "OpsCatalogueController_reviewItem",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/media": {
+      "get": {
+        "operationId": "OpsCatalogueController_mediaQueue",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Photos waiting for moderation, oldest first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/media/{id}/review": {
+      "post": {
+        "operationId": "OpsCatalogueController_reviewMedia",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewMediaDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MediaDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/barcode-requests": {
+      "get": {
+        "operationId": "OpsCatalogueController_requests",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Enrichment queue: scanned barcodes nobody knew",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarcodeRequestListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/master": {
+      "post": {
+        "operationId": "OpsCatalogueController_enrich",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrichBarcodeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Add a product to the master catalogue (resolves its enrichment request)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BarcodeResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/merchants/{merchantId}/items": {
+      "post": {
+        "operationId": "OpsCatalogueController_assistedCreate",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "merchantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assisted entry: builds an item for the merchant's approval (FR-CAT-3)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/merchants/{merchantId}/items/{id}": {
+      "patch": {
+        "operationId": "OpsCatalogueController_assistedUpdate",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "merchantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateItemDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/merchants/{merchantId}/items/import": {
+      "post": {
+        "operationId": "OpsCatalogueController_assistedImport",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "merchantId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assisted bulk entry from a merchant's list; items await their approval",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReportDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/catalogue/staleness-sweep": {
+      "post": {
+        "operationId": "OpsCatalogueController_sweep",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Run the staleness sweep now (it also runs on a schedule)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SweepResultDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/ops/micro-markets": {
       "get": {
         "operationId": "OpsMicroMarketsController_list",
@@ -1445,6 +2858,215 @@
         ],
         "tags": [
           "config"
+        ]
+      }
+    },
+    "/v1/feed": {
+      "get": {
+        "operationId": "DiscoveryController_feed",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "tab",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "stores",
+              "type": "string",
+              "enum": [
+                "stores",
+                "fashion",
+                "home_kitchens",
+                "home_businesses"
+              ]
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "description": "Only stores open now",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "veg",
+            "required": false,
+            "in": "query",
+            "description": "Veg items only (search)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "selfDelivered",
+            "required": false,
+            "in": "query",
+            "description": "Only stores that deliver themselves",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "maxEta",
+            "required": false,
+            "in": "query",
+            "description": "Delivers within N minutes (30/45/60)",
+            "schema": {
+              "minimum": 10,
+              "maximum": 180,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Home feed: stores of one supply type that deliver here, ranked, with ETA chips",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/v1/search": {
+      "get": {
+        "operationId": "DiscoveryController_search",
+        "parameters": [
+          {
+            "name": "lat",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -90,
+              "maximum": 90,
+              "type": "number"
+            }
+          },
+          {
+            "name": "lng",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minimum": -180,
+              "maximum": 180,
+              "type": "number"
+            }
+          },
+          {
+            "name": "q",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "minLength": 1,
+              "maxLength": 80,
+              "type": "string"
+            }
+          },
+          {
+            "name": "openNow",
+            "required": false,
+            "in": "query",
+            "description": "Only stores open now",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "veg",
+            "required": false,
+            "in": "query",
+            "description": "Veg items only (search)",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "selfDelivered",
+            "required": false,
+            "in": "query",
+            "description": "Only stores that deliver themselves",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "true",
+                "false"
+              ]
+            }
+          },
+          {
+            "name": "maxEta",
+            "required": false,
+            "in": "query",
+            "description": "Delivers within N minutes (30/45/60)",
+            "schema": {
+              "minimum": 10,
+              "maximum": 180,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Search items and stores nearby, grouped by store (typo-tolerant, Telugu synonyms)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery"
         ]
       }
     }
@@ -2555,6 +4177,69 @@
           },
           "canSubmit": {
             "type": "boolean"
+          },
+          "photos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "purpose": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "store"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "uploading",
+                    "pending_review",
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "rejectReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "thumbUrl": {
+                  "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "mediumUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "purpose",
+                "status",
+                "rejectReason",
+                "thumbUrl",
+                "mediumUrl",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
           }
         },
         "required": [
@@ -2563,7 +4248,8 @@
           "staff",
           "kyc",
           "checklist",
-          "canSubmit"
+          "canSubmit",
+          "photos"
         ],
         "additionalProperties": false
       },
@@ -3599,6 +5285,69 @@
                 },
                 "canSubmit": {
                   "type": "boolean"
+                },
+                "photos": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "purpose": {
+                        "type": "string",
+                        "enum": [
+                          "item",
+                          "store"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "uploading",
+                          "pending_review",
+                          "approved",
+                          "rejected"
+                        ]
+                      },
+                      "rejectReason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "thumbUrl": {
+                        "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "mediumUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "purpose",
+                      "status",
+                      "rejectReason",
+                      "thumbUrl",
+                      "mediumUrl",
+                      "createdAt"
+                    ],
+                    "additionalProperties": false
+                  }
                 }
               },
               "required": [
@@ -3607,7 +5356,8 @@
                 "staff",
                 "kyc",
                 "checklist",
-                "canSubmit"
+                "canSubmit",
+                "photos"
               ],
               "additionalProperties": false
             }
@@ -3650,6 +5400,2198 @@
         "required": [
           "reasonCode"
         ]
+      },
+      "CategoryListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slug": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "slug",
+                "name",
+                "nameTe"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ItemPageDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "masterProductId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "description": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "brand": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "categorySlug": {
+                  "type": "string"
+                },
+                "foodMark": {
+                  "type": "string",
+                  "enum": [
+                    "veg",
+                    "non_veg",
+                    "egg",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "allergens": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "madeToOrder": {
+                  "type": "boolean"
+                },
+                "leadTimeMin": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "maxPerOrder": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "availableDays": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "mon",
+                      "tue",
+                      "wed",
+                      "thu",
+                      "fri",
+                      "sat",
+                      "sun"
+                    ]
+                  }
+                },
+                "dailyCapacity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "specialOn": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending_merchant",
+                    "in_review",
+                    "active",
+                    "hidden"
+                  ]
+                },
+                "reviewReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "merchant",
+                    "master",
+                    "import",
+                    "ops"
+                  ]
+                },
+                "images": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "purpose": {
+                        "type": "string",
+                        "enum": [
+                          "item",
+                          "store"
+                        ]
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "uploading",
+                          "pending_review",
+                          "approved",
+                          "rejected"
+                        ]
+                      },
+                      "rejectReason": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "thumbUrl": {
+                        "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "mediumUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "purpose",
+                      "status",
+                      "rejectReason",
+                      "thumbUrl",
+                      "mediumUrl",
+                      "createdAt"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "imageUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "stock": {
+                  "type": "string",
+                  "enum": [
+                    "in",
+                    "low",
+                    "out"
+                  ]
+                },
+                "stale": {
+                  "type": "boolean",
+                  "description": "Not confirmed within the staleness window (72 h); confirm to clear"
+                },
+                "confirmedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "variants": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "unit": {
+                        "type": "string",
+                        "enum": [
+                          "kg",
+                          "g",
+                          "l",
+                          "ml",
+                          "pc",
+                          "pack",
+                          "portion"
+                        ]
+                      },
+                      "unitQty": {
+                        "type": "number"
+                      },
+                      "pricePaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "mrpPaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      },
+                      "stock": {
+                        "type": "string",
+                        "enum": [
+                          "in",
+                          "low",
+                          "out"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "label",
+                      "unit",
+                      "unitQty",
+                      "pricePaise",
+                      "mrpPaise",
+                      "stock"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "merchantId",
+                "masterProductId",
+                "name",
+                "nameTe",
+                "description",
+                "brand",
+                "categorySlug",
+                "foodMark",
+                "allergens",
+                "madeToOrder",
+                "leadTimeMin",
+                "maxPerOrder",
+                "availableDays",
+                "dailyCapacity",
+                "specialOn",
+                "status",
+                "reviewReason",
+                "source",
+                "images",
+                "imageUrl",
+                "stock",
+                "stale",
+                "confirmedAt",
+                "variants",
+                "createdAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "items",
+          "total"
+        ],
+        "additionalProperties": false
+      },
+      "CreateItemDto": {
+        "type": "object",
+        "properties": {
+          "masterProductId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "From a barcode scan or master search; pre-fills name, brand, category, MRP",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "nameTe": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "categorySlug": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "foodMark": {
+            "type": "string",
+            "enum": [
+              "veg",
+              "non_veg",
+              "egg",
+              null
+            ],
+            "nullable": true
+          },
+          "allergens": {
+            "maxItems": 14,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "gluten",
+                "milk",
+                "egg",
+                "peanut",
+                "tree_nuts",
+                "soy",
+                "fish",
+                "shellfish",
+                "sesame",
+                "mustard",
+                "celery",
+                "sulphites",
+                "lupin",
+                "molluscs"
+              ]
+            }
+          },
+          "madeToOrder": {
+            "type": "boolean"
+          },
+          "leadTimeMin": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10080,
+            "nullable": true
+          },
+          "maxPerOrder": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true
+          },
+          "availableDays": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ]
+            },
+            "description": "Home kitchens: menu days (empty = every day)"
+          },
+          "dailyCapacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Home kitchens: portions per day",
+            "nullable": true
+          },
+          "specialOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Home kitchens: the date it is today's special",
+            "nullable": true
+          },
+          "imageIds": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "variants": {
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Existing variant (keep its id when editing)",
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "description": "\"500 g\", \"Large\", \"Serves 2\""
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "kg",
+                    "g",
+                    "l",
+                    "ml",
+                    "pc",
+                    "pack",
+                    "portion"
+                  ]
+                },
+                "unitQty": {
+                  "type": "number",
+                  "exclusiveMinimum": true,
+                  "maximum": 100000,
+                  "minimum": 0
+                },
+                "pricePaise": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 10000000,
+                  "description": "integer paise",
+                  "minimum": 0
+                },
+                "mrpPaise": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000000,
+                  "description": "Printed MRP; selling price may not exceed it (FR-CAT-6)",
+                  "nullable": true
+                },
+                "stock": {
+                  "type": "string",
+                  "enum": [
+                    "in",
+                    "low",
+                    "out"
+                  ]
+                }
+              },
+              "required": [
+                "label",
+                "unit",
+                "unitQty",
+                "pricePaise"
+              ]
+            }
+          }
+        },
+        "required": [
+          "variants"
+        ]
+      },
+      "ItemDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "merchantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "masterProductId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "nameTe": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "description": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "brand": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "categorySlug": {
+            "type": "string"
+          },
+          "foodMark": {
+            "type": "string",
+            "enum": [
+              "veg",
+              "non_veg",
+              "egg",
+              null
+            ],
+            "nullable": true
+          },
+          "allergens": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "madeToOrder": {
+            "type": "boolean"
+          },
+          "leadTimeMin": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "maxPerOrder": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "availableDays": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ]
+            }
+          },
+          "dailyCapacity": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          },
+          "specialOn": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "pending_merchant",
+              "in_review",
+              "active",
+              "hidden"
+            ]
+          },
+          "reviewReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "merchant",
+              "master",
+              "import",
+              "ops"
+            ]
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "purpose": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "store"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "uploading",
+                    "pending_review",
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "rejectReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "thumbUrl": {
+                  "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "mediumUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "id",
+                "purpose",
+                "status",
+                "rejectReason",
+                "thumbUrl",
+                "mediumUrl",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "imageUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "stock": {
+            "type": "string",
+            "enum": [
+              "in",
+              "low",
+              "out"
+            ]
+          },
+          "stale": {
+            "type": "boolean",
+            "description": "Not confirmed within the staleness window (72 h); confirm to clear"
+          },
+          "confirmedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "variants": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "kg",
+                    "g",
+                    "l",
+                    "ml",
+                    "pc",
+                    "pack",
+                    "portion"
+                  ]
+                },
+                "unitQty": {
+                  "type": "number"
+                },
+                "pricePaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "mrpPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "stock": {
+                  "type": "string",
+                  "enum": [
+                    "in",
+                    "low",
+                    "out"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "label",
+                "unit",
+                "unitQty",
+                "pricePaise",
+                "mrpPaise",
+                "stock"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "merchantId",
+          "masterProductId",
+          "name",
+          "nameTe",
+          "description",
+          "brand",
+          "categorySlug",
+          "foodMark",
+          "allergens",
+          "madeToOrder",
+          "leadTimeMin",
+          "maxPerOrder",
+          "availableDays",
+          "dailyCapacity",
+          "specialOn",
+          "status",
+          "reviewReason",
+          "source",
+          "images",
+          "imageUrl",
+          "stock",
+          "stale",
+          "confirmedAt",
+          "variants",
+          "createdAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "ConfirmResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "confirmed": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "confirmed"
+        ],
+        "additionalProperties": false
+      },
+      "ImportDto": {
+        "type": "object",
+        "properties": {
+          "csv": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000000,
+            "description": "CSV text: name,name_te,category,size,unit,qty,price,mrp,stock,food_mark,allergens,barcode,description"
+          },
+          "dryRun": {
+            "default": false,
+            "description": "Validate only and return the report",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "csv"
+        ]
+      },
+      "ImportReportDto_Output": {
+        "type": "object",
+        "properties": {
+          "dryRun": {
+            "type": "boolean"
+          },
+          "rows": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "created": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "held": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "lines": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "name": {
+                  "type": "string"
+                },
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "lines",
+                "name",
+                "itemId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "rejected": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "line": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "reasons": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "line",
+                "reasons"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "dryRun",
+          "rows",
+          "created",
+          "held",
+          "items",
+          "rejected"
+        ],
+        "additionalProperties": false
+      },
+      "ApprovePendingDto": {
+        "type": "object",
+        "properties": {
+          "ids": {
+            "anyOf": [
+              {
+                "minItems": 1,
+                "maxItems": 5000,
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              {
+                "type": "string",
+                "enum": [
+                  "all"
+                ]
+              }
+            ],
+            "description": "Item ids, or \"all\""
+          }
+        },
+        "required": [
+          "ids"
+        ]
+      },
+      "ApprovePendingResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "approved": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "held": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "approved",
+          "held"
+        ],
+        "additionalProperties": false
+      },
+      "UpdateItemDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "nameTe": {
+            "type": "string",
+            "maxLength": 120,
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "categorySlug": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "foodMark": {
+            "type": "string",
+            "enum": [
+              "veg",
+              "non_veg",
+              "egg",
+              null
+            ],
+            "nullable": true
+          },
+          "allergens": {
+            "maxItems": 14,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "gluten",
+                "milk",
+                "egg",
+                "peanut",
+                "tree_nuts",
+                "soy",
+                "fish",
+                "shellfish",
+                "sesame",
+                "mustard",
+                "celery",
+                "sulphites",
+                "lupin",
+                "molluscs"
+              ]
+            }
+          },
+          "madeToOrder": {
+            "type": "boolean"
+          },
+          "leadTimeMin": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10080,
+            "nullable": true
+          },
+          "maxPerOrder": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100,
+            "nullable": true
+          },
+          "availableDays": {
+            "maxItems": 7,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "mon",
+                "tue",
+                "wed",
+                "thu",
+                "fri",
+                "sat",
+                "sun"
+              ]
+            },
+            "description": "Home kitchens: menu days (empty = every day)"
+          },
+          "dailyCapacity": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1000,
+            "description": "Home kitchens: portions per day",
+            "nullable": true
+          },
+          "specialOn": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+            "description": "Home kitchens: the date it is today's special",
+            "nullable": true
+          },
+          "imageIds": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          "variants": {
+            "minItems": 1,
+            "maxItems": 10,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "description": "Existing variant (keep its id when editing)",
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "label": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 40,
+                  "description": "\"500 g\", \"Large\", \"Serves 2\""
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "kg",
+                    "g",
+                    "l",
+                    "ml",
+                    "pc",
+                    "pack",
+                    "portion"
+                  ]
+                },
+                "unitQty": {
+                  "type": "number",
+                  "exclusiveMinimum": true,
+                  "maximum": 100000,
+                  "minimum": 0
+                },
+                "pricePaise": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 10000000,
+                  "description": "integer paise",
+                  "minimum": 0
+                },
+                "mrpPaise": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 10000000,
+                  "description": "Printed MRP; selling price may not exceed it (FR-CAT-6)",
+                  "nullable": true
+                },
+                "stock": {
+                  "type": "string",
+                  "enum": [
+                    "in",
+                    "low",
+                    "out"
+                  ]
+                }
+              },
+              "required": [
+                "label",
+                "unit",
+                "unitQty",
+                "pricePaise"
+              ]
+            }
+          },
+          "hidden": {
+            "type": "boolean",
+            "description": "Hide from customers without deleting"
+          }
+        }
+      },
+      "StockDto": {
+        "type": "object",
+        "properties": {
+          "stock": {
+            "type": "string",
+            "enum": [
+              "in",
+              "low",
+              "out"
+            ]
+          },
+          "variantId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "description": "Omit for every size",
+            "nullable": true
+          }
+        },
+        "required": [
+          "stock"
+        ]
+      },
+      "SlotListDto_Output": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "days": {
+                  "minItems": 1,
+                  "maxItems": 7,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "mon",
+                      "tue",
+                      "wed",
+                      "thu",
+                      "fri",
+                      "sat",
+                      "sun"
+                    ]
+                  }
+                },
+                "start": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "end": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "cutoffMin": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1440,
+                  "description": "Orders close this many minutes before the slot starts"
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 500,
+                  "description": "Orders per slot per day"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": [
+                "label",
+                "days",
+                "start",
+                "end",
+                "cutoffMin",
+                "capacity",
+                "id"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "occurrences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "slotId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "date": {
+                  "type": "string"
+                },
+                "start": {
+                  "type": "string"
+                },
+                "end": {
+                  "type": "string"
+                },
+                "startsAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "cutoffAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "booked": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "state": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "closed",
+                    "full"
+                  ]
+                }
+              },
+              "required": [
+                "slotId",
+                "date",
+                "start",
+                "end",
+                "startsAt",
+                "cutoffAt",
+                "capacity",
+                "booked",
+                "state"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextOpen": {
+            "type": "object",
+            "properties": {
+              "slotId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "date": {
+                "type": "string"
+              },
+              "start": {
+                "type": "string"
+              },
+              "end": {
+                "type": "string"
+              },
+              "startsAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "cutoffAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              },
+              "capacity": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "booked": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "state": {
+                "type": "string",
+                "enum": [
+                  "open",
+                  "closed",
+                  "full"
+                ]
+              }
+            },
+            "required": [
+              "slotId",
+              "date",
+              "start",
+              "end",
+              "startsAt",
+              "cutoffAt",
+              "capacity",
+              "booked",
+              "state"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "slots",
+          "occurrences",
+          "nextOpen"
+        ],
+        "additionalProperties": false
+      },
+      "SlotsDto": {
+        "type": "object",
+        "properties": {
+          "slots": {
+            "maxItems": 12,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "maxLength": 30,
+                  "nullable": true
+                },
+                "days": {
+                  "minItems": 1,
+                  "maxItems": 7,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "mon",
+                      "tue",
+                      "wed",
+                      "thu",
+                      "fri",
+                      "sat",
+                      "sun"
+                    ]
+                  }
+                },
+                "start": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "end": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "cutoffMin": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 1440,
+                  "description": "Orders close this many minutes before the slot starts"
+                },
+                "capacity": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 500,
+                  "description": "Orders per slot per day"
+                }
+              },
+              "required": [
+                "days",
+                "start",
+                "end",
+                "cutoffMin",
+                "capacity"
+              ]
+            }
+          }
+        },
+        "required": [
+          "slots"
+        ]
+      },
+      "PhotosDto": {
+        "type": "object",
+        "properties": {
+          "mediaIds": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        },
+        "required": [
+          "mediaIds"
+        ]
+      },
+      "UploadRequestDto": {
+        "type": "object",
+        "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "item",
+              "store"
+            ]
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          }
+        },
+        "required": [
+          "purpose",
+          "contentType"
+        ]
+      },
+      "UploadTicketDto_Output": {
+        "type": "object",
+        "properties": {
+          "media": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "purpose": {
+                "type": "string",
+                "enum": [
+                  "item",
+                  "store"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "uploading",
+                  "pending_review",
+                  "approved",
+                  "rejected"
+                ]
+              },
+              "rejectReason": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "thumbUrl": {
+                "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "mediumUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "id",
+              "purpose",
+              "status",
+              "rejectReason",
+              "thumbUrl",
+              "mediumUrl",
+              "createdAt"
+            ],
+            "additionalProperties": false
+          },
+          "upload": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string",
+                "enum": [
+                  "PUT"
+                ]
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "expiresAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+              }
+            },
+            "required": [
+              "url",
+              "method",
+              "headers",
+              "expiresAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "media",
+          "upload"
+        ],
+        "additionalProperties": false
+      },
+      "MediaDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "item",
+              "store"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "uploading",
+              "pending_review",
+              "approved",
+              "rejected"
+            ]
+          },
+          "rejectReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "thumbUrl": {
+            "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "mediumUrl": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "purpose",
+          "status",
+          "rejectReason",
+          "thumbUrl",
+          "mediumUrl",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "BarcodeResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "master",
+              "open_barcode"
+            ]
+          },
+          "product": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "barcode": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "brand": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "mrpPaise": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "packLabel": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "unit": {
+                "type": "string",
+                "enum": [
+                  "kg",
+                  "g",
+                  "l",
+                  "ml",
+                  "pc",
+                  "pack",
+                  "portion",
+                  null
+                ],
+                "nullable": true
+              },
+              "unitQty": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "categorySlug": {
+                "type": "string"
+              },
+              "imageUrl": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "seed",
+                  "import",
+                  "open_barcode",
+                  "ops"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "barcode",
+              "name",
+              "brand",
+              "mrpPaise",
+              "packLabel",
+              "unit",
+              "unitQty",
+              "categorySlug",
+              "imageUrl",
+              "source"
+            ],
+            "additionalProperties": false
+          },
+          "existingItemId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          }
+        },
+        "required": [
+          "source",
+          "product",
+          "existingItemId"
+        ],
+        "additionalProperties": false
+      },
+      "MasterListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "barcode": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "brand": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "mrpPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "nullable": true
+                },
+                "packLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "unit": {
+                  "type": "string",
+                  "enum": [
+                    "kg",
+                    "g",
+                    "l",
+                    "ml",
+                    "pc",
+                    "pack",
+                    "portion",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "unitQty": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "categorySlug": {
+                  "type": "string"
+                },
+                "imageUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source": {
+                  "type": "string",
+                  "enum": [
+                    "seed",
+                    "import",
+                    "open_barcode",
+                    "ops"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "barcode",
+                "name",
+                "brand",
+                "mrpPaise",
+                "packLabel",
+                "unit",
+                "unitQty",
+                "categorySlug",
+                "imageUrl",
+                "source"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "QaSummaryDto_Output": {
+        "type": "object",
+        "properties": {
+          "heldItems": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "pendingMerchantApproval": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "staleItems": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "photosToReview": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "barcodeRequests": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "heldItems",
+          "pendingMerchantApproval",
+          "staleItems",
+          "photosToReview",
+          "barcodeRequests"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewItemDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "release",
+              "reject"
+            ]
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "MediaListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "purpose": {
+                  "type": "string",
+                  "enum": [
+                    "item",
+                    "store"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "uploading",
+                    "pending_review",
+                    "approved",
+                    "rejected"
+                  ]
+                },
+                "rejectReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "thumbUrl": {
+                  "description": "Absolute URL, or a path starting with / to resolve against the API base (fake mode)",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "mediumUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "merchantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                }
+              },
+              "required": [
+                "id",
+                "purpose",
+                "status",
+                "rejectReason",
+                "thumbUrl",
+                "mediumUrl",
+                "createdAt",
+                "merchantId"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ReviewMediaDto": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      },
+      "BarcodeRequestListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "barcode": {
+                  "type": "string"
+                },
+                "scanCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "lastMerchantId": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "resolved"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "barcode",
+                "scanCount",
+                "lastMerchantId",
+                "status",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "EnrichBarcodeDto": {
+        "type": "object",
+        "properties": {
+          "barcode": {
+            "type": "string",
+            "pattern": "^\\d{8,14}$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 120
+          },
+          "brand": {
+            "type": "string",
+            "maxLength": 60,
+            "nullable": true
+          },
+          "mrpPaise": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 10000000,
+            "description": "integer paise",
+            "nullable": true
+          },
+          "packLabel": {
+            "type": "string",
+            "maxLength": 30,
+            "nullable": true
+          },
+          "categorySlug": {
+            "type": "string",
+            "maxLength": 40
+          },
+          "imageUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        },
+        "required": [
+          "barcode",
+          "name",
+          "categorySlug"
+        ]
+      },
+      "SweepResultDto_Output": {
+        "type": "object",
+        "properties": {
+          "flagged": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "flagged"
+        ],
+        "additionalProperties": false
       },
       "MicroMarketListDto_Output": {
         "type": "object",
@@ -4114,6 +8056,120 @@
                       ],
                       "additionalProperties": false
                     },
+                    "discovery": {
+                      "type": "object",
+                      "properties": {
+                        "weights": {
+                          "default": {
+                            "distance": 0.3,
+                            "eta": 0.25,
+                            "rating": 0.2,
+                            "acceptance": 0.1,
+                            "freshness": 0.15
+                          },
+                          "type": "object",
+                          "properties": {
+                            "distance": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "eta": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "rating": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "acceptance": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            },
+                            "freshness": {
+                              "type": "number",
+                              "minimum": 0,
+                              "maximum": 1
+                            }
+                          },
+                          "required": [
+                            "distance",
+                            "eta",
+                            "rating",
+                            "acceptance",
+                            "freshness"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "textWeight": {
+                          "default": 0.6,
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "defaultPrepMin": {
+                          "default": {
+                            "retail": 10,
+                            "fashion": 15,
+                            "home_business": 20,
+                            "home_kitchen": 30
+                          },
+                          "type": "object",
+                          "properties": {
+                            "retail": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 120
+                            },
+                            "fashion": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 120
+                            },
+                            "home_business": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 240
+                            },
+                            "home_kitchen": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 240
+                            }
+                          },
+                          "required": [
+                            "retail",
+                            "fashion",
+                            "home_business",
+                            "home_kitchen"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "etaRangeMin": {
+                          "default": 5,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 30
+                        },
+                        "newStoreRating": {
+                          "default": 4.2,
+                          "type": "number",
+                          "minimum": 1,
+                          "maximum": 5
+                        }
+                      },
+                      "required": [
+                        "weights",
+                        "textWeight",
+                        "defaultPrepMin",
+                        "etaRangeMin",
+                        "newStoreRating"
+                      ],
+                      "additionalProperties": false
+                    },
                     "note": {
                       "type": [
                         "string",
@@ -4143,6 +8199,7 @@
                     "cod",
                     "sla",
                     "riderPay",
+                    "discovery",
                     "note",
                     "createdBy",
                     "createdAt"
@@ -4585,6 +8642,120 @@
                 ],
                 "additionalProperties": false
               },
+              "discovery": {
+                "type": "object",
+                "properties": {
+                  "weights": {
+                    "default": {
+                      "distance": 0.3,
+                      "eta": 0.25,
+                      "rating": 0.2,
+                      "acceptance": 0.1,
+                      "freshness": 0.15
+                    },
+                    "type": "object",
+                    "properties": {
+                      "distance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "eta": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "rating": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "acceptance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "freshness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "distance",
+                      "eta",
+                      "rating",
+                      "acceptance",
+                      "freshness"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "textWeight": {
+                    "default": 0.6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "defaultPrepMin": {
+                    "default": {
+                      "retail": 10,
+                      "fashion": 15,
+                      "home_business": 20,
+                      "home_kitchen": 30
+                    },
+                    "type": "object",
+                    "properties": {
+                      "retail": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "fashion": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "home_business": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      },
+                      "home_kitchen": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      }
+                    },
+                    "required": [
+                      "retail",
+                      "fashion",
+                      "home_business",
+                      "home_kitchen"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "etaRangeMin": {
+                    "default": 5,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "newStoreRating": {
+                    "default": 4.2,
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 5
+                  }
+                },
+                "required": [
+                  "weights",
+                  "textWeight",
+                  "defaultPrepMin",
+                  "etaRangeMin",
+                  "newStoreRating"
+                ],
+                "additionalProperties": false
+              },
               "note": {
                 "type": [
                   "string",
@@ -4614,6 +8785,7 @@
               "cod",
               "sla",
               "riderPay",
+              "discovery",
               "note",
               "createdBy",
               "createdAt"
@@ -5015,6 +9187,120 @@
                   ],
                   "additionalProperties": false
                 },
+                "discovery": {
+                  "type": "object",
+                  "properties": {
+                    "weights": {
+                      "default": {
+                        "distance": 0.3,
+                        "eta": 0.25,
+                        "rating": 0.2,
+                        "acceptance": 0.1,
+                        "freshness": 0.15
+                      },
+                      "type": "object",
+                      "properties": {
+                        "distance": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "eta": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "rating": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "acceptance": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        },
+                        "freshness": {
+                          "type": "number",
+                          "minimum": 0,
+                          "maximum": 1
+                        }
+                      },
+                      "required": [
+                        "distance",
+                        "eta",
+                        "rating",
+                        "acceptance",
+                        "freshness"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "textWeight": {
+                      "default": 0.6,
+                      "type": "number",
+                      "minimum": 0,
+                      "maximum": 1
+                    },
+                    "defaultPrepMin": {
+                      "default": {
+                        "retail": 10,
+                        "fashion": 15,
+                        "home_business": 20,
+                        "home_kitchen": 30
+                      },
+                      "type": "object",
+                      "properties": {
+                        "retail": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 120
+                        },
+                        "fashion": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 120
+                        },
+                        "home_business": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 240
+                        },
+                        "home_kitchen": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 240
+                        }
+                      },
+                      "required": [
+                        "retail",
+                        "fashion",
+                        "home_business",
+                        "home_kitchen"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "etaRangeMin": {
+                      "default": 5,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 30
+                    },
+                    "newStoreRating": {
+                      "default": 4.2,
+                      "type": "number",
+                      "minimum": 1,
+                      "maximum": 5
+                    }
+                  },
+                  "required": [
+                    "weights",
+                    "textWeight",
+                    "defaultPrepMin",
+                    "etaRangeMin",
+                    "newStoreRating"
+                  ],
+                  "additionalProperties": false
+                },
                 "note": {
                   "type": [
                     "string",
@@ -5044,6 +9330,7 @@
                 "cod",
                 "sla",
                 "riderPay",
+                "discovery",
                 "note",
                 "createdBy",
                 "createdAt"
@@ -5446,6 +9733,128 @@
                   "waitPerMinPaise",
                   "batchBonusPaise"
                 ]
+              },
+              "discovery": {
+                "default": {
+                  "weights": {
+                    "distance": 0.3,
+                    "eta": 0.25,
+                    "rating": 0.2,
+                    "acceptance": 0.1,
+                    "freshness": 0.15
+                  },
+                  "textWeight": 0.6,
+                  "defaultPrepMin": {
+                    "retail": 10,
+                    "fashion": 15,
+                    "home_business": 20,
+                    "home_kitchen": 30
+                  },
+                  "etaRangeMin": 5,
+                  "newStoreRating": 4.2
+                },
+                "type": "object",
+                "properties": {
+                  "weights": {
+                    "default": {
+                      "distance": 0.3,
+                      "eta": 0.25,
+                      "rating": 0.2,
+                      "acceptance": 0.1,
+                      "freshness": 0.15
+                    },
+                    "type": "object",
+                    "properties": {
+                      "distance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "eta": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "rating": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "acceptance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "freshness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "distance",
+                      "eta",
+                      "rating",
+                      "acceptance",
+                      "freshness"
+                    ]
+                  },
+                  "textWeight": {
+                    "default": 0.6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "defaultPrepMin": {
+                    "default": {
+                      "retail": 10,
+                      "fashion": 15,
+                      "home_business": 20,
+                      "home_kitchen": 30
+                    },
+                    "type": "object",
+                    "properties": {
+                      "retail": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "fashion": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "home_business": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      },
+                      "home_kitchen": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      }
+                    },
+                    "required": [
+                      "retail",
+                      "fashion",
+                      "home_business",
+                      "home_kitchen"
+                    ]
+                  },
+                  "etaRangeMin": {
+                    "default": 5,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "newStoreRating": {
+                    "default": 4.2,
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 5
+                  }
+                }
               }
             },
             "required": [
@@ -5836,6 +10245,128 @@
                   "waitPerMinPaise",
                   "batchBonusPaise"
                 ]
+              },
+              "discovery": {
+                "default": {
+                  "weights": {
+                    "distance": 0.3,
+                    "eta": 0.25,
+                    "rating": 0.2,
+                    "acceptance": 0.1,
+                    "freshness": 0.15
+                  },
+                  "textWeight": 0.6,
+                  "defaultPrepMin": {
+                    "retail": 10,
+                    "fashion": 15,
+                    "home_business": 20,
+                    "home_kitchen": 30
+                  },
+                  "etaRangeMin": 5,
+                  "newStoreRating": 4.2
+                },
+                "type": "object",
+                "properties": {
+                  "weights": {
+                    "default": {
+                      "distance": 0.3,
+                      "eta": 0.25,
+                      "rating": 0.2,
+                      "acceptance": 0.1,
+                      "freshness": 0.15
+                    },
+                    "type": "object",
+                    "properties": {
+                      "distance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "eta": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "rating": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "acceptance": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      },
+                      "freshness": {
+                        "type": "number",
+                        "minimum": 0,
+                        "maximum": 1
+                      }
+                    },
+                    "required": [
+                      "distance",
+                      "eta",
+                      "rating",
+                      "acceptance",
+                      "freshness"
+                    ]
+                  },
+                  "textWeight": {
+                    "default": 0.6,
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "defaultPrepMin": {
+                    "default": {
+                      "retail": 10,
+                      "fashion": 15,
+                      "home_business": 20,
+                      "home_kitchen": 30
+                    },
+                    "type": "object",
+                    "properties": {
+                      "retail": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "fashion": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 120
+                      },
+                      "home_business": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      },
+                      "home_kitchen": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 240
+                      }
+                    },
+                    "required": [
+                      "retail",
+                      "fashion",
+                      "home_business",
+                      "home_kitchen"
+                    ]
+                  },
+                  "etaRangeMin": {
+                    "default": 5,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 30
+                  },
+                  "newStoreRating": {
+                    "default": 4.2,
+                    "type": "number",
+                    "minimum": 1,
+                    "maximum": 5
+                  }
+                }
               }
             },
             "required": [
@@ -6254,6 +10785,120 @@
             ],
             "additionalProperties": false
           },
+          "discovery": {
+            "type": "object",
+            "properties": {
+              "weights": {
+                "default": {
+                  "distance": 0.3,
+                  "eta": 0.25,
+                  "rating": 0.2,
+                  "acceptance": 0.1,
+                  "freshness": 0.15
+                },
+                "type": "object",
+                "properties": {
+                  "distance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "eta": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "rating": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "acceptance": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  },
+                  "freshness": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 1
+                  }
+                },
+                "required": [
+                  "distance",
+                  "eta",
+                  "rating",
+                  "acceptance",
+                  "freshness"
+                ],
+                "additionalProperties": false
+              },
+              "textWeight": {
+                "default": 0.6,
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              },
+              "defaultPrepMin": {
+                "default": {
+                  "retail": 10,
+                  "fashion": 15,
+                  "home_business": 20,
+                  "home_kitchen": 30
+                },
+                "type": "object",
+                "properties": {
+                  "retail": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 120
+                  },
+                  "fashion": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 120
+                  },
+                  "home_business": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 240
+                  },
+                  "home_kitchen": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 240
+                  }
+                },
+                "required": [
+                  "retail",
+                  "fashion",
+                  "home_business",
+                  "home_kitchen"
+                ],
+                "additionalProperties": false
+              },
+              "etaRangeMin": {
+                "default": 5,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 30
+              },
+              "newStoreRating": {
+                "default": 4.2,
+                "type": "number",
+                "minimum": 1,
+                "maximum": 5
+              }
+            },
+            "required": [
+              "weights",
+              "textWeight",
+              "defaultPrepMin",
+              "etaRangeMin",
+              "newStoreRating"
+            ],
+            "additionalProperties": false
+          },
           "note": {
             "type": "array",
             "items": {
@@ -6283,6 +10928,7 @@
           "cod",
           "sla",
           "riderPay",
+          "discovery",
           "note",
           "createdBy",
           "createdAt"
@@ -6346,6 +10992,825 @@
         },
         "required": [
           "flags"
+        ],
+        "additionalProperties": false
+      },
+      "FeedDto_Output": {
+        "type": "object",
+        "properties": {
+          "serviceability": {
+            "type": "object",
+            "properties": {
+              "serviceable": {
+                "type": "boolean"
+              },
+              "microMarket": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "nameTe": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "slug",
+                  "name",
+                  "nameTe"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "serviceable",
+              "microMarket"
+            ],
+            "additionalProperties": false
+          },
+          "tab": {
+            "type": "string"
+          },
+          "tabs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "key",
+                "count"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "stores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "retail",
+                    "fashion",
+                    "home_business",
+                    "home_kitchen"
+                  ]
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "photoUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "eta": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "asap"
+                          ]
+                        },
+                        "minMin": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "maxMin": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "minMin",
+                        "maxMin"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "scheduled"
+                          ]
+                        },
+                        "nextSlot": {
+                          "type": "object",
+                          "properties": {
+                            "date": {
+                              "type": "string"
+                            },
+                            "start": {
+                              "type": "string"
+                            },
+                            "end": {
+                              "type": "string"
+                            },
+                            "cutoffAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "date",
+                            "start",
+                            "end",
+                            "cutoffAt"
+                          ],
+                          "additionalProperties": false,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "nextSlot"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "open": {
+                  "type": "boolean"
+                },
+                "nextOpenAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "closesAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "selfDelivers": {
+                  "type": "boolean"
+                },
+                "hygieneDeclared": {
+                  "type": "boolean"
+                },
+                "rating": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ratingCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "movPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "itemCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "score": {
+                  "type": "number",
+                  "description": "Ranking score 0..1 (for debugging ranking weights)"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "nameTe",
+                "type",
+                "category",
+                "photoUrl",
+                "distanceM",
+                "eta",
+                "open",
+                "nextOpenAt",
+                "closesAt",
+                "selfDelivers",
+                "hygieneDeclared",
+                "rating",
+                "ratingCount",
+                "movPaise",
+                "itemCount",
+                "score"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "serviceability",
+          "tab",
+          "tabs",
+          "stores"
+        ],
+        "additionalProperties": false
+      },
+      "SearchDto_Output": {
+        "type": "object",
+        "properties": {
+          "serviceability": {
+            "type": "object",
+            "properties": {
+              "serviceable": {
+                "type": "boolean"
+              },
+              "microMarket": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "slug": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "nameTe": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "slug",
+                  "name",
+                  "nameTe"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              }
+            },
+            "required": [
+              "serviceable",
+              "microMarket"
+            ],
+            "additionalProperties": false
+          },
+          "query": {
+            "type": "string"
+          },
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "store": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "nameTe": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "retail",
+                        "fashion",
+                        "home_business",
+                        "home_kitchen"
+                      ]
+                    },
+                    "category": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "photoUrl": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "distanceM": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "eta": {
+                      "oneOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "asap"
+                              ]
+                            },
+                            "minMin": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "maxMin": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "mode",
+                            "minMin",
+                            "maxMin"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "scheduled"
+                              ]
+                            },
+                            "nextSlot": {
+                              "type": "object",
+                              "properties": {
+                                "date": {
+                                  "type": "string"
+                                },
+                                "start": {
+                                  "type": "string"
+                                },
+                                "end": {
+                                  "type": "string"
+                                },
+                                "cutoffAt": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                                }
+                              },
+                              "required": [
+                                "date",
+                                "start",
+                                "end",
+                                "cutoffAt"
+                              ],
+                              "additionalProperties": false,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "mode",
+                            "nextSlot"
+                          ],
+                          "additionalProperties": false
+                        }
+                      ]
+                    },
+                    "open": {
+                      "type": "boolean"
+                    },
+                    "nextOpenAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "nullable": true
+                    },
+                    "closesAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "nullable": true
+                    },
+                    "selfDelivers": {
+                      "type": "boolean"
+                    },
+                    "hygieneDeclared": {
+                      "type": "boolean"
+                    },
+                    "rating": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "ratingCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "movPaise": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "itemCount": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "score": {
+                      "type": "number",
+                      "description": "Ranking score 0..1 (for debugging ranking weights)"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "nameTe",
+                    "type",
+                    "category",
+                    "photoUrl",
+                    "distanceM",
+                    "eta",
+                    "open",
+                    "nextOpenAt",
+                    "closesAt",
+                    "selfDelivers",
+                    "hygieneDeclared",
+                    "rating",
+                    "ratingCount",
+                    "movPaise",
+                    "itemCount",
+                    "score"
+                  ],
+                  "additionalProperties": false
+                },
+                "score": {
+                  "type": "number"
+                },
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "nameTe": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "brand": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "categorySlug": {
+                        "type": "string"
+                      },
+                      "pricePaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "mrpPaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      },
+                      "foodMark": {
+                        "type": "string",
+                        "enum": [
+                          "veg",
+                          "non_veg",
+                          "egg",
+                          null
+                        ],
+                        "nullable": true
+                      },
+                      "imageUrl": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "variantCount": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "stale": {
+                        "type": "boolean"
+                      },
+                      "madeToOrder": {
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "nameTe",
+                      "brand",
+                      "categorySlug",
+                      "pricePaise",
+                      "mrpPaise",
+                      "foodMark",
+                      "imageUrl",
+                      "variantCount",
+                      "stale",
+                      "madeToOrder"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "more": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "store",
+                "score",
+                "items",
+                "more"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "stores": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "nameTe": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "retail",
+                    "fashion",
+                    "home_business",
+                    "home_kitchen"
+                  ]
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "photoUrl": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "distanceM": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "eta": {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "asap"
+                          ]
+                        },
+                        "minMin": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "maxMin": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "minMin",
+                        "maxMin"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "scheduled"
+                          ]
+                        },
+                        "nextSlot": {
+                          "type": "object",
+                          "properties": {
+                            "date": {
+                              "type": "string"
+                            },
+                            "start": {
+                              "type": "string"
+                            },
+                            "end": {
+                              "type": "string"
+                            },
+                            "cutoffAt": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                            }
+                          },
+                          "required": [
+                            "date",
+                            "start",
+                            "end",
+                            "cutoffAt"
+                          ],
+                          "additionalProperties": false,
+                          "nullable": true
+                        }
+                      },
+                      "required": [
+                        "mode",
+                        "nextSlot"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                },
+                "open": {
+                  "type": "boolean"
+                },
+                "nextOpenAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "closesAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "selfDelivers": {
+                  "type": "boolean"
+                },
+                "hygieneDeclared": {
+                  "type": "boolean"
+                },
+                "rating": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ratingCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "movPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "itemCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "score": {
+                  "type": "number",
+                  "description": "Ranking score 0..1 (for debugging ranking weights)"
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "nameTe",
+                "type",
+                "category",
+                "photoUrl",
+                "distanceM",
+                "eta",
+                "open",
+                "nextOpenAt",
+                "closesAt",
+                "selfDelivers",
+                "hygieneDeclared",
+                "rating",
+                "ratingCount",
+                "movPaise",
+                "itemCount",
+                "score"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Stores whose name matches the query"
+          },
+          "totalItems": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "zeroResult": {
+            "type": "boolean"
+          },
+          "tookMs": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "serviceability",
+          "query",
+          "groups",
+          "stores",
+          "totalItems",
+          "zeroResult",
+          "tookMs"
         ],
         "additionalProperties": false
       }

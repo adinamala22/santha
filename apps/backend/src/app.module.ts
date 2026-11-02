@@ -13,6 +13,9 @@ import { OutboxModule } from './infra/outbox/outbox.module';
 import { PrismaModule } from './infra/prisma/prisma.module';
 import { QueuesModule } from './infra/queues/queues.module';
 import { RedisModule } from './infra/redis/redis.module';
+import { StorageModule } from './infra/storage/object-storage';
+import { CacheModule } from './infra/cache/kv-cache';
+import { DevModule } from './dev/dev.module';
 import { AnalyticsConfigModule } from './modules/analytics-config/analytics-config.module';
 import { CartPricingModule } from './modules/cart-pricing/cart-pricing.module';
 import { DispatchTrackingModule } from './modules/dispatch-tracking/dispatch-tracking.module';
@@ -51,6 +54,8 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     PrismaModule,
     RedisModule,
     QueuesModule,
+    StorageModule,
+    CacheModule,
     OutboxModule,
     AuditModule,
     IdentityKycModule,
@@ -63,6 +68,7 @@ import { TrustSafetyModule } from './modules/trust-safety/trust-safety.module';
     NotificationsModule,
     TrustSafetyModule,
     AnalyticsConfigModule,
+    DevModule,
   ],
   controllers: [HealthController],
   providers: [

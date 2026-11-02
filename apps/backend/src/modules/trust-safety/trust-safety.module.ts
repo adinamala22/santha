@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
+import { TrustSafetyService } from './trust-safety.service';
 
 /**
- * trust-safety — moderation, ratings, issues, disputes, trust scores (M7, M8).
- * Scaffolded in M0; see BUILD-PLAN.md for the milestone that fills it in.
- * Owns its tables; other modules use its exported services or its events only.
+ * trust-safety — prohibited-item screening (M2); moderation, ratings, issues, disputes, trust
+ * scores later (M7, M8). Owns its tables; other modules use TrustSafetyService or its events only.
  */
-@Module({})
+@Module({ providers: [TrustSafetyService], exports: [TrustSafetyService] })
 export class TrustSafetyModule {}

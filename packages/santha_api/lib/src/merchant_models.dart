@@ -1,5 +1,6 @@
 // Merchant onboarding models mirroring apps/backend/openapi.json (MerchantViewDto, KycCheckDto).
 // Hand-written like the auth models (see ADR-006); a contract test parses a real API response.
+import 'catalogue_models.dart';
 import 'models.dart';
 
 /// Enums whose API value (`wire`) is snake_case.
@@ -43,6 +44,7 @@ enum ChecklistKey implements Wire {
   business('business'),
   location('location'),
   hours('hours'),
+  photos('photos'),
   pan('pan'),
   aadhaar('aadhaar'),
   gst('gst'),
@@ -226,6 +228,7 @@ class MerchantView {
     required this.checklist,
     required this.canSubmit,
     this.microMarket,
+    this.photos = const [],
   });
 
   factory MerchantView.fromJson(Json j) => MerchantView(
@@ -235,6 +238,7 @@ class MerchantView {
         kyc: (j['kyc'] as List).map((k) => KycCheck.fromJson(k as Json)).toList(),
         checklist: (j['checklist'] as List).map((c) => ChecklistItem.fromJson(c as Json)).toList(),
         canSubmit: j['canSubmit'] as bool,
+        photos: ((j['photos'] as List?) ?? const []).map((m) => Media.fromJson(m as Json)).toList(),
       );
 
   final Merchant merchant;
@@ -243,6 +247,8 @@ class MerchantView {
   final List<KycCheck> kyc;
   final List<ChecklistItem> checklist;
   final bool canSubmit;
+  /// Store photos in display order (customers see the approved ones).
+  final List<Media> photos;
 
   KycCheck? check(KycKind kind) => kyc.where((k) => k.kind == kind).firstOrNull;
   bool done(ChecklistKey key) => checklist.any((c) => c.key == key && c.done);
@@ -254,5 +260,6 @@ class MerchantView {
         kyc: [...kyc.where((k) => k.kind != c.kind), c],
         checklist: checklist,
         canSubmit: canSubmit,
+        photos: photos,
       );
 }

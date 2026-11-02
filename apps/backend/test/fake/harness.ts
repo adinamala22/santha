@@ -8,6 +8,7 @@
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import request from 'supertest';
+import sharp from 'sharp';
 import { configureApp } from '../../src/app.factory';
 import { AppModule } from '../../src/app.module';
 import { SEED_OPS_PASSWORD, SEED_PEOPLE, type SeedPerson } from '../../src/dev/seed-data';
@@ -33,6 +34,13 @@ export interface FakeApp {
   signIn: (phone: string, app: AppId, deviceId?: string) => Promise<Session>;
   /** Ops console sign-in (email + password, then OTP) as the seeded admin unless told otherwise. */
   opsSignIn: (email?: string, password?: string) => Promise<Session>;
+  /**
+   * Media pipeline round trip as the app does it: ask for an upload, PUT the bytes to the
+   * presigned URL (in-memory storage in fake mode), complete. Returns the processed media.
+   */
+  uploadPhoto: (s: Session, purpose: 'item' | 'store', image?: Buffer) => Promise<{ id: string; status: string; thumbUrl: string; mediumUrl: string }>;
+  /** Moves the fake-mode dev clock forward. */
+  advanceClock: (hours: number) => Promise<Date>;
   /** First seeded person with the role (see src/dev/seed-data.ts). */
   seeded: (role: string) => SeedPerson;
   close: () => Promise<void>;
@@ -49,6 +57,8 @@ const RELAXED_OTP_LIMITS = {
   OTP_LIMIT_PER_PHONE_HOUR: '1000',
   OTP_LIMIT_PER_DEVICE_HOUR: '1000',
   OTP_LIMIT_PER_IP_HOUR: '10000',
+  OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: '1000',
+  OPS_LOGIN_LIMIT_PER_IP_HOUR: '1000',
 };
 
 export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promise<FakeApp> {
@@ -97,6 +107,18 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     };
   };
 
+  const uploadPhoto: FakeApp['uploadPhoto'] = async (s, purpose, image) => {
+    const body = image ?? (await testImage());
+    const t = await http().post('/v1/merchants/me/media').set(s.headers).send({ purpose, contentType: 'image/png' }).expect(201);
+    await http().put(t.body.upload.url).set('Content-Type', 'image/png').send(body).expect(200);
+    return (await http().post(`/v1/merchants/me/media/${t.body.media.id}/complete`).set(s.headers).expect(200)).body;
+  };
+
+  const advanceClock = async (hours: number): Promise<Date> => {
+    const r = await http().post('/v1/dev/clock').send({ hours }).expect(200);
+    return new Date(r.body.now);
+  };
+
   const seeded = (role: string): SeedPerson => {
     const p = SEED_PEOPLE.find((x) => x.roles.includes(role as SeedPerson['roles'][number]));
     if (!p) throw new Error(`No seeded person with role ${role}`);
@@ -108,10 +130,25 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     http,
     signIn,
     opsSignIn,
+    uploadPhoto,
+    advanceClock,
     seeded,
     close: async () => {
       await app.close();
       process.env = saved;
     },
   };
+}
+
+/** A 640×480 PNG test photo (gradient + noise so WebP sizes are realistic). */
+export async function testImage(width = 640, height = 480): Promise<Buffer> {
+  const raw = Buffer.alloc(width * height * 3);
+  for (let y = 0; y < height; y++)
+    for (let x = 0; x < width; x++) {
+      const i = (y * width + x) * 3;
+      raw[i] = (x * 255) / width;
+      raw[i + 1] = (y * 255) / height;
+      raw[i + 2] = ((x * y) % 97) * 2;
+    }
+  return sharp(raw, { raw: { width, height, channels: 3 } }).png().toBuffer();
 }

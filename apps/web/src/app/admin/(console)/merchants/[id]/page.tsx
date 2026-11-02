@@ -1,7 +1,9 @@
 import type { AuditList, MerchantView } from '@santha/shared-types';
 import Link from 'next/link';
 import { Card, Chip, Notice, PageHeader, tableCls } from '@/components/admin/ui';
+import { catalogueCopy } from '@/i18n/catalogue';
 import { consoleCopy, fill } from '@/i18n/console';
+import { mediaSrc } from '@/lib/media';
 import { dateOnly, dateTime, km, rupees } from '@/lib/format';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 import { DecisionPanel } from './decision-panel';
@@ -14,6 +16,7 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
   const [locale, session] = await Promise.all([opsLocale(), opsSession()]);
   const copy = consoleCopy(locale);
   const c = copy.merchant;
+  const cc = catalogueCopy(locale);
   const [view, audit] = await Promise.all([
     opsGet<MerchantView>(`/v1/ops/merchants/${id}`),
     opsGet<AuditList>(`/v1/ops/audit?entity=merchant&entityId=${id}`),
@@ -43,7 +46,14 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
       <PageHeader
         title={m.name}
         sub={[m.nameTe, marketName].filter(Boolean).join(' · ')}
-        actions={<Chip tone={m.status}>{copy.statuses[m.status]}</Chip>}
+        actions={
+          <>
+            <Link href={`/admin/merchants/${m.id}/catalogue`} className="rounded-md border border-indigo-100 bg-white px-4 py-2 text-sm font-medium text-indigo s-focus hover:bg-sky">
+              {cc.assisted.link}
+            </Link>
+            <Chip tone={m.status}>{copy.statuses[m.status]}</Chip>
+          </>
+        }
       />
       {m.status === 'rejected' && m.rejectionCode ? (
         <div className="mb-6">
@@ -66,6 +76,27 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
               ))}
             </dl>
             {m.description ? <p className="mt-4 text-slate">{m.description}</p> : null}
+          </Card>
+
+          <Card title={cc.store.photos}>
+            {view.photos.length ? (
+              <ul className="grid grid-cols-3 gap-4">
+                {view.photos.map((p) => {
+                  const src = mediaSrc(p.thumbUrl);
+                  return (
+                    <li key={p.id}>
+                      {src ? (
+                        // eslint-disable-next-line @next/next/no-img-element -- uploaded store photo
+                        <img src={src} alt={cc.store.photos} className="aspect-square w-full rounded-md bg-sky object-cover" />
+                      ) : null}
+                      {p.status !== 'approved' ? <p className="mt-1 text-sm text-slate">{p.status === 'rejected' ? cc.photos.rejected : cc.store.pendingPhoto}</p> : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-slate">{cc.store.noPhotos}</p>
+            )}
           </Card>
 
           <Card title={c.kyc}>

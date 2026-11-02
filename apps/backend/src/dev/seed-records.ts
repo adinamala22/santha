@@ -2,7 +2,7 @@ import { everyDay } from '../common/hours';
 import type { MerchantRecord, StaffRecord } from '../modules/merchant-catalogue/domain/merchant';
 import { gstinCheckChar } from '../modules/identity-kyc/domain/kyc-formats';
 import type { KycCheckInput } from '../modules/identity-kyc/kyc.repository';
-import { SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
+import { seedStorePhotoId, SEED_EFFECTIVE_FROM, SEED_MERCHANTS, SEED_MICRO_MARKETS, seedKycValues, seedUserId, type SeedKycKind } from './seed-data';
 
 export interface SeedMerchantRecords {
   merchants: MerchantRecord[];
@@ -94,6 +94,7 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       rejectionCode: null,
       rejectionNote: null,
       liveAt: live ? new Date(t0 + (23 + i) * DAY) : null,
+      photoIds: s.status === 'draft' ? [] : [seedStorePhotoId(n)],
       createdAt: created,
       updatedAt: created,
     });

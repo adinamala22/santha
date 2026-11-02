@@ -54,8 +54,8 @@ model User {
   /// Ops console accounts only: email + password, then OTP to `phone` as second factor.
   email        String?    @unique
   passwordHash String?    @map("password_hash")
-  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdAt    DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   roles    UserRole[]
   devices  Device[]
@@ -212,21 +212,23 @@ model MicroMarket {
 /// (effective_from <= t < effective_to, effective_to null = open-ended). Never updated in place
 /// except to close the previous version when a new one is added, so past orders can be re-priced.
 model MicroMarketVersion {
-  id            String                                    @id @default(uuid()) @db.Uuid
-  microMarketId String                                    @map("micro_market_id") @db.Uuid
+  id            String                                   @id @default(uuid()) @db.Uuid
+  microMarketId String                                   @map("micro_market_id") @db.Uuid
   version       Int
-  effectiveFrom DateTime                                  @map("effective_from") @db.Timestamptz(6)
-  effectiveTo   DateTime?                                 @map("effective_to") @db.Timestamptz(6)
+  effectiveFrom DateTime                                 @map("effective_from") @db.Timestamptz(6)
+  effectiveTo   DateTime?                                @map("effective_to") @db.Timestamptz(6)
   /// Always set (enforced by the service); nullable only because Prisma cannot write geography.
   polygon       Unsupported("geography(Polygon, 4326)")?
   hours         Json
   fees          Json
   cod           Json
   sla           Json
-  riderPay      Json                                      @map("rider_pay")
+  riderPay      Json                                     @map("rider_pay")
+  /// Ranking weights and ETA defaults for search-discovery (M2). Older rows read as defaults.
+  discovery     Json                                     @default("{}")
   note          String?
-  createdBy     String?                                   @map("created_by") @db.Uuid
-  createdAt     DateTime                                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  createdBy     String?                                  @map("created_by") @db.Uuid
+  createdAt     DateTime                                 @default(now()) @map("created_at") @db.Timestamptz(6)
 
   microMarket MicroMarket @relation(fields: [microMarketId], references: [id], onDelete: Cascade)
 
@@ -258,36 +260,41 @@ enum FulfilmentMode {
 }
 
 model Merchant {
-  id                String                                  @id @default(uuid()) @db.Uuid
-  ownerUserId       String                                  @unique @map("owner_user_id") @db.Uuid // MVP: one store per owner
-  microMarketId     String?                                 @map("micro_market_id") @db.Uuid
+  id                String                                 @id @default(uuid()) @db.Uuid
+  ownerUserId       String                                 @unique @map("owner_user_id") @db.Uuid // MVP: one store per owner
+  microMarketId     String?                                @map("micro_market_id") @db.Uuid
   type              MerchantType
-  sellsFood         Boolean                                 @default(false) @map("sells_food")
+  sellsFood         Boolean                                @default(false) @map("sells_food")
   category          String?
   name              String
-  nameTe            String?                                 @map("name_te")
+  nameTe            String?                                @map("name_te")
   description       String?
-  addressLine       String?                                 @map("address_line")
+  addressLine       String?                                @map("address_line")
   landmark          String?
   pincode           String?
   location          Unsupported("geography(Point, 4326)")?
-  radiusM           Int                                     @default(3000) @map("radius_m")
+  radiusM           Int                                    @default(3000) @map("radius_m")
   hours             Json?
-  movPaise          Int                                     @default(0) @map("mov_paise")
-  defaultFulfilment FulfilmentMode                          @default(rider) @map("default_fulfilment")
-  returnPolicy      String?                                 @map("return_policy")
-  hygieneDeclaredAt DateTime?                               @map("hygiene_declared_at") @db.Timestamptz(6)
-  status            MerchantStatus                          @default(draft)
-  submittedAt       DateTime?                               @map("submitted_at") @db.Timestamptz(6)
-  decidedAt         DateTime?                               @map("decided_at") @db.Timestamptz(6)
-  decidedBy         String?                                 @map("decided_by") @db.Uuid
-  rejectionCode     String?                                 @map("rejection_code")
-  rejectionNote     String?                                 @map("rejection_note")
-  liveAt            DateTime?                               @map("live_at") @db.Timestamptz(6)
-  createdAt         DateTime                                @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime                                @updatedAt @map("updated_at") @db.Timestamptz(6)
+  movPaise          Int                                    @default(0) @map("mov_paise")
+  defaultFulfilment FulfilmentMode                         @default(rider) @map("default_fulfilment")
+  returnPolicy      String?                                @map("return_policy")
+  hygieneDeclaredAt DateTime?                              @map("hygiene_declared_at") @db.Timestamptz(6)
+  status            MerchantStatus                         @default(draft)
+  submittedAt       DateTime?                              @map("submitted_at") @db.Timestamptz(6)
+  decidedAt         DateTime?                              @map("decided_at") @db.Timestamptz(6)
+  decidedBy         String?                                @map("decided_by") @db.Uuid
+  rejectionCode     String?                                @map("rejection_code")
+  rejectionNote     String?                                @map("rejection_note")
+  liveAt            DateTime?                              @map("live_at") @db.Timestamptz(6)
+  createdAt         DateTime                               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                               @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  /// Store photos (media ids, in display order). Shown once moderation approves them.
+  photoIds String[] @default([]) @map("photo_ids") @db.Uuid
 
   staff MerchantStaff[]
+  items Item[]
+  slots KitchenSlot[]
 
   @@index([status, submittedAt])
   @@index([microMarketId, status])
@@ -307,6 +314,193 @@ model MerchantStaff {
 
   @@unique([merchantId, phone])
   @@map("merchant_staff")
+}
+
+// ───────────── merchant-catalogue: catalogue (M2) ─────────────
+
+enum MasterSource {
+  seed
+  import
+  open_barcode
+  ops
+}
+
+/// Packaged goods (GS1 / commercial source + own enrichment). Merchant scans resolve here.
+model MasterProduct {
+  id           String       @id @default(uuid()) @db.Uuid
+  barcode      String       @unique // GTIN-8/12/13/14, check digit validated
+  name         String
+  brand        String?
+  mrpPaise     Int?         @map("mrp_paise")
+  packLabel    String?      @map("pack_label") // "5 kg", "500 ml"
+  unit         ItemUnit?
+  unitQty      Float?       @map("unit_qty")
+  categorySlug String       @map("category_slug")
+  imageUrl     String?      @map("image_url")
+  source       MasterSource
+  createdAt    DateTime     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime     @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  items Item[]
+
+  @@index([categorySlug])
+  @@map("master_products")
+}
+
+/// Ops enrichment queue: scanned barcodes that resolved nowhere (FR-CAT-1).
+model BarcodeRequest {
+  id              String    @id @default(uuid()) @db.Uuid
+  barcode         String    @unique
+  scanCount       Int       @default(1) @map("scan_count")
+  lastMerchantId  String?   @map("last_merchant_id") @db.Uuid
+  status          String    @default("open") // open | resolved
+  masterProductId String?   @map("master_product_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy      String?   @map("resolved_by") @db.Uuid
+
+  @@index([status, createdAt])
+  @@map("barcode_requests")
+}
+
+enum ItemStatus {
+  pending_merchant // built by ops on the merchant's behalf, awaiting merchant approval (FR-CAT-3)
+  in_review // held by the prohibited-item check (FR-CAT-7)
+  active
+  hidden
+}
+
+enum ItemSource {
+  merchant
+  master
+  import
+  ops
+}
+
+enum FoodMark {
+  veg
+  non_veg
+  egg
+}
+
+enum ItemUnit {
+  kg
+  g
+  l
+  ml
+  pc
+  pack
+  portion
+}
+
+enum StockState {
+  in
+  low
+  out
+}
+
+/// A merchant's SKU. Price and stock live on its variants. Soft-deleted only (deleted_at).
+model Item {
+  id              String     @id @default(uuid()) @db.Uuid
+  merchantId      String     @map("merchant_id") @db.Uuid
+  microMarketId   String?    @map("micro_market_id") @db.Uuid
+  masterProductId String?    @map("master_product_id") @db.Uuid
+  name            String
+  nameTe          String?    @map("name_te")
+  description     String?
+  brand           String?
+  categorySlug    String     @map("category_slug")
+  foodMark        FoodMark?  @map("food_mark")
+  allergens       String[]   @default([])
+  madeToOrder     Boolean    @default(false) @map("made_to_order")
+  leadTimeMin     Int?       @map("lead_time_min")
+  maxPerOrder     Int?       @map("max_per_order")
+  /// Home kitchens: menu days (empty = every day), portions per day, and the day it is "today's special".
+  availableDays   String[]   @default([]) @map("available_days")
+  dailyCapacity   Int?       @map("daily_capacity")
+  specialOn       String?    @map("special_on") // YYYY-MM-DD, Asia/Kolkata
+  status          ItemStatus
+  reviewReason    String?    @map("review_reason")
+  source          ItemSource
+  imageIds        String[]   @default([]) @map("image_ids") @db.Uuid
+  /// Last time the merchant confirmed price/stock; untouched for staleCatalogueHours → stale.
+  confirmedAt     DateTime   @map("confirmed_at") @db.Timestamptz(6)
+  staleSince      DateTime?  @map("stale_since") @db.Timestamptz(6)
+  createdBy       String?    @map("created_by") @db.Uuid
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @default(now()) @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?  @map("deleted_at") @db.Timestamptz(6)
+
+  merchant      Merchant       @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  masterProduct MasterProduct? @relation(fields: [masterProductId], references: [id])
+  variants      ItemVariant[]
+
+  @@index([merchantId, status])
+  @@index([status, confirmedAt])
+  @@map("items")
+}
+
+model ItemVariant {
+  id         String     @id @default(uuid()) @db.Uuid
+  itemId     String     @map("item_id") @db.Uuid
+  label      String // "500 g", "Large", "Serves 2"
+  unit       ItemUnit
+  unitQty    Float      @map("unit_qty")
+  pricePaise Int        @map("price_paise")
+  mrpPaise   Int?       @map("mrp_paise")
+  stock      StockState @default(in)
+  position   Int        @default(0)
+
+  item Item @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([itemId, position])
+  @@map("item_variants")
+}
+
+/// Home-kitchen delivery slots (FR-CAT-5). Times are Asia/Kolkata.
+model KitchenSlot {
+  id         String   @id @default(uuid()) @db.Uuid
+  merchantId String   @map("merchant_id") @db.Uuid
+  label      String?
+  days       String[] // mon..sun
+  start      String // HH:MM
+  end        String // HH:MM
+  cutoffMin  Int      @map("cutoff_min") // orders close this many minutes before start
+  capacity   Int // orders per slot per day
+  position   Int      @default(0)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  merchant Merchant @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+
+  @@index([merchantId])
+  @@map("kitchen_slots")
+}
+
+enum MediaStatus {
+  uploading
+  pending_review
+  approved
+  rejected
+}
+
+/// Uploaded images (item and store photos). `variants` are the WebP renditions made by Sharp.
+model Media {
+  id           String      @id @default(uuid()) @db.Uuid
+  merchantId   String      @map("merchant_id") @db.Uuid
+  purpose      String // item | store
+  status       MediaStatus
+  contentType  String      @map("content_type")
+  originalKey  String      @map("original_key")
+  variants     Json?
+  rejectReason String?     @map("reject_reason")
+  uploadedBy   String?     @map("uploaded_by") @db.Uuid
+  reviewedBy   String?     @map("reviewed_by") @db.Uuid
+  reviewedAt   DateTime?   @map("reviewed_at") @db.Timestamptz(6)
+  createdAt    DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@index([merchantId])
+  @@map("media")
 }
 
 // ───────────── platform (shared infrastructure, owned by src/infra) ─────────────

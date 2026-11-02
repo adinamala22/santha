@@ -33,12 +33,15 @@ cp .env.example .env                      # local placeholders only; never commi
 docker compose up -d                      # Postgres 16 + PostGIS, Redis, Typesense, MinIO, Mailpit
 pnpm i                                    # also generates the Prisma client
 pnpm --filter backend migrate:deploy      # or migrate:dev while changing the schema
-pnpm --filter backend seed                # test identities (M1 adds micro-markets + merchants)
+pnpm --filter backend seed                # identities, micro-markets, merchants, master catalogue + demo items
 pnpm dev                                  # backend :4000 (+ workers) and web :3000
 ```
 - API docs: http://localhost:4000/docs · health: `/v1/health`, readiness: `/v1/health/ready`
 - Landing: http://localhost:3000 · Ops sign-in UI: http://localhost:3000/admin/login
 - Mailpit: http://localhost:8025 · S3 console (RustFS): http://localhost:9001
+- Search runs on Typesense (`SEARCH_ENGINE=typesense`, the default with Postgres). The worker rebuilds the index at
+  boot; `pnpm --filter backend search:reindex` rebuilds it on demand. Master catalogue import:
+  `pnpm --filter backend catalogue:import <file.csv> [--dry-run]` (columns `barcode,name,brand,mrp,pack,category,image_url`).
 
 ### Fake mode (no Docker)
 ```bash
@@ -46,7 +49,10 @@ pnpm i
 pnpm dev:fake                             # backend :4000 with in-memory data + web :3000
 ```
 The backend runs with `DATA_STORE=memory`: no Postgres, Redis or Docker; the demo users below are preloaded,
-the OTP code is always `123456`, and domain events are written to the API log instead of the queue. Everything
+the OTP code is always `123456`, and domain events are delivered in-process (the search index updates at once)
+and written to the API log. Uploaded photos are kept in memory and served from `/v1/dev/media/…`. The clock can be
+moved forward to try time-based features, e.g. `curl -X POST localhost:4000/v1/dev/clock -H 'content-type: application/json'
+-d '{"hours":73}'` makes the catalogue stale (then run the sweep from the console or wait an hour). Everything
 resets when the backend restarts. Use it for UI work and quick device testing; anything touching maps,
 serviceability or order transactions needs the real stack above. Fake mode is refused outside `APP_ENV=dev`.
 
@@ -74,13 +80,19 @@ Indian mobile number signs in with code `123456` (new numbers get the role of th
 password, `SEED_OPS_PASSWORD`), then OTP `123456`. **Mock KYC**: Aadhaar OTP `123456`; numbers containing `0000`
 (PAN digits, Aadhaar/account/FSSAI ending) fail, so failure paths are easy to try. Demo data: Nellore, four
 approximate micro-markets (Magunta Layout, Dargamitta, Balaji Nagar, Vedayapalem) and 12 merchants
-(8 live, 3 waiting for review, 1 draft).
+(8 live, 3 waiting for review, 1 draft) with ~200 items, kitchen slots and generated store photos.
+**Demo master catalogue** (`apps/backend/prisma/data/master-products.csv`): 226 packaged goods with *fictional* brands
+and synthetic barcodes, e.g. `8901000000019` (Annapoorna Chakki Atta 1 kg). Barcodes `8901058000290`,
+`8901262010016` and `8906010500016` resolve only through the mock open-barcode lookup; anything else is "unknown"
+and lands in the ops enrichment queue. **Try search:** `/v1/search?lat=14.4525&lng=79.995&q=biyyam` (Telugu
+transliteration → rice), `q=pappu`, `q=tomoto` (typo); feed: `/v1/feed?lat=14.4525&lng=79.995&tab=home_kitchens`.
 
 ## Checks (what CI runs)
 ```bash
 pnpm lint && pnpm typecheck && pnpm test   # backend, web, shared-types
 pnpm --filter backend test:fake            # fake-mode acceptance per milestone (DATA_STORE=memory, no Docker)
-pnpm --filter backend test:int             # Testcontainers: real Postgres/PostGIS + Redis (needs Docker)
+pnpm --filter backend test:int             # Testcontainers: Postgres/PostGIS + Redis + Typesense (needs Docker)
+pnpm --filter web e2e                      # console e2e (Playwright) on a production build against the fake backend
 pnpm openapi:gen                           # regenerate OpenAPI → shared-types / santha_api (CI fails if stale)
 melos run analyze && melos run test        # Flutter
 melos run golden:update                    # regenerate santha_ui goldens (on Linux, to match CI)
@@ -89,4 +101,4 @@ Goldens are compared on Linux only (CI); on Windows/macOS they are skipped becau
 
 ## Decisions
 See `docs/decisions/` (ADR-001 stack, ADR-002 web hosting, ADR-003 local object storage, ADR-004 separate apps,
-ADR-005 in-memory fake mode).
+ADR-005 in-memory fake mode, ADR-006 M1 scope, ADR-007 ops console session & maps, ADR-008 M2 catalogue & search).
