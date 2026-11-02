@@ -58,6 +58,17 @@ export type StorePage = Schemas['StoreDto_Output'];
 export type Address = Schemas['AddressDto_Output'];
 export type AddressList = Schemas['AddressListDto_Output'];
 
+// M4 — cart, checkout, orders, payments, promos
+export type Cart = Schemas['CartDto_Output'];
+export type Checkout = Schemas['CheckoutDto_Output'];
+export type Order = Schemas['OrderDto_Output'];
+export type OrderList = Schemas['OrderListDto_Output'];
+export type Wallet = Schemas['WalletDto_Output'];
+export type Promo = Schemas['PromoDto_Output'];
+export type PromoList = Schemas['PromoListDto_Output'];
+export type PromoInput = Schemas['PromoInputDto'];
+export type PromoPatch = Schemas['PromoPatchDto'];
+
 /** Error envelope returned by every non-2xx response. */
 export interface ApiError {
   error: { code: string; message: string; details?: Record<string, unknown>; requestId?: string };

@@ -1,7 +1,7 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
-import type { Day } from '../../common/hours';
+import { type Day, istParts } from '../../common/hours';
 import { BarcodeLookupProvider, type BarcodeHit } from '../../infra/providers/barcode/barcode.provider';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { TrustSafetyService } from '../trust-safety/trust-safety.service';
@@ -49,6 +49,9 @@ export interface ItemInput {
   /** Merchant hides/shows an item without deleting it. */
   hidden?: boolean | undefined;
 }
+
+/** Orders holding each kitchen slot, keyed `${slotId}|${date}` (provided by the orders module). */
+export type SlotBookingSource = (merchantId: string, dates: string[]) => Promise<Map<string, number>>;
 
 export interface ItemView {
   item: ItemRecord;
@@ -538,8 +541,21 @@ export class CatalogueService {
     });
   }
 
+  /**
+   * Booked counts per slot come from orders (the orders module registers its source at start-up,
+   * so catalogue does not depend on orders). Until then every slot counts as empty.
+   */
+  private slotBookings: SlotBookingSource = async () => new Map();
+
+  registerSlotBookings(source: SlotBookingSource): void {
+    this.slotBookings = source;
+  }
+
   async slotAvailability(merchantId: string, days = 2) {
-    return slotOccurrences(await this.repo.slots(merchantId), this.clock(), days);
+    const now = this.clock();
+    const dates = Array.from({ length: days }, (_, d) => istParts(new Date(now.getTime() + d * 86_400_000)).date);
+    const [slots, booked] = await Promise.all([this.repo.slots(merchantId), this.slotBookings(merchantId, dates)]);
+    return slotOccurrences(slots, now, days, (slotId, date) => booked.get(`${slotId}|${date}`) ?? 0);
   }
 
   // ───────────── ops: catalogue QA (FR-OPS-1, FR-CAT-7) ─────────────

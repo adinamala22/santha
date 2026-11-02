@@ -18,3 +18,13 @@ merchantRepositoryContract('in-memory', async () => new InMemoryMerchantReposito
 kycRepositoryContract('in-memory', async () => new InMemoryKycRepository());
 catalogueRepositoryContract('in-memory', async () => ({ catalogue: new InMemoryCatalogueRepository(), merchants: new InMemoryMerchantRepository() }));
 addressRepositoryContract('in-memory', async () => ({ repo: new InMemoryAddressRepository(), userId: async () => randomUUID() }));
+
+// M4
+import { orderRepositoryContract, paymentsRepositoryContract, promoRepositoryContract } from '../../../test/contracts/m4.contract';
+import { InMemoryOrderRepository } from '../../modules/orders/orders.repository';
+import { InMemoryCartPricingRepository } from '../../modules/cart-pricing/cart-pricing.repository';
+import { InMemoryPaymentsRepository } from '../../modules/payments-settlement/payments.repository';
+
+orderRepositoryContract('in-memory', async () => new InMemoryOrderRepository());
+promoRepositoryContract('in-memory', async () => new InMemoryCartPricingRepository());
+paymentsRepositoryContract('in-memory', async () => new InMemoryPaymentsRepository());

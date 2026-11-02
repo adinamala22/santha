@@ -1012,6 +1012,150 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/cart": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["CartController_get"];
+        put: operations["CartController_put"];
+        post?: never;
+        delete: operations["CartController_clear"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/promos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsPromosController_list"];
+        put?: never;
+        post: operations["OpsPromosController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/promos/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["OpsPromosController_update"];
+        trace?: never;
+    };
+    "/v1/cart/price": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OrdersController_price"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_list"];
+        put?: never;
+        post: operations["OrdersController_place"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OrdersController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/abandon-payment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OrdersController_abandon"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payments/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PaymentsController_confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/wallet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PaymentsController_wallet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -1309,6 +1453,10 @@ export interface components {
                         platformFeePaise: number;
                         /** @description integer paise */
                         packagingFeeCapPaise: number;
+                        /** @default 18 */
+                        gstOnFeesPercent: number;
+                        /** @default 5 */
+                        gstCookedFoodPercent: number;
                     };
                     cod: {
                         enabled: boolean;
@@ -1449,6 +1597,10 @@ export interface components {
                     platformFeePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
+                    /** @default 18 */
+                    gstOnFeesPercent: number;
+                    /** @default 5 */
+                    gstCookedFoodPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -1579,6 +1731,10 @@ export interface components {
                     platformFeePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
+                    /** @default 18 */
+                    gstOnFeesPercent: number;
+                    /** @default 5 */
+                    gstCookedFoodPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -1709,6 +1865,10 @@ export interface components {
                     platformFeePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
+                    /** @default 18 */
+                    gstOnFeesPercent: number;
+                    /** @default 5 */
+                    gstCookedFoodPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -1856,6 +2016,10 @@ export interface components {
                     platformFeePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
+                    /** @default 18 */
+                    gstOnFeesPercent: number;
+                    /** @default 5 */
+                    gstCookedFoodPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2009,6 +2173,10 @@ export interface components {
                 platformFeePaise: number;
                 /** @description integer paise */
                 packagingFeeCapPaise: number;
+                /** @default 18 */
+                gstOnFeesPercent: number;
+                /** @default 5 */
+                gstCookedFoodPercent: number;
             };
             cod: {
                 enabled: boolean;
@@ -2154,6 +2322,7 @@ export interface components {
                     }[];
                 } | null;
                 movPaise: number;
+                packagingFeePaise: number;
                 /** @enum {string} */
                 defaultFulfilment: "self" | "rider";
                 returnPolicy: string | null;
@@ -2276,6 +2445,8 @@ export interface components {
             radiusM?: number;
             /** @description Minimum order value, paise */
             movPaise?: number;
+            /** @description Per-order packaging charge, paise (capped by the micro-market fee rule) */
+            packagingFeePaise?: number;
             /** @enum {string} */
             defaultFulfilment?: "self" | "rider";
         };
@@ -2384,6 +2555,7 @@ export interface components {
                         }[];
                     } | null;
                     movPaise: number;
+                    packagingFeePaise: number;
                     /** @enum {string} */
                     defaultFulfilment: "self" | "rider";
                     returnPolicy: string | null;
@@ -3268,6 +3440,639 @@ export interface components {
             } | null;
             /** Format: date-time */
             generatedAt: string;
+        };
+        CartDto_Output: {
+            merchant: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                type: string;
+                movPaise: number;
+            } | null;
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                variantId: string;
+                name: string;
+                nameTe: string | null;
+                variantLabel: string;
+                quantity: number;
+                unitPricePaise: number;
+                mrpPaise: number | null;
+                linePaise: number;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+                stale: boolean;
+                available: boolean;
+                maxPerOrder: number | null;
+                /** @enum {string} */
+                substitution: "call_me" | "similar" | "remove";
+                imageUrl: string | null;
+                /** @enum {string|null} */
+                foodMark: "veg" | "non_veg" | "egg" | null;
+            }[];
+            itemsPaise: number;
+            itemCount: number;
+            /** Format: date-time */
+            updatedAt: string | null;
+        };
+        PutCartDto: {
+            /** Format: uuid */
+            merchantId: string;
+            /** @description The whole cart (replaces what is stored); empty = clear */
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                variantId: string;
+                quantity: number;
+                /**
+                 * @description If unavailable when packing: call_me | similar | remove
+                 * @default call_me
+                 * @enum {string}
+                 */
+                substitution: "call_me" | "similar" | "remove";
+            }[];
+            /** @description Start a new cart when the stored one is from another store */
+            replace?: boolean;
+        };
+        PromoListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                description: string;
+                descriptionTe: string;
+                /** @enum {string} */
+                kind: "flat" | "percent";
+                value: number;
+                maxDiscountPaise: number | null;
+                minOrderPaise: number;
+                budgetPaise: number | null;
+                spentPaise: number;
+                remainingPaise: number | null;
+                perUserLimit: number;
+                firstOrderOnly: boolean;
+                merchantSharePercent: number;
+                microMarketIds: string[];
+                merchantTypes: string[];
+                merchantIds: string[];
+                /** Format: date-time */
+                validFrom: string;
+                /** Format: date-time */
+                validTo: string | null;
+                active: boolean;
+                /** @enum {string} */
+                status: "active" | "paused" | "scheduled" | "expired" | "exhausted";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        PromoInputDto: {
+            description: string;
+            descriptionTe: string;
+            /** @enum {string} */
+            kind: "flat" | "percent";
+            /** @description flat: paise off; percent: whole percent */
+            value: number;
+            /** @default null */
+            maxDiscountPaise: number | null;
+            /** @default 0 */
+            minOrderPaise: number;
+            /**
+             * @description Total discount this code may give; null = unlimited
+             * @default null
+             */
+            budgetPaise: number | null;
+            /** @default 1 */
+            perUserLimit: number;
+            /** @default false */
+            firstOrderOnly: boolean;
+            /** @default 0 */
+            merchantSharePercent: number;
+            /** @default [] */
+            microMarketIds: string[];
+            /** @default [] */
+            merchantTypes: ("retail" | "fashion" | "home_business" | "home_kitchen")[];
+            /** @default [] */
+            merchantIds: string[];
+            /** Format: date-time */
+            validFrom: string;
+            /**
+             * Format: date-time
+             * @default null
+             */
+            validTo: string | null;
+            active?: boolean;
+            code: string;
+        };
+        PromoDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            description: string;
+            descriptionTe: string;
+            /** @enum {string} */
+            kind: "flat" | "percent";
+            value: number;
+            maxDiscountPaise: number | null;
+            minOrderPaise: number;
+            budgetPaise: number | null;
+            spentPaise: number;
+            remainingPaise: number | null;
+            perUserLimit: number;
+            firstOrderOnly: boolean;
+            merchantSharePercent: number;
+            microMarketIds: string[];
+            merchantTypes: string[];
+            merchantIds: string[];
+            /** Format: date-time */
+            validFrom: string;
+            /** Format: date-time */
+            validTo: string | null;
+            active: boolean;
+            /** @enum {string} */
+            status: "active" | "paused" | "scheduled" | "expired" | "exhausted";
+            /** Format: date-time */
+            createdAt: string;
+        };
+        PromoPatchDto: {
+            description?: string;
+            descriptionTe?: string;
+            /** @enum {string} */
+            kind?: "flat" | "percent";
+            /** @description flat: paise off; percent: whole percent */
+            value?: number;
+            maxDiscountPaise?: number | null;
+            minOrderPaise?: number;
+            /** @description Total discount this code may give; null = unlimited */
+            budgetPaise?: number | null;
+            perUserLimit?: number;
+            firstOrderOnly?: boolean;
+            merchantSharePercent?: number;
+            microMarketIds?: string[];
+            merchantTypes?: ("retail" | "fashion" | "home_business" | "home_kitchen")[];
+            merchantIds?: string[];
+            /** Format: date-time */
+            validFrom?: string;
+            /** Format: date-time */
+            validTo?: string | null;
+            active?: boolean;
+        };
+        CheckoutInputDto: {
+            /** Format: uuid */
+            addressId: string;
+            /** @description asap, or a home-kitchen slot occurrence (slotId + IST date) */
+            when: {
+                /** @enum {string} */
+                mode: "asap";
+            } | {
+                /** @enum {string} */
+                mode: "slot";
+                /** Format: uuid */
+                slotId: string;
+                date: string;
+            };
+            promoCode?: string | null;
+        };
+        CheckoutDto_Output: {
+            /** Format: uuid */
+            quoteId: string;
+            /** Format: date-time */
+            expiresAt: string;
+            merchant: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                type: string;
+            };
+            address: {
+                /** Format: uuid */
+                addressId: string | null;
+                label: string;
+                name: string | null;
+                line: string;
+                landmark: string | null;
+                pincode: string | null;
+                location: {
+                    lat: number;
+                    lng: number;
+                };
+            };
+            when: {
+                /** @enum {string} */
+                mode: "asap" | "slot";
+                /** Format: uuid */
+                slotId?: string;
+                date?: string;
+                /** Format: date-time */
+                startsAt?: string;
+                end?: string;
+            };
+            bill: {
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    variantId: string;
+                    name: string;
+                    nameTe: string | null;
+                    variantLabel: string;
+                    quantity: number;
+                    unitPricePaise: number;
+                    mrpPaise: number | null;
+                    linePaise: number;
+                    savingsPaise: number;
+                    /** @enum {string} */
+                    stock: "in" | "low" | "out";
+                    stale: boolean;
+                    available: boolean;
+                    /** @enum {string} */
+                    substitution: "call_me" | "similar" | "remove";
+                }[];
+                itemCount: number;
+                itemsPaise: number;
+                mrpSavingsPaise: number;
+                fees: {
+                    /** @enum {string} */
+                    code: "delivery" | "small_order" | "platform" | "packaging";
+                    amountPaise: number;
+                    waivedPaise: number;
+                }[];
+                feesPaise: number;
+                taxes: {
+                    /** @enum {string} */
+                    code: "gst_fees" | "gst_food";
+                    ratePercent: number;
+                    basePaise: number;
+                    amountPaise: number;
+                }[];
+                taxPaise: number;
+                discount: {
+                    code: string;
+                    discountPaise: number;
+                    merchantSharePaise: number;
+                } | null;
+                discountPaise: number;
+                totalPaise: number;
+                toFreeDeliveryPaise: number;
+                distanceM: number;
+            };
+            promo: {
+                code: string;
+                applied: boolean;
+                /** @description not_found | inactive | not_started | expired | not_applicable | min_order | first_order_only | limit_reached | budget_exhausted */
+                reason: string | null;
+                description: string | null;
+                descriptionTe: string | null;
+                discountPaise: number;
+                minOrderPaise: number | null;
+            } | null;
+            problems: {
+                /** @description EMPTY_CART | ITEM_UNAVAILABLE | OUT_OF_STOCK | MAX_PER_ORDER | MIN_ORDER_NOT_MET | NOT_DELIVERABLE | STORE_CLOSED | SLOT_REQUIRED | SLOT_NOT_ALLOWED | SLOT_UNAVAILABLE | NOT_ON_MENU | DAILY_CAPACITY */
+                code: string;
+                /** Format: uuid */
+                itemId?: string;
+                /** Format: uuid */
+                variantId?: string;
+                value?: number;
+                /** Format: date-time */
+                at?: string;
+            }[];
+            placeable: boolean;
+            payment: {
+                online: boolean;
+                cod: {
+                    available: boolean;
+                    /** @description cooked_food | type_not_allowed | over_limit | disabled | too_many_open */
+                    reason: string | null;
+                    maxOrderPaise: number;
+                };
+            };
+        };
+        PlaceOrderDto: {
+            /**
+             * Format: uuid
+             * @description From POST /cart/price; the order is placed at exactly this bill
+             */
+            quoteId: string;
+            /** @enum {string} */
+            paymentMethod: "online" | "cod";
+            /** @description Delivery instructions, e.g. "Ring the bell twice" */
+            instructions?: string | null;
+        };
+        OrderDto_Output: {
+            /** Format: uuid */
+            id: string;
+            code: string;
+            /** @enum {string} */
+            state: "AWAITING_PAYMENT" | "PAYMENT_FAILED" | "PLACED" | "ACCEPTED" | "PREPARING" | "READY" | "PICKED_UP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "REJECTED" | "EXPIRED" | "FAILED_DELIVERY";
+            merchant: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                type: string;
+            };
+            /** @enum {string} */
+            paymentMethod: "online" | "cod";
+            when: {
+                /** @enum {string} */
+                mode: "asap" | "slot";
+                /** Format: uuid */
+                slotId?: string;
+                date?: string;
+                /** Format: date-time */
+                startsAt?: string;
+                end?: string;
+            };
+            address: {
+                /** Format: uuid */
+                addressId: string | null;
+                label: string;
+                name: string | null;
+                line: string;
+                landmark: string | null;
+                pincode: string | null;
+                location: {
+                    lat: number;
+                    lng: number;
+                };
+            };
+            instructions: string[];
+            lines: {
+                /** Format: uuid */
+                itemId: string;
+                /** Format: uuid */
+                variantId: string;
+                name: string;
+                variantLabel: string;
+                quantity: number;
+                unitPricePaise: number;
+                mrpPaise: number | null;
+                linePaise: number;
+                substitution: string;
+            }[];
+            bill: {
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    variantId: string;
+                    name: string;
+                    nameTe: string | null;
+                    variantLabel: string;
+                    quantity: number;
+                    unitPricePaise: number;
+                    mrpPaise: number | null;
+                    linePaise: number;
+                    savingsPaise: number;
+                    /** @enum {string} */
+                    stock: "in" | "low" | "out";
+                    stale: boolean;
+                    available: boolean;
+                    /** @enum {string} */
+                    substitution: "call_me" | "similar" | "remove";
+                }[];
+                itemCount: number;
+                itemsPaise: number;
+                mrpSavingsPaise: number;
+                fees: {
+                    /** @enum {string} */
+                    code: "delivery" | "small_order" | "platform" | "packaging";
+                    amountPaise: number;
+                    waivedPaise: number;
+                }[];
+                feesPaise: number;
+                taxes: {
+                    /** @enum {string} */
+                    code: "gst_fees" | "gst_food";
+                    ratePercent: number;
+                    basePaise: number;
+                    amountPaise: number;
+                }[];
+                taxPaise: number;
+                discount: {
+                    code: string;
+                    discountPaise: number;
+                    merchantSharePaise: number;
+                } | null;
+                discountPaise: number;
+                totalPaise: number;
+                toFreeDeliveryPaise: number;
+                distanceM: number;
+            };
+            itemsPaise: number;
+            feesPaise: number;
+            taxPaise: number;
+            discountPaise: number;
+            totalPaise: number;
+            promoCode: string[];
+            /** Format: date-time */
+            placedAt: string | null;
+            /** Format: date-time */
+            paymentDueAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            history: {
+                from: string | null;
+                to: string;
+                actorType: string;
+                reason: string | null;
+                /** Format: date-time */
+                at: string;
+            }[];
+            payment: {
+                /** Format: uuid */
+                intentId: string;
+                /** @enum {string} */
+                provider: "razorpay" | "mock";
+                providerOrderId: string;
+                /** @description Razorpay key id for the checkout SDK (null for the mock) */
+                keyId: string | null;
+                amountPaise: number;
+                currency: string;
+                /** @enum {string} */
+                status: "created" | "captured" | "failed";
+                lastFailure: string | null;
+            } | null;
+        };
+        OrderListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                code: string;
+                /** @enum {string} */
+                state: "AWAITING_PAYMENT" | "PAYMENT_FAILED" | "PLACED" | "ACCEPTED" | "PREPARING" | "READY" | "PICKED_UP" | "OUT_FOR_DELIVERY" | "DELIVERED" | "CANCELLED" | "REJECTED" | "EXPIRED" | "FAILED_DELIVERY";
+                merchant: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    nameTe: string | null;
+                    type: string;
+                };
+                /** @enum {string} */
+                paymentMethod: "online" | "cod";
+                when: {
+                    /** @enum {string} */
+                    mode: "asap" | "slot";
+                    /** Format: uuid */
+                    slotId?: string;
+                    date?: string;
+                    /** Format: date-time */
+                    startsAt?: string;
+                    end?: string;
+                };
+                address: {
+                    /** Format: uuid */
+                    addressId: string | null;
+                    label: string;
+                    name: string | null;
+                    line: string;
+                    landmark: string | null;
+                    pincode: string | null;
+                    location: {
+                        lat: number;
+                        lng: number;
+                    };
+                };
+                instructions: string | null;
+                lines: {
+                    /** Format: uuid */
+                    itemId: string;
+                    /** Format: uuid */
+                    variantId: string;
+                    name: string;
+                    variantLabel: string;
+                    quantity: number;
+                    unitPricePaise: number;
+                    mrpPaise: number | null;
+                    linePaise: number;
+                    substitution: string;
+                }[];
+                bill: {
+                    lines: {
+                        /** Format: uuid */
+                        itemId: string;
+                        /** Format: uuid */
+                        variantId: string;
+                        name: string;
+                        nameTe: string | null;
+                        variantLabel: string;
+                        quantity: number;
+                        unitPricePaise: number;
+                        mrpPaise: number | null;
+                        linePaise: number;
+                        savingsPaise: number;
+                        /** @enum {string} */
+                        stock: "in" | "low" | "out";
+                        stale: boolean;
+                        available: boolean;
+                        /** @enum {string} */
+                        substitution: "call_me" | "similar" | "remove";
+                    }[];
+                    itemCount: number;
+                    itemsPaise: number;
+                    mrpSavingsPaise: number;
+                    fees: {
+                        /** @enum {string} */
+                        code: "delivery" | "small_order" | "platform" | "packaging";
+                        amountPaise: number;
+                        waivedPaise: number;
+                    }[];
+                    feesPaise: number;
+                    taxes: {
+                        /** @enum {string} */
+                        code: "gst_fees" | "gst_food";
+                        ratePercent: number;
+                        basePaise: number;
+                        amountPaise: number;
+                    }[];
+                    taxPaise: number;
+                    discount: {
+                        code: string;
+                        discountPaise: number;
+                        merchantSharePaise: number;
+                    } | null;
+                    discountPaise: number;
+                    totalPaise: number;
+                    toFreeDeliveryPaise: number;
+                    distanceM: number;
+                };
+                itemsPaise: number;
+                feesPaise: number;
+                taxPaise: number;
+                discountPaise: number;
+                totalPaise: number;
+                promoCode: string | null;
+                /** Format: date-time */
+                placedAt: string | null;
+                /** Format: date-time */
+                paymentDueAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                history: {
+                    from: string | null;
+                    to: string;
+                    actorType: string;
+                    reason: string | null;
+                    /** Format: date-time */
+                    at: string;
+                }[];
+                payment: {
+                    /** Format: uuid */
+                    intentId: string;
+                    /** @enum {string} */
+                    provider: "razorpay" | "mock";
+                    providerOrderId: string;
+                    /** @description Razorpay key id for the checkout SDK (null for the mock) */
+                    keyId: string | null;
+                    amountPaise: number;
+                    currency: string;
+                    /** @enum {string} */
+                    status: "created" | "captured" | "failed";
+                    lastFailure: string | null;
+                } | null;
+            }[];
+        };
+        ConfirmPaymentDto: {
+            /** @description razorpay_order_id */
+            providerOrderId: string;
+            /** @description razorpay_payment_id */
+            providerPaymentId: string;
+            /** @description razorpay_signature */
+            signature: string;
+        };
+        PaymentDto_Output: {
+            /** Format: uuid */
+            intentId: string;
+            /** @enum {string} */
+            provider: "razorpay" | "mock";
+            providerOrderId: string;
+            /** @description Razorpay key id for the checkout SDK (null for the mock) */
+            keyId: string[];
+            amountPaise: number;
+            currency: string;
+            /** @enum {string} */
+            status: "created" | "captured" | "failed";
+            lastFailure: string[];
+        };
+        WalletDto_Output: {
+            balancePaise: number;
+            entries: {
+                /** Format: uuid */
+                id: string;
+                amountPaise: number;
+                kind: string;
+                /** Format: uuid */
+                orderId: string | null;
+                note: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
         };
     };
     responses: never;
@@ -5016,6 +5821,319 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StoreDto_Output"];
+                };
+            };
+        };
+    };
+    CartController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartDto_Output"];
+                };
+            };
+        };
+    };
+    CartController_put: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PutCartDto"];
+            };
+        };
+        responses: {
+            /** @description Replace the cart. 409 CART_CONFLICT when it holds another store (send replace: true to start over). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartDto_Output"];
+                };
+            };
+        };
+    };
+    CartController_clear: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OpsPromosController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsPromosController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoDto_Output"];
+                };
+            };
+        };
+    };
+    OpsPromosController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PromoPatchDto"];
+            };
+        };
+        responses: {
+            /** @description Edit, pause (active: false) or resume a promo */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PromoDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_price: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CheckoutInputDto"];
+            };
+        };
+        responses: {
+            /** @description Bill for the cart delivered to an address at a time (ASAP or a kitchen slot), with every problem that would block placing it. Saves a quote valid for QUOTE_TTL_MIN. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CheckoutDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderListDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_place: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+                /** @description Unique per checkout attempt; retries replay the first response for 24 h */
+                "Idempotency-Key": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PlaceOrderDto"];
+            };
+        };
+        responses: {
+            /** @description COD → PLACED. Online → AWAITING_PAYMENT with `payment` for the payment sheet. 409 QUOTE_CHANGED / QUOTE_EXPIRED: re-check the bill. 422 NOT_PLACEABLE / COD_NOT_ALLOWED / PROMO_INVALID. */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto_Output"];
+                };
+            };
+        };
+    };
+    OrdersController_abandon: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The customer gave up paying: AWAITING_PAYMENT → PAYMENT_FAILED (promo budget released). */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDto_Output"];
+                };
+            };
+        };
+    };
+    PaymentsController_confirm: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmPaymentDto"];
+            };
+        };
+        responses: {
+            /** @description Payment sheet success callback (signature verified). The order becomes PLACED once the capture is processed. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto_Output"];
+                };
+            };
+        };
+    };
+    PaymentsController_wallet: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Refund credits (the wallet holds refund credits only) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WalletDto_Output"];
                 };
             };
         };
