@@ -34,6 +34,11 @@ export class HttpExceptionFilter implements ExceptionFilter {
       status = exception.getStatus();
       code = status === 404 ? 'NOT_FOUND' : status === 401 ? 'UNAUTHENTICATED' : status === 403 ? 'FORBIDDEN' : 'HTTP_ERROR';
       message = exception.message;
+    } else if ((exception as { type?: string; status?: number }).type === 'entity.too.large') {
+      // body-parser: request body over the limit (e.g. a huge photo upload).
+      status = 413;
+      code = 'PAYLOAD_TOO_LARGE';
+      message = 'This file is too large.';
     } else {
       this.logger.error({ err: exception, requestId }, 'Unhandled exception');
     }

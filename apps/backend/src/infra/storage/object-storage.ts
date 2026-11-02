@@ -1,4 +1,4 @@
-import { CreateBucketCommand, GetObjectCommand, HeadBucketCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { CreateBucketCommand, GetObjectCommand, HeadBucketCommand, PutBucketPolicyCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Global, Injectable, Logger, Module } from '@nestjs/common';
 import { createHmac, randomBytes } from 'node:crypto';
@@ -47,14 +47,24 @@ export class S3ObjectStorage extends ObjectStorage {
     return this.env.S3_BUCKET;
   }
 
-  /** Local dev convenience: RustFS starts empty, so create the bucket on first use (never in AWS). */
+  /**
+   * Local dev convenience (never in AWS, where Terraform owns the bucket and CloudFront serves
+   * media/ through origin access): RustFS starts empty, so create the bucket on first use and let
+   * anyone read the processed renditions under media/ (originals stay private).
+   */
   private async ensureBucket(): Promise<void> {
     if (this.bucketChecked || this.env.APP_ENV !== 'dev') return;
+    const Bucket = this.bucket();
     try {
-      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket() }));
+      await this.client.send(new HeadBucketCommand({ Bucket }));
     } catch {
-      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket() })).catch((e: Error) => this.logger.warn(e.message));
+      await this.client.send(new CreateBucketCommand({ Bucket })).catch((e: Error) => this.logger.warn(e.message));
     }
+    const policy = {
+      Version: '2012-10-17',
+      Statement: [{ Effect: 'Allow', Principal: { AWS: ['*'] }, Action: ['s3:GetObject'], Resource: [`arn:aws:s3:::${Bucket}/media/*`] }],
+    };
+    await this.client.send(new PutBucketPolicyCommand({ Bucket, Policy: JSON.stringify(policy) })).catch((e: Error) => this.logger.warn(`bucket policy: ${e.message}`));
     this.bucketChecked = true;
   }
 

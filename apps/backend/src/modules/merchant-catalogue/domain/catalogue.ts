@@ -1,11 +1,27 @@
-import type { FoodMark, ItemSource, ItemStatus, ItemUnit, MasterSource, MediaStatus, StockState } from '@prisma/client';
+import type {
+  FoodMark,
+  ItemSource,
+  ItemStatus,
+  ItemUnit,
+  MasterSource,
+  MediaStatus,
+  StockState,
+} from '@prisma/client';
 import { DAYS, type Day, istInstant, istParts } from '../../../common/hours';
 import type { MerchantRecord } from './merchant';
 import { categoryAllowed } from './taxonomy';
 
 export type { FoodMark, ItemSource, ItemStatus, ItemUnit, MasterSource, MediaStatus, StockState };
 
-export const ITEM_UNITS = ['kg', 'g', 'l', 'ml', 'pc', 'pack', 'portion'] as const satisfies readonly ItemUnit[];
+export const ITEM_UNITS = [
+  'kg',
+  'g',
+  'l',
+  'ml',
+  'pc',
+  'pack',
+  'portion',
+] as const satisfies readonly ItemUnit[];
 export const STOCK_STATES = ['in', 'low', 'out'] as const satisfies readonly StockState[];
 export const FOOD_MARKS = ['veg', 'non_veg', 'egg'] as const satisfies readonly FoodMark[];
 
@@ -167,10 +183,35 @@ export interface ItemDraft {
   packagedMrpPaise: number | null;
 }
 
-/** Food-selling merchants must label veg / non-veg / egg on every item (PRD FR-TRS-2). */
+/** Categories that hold food: their items carry a veg / non-veg / egg mark (PRD FR-TRS-2). */
+export const FOOD_CATEGORIES: ReadonlySet<string> = new Set([
+  'staples',
+  'oils_ghee',
+  'masala',
+  'dairy',
+  'breakfast',
+  'snacks',
+  'biscuits',
+  'beverages',
+  'fruits',
+  'vegetables',
+  'meat_fish',
+  'eggs',
+  'bakery',
+  'pickles',
+  'sweets',
+  'cakes',
+  'meals',
+  'tiffins',
+  'curries',
+  'biryani',
+  'kitchen_snacks',
+  'kitchen_sweets',
+]);
+
+/** Home kitchens label everything; other food sellers label items in food categories. */
 export const needsFoodMark = (m: Pick<MerchantRecord, 'type' | 'sellsFood'>, categorySlug: string) =>
-  m.type === 'home_kitchen' ||
-  (m.sellsFood && !['personal_care', 'household', 'baby_care', 'otc_medicines', 'stationery', 'electronics', 'pooja', 'crafts', 'gifts'].includes(categorySlug));
+  m.type === 'home_kitchen' || (m.sellsFood && FOOD_CATEGORIES.has(categorySlug));
 
 /**
  * Validates an item before it is stored (FR-CAT-2, FR-CAT-6). Returns every problem at once so
@@ -179,15 +220,19 @@ export const needsFoodMark = (m: Pick<MerchantRecord, 'type' | 'sellsFood'>, cat
 export function itemProblems(m: Pick<MerchantRecord, 'type' | 'sellsFood'>, d: ItemDraft): ItemProblem[] {
   const p: ItemProblem[] = [];
   if (d.name.trim().length < 2) p.push({ field: 'name', message: 'Name is too short' });
-  if (!categoryAllowed(d.categorySlug, m.type)) p.push({ field: 'categorySlug', message: 'Pick a category for your type of store' });
+  if (!categoryAllowed(d.categorySlug, m.type))
+    p.push({ field: 'categorySlug', message: 'Pick a category for your type of store' });
   if (d.variants.length === 0) p.push({ field: 'variants', message: 'Add at least one size or price' });
-  if (d.variants.length > MAX_VARIANTS) p.push({ field: 'variants', message: `Up to ${MAX_VARIANTS} sizes per item` });
+  if (d.variants.length > MAX_VARIANTS)
+    p.push({ field: 'variants', message: `Up to ${MAX_VARIANTS} sizes per item` });
   const labels = new Set<string>();
   d.variants.forEach((v, i) => {
     const f = `variants.${i}`;
-    if (!Number.isInteger(v.pricePaise) || v.pricePaise <= 0) p.push({ field: `${f}.pricePaise`, message: 'Price must be more than ₹0' });
+    if (!Number.isInteger(v.pricePaise) || v.pricePaise <= 0)
+      p.push({ field: `${f}.pricePaise`, message: 'Price must be more than ₹0' });
     const mrp = v.mrpPaise ?? d.packagedMrpPaise;
-    if (mrp != null && v.pricePaise > mrp) p.push({ field: `${f}.pricePaise`, message: 'Selling price cannot be more than the MRP' });
+    if (mrp != null && v.pricePaise > mrp)
+      p.push({ field: `${f}.pricePaise`, message: 'Selling price cannot be more than the MRP' });
     if (d.packagedMrpPaise != null && v.mrpPaise != null && v.mrpPaise > d.packagedMrpPaise)
       p.push({ field: `${f}.mrpPaise`, message: 'MRP cannot be more than the MRP printed on the pack' });
     if (!(v.unitQty > 0)) p.push({ field: `${f}.unitQty`, message: 'Quantity must be more than 0' });
@@ -196,10 +241,12 @@ export function itemProblems(m: Pick<MerchantRecord, 'type' | 'sellsFood'>, d: I
     else if (labels.has(key)) p.push({ field: `${f}.label`, message: 'Two sizes have the same name' });
     labels.add(key);
   });
-  if (needsFoodMark(m, d.categorySlug) && !d.foodMark) p.push({ field: 'foodMark', message: 'Mark the item veg, non-veg or egg' });
+  if (needsFoodMark(m, d.categorySlug) && !d.foodMark)
+    p.push({ field: 'foodMark', message: 'Mark the item veg, non-veg or egg' });
   const bad = d.allergens.filter((a) => !(ALLERGENS as readonly string[]).includes(a));
   if (bad.length) p.push({ field: 'allergens', message: `Unknown allergens: ${bad.join(', ')}` });
-  if (d.madeToOrder && !(d.leadTimeMin && d.leadTimeMin > 0)) p.push({ field: 'leadTimeMin', message: 'Made-to-order items need a lead time' });
+  if (d.madeToOrder && !(d.leadTimeMin && d.leadTimeMin > 0))
+    p.push({ field: 'leadTimeMin', message: 'Made-to-order items need a lead time' });
   return p;
 }
 
@@ -215,7 +262,8 @@ export const isStaleAt = (i: Pick<ItemRecord, 'confirmedAt'>, now: Date, hours: 
   now.getTime() - i.confirmedAt.getTime() >= hours * 3600_000;
 
 /** Visible to consumers: approved for sale and not deleted. Stock is shown separately. */
-export const isSellable = (i: Pick<ItemRecord, 'status' | 'deletedAt'>) => i.status === 'active' && !i.deletedAt;
+export const isSellable = (i: Pick<ItemRecord, 'status' | 'deletedAt'>) =>
+  i.status === 'active' && !i.deletedAt;
 
 // ───────────── kitchen slots (FR-CAT-5) ─────────────
 
@@ -237,9 +285,13 @@ export function slotProblems(slots: SlotInput[]): ItemProblem[] {
     if (s.capacity < 1) p.push({ field: `slots.${i}.capacity`, message: 'Capacity must be at least 1' });
   });
   for (const d of DAYS) {
-    const day = slots.map((s, i) => ({ ...s, i })).filter((s) => s.days.includes(d)).sort((a, b) => a.start.localeCompare(b.start));
+    const day = slots
+      .map((s, i) => ({ ...s, i }))
+      .filter((s) => s.days.includes(d))
+      .sort((a, b) => a.start.localeCompare(b.start));
     for (let k = 1; k < day.length; k++)
-      if (day[k]!.start < day[k - 1]!.end) p.push({ field: `slots.${day[k]!.i}.start`, message: `Overlaps another slot on ${d}` });
+      if (day[k]!.start < day[k - 1]!.end)
+        p.push({ field: `slots.${day[k]!.i}.start`, message: `Overlaps another slot on ${d}` });
   }
   return p;
 }
@@ -279,7 +331,17 @@ export function slotOccurrences(
       const cutoffAt = new Date(startsAt.getTime() - s.cutoffMin * 60_000);
       const b = booked(s.id, date);
       const state = now >= cutoffAt ? 'closed' : b >= s.capacity ? 'full' : 'open';
-      out.push({ slotId: s.id, date, start: s.start, end: s.end, startsAt, cutoffAt, capacity: s.capacity, booked: b, state });
+      out.push({
+        slotId: s.id,
+        date,
+        start: s.start,
+        end: s.end,
+        startsAt,
+        cutoffAt,
+        capacity: s.capacity,
+        booked: b,
+        state,
+      });
     }
   }
   return { occurrences: out, nextOpen: out.find((o) => o.state === 'open') ?? null };

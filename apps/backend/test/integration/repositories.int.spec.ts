@@ -10,6 +10,8 @@ import { afterAll, beforeAll } from 'vitest';
 import { PrismaMicroMarketRepository } from '../../src/modules/analytics-config/micro-markets.repository';
 import { PrismaKycRepository } from '../../src/modules/identity-kyc/kyc.repository';
 import { PrismaMerchantRepository } from '../../src/modules/merchant-catalogue/merchants.repository';
+import { PrismaCatalogueRepository } from '../../src/modules/merchant-catalogue/catalogue.repository';
+import { catalogueRepositoryContract } from '../contracts/catalogue.contract';
 import { PrismaService } from '../../src/infra/prisma/prisma.service';
 import { kycRepositoryContract, merchantRepositoryContract, microMarketRepositoryContract } from '../contracts/repositories.contract';
 
@@ -37,3 +39,4 @@ afterAll(async () => {
 microMarketRepositoryContract('prisma', async () => new PrismaMicroMarketRepository(prisma));
 merchantRepositoryContract('prisma', async () => new PrismaMerchantRepository(prisma));
 kycRepositoryContract('prisma', async () => new PrismaKycRepository(prisma));
+catalogueRepositoryContract('prisma', async () => ({ catalogue: new PrismaCatalogueRepository(prisma), merchants: new PrismaMerchantRepository(prisma) }));

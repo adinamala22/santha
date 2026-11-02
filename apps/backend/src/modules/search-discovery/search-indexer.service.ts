@@ -1,4 +1,6 @@
-import { Injectable, Logger, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnApplicationBootstrap, OnModuleInit } from '@nestjs/common';
+import { ENV } from '../../config/config.module';
+import { type Env, workersEnabled } from '../../config/env';
 import type { DomainEvent } from '../../infra/outbox/domain-event';
 import { EventBus } from '../../infra/outbox/event-bus';
 import { CatalogueService } from '../merchant-catalogue/catalogue.service';
@@ -92,8 +94,8 @@ export function buildDocs(s: Snapshot): { merchant: MerchantDoc; items: ItemDoc[
 
 /**
  * Keeps the search index in step with the catalogue by consuming merchant/item/media events
- * (outbox → BullMQ with Postgres; in-process in fake mode). Rebuilds the in-memory index at boot,
- * and Typesense when it is empty; `pnpm --filter backend search:reindex` forces a full rebuild.
+ * (outbox → BullMQ with Postgres; in-process in fake mode). Rebuilds the index at boot (fake mode,
+ * and the worker process with Postgres); `pnpm --filter backend search:reindex` does it on demand.
  */
 @Injectable()
 export class SearchIndexer implements OnModuleInit, OnApplicationBootstrap {
@@ -103,6 +105,7 @@ export class SearchIndexer implements OnModuleInit, OnApplicationBootstrap {
     private readonly bus: EventBus,
     private readonly index: SearchIndex,
     private readonly catalogue: CatalogueService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   onModuleInit(): void {
@@ -112,7 +115,9 @@ export class SearchIndexer implements OnModuleInit, OnApplicationBootstrap {
   async onApplicationBootstrap(): Promise<void> {
     try {
       await this.index.ensure();
-      if (this.index.engine === 'memory' || (await this.index.counts()).merchants === 0) await this.reindexAll();
+      // Fake mode always (the index lives in memory). With Postgres, the worker process rebuilds at
+      // boot so a missed event can never leave the index stale for long; API-only processes skip it.
+      if (this.index.engine === 'memory' || workersEnabled(this.env)) await this.reindexAll();
     } catch (err) {
       // Search being down must not stop ordering (tech plan 4.4: graceful degradation).
       this.logger.error(`search index unavailable at boot: ${err instanceof Error ? err.message : String(err)}`);
