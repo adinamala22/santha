@@ -121,6 +121,7 @@ class _PrivacyHelpPageState extends ConsumerState<PrivacyHelpPage> {
         ),
         const Divider(height: SanthaSpacing.s6),
         Text(l.helpTitle, style: text.titleMedium),
+        Text(l.grievanceOfficer, key: const ValueKey('grievance-officer'), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
         const SizedBox(height: SanthaSpacing.s2),
         const _GrievanceForm(),
         const SizedBox(height: SanthaSpacing.s4),

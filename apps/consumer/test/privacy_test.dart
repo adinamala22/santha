@@ -21,6 +21,7 @@ void main() {
     await tapVisible(tester, find.byKey(const ValueKey('privacy-help')));
     await settle(tester, 10);
     expect(find.text('Your privacy'), findsOneWidget);
+    expect(find.textContaining('grievance@santha.in'), findsOneWidget);
 
     // Marketing is off until the customer says yes.
     expect(tester.widget<SwitchListTile>(find.byKey(const ValueKey('marketing-consent'))).value, isFalse);
