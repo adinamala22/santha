@@ -809,5 +809,61 @@
     }
   },
   "deliveryOtpHint": "Share this code only at your door.",
-  "callCourier": "Call"
+  "callCourier": "Call",
+  "reportProblem": "Report a problem",
+  "whatWentWrong": "What went wrong?",
+  "issueMissingItem": "An item was missing",
+  "issueWrongItem": "I got the wrong item",
+  "issueDamaged": "An item was damaged",
+  "issueQuality": "Quality was not right",
+  "issueLate": "It came late",
+  "issueNotDelivered": "I did not get my order",
+  "issueReturn": "Return an item",
+  "whichItems": "Which items?",
+  "tellUsMore": "Tell us more (optional)",
+  "submitIssue": "Send",
+  "issueRefunded": "{amount} is back in your Santha wallet.",
+  "@issueRefunded": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "issueRefundedSource": "{amount} is being refunded to how you paid.",
+  "@issueRefundedSource": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "issueUnderReview": "Thanks for telling us. We will check and get back to you within 24 hours.",
+  "issueReturnPickup": "We will arrange a pickup for the return and refund you after it is checked.",
+  "issueRejected": "We could not refund this one. Contact support if something is still wrong.",
+  "issueWindowClosed": "The time to report a problem with this order has passed.",
+  "issueAlreadyReported": "You already reported this problem.",
+  "rateTitle": "How was it?",
+  "rateStore": "The store",
+  "rateRider": "The delivery",
+  "rateStars": "{count} of 5 stars",
+  "@rateStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "rateSend": "Send rating",
+  "rateThanks": "Thanks for rating!",
+  "walletTitle": "Santha wallet",
+  "walletBalance": "Balance {amount}",
+  "@walletBalance": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "walletEmpty": "No wallet activity yet. Refunds land here instantly."
 }

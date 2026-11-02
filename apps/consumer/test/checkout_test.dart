@@ -247,4 +247,52 @@ void main() {
     expect(h.events, contains('order_cancelled'));
     expect(find.byKey(const ValueKey('tracking')), findsNothing);
   });
+
+  testWidgets('M7: after delivery — rate once, report a missing item and see the wallet refund at once', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('after-delivery')), findsOneWidget);
+
+    await tapVisible(tester, find.byKey(const ValueKey('stars-store-5')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('send-rating')));
+    await settle(tester, 10);
+    expect(h.backend.rating!['storeStars'], 5);
+    expect(h.events, contains('rating_submitted'));
+
+    await tapVisible(tester, find.byKey(const ValueKey('report-problem')));
+    await settle(tester, 10);
+    expect(find.text('What went wrong?'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('type-missing_item')));
+    await settle(tester, 4);
+    final line = (o['lines'] as List).cast<Map<String, dynamic>>().first;
+    await tester.tap(find.byKey(ValueKey('line-${line['variantId']}')));
+    await settle(tester, 4);
+    await tester.tap(find.byKey(const ValueKey('submit-issue')));
+    await settle(tester, 20);
+    expect(h.backend.issues.single['type'], 'missing_item');
+    expect(find.byKey(const ValueKey('issue-missing_item')), findsOneWidget);
+    expect(find.textContaining('is back in your Santha wallet'), findsOneWidget);
+    expect(h.events, contains('issue_reported'));
+  });
+
+  testWidgets('M7: the wallet page lists refund credits', (tester) async {
+    await pumpAtHome(tester);
+    await tester.tap(find.text('Account'));
+    await settle(tester, 10);
+    await tester.tap(find.byKey(const ValueKey('wallet')));
+    await settle(tester, 10);
+    expect(find.byKey(const ValueKey('wallet-balance')), findsOneWidget);
+    expect(find.textContaining('Balance ₹'), findsOneWidget);
+  });
 }
