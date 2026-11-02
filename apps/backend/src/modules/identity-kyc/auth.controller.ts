@@ -1,4 +1,5 @@
 import { Body, Controller, Get, HttpCode, Post, Req } from '@nestjs/common';
+import { DomainError } from '../../common/errors/domain-error';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { ZodResponse } from 'nestjs-zod';
@@ -90,6 +91,9 @@ export class MeController {
   @ApiHeader({ name: 'X-Device-Id', required: true })
   @ZodResponse({ type: MeDto })
   async me(@CurrentUser() user: AuthUser) {
-    return toMe(await this.auth.me(user.userId));
+    const me = await this.auth.me(user.userId);
+    // Erased or blocked accounts: the app signs out at once (refresh is already revoked).
+    if (me.status !== 'active') throw new DomainError('UNAUTHENTICATED', 'This account is no longer active.');
+    return toMe(me);
   }
 }

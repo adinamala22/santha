@@ -80,3 +80,15 @@ import { PrismaIssuesRepository } from '../../src/modules/trust-safety/issues.re
 
 moneyRepositoryContract('prisma', async () => new PrismaMoneyRepository(prisma));
 issuesRepositoryContract('prisma', async () => new PrismaIssuesRepository(prisma));
+
+// M8
+import { complianceRepositoryContract, leadsRepositoryContract, reviewModerationContract } from '../contracts/m8.contract';
+import { PrismaLeadsRepository } from '../../src/modules/analytics-config/growth/leads.repository';
+import { PrismaComplianceRepository } from '../../src/modules/trust-safety/compliance.repository';
+
+complianceRepositoryContract('prisma', async () => ({
+  repo: new PrismaComplianceRepository(prisma),
+  userId: async () => (await prisma.user.create({ data: { phone: `+9195${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id,
+}));
+leadsRepositoryContract('prisma', async () => new PrismaLeadsRepository(prisma));
+reviewModerationContract('prisma', async () => new PrismaIssuesRepository(prisma));

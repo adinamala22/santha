@@ -108,6 +108,7 @@ export const MerchantSchema = z.object({
   liveAt: iso.nullable(),
   acceptingOrders: z.boolean(),
   pausedReason: z.string().nullable().describe('missed_orders (auto-pause) | merchant | ops'),
+  slug: z.string().nullable().describe('Public store link /s/{slug} (set when live)'),
   createdAt: iso,
 });
 
@@ -191,6 +192,7 @@ export const toViewDto = (v: MerchantView) => {
       liveAt: isoOrNull(m.liveAt),
       acceptingOrders: m.acceptingOrders,
       pausedReason: m.pausedReason,
+      slug: m.slug,
       createdAt: m.createdAt.toISOString(),
     },
     microMarket: v.microMarket,

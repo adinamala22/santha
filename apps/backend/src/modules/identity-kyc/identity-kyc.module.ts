@@ -123,6 +123,6 @@ export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'lis
     },
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
-  exports: [TokenService, KycService, AddressesService, AuthService],
+  exports: [TokenService, KycService, AddressesService, AuthService, RateLimiter],
 })
 export class IdentityKycModule {}

@@ -207,4 +207,16 @@ export class InMemoryIdentityRepository extends IdentityRepository {
       s.revokedReason = reason;
     }
   }
+
+  async anonymize(userId: string, now: Date): Promise<void> {
+    const u = this.users.get(userId);
+    if (!u) return;
+    this.users.set(userId, { ...u, phone: `deleted:${userId}`, name: null, status: 'deleted' });
+    for (const s of this.sessions.values()) {
+      if (s.userId === userId && !s.revokedAt) {
+        s.revokedAt = now;
+        s.revokedReason = 'account_erased';
+      }
+    }
+  }
 }

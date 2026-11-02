@@ -63,6 +63,8 @@ async function seedMerchants(marketIds: Map<string, string>): Promise<number> {
     if (existing) {
       // Keep local edits; only backfill store photos for databases seeded before M2.
       if (!existing.photoIds.length && m.photoIds.length) await prisma.merchant.update({ where: { id: existing.id }, data: { photoIds: m.photoIds } });
+      // M8: public store links for databases seeded before slugs existed.
+      if (!existing.slug && m.slug) await prisma.merchant.update({ where: { id: existing.id }, data: { slug: m.slug } });
       continue;
     }
     const { location, hours, ...rest } = m;

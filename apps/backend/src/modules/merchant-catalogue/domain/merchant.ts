@@ -36,6 +36,8 @@ export interface MerchantRecord {
   /** Store toggle; false also when auto-paused after two missed orders in a row. */
   acceptingOrders: boolean;
   pausedReason: string | null;
+  /** Public store link /s/{slug} (M8); set at go-live. */
+  slug: string | null;
   pausedAt: Date | null;
   missedInARow: number;
   /** Store photos (media ids in display order); consumers see the approved ones. */
@@ -149,3 +151,14 @@ export function checklist(m: MerchantRecord, kyc: KycLike[]): ChecklistItem[] {
 }
 
 export const missingSteps = (items: ChecklistItem[]) => items.filter((i) => !i.done).map((i) => i.key);
+
+/** URL slug for the public store page: lower-case words of the name + 4 characters of the id. */
+export function merchantSlug(name: string, id: string): string {
+  const base = name
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 40);
+  return `${base || 'store'}-${id.replace(/-/g, '').slice(-4)}`;
+}

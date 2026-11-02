@@ -19,6 +19,20 @@ export function configureApp(app: INestApplication): void {
     exposedHeaders: ['x-request-id'],
   });
   app.enableShutdownHooks();
+  // Security headers on every response (M8 hardening; the API serves JSON only, so CSP denies everything).
+  const http = app as NestExpressApplication;
+  http.disable('x-powered-by');
+  http.use((req: { url?: string }, res: { setHeader: (k: string, v: string) => void }, next: () => void) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('Referrer-Policy', 'no-referrer');
+    // Swagger UI (/docs) needs its own scripts and styles.
+    if (!req.url?.startsWith('/docs')) res.setHeader('Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'");
+    res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+    res.setHeader('Cross-Origin-Resource-Policy', 'same-site');
+    if (env.APP_ENV !== 'dev') res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    next();
+  });
   // Fake mode receives image uploads itself (MemoryObjectStorage presigned URLs → PUT /v1/dev/uploads).
   if (env.DATA_STORE === 'memory')
     (app as NestExpressApplication).useBodyParser('raw', { type: ['image/*', 'application/octet-stream'], limit: env.MAX_UPLOAD_BYTES });

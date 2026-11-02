@@ -7,6 +7,7 @@ import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { OrdersService } from '../orders/orders.service';
 import { decideRefund, type IssueType, type MerchantKind, trustScore, withinWindow } from '../payments-settlement/settlement/domain/money';
 import { RefundsService } from '../payments-settlement/settlement/refunds.service';
+import { screenReview } from './domain/review-screen';
 import { type IssueRecord, IssuesRepository, type RatingRecord } from './issues.repository';
 
 const DAY = 86_400_000;
@@ -141,6 +142,8 @@ export class IssuesService implements OnModuleInit {
       storeStars: input.storeStars,
       riderStars: riderUserId ? (input.riderStars ?? null) : null,
       comment: input.comment ?? null,
+      // Comments are screened (M8): contact details, links or abuse wait for a person.
+      ...(screenReview(input.comment).flagged ? { status: 'flagged' as const, flagReason: screenReview(input.comment).reasons.join(',') } : {}),
     });
     if (!added) throw new DomainError('ALREADY_EXISTS', 'You already rated this order.');
     if (riderUserId && input.riderStars) {

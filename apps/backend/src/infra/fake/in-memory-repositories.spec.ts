@@ -49,3 +49,12 @@ import { InMemoryIssuesRepository } from '../../modules/trust-safety/issues.repo
 
 moneyRepositoryContract('in-memory', async () => new InMemoryMoneyRepository());
 issuesRepositoryContract('in-memory', async () => new InMemoryIssuesRepository());
+
+// M8
+import { complianceRepositoryContract, leadsRepositoryContract, reviewModerationContract } from '../../../test/contracts/m8.contract';
+import { InMemoryLeadsRepository } from '../../modules/analytics-config/growth/leads.repository';
+import { InMemoryComplianceRepository } from '../../modules/trust-safety/compliance.repository';
+
+complianceRepositoryContract('in-memory', async () => ({ repo: new InMemoryComplianceRepository(), userId: async () => randomUUID() }));
+leadsRepositoryContract('in-memory', async () => new InMemoryLeadsRepository());
+reviewModerationContract('in-memory', async () => new InMemoryIssuesRepository());

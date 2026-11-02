@@ -30,8 +30,15 @@ export interface RatingRecord {
   storeStars: number;
   riderStars: number | null;
   comment: string | null;
+  /** visible | flagged | hidden (M8 moderation). */
+  status: 'visible' | 'flagged' | 'hidden';
+  flagReason: string | null;
+  reply: string | null;
+  replyAt: Date | null;
   createdAt: Date;
 }
+
+export type RatingPatch = Partial<Pick<RatingRecord, 'status' | 'flagReason' | 'reply' | 'replyAt'>>;
 
 /** Storage port for trust-safety (M7): customer issues and ratings. */
 export abstract class IssuesRepository {
@@ -40,7 +47,10 @@ export abstract class IssuesRepository {
   abstract updateIssue(id: string, patch: Partial<Pick<IssueRecord, 'status' | 'decision' | 'refundId' | 'decidedAt'>>): Promise<IssueRecord | null>;
   abstract issues(q: { orderId?: string; userId?: string; merchantId?: string; statuses?: readonly IssueStatus[]; since?: Date; limit: number }): Promise<IssueRecord[]>;
   /** False when the order already has a rating. */
-  abstract addRating(r: Omit<RatingRecord, 'createdAt'>): Promise<boolean>;
+  abstract addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>): Promise<boolean>;
+  abstract updateRating(orderId: string, patch: RatingPatch): Promise<RatingRecord | null>;
+  /** Newest first. */
+  abstract ratings(q: { merchantId?: string; statuses?: readonly RatingRecord['status'][]; limit: number }): Promise<RatingRecord[]>;
   abstract rating(orderId: string): Promise<RatingRecord | null>;
   abstract averages(q: { merchantId?: string; riderUserId?: string }): Promise<{ count: number; avg: number | null }>;
 }
@@ -83,7 +93,7 @@ export class PrismaIssuesRepository extends IssuesRepository {
     return rows.map(asIssue);
   }
 
-  async addRating(r: Omit<RatingRecord, 'createdAt'>) {
+  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>) {
     try {
       await this.prisma.rating.create({ data: r });
       return true;
@@ -94,7 +104,20 @@ export class PrismaIssuesRepository extends IssuesRepository {
   }
 
   async rating(orderId: string) {
-    return this.prisma.rating.findUnique({ where: { orderId } });
+    return (await this.prisma.rating.findUnique({ where: { orderId } })) as RatingRecord | null;
+  }
+
+  async updateRating(orderId: string, patch: RatingPatch) {
+    const n = await this.prisma.rating.updateMany({ where: { orderId }, data: patch });
+    return n.count ? this.rating(orderId) : null;
+  }
+
+  async ratings(q: { merchantId?: string; statuses?: readonly RatingRecord['status'][]; limit: number }) {
+    return (await this.prisma.rating.findMany({
+      where: { ...(q.merchantId ? { merchantId: q.merchantId } : {}), ...(q.statuses ? { status: { in: [...q.statuses] } } : {}) },
+      orderBy: { createdAt: 'desc' },
+      take: q.limit,
+    })) as RatingRecord[];
   }
 
   async averages(q: { merchantId?: string; riderUserId?: string }) {
@@ -102,7 +125,7 @@ export class PrismaIssuesRepository extends IssuesRepository {
       const a = await this.prisma.rating.aggregate({ where: { riderUserId: q.riderUserId, riderStars: { not: null } }, _avg: { riderStars: true }, _count: true });
       return { count: a._count, avg: a._avg.riderStars };
     }
-    const a = await this.prisma.rating.aggregate({ where: { merchantId: q.merchantId }, _avg: { storeStars: true }, _count: true });
+    const a = await this.prisma.rating.aggregate({ where: { merchantId: q.merchantId, status: { not: 'hidden' } }, _avg: { storeStars: true }, _count: true });
     return { count: a._count, avg: a._avg.storeStars };
   }
 }
@@ -110,7 +133,7 @@ export class PrismaIssuesRepository extends IssuesRepository {
 /** Fake mode + tests. */
 export class InMemoryIssuesRepository extends IssuesRepository {
   private readonly rows: IssueRecord[] = [];
-  private readonly ratings = new Map<string, RatingRecord>();
+  private readonly ratingRows = new Map<string, RatingRecord>();
 
   async createIssue(i: Omit<IssueRecord, 'createdAt' | 'decidedAt'>) {
     const rec: IssueRecord = { ...structuredClone(i), createdAt: new Date(), decidedAt: null };
@@ -145,18 +168,36 @@ export class InMemoryIssuesRepository extends IssuesRepository {
     );
   }
 
-  async addRating(r: Omit<RatingRecord, 'createdAt'>) {
-    if (this.ratings.has(r.orderId)) return false;
-    this.ratings.set(r.orderId, { ...r, createdAt: new Date() });
+  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>) {
+    if (this.ratingRows.has(r.orderId)) return false;
+    const last = Math.max(0, ...[...this.ratingRows.values()].map((x) => x.createdAt.getTime()));
+    this.ratingRows.set(r.orderId, { status: 'visible', flagReason: null, reply: null, replyAt: null, ...r, createdAt: new Date(Math.max(Date.now(), last + 1)) });
     return true;
   }
 
+  async updateRating(orderId: string, patch: RatingPatch) {
+    const r = this.ratingRows.get(orderId);
+    if (!r) return null;
+    Object.assign(r, structuredClone(patch));
+    return structuredClone(r);
+  }
+
+  async ratings(q: { merchantId?: string; statuses?: readonly RatingRecord['status'][]; limit: number }) {
+    return structuredClone(
+      [...this.ratingRows.values()]
+        .filter((r) => (!q.merchantId || r.merchantId === q.merchantId) && (!q.statuses || q.statuses.includes(r.status)))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+        .slice(0, q.limit),
+    );
+  }
+
   async rating(orderId: string) {
-    return structuredClone(this.ratings.get(orderId) ?? null);
+    return structuredClone(this.ratingRows.get(orderId) ?? null);
   }
 
   async averages(q: { merchantId?: string; riderUserId?: string }) {
-    const stars = [...this.ratings.values()]
+    const stars = [...this.ratingRows.values()]
+      .filter((r) => q.riderUserId || r.status !== 'hidden')
       .map((r) => (q.riderUserId ? (r.riderUserId === q.riderUserId ? r.riderStars : null) : r.merchantId === q.merchantId ? r.storeStars : null))
       .filter((s): s is number => s != null);
     return { count: stars.length, avg: stars.length ? stars.reduce((a, b) => a + b, 0) / stars.length : null };

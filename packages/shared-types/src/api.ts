@@ -2100,6 +2100,294 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/grievances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComplianceController_grievances"];
+        put?: never;
+        post: operations["ComplianceController_grievance"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/consents": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComplianceController_consents"];
+        put: operations["ComplianceController_setConsent"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/data-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComplianceController_requests"];
+        put?: never;
+        post: operations["ComplianceController_request"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/data-requests/{id}/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ComplianceController_export"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantReviewsController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/reviews/{orderId}/reply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["MerchantReviewsController_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/grievances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsComplianceController_grievances"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/grievances/{id}/acknowledge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsComplianceController_ack"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/grievances/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsComplianceController_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/data-requests": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsComplianceController_requests"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/data-requests/{id}/decide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsComplianceController_decide"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsComplianceController_reviews"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/reviews/{orderId}/moderate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsComplianceController_moderate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/stores/{slug}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["PublicStoreController_store"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["LeadsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/leads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsGrowthController_leads"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/leads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["OpsGrowthController_updateLead"];
+        trace?: never;
+    };
+    "/v1/ops/reports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsGrowthController_report"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -3357,6 +3645,8 @@ export interface components {
                 acceptingOrders: boolean;
                 /** @description missed_orders (auto-pause) | merchant | ops */
                 pausedReason: string | null;
+                /** @description Public store link /s/{slug} (set when live) */
+                slug: string | null;
                 /** Format: date-time */
                 createdAt: string;
             };
@@ -3597,6 +3887,8 @@ export interface components {
                     acceptingOrders: boolean;
                     /** @description missed_orders (auto-pause) | merchant | ops */
                     pausedReason: string | null;
+                    /** @description Public store link /s/{slug} (set when live) */
+                    slug: string | null;
                     /** Format: date-time */
                     createdAt: string;
                 };
@@ -6181,6 +6473,269 @@ export interface components {
                 merchantName: string;
                 trustScore: number;
                 flags: string[];
+            }[];
+        };
+        GrievanceInputDto: {
+            /** @enum {string} */
+            category: "order" | "payment" | "refund" | "account" | "privacy" | "other";
+            description: string;
+            /** Format: uuid */
+            orderId?: string;
+        };
+        GrievanceDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            app: "consumer" | "merchant" | "rider";
+            /** Format: uuid */
+            orderId: string | null;
+            /** @enum {string} */
+            category: "order" | "payment" | "refund" | "account" | "privacy" | "other";
+            description: string;
+            /** @enum {string} */
+            status: "open" | "acknowledged" | "resolved";
+            resolution: string[];
+            ackDueAt: string;
+            resolveDueAt: string;
+            acknowledgedAt: string[];
+            resolvedAt: string[];
+            createdAt: string;
+            overdue: boolean;
+        };
+        GrievanceListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                app: "consumer" | "merchant" | "rider";
+                /** Format: uuid */
+                orderId: string | null;
+                /** @enum {string} */
+                category: "order" | "payment" | "refund" | "account" | "privacy" | "other";
+                description: string;
+                /** @enum {string} */
+                status: "open" | "acknowledged" | "resolved";
+                resolution: string | null;
+                ackDueAt: string;
+                resolveDueAt: string;
+                acknowledgedAt: string | null;
+                resolvedAt: string | null;
+                createdAt: string;
+                overdue: boolean;
+            }[];
+        };
+        ConsentListDto_Output: {
+            items: {
+                /** @enum {string} */
+                purpose: "terms" | "privacy" | "marketing" | "whatsapp_updates";
+                granted: boolean;
+                version: string;
+                current: boolean;
+                at: string | null;
+            }[];
+        };
+        ConsentInputDto: {
+            /** @enum {string} */
+            purpose: "terms" | "privacy" | "marketing" | "whatsapp_updates";
+            granted: boolean;
+        };
+        DataRequestInputDto: {
+            /** @enum {string} */
+            type: "access" | "correction" | "erasure";
+            details?: string;
+        };
+        DataRequestDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            userId: string;
+            /** @enum {string} */
+            type: "access" | "correction" | "erasure";
+            details: string[];
+            /** @enum {string} */
+            status: "open" | "completed" | "rejected";
+            note: string[];
+            exportReady: boolean;
+            createdAt: string;
+            completedAt: string[];
+        };
+        DataRequestListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                userId: string;
+                /** @enum {string} */
+                type: "access" | "correction" | "erasure";
+                details: string | null;
+                /** @enum {string} */
+                status: "open" | "completed" | "rejected";
+                note: string | null;
+                exportReady: boolean;
+                createdAt: string;
+                completedAt: string | null;
+            }[];
+        };
+        ReviewListDto_Output: {
+            items: {
+                /** Format: uuid */
+                orderId: string;
+                /** Format: uuid */
+                merchantId: string;
+                storeStars: number;
+                comment: string | null;
+                /** @enum {string} */
+                status: "visible" | "flagged" | "hidden";
+                flagReason: string | null;
+                reply: string | null;
+                createdAt: string;
+            }[];
+        };
+        ReplyDto: {
+            text: string;
+        };
+        ReviewDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            /** Format: uuid */
+            merchantId: string;
+            storeStars: number;
+            comment: string[];
+            /** @enum {string} */
+            status: "visible" | "flagged" | "hidden";
+            flagReason: string[];
+            reply: string[];
+            createdAt: string;
+        };
+        ResolveGrievanceDto: {
+            resolution: string;
+        };
+        DecideDataRequestDto: {
+            /** @enum {string} */
+            decision: "complete" | "reject";
+            note: string;
+        };
+        ModerateDto: {
+            /** @enum {string} */
+            decision: "publish" | "hide";
+        };
+        PublicStoreDto_Output: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            nameTe: string[];
+            type: string;
+            description: string[];
+            area: string[];
+            areaTe: string[];
+            location: {
+                lat: number;
+                lng: number;
+            } | null;
+            rating: {
+                count: number;
+                avg: number | null;
+            };
+            reviews: {
+                storeStars: number;
+                comment: string | null;
+                reply: string | null;
+                createdAt: string;
+            }[];
+        };
+        LeadInputDto: {
+            /** @enum {string} */
+            kind: "store" | "home_kitchen" | "rider";
+            name: string;
+            phone: string;
+            area?: string;
+            message?: string;
+            /** @enum {string} */
+            locale?: "en" | "te";
+            website?: string;
+        };
+        LeadAckDto_Output: {
+            /** @enum {boolean} */
+            ok: true;
+        };
+        LeadListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "store" | "home_kitchen" | "rider";
+                name: string;
+                phone: string;
+                area: string | null;
+                message: string | null;
+                locale: string;
+                /** @enum {string} */
+                status: "new" | "contacted" | "converted" | "dropped";
+                note: string | null;
+                createdAt: string;
+            }[];
+        };
+        LeadPatchDto: {
+            /** @enum {string} */
+            status: "new" | "contacted" | "converted" | "dropped";
+            note?: string;
+        };
+        LeadDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "store" | "home_kitchen" | "rider";
+            name: string;
+            phone: string;
+            area: string[];
+            message: string[];
+            locale: string;
+            /** @enum {string} */
+            status: "new" | "contacted" | "converted" | "dropped";
+            note: string[];
+            createdAt: string;
+        };
+        ReportDto_Output: {
+            from: string;
+            to: string;
+            funnel: {
+                placed: number;
+                accepted: number;
+                delivered: number;
+                cancelled: number;
+                rejected: number;
+                expired: number;
+            };
+            onTimePercent: number[];
+            fillRatePercent: number[];
+            contribution: {
+                totalPaise: number;
+                perOrderPaise: number | null;
+                commissionPaise: number;
+                feesPaise: number;
+                riderCostPaise: number;
+                storeCreditsPaise: number;
+                platformRefundsPaise: number;
+                discountsPaise: number;
+            };
+            merchants: {
+                /** Format: uuid */
+                merchantId: string;
+                name: string;
+                orders: number;
+                acceptancePercent: number | null;
+                avgPrepMin: number | null;
+                issueRatePercent: number | null;
+                rating: number | null;
+            }[];
+            riders: {
+                /** Format: uuid */
+                riderUserId: string;
+                name: string;
+                deliveries: number;
+                onTimePercent: number | null;
+                earningsPaise: number;
             }[];
         };
     };
@@ -9699,6 +10254,491 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsIssueListDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_grievances: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrievanceListDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_grievance: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GrievanceInputDto"];
+            };
+        };
+        responses: {
+            /** @description Acknowledged within 48 h, resolved within a month (E-Commerce Rules 2020) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrievanceDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_consents: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Latest choice per purpose and whether it was given for the current notice version */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentListDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_setConsent: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConsentInputDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConsentListDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_requests: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequestListDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_request: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DataRequestInputDto"];
+            };
+        };
+        responses: {
+            /** @description access → export ready at once; correction / erasure → handled by the privacy team */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequestDto_Output"];
+                };
+            };
+        };
+    };
+    ComplianceController_export: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantReviewsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Published reviews, newest first */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantReviewsController_reply: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReplyDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_grievances: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrievanceListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_ack: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrievanceDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveGrievanceDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GrievanceDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_requests: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequestListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_decide: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DecideDataRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Erasure anonymises the account (refused while an order is open) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DataRequestDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_reviews: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Reviews held by the screen */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsComplianceController_moderate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                orderId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ModerateDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewDto_Output"];
+                };
+            };
+        };
+    };
+    PublicStoreController_store: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                slug: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PublicStoreDto_Output"];
+                };
+            };
+        };
+    };
+    LeadsController_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadInputDto"];
+            };
+        };
+        responses: {
+            /** @description Honeypot + per-IP rate limit (5/hour); repeated leads within a day are merged */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadAckDto_Output"];
+                };
+            };
+        };
+    };
+    OpsGrowthController_leads: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsGrowthController_updateLead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LeadPatchDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LeadDto_Output"];
+                };
+            };
+        };
+    };
+    OpsGrowthController_report: {
+        parameters: {
+            query?: {
+                from?: string;
+                /** @description Inclusive IST date; default: the last 7 days */
+                to?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Funnel, on-time, fill rate, contribution per order, merchant health, rider utilisation for an IST date range */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReportDto_Output"];
                 };
             };
         };

@@ -104,3 +104,11 @@ export type ReconList = Schemas['ReconListDto_Output'];
 export type Dispute = Schemas['DisputeDto_Output'];
 export type DisputeList = Schemas['DisputeListDto_Output'];
 export type OpsIssueList = Schemas['OpsIssueListDto_Output'];
+
+// M8 — trust & safety, DPDP, growth
+export type GrievanceList = Schemas['GrievanceListDto_Output'];
+export type DataRequestList = Schemas['DataRequestListDto_Output'];
+export type ReviewList = Schemas['ReviewListDto_Output'];
+export type LeadList = Schemas['LeadListDto_Output'];
+export type BusinessReport = Schemas['ReportDto_Output'];
+export type PublicStore = Schemas['PublicStoreDto_Output'];
