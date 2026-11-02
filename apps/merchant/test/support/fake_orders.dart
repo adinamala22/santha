@@ -146,6 +146,28 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
     });
   }
 
+  // M7 money
+  List<Map<String, dynamic>> payoutRows = [];
+  List<Map<String, dynamic>> refundRows = [];
+  final disputeRows = <Map<String, dynamic>>[];
+
+  @override
+  Future<List<Payout>> payouts() async => payoutRows.map((p) => Payout.fromJson(jsonDecode(jsonEncode(p)) as Map<String, dynamic>)).toList();
+
+  @override
+  Future<List<StoreRefund>> storeRefunds() async => refundRows.map((p) => StoreRefund.fromJson(jsonDecode(jsonEncode(p)) as Map<String, dynamic>)).toList();
+
+  @override
+  Future<List<Dispute>> disputes() async => disputeRows.map(Dispute.fromJson).toList();
+
+  @override
+  Future<Dispute> openDispute(String refundId, String reason) async {
+    calls.add('dispute $refundId');
+    final d = {'id': 'd${disputeRows.length + 1}', 'status': 'open', 'reason': reason, 'adjustmentPaise': 0, 'refundId': refundId, 'resolutionNote': null};
+    disputeRows.add(d);
+    return Dispute.fromJson(d);
+  }
+
   @override
   Future<MerchantView> setAvailability(bool open) async {
     calls.add('open $open');

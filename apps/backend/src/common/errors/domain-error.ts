@@ -44,6 +44,11 @@ export const ERROR_STATUS = {
   OFFER_EXPIRED: 409,
   WRONG_CODE: 422,
   NOT_READY: 409,
+  // M7 — money
+  FOUR_EYES_REQUIRED: 409,
+  APPROVAL_LIMIT: 403,
+  ISSUE_WINDOW_CLOSED: 422,
+  DISPUTE_WINDOW_CLOSED: 422,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;

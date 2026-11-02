@@ -137,6 +137,11 @@ class FakeRiderApi extends RiderApi {
     return j;
   }
 
+  List<Payout> payoutList = [];
+
+  @override
+  Future<List<Payout>> payouts() async => payoutList;
+
   @override
   Future<RiderEarnings> earnings() async => RiderEarnings(earned, 320, [
         if (deliveries > 0) Earning('SN4821', testNow, 4800, const [PayLine('base', 3000), PayLine('distance', 1800)]),

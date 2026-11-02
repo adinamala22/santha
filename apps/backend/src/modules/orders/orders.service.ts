@@ -380,6 +380,11 @@ export class OrdersService implements OnModuleInit {
     }
   }
 
+  /** Money given back on this order outside the lifecycle (issue refunds, M7): keeps refundedPaise right. */
+  async recordRefund(orderId: string, amountPaise: number): Promise<void> {
+    await this.repo.transaction((tx) => tx.addRefund(orderId, amountPaise));
+  }
+
   /** Recent orders for ops views (dispatch live board). */
   listRecent(q: { states?: OrderState[]; microMarketId?: string; limit: number }): Promise<OrderRecord[]> {
     return this.repo.listRecent(q);

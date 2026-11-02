@@ -1,0 +1,16 @@
+{
+ "id": "f5089343-f59d-443d-bf04-e88579bde73d",
+ "merchantId": "10000000-0000-4000-8000-000000000201",
+ "merchantName": "Ramesh Stores",
+ "orderId": "ba36b009-e8eb-437b-bba5-7eef060bf53b",
+ "refundId": "fcc7edde-763c-4372-96c8-36b89eed0ebe",
+ "reason": "The rice was packed; the counter camera shows it.",
+ "evidenceMediaIds": [],
+ "status": "open",
+ "resolutionNote": null,
+ "adjustmentPaise": 0,
+ "deadlineAt": "2026-11-04T17:52:26.025Z",
+ "createdAt": "2026-11-02T17:52:26.162Z",
+ "resolvedAt": null,
+ "settledInPayout": null
+}

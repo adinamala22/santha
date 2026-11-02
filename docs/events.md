@@ -25,3 +25,7 @@ Emitted as of M6 (server): order.picked_up · order.out_for_delivery · order.de
 Client (rider app, M6): online_toggled(online, zones) · offer_accepted(offer_id, pay_paise) · offer_declined(offer_id) · picked_up(job_id) · delivered(job_id, verification, cod_paise).
 Client (merchant app, M6): fulfilment_choice(order_id, mode, staff, after_fallback).
 Client (consumer app, M6): order_cancelled(order_id, reason: no_courier).
+
+Emitted as of M7 (server): wallet.credited (refunds to the wallet) · order refunds recorded on the order (refundedPaise). Settlement runs, payout transfers, refund approvals / rejections, reconciliation runs / resolutions and dispute decisions write audit rows (settlement.run, payout.retried, refund.first_approval, refund.approved, refund.rejected, recon.run, recon.resolved, dispute.accepted, dispute.rejected). refund.issued / issue.resolved / settlement.run_completed outbox events arrive with the analytics pipeline in M8 (ADR-013).
+Client (consumer app, M7): issue_reported(order_id, type) · rating_submitted(order_id, store_stars, rider_stars).
+Client (merchant app, M7): dispute_raised(refund_id).

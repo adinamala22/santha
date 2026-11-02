@@ -249,5 +249,32 @@
     }
   },
   "noDeliveries": "No deliveries yet today.",
-  "retry": "Retry"
+  "retry": "Retry",
+  "payoutsTitle": "Payouts",
+  "payoutsEmpty": "No payouts yet. Payouts run every Monday for the week before.",
+  "payoutPeriod": "{from} – {to} · {amount}",
+  "@payoutPeriod": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payoutBreakdown": "Earned {earned} − cash you held {cash}",
+  "@payoutBreakdown": {
+    "placeholders": {
+      "earned": {
+        "type": "String"
+      },
+      "cash": {
+        "type": "String"
+      }
+    }
+  }
 }

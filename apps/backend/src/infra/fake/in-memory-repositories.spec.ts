@@ -41,3 +41,11 @@ import { dispatchRepositoryContract } from '../../../test/contracts/m6.contract'
 import { InMemoryDispatchRepository } from '../../modules/dispatch-tracking/dispatch.repository';
 
 dispatchRepositoryContract('in-memory', async () => ({ repo: new InMemoryDispatchRepository(), riderId: async () => randomUUID() }));
+
+// M7
+import { issuesRepositoryContract, moneyRepositoryContract } from '../../../test/contracts/m7.contract';
+import { InMemoryMoneyRepository } from '../../modules/payments-settlement/settlement/money.repository';
+import { InMemoryIssuesRepository } from '../../modules/trust-safety/issues.repository';
+
+moneyRepositoryContract('in-memory', async () => new InMemoryMoneyRepository());
+issuesRepositoryContract('in-memory', async () => new InMemoryIssuesRepository());

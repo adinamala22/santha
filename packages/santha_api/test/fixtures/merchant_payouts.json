@@ -1,0 +1,75 @@
+{
+ "items": [
+  {
+   "id": "9d6cfaa9-606d-45ff-9836-ee4a3993ffb5",
+   "runId": "c2d96997-1f0b-4e33-93aa-2ae2d94aece3",
+   "partyType": "merchant",
+   "partyId": "10000000-0000-4000-8000-000000000201",
+   "partyName": "Ramesh Stores",
+   "periodStart": "2026-11-01T18:30:00.000Z",
+   "periodEnd": "2026-11-02T18:30:00.000Z",
+   "grossPaise": 59400,
+   "netPaise": 36085,
+   "tcsPaise": 298,
+   "tdsPaise": 60,
+   "status": "transferred",
+   "transferRef": "trf_mock_efc4d750ad81",
+   "failureReason": null,
+   "hasStatement": true,
+   "totals": {
+    "orders": 2,
+    "itemsPaise": 59400,
+    "packagingPaise": 0,
+    "deliveryCreditPaise": 0,
+    "bonusPaise": 0,
+    "commissionPaise": 4455,
+    "cgstPaise": 401,
+    "sgstPaise": 401,
+    "tcsPaise": 298,
+    "tdsPaise": 60,
+    "cashWithStorePaise": 0,
+    "adjustmentsPaise": -17700,
+    "netPaise": 36085,
+    "refundsChargedPaise": 17700,
+    "disputeCreditsPaise": 0,
+    "carriedPaise": 0
+   },
+   "lines": [
+    {
+     "orderId": "ba36b009-e8eb-437b-bba5-7eef060bf53b",
+     "code": "SNUKP5KQ",
+     "mode": "self",
+     "itemsPaise": 29700,
+     "packagingPaise": 0,
+     "deliveryCreditPaise": 0,
+     "bonusPaise": 0,
+     "commissionPercent": 6,
+     "commissionPaise": 1782,
+     "commissionGstPaise": 321,
+     "tcsPaise": 149,
+     "tdsPaise": 30,
+     "cashWithStorePaise": 0,
+     "netPaise": 27418
+    },
+    {
+     "orderId": "986de6f3-5bfb-45f1-aa00-1ab5735261b4",
+     "code": "SNBEZ5HJ",
+     "mode": "rider",
+     "itemsPaise": 29700,
+     "packagingPaise": 0,
+     "deliveryCreditPaise": 0,
+     "bonusPaise": 0,
+     "commissionPercent": 9,
+     "commissionPaise": 2673,
+     "commissionGstPaise": 481,
+     "tcsPaise": 149,
+     "tdsPaise": 30,
+     "cashWithStorePaise": 0,
+     "netPaise": 26367
+    }
+   ],
+   "createdAt": "2026-11-02T17:52:26.139Z",
+   "transferredAt": "2026-11-02T17:52:26.140Z"
+  }
+ ]
+}

@@ -66,6 +66,8 @@ export abstract class PaymentsRepository {
   abstract walletBalance(userId: string): Promise<number>;
   /** Newest first. */
   abstract walletEntries(userId: string, limit: number): Promise<WalletEntryRecord[]>;
+  /** Captured payments with capturedAt in [from, to) (reconciliation, M7). */
+  abstract capturedBetween(from: Date, to: Date): Promise<PaymentIntentRecord[]>;
 }
 
 // ───────────── Prisma ─────────────
@@ -150,6 +152,10 @@ export class PrismaPaymentsRepository extends PaymentsRepository {
   async walletBalance(userId: string) {
     const r = await this.prisma.walletEntry.aggregate({ where: { userId }, _sum: { amountPaise: true } });
     return r._sum.amountPaise ?? 0;
+  }
+
+  async capturedBetween(from: Date, to: Date) {
+    return (await this.prisma.paymentIntent.findMany({ where: { status: 'captured', capturedAt: { gte: from, lt: to } } })) as PaymentIntentRecord[];
   }
 
   async walletEntries(userId: string, limit: number) {
@@ -261,6 +267,10 @@ export class InMemoryPaymentsRepository extends PaymentsRepository {
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, limit),
     );
+  }
+
+  async capturedBetween(from: Date, to: Date) {
+    return this.store.read((s) => s.intents.filter((i) => i.status === 'captured' && i.capturedAt && i.capturedAt >= from && i.capturedAt < to));
   }
 
   /** Stored webhooks (tests). */

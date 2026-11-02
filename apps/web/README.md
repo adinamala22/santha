@@ -34,3 +34,5 @@ M4: `/admin/promos` lists promo codes with budget usage, creates codes (admin, f
 M5: `/admin/orders` lists orders with state filters and counts; `/admin/orders/[id]` shows line changes, refunds, the transition timeline with actors, payment and every message sent (comms log).
 
 M6: `/admin/live` is the live board (KPIs, map of riders and stores, needs attention, active orders with reassign and "store delivers"); `/d/[token]` is the public staff delivery page (pickup, live location, OTP and cash for COD).
+
+M7: `/admin/payouts` (settlement runs, payouts, CSV / PDF statements, retries, reconciliation), `/admin/refunds` (four-eyes queue, open issues with trust scores) and `/admin/disputes`. Finance users land on payouts.

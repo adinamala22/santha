@@ -27,6 +27,10 @@ export const FeeRulesSchema = z.object({
   /** Commission ladder (M6): lower when the store delivers itself (it also keeps the delivery fee). */
   commissionSelfPercent: z.number().min(0).max(30).default(6),
   commissionRiderPercent: z.number().min(0).max(30).default(9),
+  /** M7 settlement: GST on the commission invoice, GST TCS (s.52) and income-tax TDS (s.194-O). */
+  gstOnCommissionPercent: z.number().min(0).max(28).default(18),
+  tcsPercent: z.number().min(0).max(5).default(0.5),
+  tdsPercent: z.number().min(0).max(5).default(0.1),
 });
 
 /** COD gating (PRD 8.6): retail/fashion only, capped order value; never cooked food. */
@@ -112,6 +116,9 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
     gstCookedFoodPercent: 5,
     commissionSelfPercent: 6,
     commissionRiderPercent: 9,
+    gstOnCommissionPercent: 18,
+    tcsPercent: 0.5,
+    tdsPercent: 0.1,
   },
   cod: { enabled: true, maxOrderPaise: 150000, allowedTypes: ['retail', 'fashion'] },
   sla: { merchantAcceptSec: 20, merchantAcceptHardSec: 120, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },

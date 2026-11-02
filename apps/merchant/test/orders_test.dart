@@ -238,6 +238,38 @@ void main() {
     expect(find.text('Santha rider · items ₹100 · commission ₹9 (9%)'), findsOneWidget);
   });
 
+  testWidgets('M7: Earnings lists payouts with the tax lines and lets the store dispute a refund within 48 h', (tester) async {
+    late FakeMerchantOrdersApi api;
+    await pumpSignedIn(tester, view: _liveView(), onOrdersApi: (a) => api = a);
+    api.payoutRows = [
+      {
+        'id': 'p1', 'periodStart': '2026-11-01T18:30:00.000Z', 'periodEnd': '2026-11-02T18:30:00.000Z', 'grossPaise': 50000, 'netPaise': 43890, 'status': 'transferred',
+        'totals': {'itemsPaise': 50000, 'commissionPaise': 4500, 'cgstPaise': 405, 'sgstPaise': 405, 'tcsPaise': 250, 'tdsPaise': 50}, 'lines': <Object>[], 'hasStatement': true, 'transferRef': 'trf_1',
+      },
+    ];
+    api.refundRows = [
+      {'id': 'r1', 'orderCode': 'SN100', 'amountPaise': 6000, 'reason': 'missing_item:auto_small_trusted', 'disputable': true, 'processedAt': '2026-11-02T08:00:00.000Z'},
+      {'id': 'r2', 'orderCode': 'SN090', 'amountPaise': 2000, 'reason': 'damaged:auto_small_trusted', 'disputable': false, 'processedAt': '2026-10-29T08:00:00.000Z'},
+    ];
+    await tester.tap(find.text('Earnings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('payout-p1')), 200, scrollable: find.byType(Scrollable).last);
+    expect(find.text('02/11 · ₹438.90'), findsOneWidget);
+    expect(find.textContaining('Sent to your bank'), findsOneWidget);
+    expect(find.textContaining('commission ₹45 + GST ₹8.10 · TCS ₹2.50 · TDS ₹0.50'), findsOneWidget);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('refund-r2')), 200, scrollable: find.byType(Scrollable).last);
+    expect(find.byKey(const ValueKey('dispute-r2')), findsNothing); // older than 48 h
+    await tester.tap(find.byKey(const ValueKey('dispute-r1')));
+    await tester.pumpAndSettle();
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('dispute-send'))).onPressed, isNull);
+    await tester.enterText(find.byKey(const ValueKey('dispute-reason')), 'Both items were packed; counter CCTV shows it.');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('dispute-send')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'dispute r1');
+    expect(find.text('Dispute sent — we will decide within 48 hours'), findsOneWidget);
+  });
+
   test('every bucket maps to its wire name', () {
     expect(OrderBucket.values.map((b) => b.wire), ['new', 'preparing', 'ready', 'out', 'done']);
   });

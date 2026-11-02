@@ -44,6 +44,10 @@ class FakeBackend implements HttpClientAdapter {
   Map<String, dynamic>? tracking;
   bool cancelledNoCourier = false;
 
+  // M7 state
+  final issues = <Map<String, dynamic>>[];
+  Map<String, dynamic>? rating;
+
   Map<String, dynamic> _order() {
     final Map<String, dynamic> o;
     if (codOrder) {
@@ -86,6 +90,26 @@ class FakeBackend implements HttpClientAdapter {
           orderPatch = {...orderPatch, 'state': 'CANCELLED'};
           tracking = null;
           return (204, <String, Object?>{});
+        })(),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/issues') => (() {
+          final b = o.data as Map;
+          final type = b['type'] as String;
+          final lines = (_order()['lines'] as List).cast<Map<String, dynamic>>();
+          final claimed = lines.where((l) => ((b['variantIds'] as List?) ?? const []).contains(l['variantId'])).fold<int>(0, (s, l) => s + (l['linePaise'] as int));
+          final auto = type != 'not_delivered' && claimed <= 30000;
+          final issue = {
+            'id': 'iss${issues.length + 1}', 'orderId': _order()['id'], 'type': type, 'variantIds': b['variantIds'] ?? <String>[], 'description': b['description'],
+            'claimedPaise': claimed, 'status': auto ? 'auto_resolved' : 'pending_review', 'refundPaise': claimed, 'refundDestination': 'wallet',
+            'reason': auto ? 'auto_small_trusted' : 'needs_investigation', 'createdAt': '2026-11-02T08:00:00.000Z', 'decidedAt': auto ? '2026-11-02T08:00:00.000Z' : null,
+          };
+          if (issues.any((i) => i['type'] == type)) return (409, <String, Object?>{'error': {'code': 'ALREADY_EXISTS', 'message': 'dup'}});
+          issues.add(issue);
+          return (201, issue);
+        })(),
+      final r when r.startsWith('GET /v1/orders/') && r.endsWith('/issues') => (200, {'items': issues}),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/rating') => (() {
+          rating = Map<String, dynamic>.from(o.data as Map);
+          return (201, {'orderId': _order()['id'], 'storeStars': rating!['storeStars'], 'riderStars': rating!['riderStars'], 'comment': null, 'createdAt': '2026-11-02T08:00:00.000Z'});
         })(),
       final r when r.startsWith('GET /v1/orders/') => (200, _order()),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/cancel') => _order()['state'] == 'PLACED'

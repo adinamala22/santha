@@ -7,6 +7,7 @@ import 'package:santha_ui/santha_ui.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../catalogue/presentation/catalogue_copy.dart' show rupees;
 import '../data/orders_controller.dart';
+import 'money_view.dart';
 
 /// The choice made in the fulfilment sheet.
 class FulfilmentChoice {
@@ -170,7 +171,13 @@ class StatementPreviewView extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l.navEarnings)),
       body: RefreshIndicator(
-        onRefresh: () => ref.refresh(statementPreviewProvider.future),
+        onRefresh: () async {
+          ref.invalidate(payoutsProvider);
+          ref.invalidate(storeRefundsProvider);
+          ref.invalidate(disputesProvider);
+          ref.invalidate(statementPreviewProvider);
+          await ref.read(statementPreviewProvider.future);
+        },
         child: s.when(
           loading: () => const Center(child: CircularProgressIndicator()),
           error: (e, _) => ListView(children: [Padding(padding: const EdgeInsets.all(SanthaSpacing.s6), child: Text(l.errorGeneric, textAlign: TextAlign.center))]),
@@ -193,6 +200,7 @@ class StatementPreviewView extends ConsumerWidget {
               ),
             const SizedBox(height: SanthaSpacing.s3),
             Text(l.statementNote, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            const MoneySection(),
           ]),
         ),
       ),

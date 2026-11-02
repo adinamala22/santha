@@ -14,6 +14,7 @@ import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import '../checkout/bill_view.dart';
 import '../checkout/checkout_page.dart';
+import 'after_delivery.dart';
 import 'tracking_view.dart';
 
 String orderStateLabel(AppLocalizations l, OrderState s) => switch (s) {
@@ -232,6 +233,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 padding: const EdgeInsets.only(top: SanthaSpacing.s2),
                 child: Text(value.state == OrderState.expired ? l.outcomeTimedOut : l.outcomeStoreRejected, key: const ValueKey('outcome'), style: text.bodyMedium),
               ),
+            if (value.state == OrderState.delivered) ...[const SizedBox(height: SanthaSpacing.s3), AfterDelivery(order: value)],
             if (value.refundedPaise > 0)
               Padding(
                 padding: const EdgeInsets.only(top: SanthaSpacing.s2),
@@ -311,6 +313,7 @@ class WalletTile extends ConsumerWidget {
       key: const ValueKey('wallet'),
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.account_balance_wallet_outlined),
+      onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => const WalletPage())),
       title: Text(l.wallet),
       subtitle: Text(l.walletSub),
       trailing: Text(w.value == null ? '—' : rupees(w.value!.balancePaise), style: Theme.of(context).textTheme.titleMedium),

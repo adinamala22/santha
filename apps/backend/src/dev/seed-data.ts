@@ -33,6 +33,9 @@ export const SEED_PEOPLE: readonly SeedPerson[] = [
   ...[1, 2, 3].map((i) => person(`+91900000010${i}`, `Demo Rider ${i}`, ['rider'])),
   ...Array.from({ length: 12 }, (_, i) => person(`+919000000${(201 + i).toString()}`, `Demo Merchant Owner ${i + 1}`, ['merchant'])),
   person('+919000000900', 'Ops Admin', ['admin', 'ops'], 'admin@santha.local'),
+  // M7: a second console user so four-eyes approvals can be tried locally.
+  person('+919000000901', 'Finance Lead', ['finance'], 'finance@santha.local'),
+  person('+919000000902', 'Ops Agent', ['ops'], 'ops@santha.local'),
 ];
 
 /**

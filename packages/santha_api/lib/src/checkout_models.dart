@@ -372,6 +372,7 @@ class OrderLine {
     this.substituteName,
     this.substituteVariantLabel,
     this.refundPaise = 0,
+    this.variantId,
   });
   factory OrderLine.fromJson(Json j) => OrderLine(
         name: j['name'] as String,
@@ -382,6 +383,7 @@ class OrderLine {
         substituteName: j['substituteName'] as String?,
         substituteVariantLabel: j['substituteVariantLabel'] as String?,
         refundPaise: j['refundPaise'] as int? ?? 0,
+        variantId: j['variantId'] as String?,
       );
   final String name;
   final String variantLabel;
@@ -392,6 +394,7 @@ class OrderLine {
   final String? substituteName;
   final String? substituteVariantLabel;
   final int refundPaise;
+  final String? variantId;
 }
 
 class OrderStep {
@@ -424,6 +427,7 @@ class Order {
     this.refundedPaise = 0,
     this.outcomeReason,
     this.canCancel = false,
+    this.merchantType = 'retail',
   });
   factory Order.fromJson(Json j) {
     final m = j['merchant'] as Json;
@@ -451,6 +455,7 @@ class Order {
       refundedPaise: j['refundedPaise'] as int? ?? 0,
       outcomeReason: j['outcomeReason'] as String?,
       canCancel: j['canCancel'] as bool? ?? false,
+      merchantType: m['type'] as String? ?? 'retail',
     );
   }
   final String id;
@@ -477,6 +482,8 @@ class Order {
   final String? outcomeReason;
   /// True until the store accepts.
   final bool canCancel;
+  /// retail | fashion | home_business | home_kitchen (issue types and windows depend on it).
+  final String merchantType;
   int get itemCount => lines.fold(0, (n, l) => n + l.quantity);
 }
 

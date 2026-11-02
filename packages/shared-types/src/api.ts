@@ -1700,6 +1700,406 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/merchants/me/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_payouts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/payouts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_payoutDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/payouts/{id}/statement.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_statementPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/payouts/{id}/statement.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_statementCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_refunds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/merchants/me/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["MerchantMoneyController_disputes"];
+        put?: never;
+        post: operations["MerchantMoneyController_openDispute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderMoneyController_payouts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/settlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_runs"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/settlements/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_run"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/settlements/{id}/payouts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_runPayouts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/settlements/{id}/payouts.csv": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_runCsv"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/payouts/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_payoutDetail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/payouts/{id}/statement.pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_payoutPdf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/payouts/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/refunds": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_refunds"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/refunds/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/refunds/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/recon": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_recon"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/recon/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_reconRun"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/recon/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_reconResolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/disputes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMoneyController_disputes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/disputes/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMoneyController_resolveDispute"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["IssuesController_list"];
+        put?: never;
+        post: operations["IssuesController_report"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/rating": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["IssuesController_rate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsIssuesController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2005,6 +2405,12 @@ export interface components {
                         commissionSelfPercent: number;
                         /** @default 9 */
                         commissionRiderPercent: number;
+                        /** @default 18 */
+                        gstOnCommissionPercent: number;
+                        /** @default 0.5 */
+                        tcsPercent: number;
+                        /** @default 0.1 */
+                        tdsPercent: number;
                     };
                     cod: {
                         enabled: boolean;
@@ -2155,6 +2561,12 @@ export interface components {
                     commissionSelfPercent: number;
                     /** @default 9 */
                     commissionRiderPercent: number;
+                    /** @default 18 */
+                    gstOnCommissionPercent: number;
+                    /** @default 0.5 */
+                    tcsPercent: number;
+                    /** @default 0.1 */
+                    tdsPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2295,6 +2707,12 @@ export interface components {
                     commissionSelfPercent: number;
                     /** @default 9 */
                     commissionRiderPercent: number;
+                    /** @default 18 */
+                    gstOnCommissionPercent: number;
+                    /** @default 0.5 */
+                    tcsPercent: number;
+                    /** @default 0.1 */
+                    tdsPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2435,6 +2853,12 @@ export interface components {
                     commissionSelfPercent: number;
                     /** @default 9 */
                     commissionRiderPercent: number;
+                    /** @default 18 */
+                    gstOnCommissionPercent: number;
+                    /** @default 0.5 */
+                    tcsPercent: number;
+                    /** @default 0.1 */
+                    tdsPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2592,6 +3016,12 @@ export interface components {
                     commissionSelfPercent: number;
                     /** @default 9 */
                     commissionRiderPercent: number;
+                    /** @default 18 */
+                    gstOnCommissionPercent: number;
+                    /** @default 0.5 */
+                    tcsPercent: number;
+                    /** @default 0.1 */
+                    tdsPercent: number;
                 };
                 cod: {
                     enabled: boolean;
@@ -2755,6 +3185,12 @@ export interface components {
                 commissionSelfPercent: number;
                 /** @default 9 */
                 commissionRiderPercent: number;
+                /** @default 18 */
+                gstOnCommissionPercent: number;
+                /** @default 0.5 */
+                tcsPercent: number;
+                /** @default 0.1 */
+                tdsPercent: number;
             };
             cod: {
                 enabled: boolean;
@@ -5359,6 +5795,393 @@ export interface components {
                 lat: number;
                 lng: number;
             } | null;
+        };
+        PayoutListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                runId: string;
+                /** @enum {string} */
+                partyType: "merchant" | "rider";
+                /** Format: uuid */
+                partyId: string;
+                partyName: string;
+                /** @description ISO-8601 timestamp */
+                periodStart: string;
+                /** @description ISO-8601 timestamp */
+                periodEnd: string;
+                grossPaise: number;
+                netPaise: number;
+                tcsPaise: number;
+                tdsPaise: number;
+                /** @enum {string} */
+                status: "pending" | "transferred" | "failed" | "on_hold";
+                transferRef: string | null;
+                failureReason: string | null;
+                hasStatement: boolean;
+                totals: {
+                    [key: string]: number;
+                };
+                lines: {
+                    [key: string]: string | number | null;
+                }[];
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+                /** @description ISO-8601 timestamp */
+                transferredAt: string | null;
+            }[];
+        };
+        PayoutDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            runId: string;
+            /** @enum {string} */
+            partyType: "merchant" | "rider";
+            /** Format: uuid */
+            partyId: string;
+            partyName: string;
+            /** @description ISO-8601 timestamp */
+            periodStart: string;
+            /** @description ISO-8601 timestamp */
+            periodEnd: string;
+            grossPaise: number;
+            netPaise: number;
+            tcsPaise: number;
+            tdsPaise: number;
+            /** @enum {string} */
+            status: "pending" | "transferred" | "failed" | "on_hold";
+            transferRef: string[];
+            failureReason: string[];
+            hasStatement: boolean;
+            totals: {
+                [key: string]: number;
+            };
+            lines: {
+                [key: string]: string | number | null;
+            }[];
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            /** @description ISO-8601 timestamp */
+            transferredAt: string | null;
+        };
+        RefundListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                orderCode: string;
+                /** Format: uuid */
+                issueId: string | null;
+                /** Format: uuid */
+                userId: string;
+                /** Format: uuid */
+                merchantId: string;
+                merchantName: string;
+                amountPaise: number;
+                /** @enum {string} */
+                destination: "wallet" | "source";
+                /** @enum {string} */
+                liability: "merchant" | "platform" | "rider";
+                reason: string;
+                /** @enum {string} */
+                status: "pending" | "awaiting_second" | "processed" | "rejected" | "failed";
+                approvals: {
+                    /** Format: uuid */
+                    userId: string;
+                    /** @description ISO-8601 timestamp */
+                    at: string;
+                }[];
+                needsSecondApproval: boolean;
+                rejectNote: string | null;
+                failureReason: string | null;
+                trustScore: number | null;
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+                /** @description ISO-8601 timestamp */
+                processedAt: string | null;
+                disputable: boolean;
+            }[];
+        };
+        OpenDisputeDto: {
+            /** Format: uuid */
+            refundId: string;
+            reason: string;
+            /** @default [] */
+            evidenceMediaIds: string[];
+        };
+        DisputeDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            merchantId: string;
+            merchantName: string;
+            /** Format: uuid */
+            orderId: string | null;
+            /** Format: uuid */
+            refundId: string | null;
+            reason: string;
+            evidenceMediaIds: string[];
+            /** @enum {string} */
+            status: "open" | "accepted" | "rejected";
+            resolutionNote: string[];
+            adjustmentPaise: number;
+            /** @description ISO-8601 timestamp */
+            deadlineAt: string;
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            /** @description ISO-8601 timestamp */
+            resolvedAt: string | null;
+            /** Format: uuid */
+            settledInPayout: string | null;
+        };
+        DisputeListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                merchantId: string;
+                merchantName: string;
+                /** Format: uuid */
+                orderId: string | null;
+                /** Format: uuid */
+                refundId: string | null;
+                reason: string;
+                evidenceMediaIds: string[];
+                /** @enum {string} */
+                status: "open" | "accepted" | "rejected";
+                resolutionNote: string | null;
+                adjustmentPaise: number;
+                /** @description ISO-8601 timestamp */
+                deadlineAt: string;
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+                /** @description ISO-8601 timestamp */
+                resolvedAt: string | null;
+                /** Format: uuid */
+                settledInPayout: string | null;
+            }[];
+        };
+        RunListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "merchant" | "rider";
+                /** @description ISO-8601 timestamp */
+                periodStart: string;
+                /** @description ISO-8601 timestamp */
+                periodEnd: string;
+                status: string;
+                totals: {
+                    [key: string]: number;
+                };
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+                /** @description ISO-8601 timestamp */
+                completedAt: string | null;
+            }[];
+        };
+        RunSettlementDto: {
+            /** @enum {string} */
+            kind: "merchant" | "rider_daily" | "rider_weekly";
+            /** @description IST date YYYY-MM-DD */
+            date: string;
+        };
+        RunDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "merchant" | "rider";
+            /** @description ISO-8601 timestamp */
+            periodStart: string;
+            /** @description ISO-8601 timestamp */
+            periodEnd: string;
+            status: string;
+            totals: {
+                [key: string]: number;
+            };
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            /** @description ISO-8601 timestamp */
+            completedAt: string | null;
+        };
+        RefundDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            orderCode: string;
+            /** Format: uuid */
+            issueId: string | null;
+            /** Format: uuid */
+            userId: string;
+            /** Format: uuid */
+            merchantId: string;
+            merchantName: string;
+            amountPaise: number;
+            /** @enum {string} */
+            destination: "wallet" | "source";
+            /** @enum {string} */
+            liability: "merchant" | "platform" | "rider";
+            reason: string;
+            /** @enum {string} */
+            status: "pending" | "awaiting_second" | "processed" | "rejected" | "failed";
+            approvals: {
+                /** Format: uuid */
+                userId: string;
+                /** @description ISO-8601 timestamp */
+                at: string;
+            }[];
+            needsSecondApproval: boolean;
+            rejectNote: string[];
+            failureReason: string[];
+            trustScore: number[];
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            /** @description ISO-8601 timestamp */
+            processedAt: string | null;
+            disputable: boolean;
+        };
+        RejectRefundDto: {
+            note: string;
+        };
+        ReconListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                reportDate: string;
+                /** @enum {string} */
+                kind: "missing_in_report" | "amount_mismatch" | "unknown_in_report";
+                providerPaymentId: string;
+                expectedPaise: number | null;
+                reportedPaise: number | null;
+                /** @enum {string} */
+                status: "open" | "resolved";
+                note: string | null;
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+            }[];
+        };
+        ReconRunDto: {
+            /** @description IST date YYYY-MM-DD */
+            date: string;
+        };
+        ReconRunResultDto_Output: {
+            matched: number;
+            exceptions: number;
+        };
+        ResolveReconDto: {
+            note: string;
+        };
+        ReconDto_Output: {
+            /** Format: uuid */
+            id: string;
+            reportDate: string;
+            /** @enum {string} */
+            kind: "missing_in_report" | "amount_mismatch" | "unknown_in_report";
+            providerPaymentId: string;
+            expectedPaise: number | null;
+            reportedPaise: number | null;
+            /** @enum {string} */
+            status: "open" | "resolved";
+            note: string[];
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+        };
+        ResolveDisputeDto: {
+            /** @enum {string} */
+            decision: "accept" | "reject";
+            note: string;
+        };
+        ReportIssueDto: {
+            /** @enum {string} */
+            type: "missing_item" | "wrong_item" | "damaged" | "quality" | "late" | "not_delivered" | "return_request";
+            /** @description Lines with the problem (item issues and returns) */
+            variantIds?: string[];
+            description?: string;
+            photoMediaIds?: string[];
+        };
+        IssueDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            orderId: string;
+            /** @enum {string} */
+            type: "missing_item" | "wrong_item" | "damaged" | "quality" | "late" | "not_delivered" | "return_request";
+            variantIds: string[];
+            description: string[];
+            claimedPaise: number;
+            /** @enum {string} */
+            status: "auto_resolved" | "pending_review" | "approved" | "rejected" | "return_pickup";
+            refundPaise: number;
+            /** @enum {string|null} */
+            refundDestination: "wallet" | "source" | null;
+            reason: string;
+            createdAt: string;
+            decidedAt: string[];
+        };
+        IssueListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                /** @enum {string} */
+                type: "missing_item" | "wrong_item" | "damaged" | "quality" | "late" | "not_delivered" | "return_request";
+                variantIds: string[];
+                description: string | null;
+                claimedPaise: number;
+                /** @enum {string} */
+                status: "auto_resolved" | "pending_review" | "approved" | "rejected" | "return_pickup";
+                refundPaise: number;
+                /** @enum {string|null} */
+                refundDestination: "wallet" | "source" | null;
+                reason: string;
+                createdAt: string;
+                decidedAt: string | null;
+            }[];
+        };
+        RateDto: {
+            storeStars: number;
+            riderStars?: number;
+            comment?: string;
+        };
+        RatingDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            storeStars: number;
+            riderStars: number | null;
+            comment: string[];
+            createdAt: string;
+        };
+        OpsIssueListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                orderId: string;
+                /** @enum {string} */
+                type: "missing_item" | "wrong_item" | "damaged" | "quality" | "late" | "not_delivered" | "return_request";
+                variantIds: string[];
+                description: string | null;
+                claimedPaise: number;
+                /** @enum {string} */
+                status: "auto_resolved" | "pending_review" | "approved" | "rejected" | "return_pickup";
+                refundPaise: number;
+                /** @enum {string|null} */
+                refundDestination: "wallet" | "source" | null;
+                reason: string;
+                createdAt: string;
+                decidedAt: string | null;
+                /** Format: uuid */
+                userId: string;
+                merchantName: string;
+                trustScore: number;
+                flags: string[];
+            }[];
         };
     };
     responses: never;
@@ -8271,6 +9094,611 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantMoneyController_payouts: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Daily payouts, newest first */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantMoneyController_payoutDetail: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantMoneyController_statementPdf: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantMoneyController_statementCsv: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    MerchantMoneyController_refunds: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Refunds charged to the store in the last 30 days (disputable for 48 h) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantMoneyController_disputes: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeListDto_Output"];
+                };
+            };
+        };
+    };
+    MerchantMoneyController_openDispute: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenDisputeDto"];
+            };
+        };
+        responses: {
+            /** @description 422 DISPUTE_WINDOW_CLOSED after 48 h; 409 ALREADY_EXISTS */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeDto_Output"];
+                };
+            };
+        };
+    };
+    RiderMoneyController_payouts: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_runs: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_run: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RunSettlementDto"];
+            };
+        };
+        responses: {
+            /** @description Runs (or returns) the settlement for an IST date; idempotent per period */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RunDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_runPayouts: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_runCsv: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OpsMoneyController_payoutDetail: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_payoutPdf: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    OpsMoneyController_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PayoutDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_refunds: {
+        parameters: {
+            query?: {
+                status?: "open" | "processed" | "rejected" | "failed" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description open = pending or awaiting a second approval */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 409 FOUR_EYES_REQUIRED (same person twice); 403 APPROVAL_LIMIT (ops above ₹2,000) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RejectRefundDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RefundDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_recon: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_reconRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReconRunDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconRunResultDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_reconResolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveReconDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReconDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_disputes: {
+        parameters: {
+            query?: {
+                status?: "open" | "accepted" | "rejected" | "all";
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMoneyController_resolveDispute: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveDisputeDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DisputeDto_Output"];
+                };
+            };
+        };
+    };
+    IssuesController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueListDto_Output"];
+                };
+            };
+        };
+    };
+    IssuesController_report: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReportIssueDto"];
+            };
+        };
+        responses: {
+            /** @description Decided at once: auto_resolved (refunded to the wallet), pending_review, return_pickup or rejected. 422 ISSUE_WINDOW_CLOSED; 409 ALREADY_EXISTS */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueDto_Output"];
+                };
+            };
+        };
+    };
+    IssuesController_rate: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RateDto"];
+            };
+        };
+        responses: {
+            /** @description Once per delivered order; 409 ALREADY_EXISTS */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RatingDto_Output"];
+                };
+            };
+        };
+    };
+    OpsIssuesController_list: {
+        parameters: {
+            query: {
+                status: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsIssueListDto_Output"];
                 };
             };
         };

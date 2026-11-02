@@ -914,6 +914,8 @@ model Rider {
   onlineSince    DateTime? @map("online_since") @db.Timestamptz(6)
   /// Minutes online before today's session (resets daily).
   onlineMinToday Int       @default(0) @map("online_min_today")
+  /// weekly (default) | daily payouts (M7)
+  payoutCadence  String    @default("weekly") @map("payout_cadence")
   lastSeenAt     DateTime? @map("last_seen_at") @db.Timestamptz(6)
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
@@ -989,4 +991,181 @@ model DispatchOffer {
   @@index([riderUserId, state])
   @@index([fulfilmentId])
   @@map("dispatch_offers")
+}
+
+// ───────────── payments-settlement: settlement, refunds, reconciliation, disputes (M7) ─────────────
+
+/// One settlement run: merchants daily (previous IST day), riders weekly (or daily for riders who chose it).
+model SettlementRun {
+  id          String    @id @db.Uuid
+  /// merchant | rider
+  kind        String
+  periodStart DateTime  @map("period_start") @db.Timestamptz(6)
+  periodEnd   DateTime  @map("period_end") @db.Timestamptz(6)
+  /// running | completed | failed
+  status      String
+  totals      Json      @default("{}")
+  createdBy   String?   @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  completedAt DateTime? @map("completed_at") @db.Timestamptz(6)
+
+  payouts Payout[]
+
+  @@unique([kind, periodStart, periodEnd])
+  @@map("settlement_runs")
+}
+
+/// What one store or rider is paid for a period, with the per-order lines and tax records.
+model Payout {
+  id            String    @id @db.Uuid
+  runId         String    @map("run_id") @db.Uuid
+  /// merchant | rider
+  partyType     String    @map("party_type")
+  partyId       String    @map("party_id") @db.Uuid
+  microMarketId String?   @map("micro_market_id") @db.Uuid
+  periodStart   DateTime  @map("period_start") @db.Timestamptz(6)
+  periodEnd     DateTime  @map("period_end") @db.Timestamptz(6)
+  grossPaise    Int       @map("gross_paise")
+  netPaise      Int       @map("net_paise")
+  /// Per-order lines and totals (GST on commission, TCS, TDS) as computed.
+  lines         Json
+  totals        Json
+  tcsPaise      Int       @default(0) @map("tcs_paise")
+  tdsPaise      Int       @default(0) @map("tds_paise")
+  /// pending | transferred | failed | on_hold (nothing to pay, or a negative balance carried forward)
+  status        String
+  transferRef   String?   @map("transfer_ref")
+  failureReason String?   @map("failure_reason")
+  statementKey  String?   @map("statement_key")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  transferredAt DateTime? @map("transferred_at") @db.Timestamptz(6)
+
+  run SettlementRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@unique([runId, partyType, partyId])
+  @@index([partyType, partyId, periodStart])
+  @@map("payouts")
+}
+
+/// A refund to a customer, decided by the rules engine or a person (four-eyes above the threshold).
+model RefundRequest {
+  id            String    @id @db.Uuid
+  orderId       String    @map("order_id") @db.Uuid
+  issueId       String?   @map("issue_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  merchantId    String    @map("merchant_id") @db.Uuid
+  microMarketId String    @map("micro_market_id") @db.Uuid
+  amountPaise   Int       @map("amount_paise")
+  /// wallet | source
+  destination   String
+  /// merchant | platform | rider: who bears it (store-liable refunds reduce the next payout)
+  liability     String
+  reason        String
+  /// pending | awaiting_second | processed | rejected | failed
+  status        String
+  /// [{ userId, at }]
+  approvals     Json      @default("[]")
+  rejectedBy    String?   @map("rejected_by") @db.Uuid
+  rejectNote    String?   @map("reject_note")
+  providerRef   String?   @map("provider_ref")
+  failureReason String?   @map("failure_reason")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  processedAt   DateTime? @map("processed_at") @db.Timestamptz(6)
+
+  @@index([status, createdAt])
+  @@index([orderId])
+  @@index([merchantId, liability, processedAt])
+  @@map("refund_requests")
+}
+
+/// Differences between captured payments and the aggregator settlement report.
+model ReconException {
+  id                String    @id @db.Uuid
+  reportDate        String    @map("report_date")
+  /// missing_in_report | amount_mismatch | unknown_in_report
+  kind              String
+  providerPaymentId String    @map("provider_payment_id")
+  expectedPaise     Int?      @map("expected_paise")
+  reportedPaise     Int?      @map("reported_paise")
+  /// open | resolved
+  status            String
+  note              String?
+  resolvedBy        String?   @map("resolved_by") @db.Uuid
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt        DateTime? @map("resolved_at") @db.Timestamptz(6)
+
+  @@unique([reportDate, providerPaymentId, kind])
+  @@index([status])
+  @@map("recon_exceptions")
+}
+
+/// A store disputes a refund charged to it (or a payout line) within 48 h, with evidence.
+model Dispute {
+  id               String    @id @db.Uuid
+  merchantId       String    @map("merchant_id") @db.Uuid
+  orderId          String?   @map("order_id") @db.Uuid
+  refundId         String?   @map("refund_id") @db.Uuid
+  payoutId         String?   @map("payout_id") @db.Uuid
+  reason           String
+  evidenceMediaIds String[]  @map("evidence_media_ids") @db.Uuid
+  /// open | accepted | rejected
+  status           String
+  resolutionNote   String?   @map("resolution_note")
+  /// Credited back to the store in its next payout when accepted.
+  adjustmentPaise  Int       @default(0) @map("adjustment_paise")
+  deadlineAt       DateTime  @map("deadline_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt       DateTime? @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy       String?   @map("resolved_by") @db.Uuid
+  /// Payout that carried the adjustment.
+  settledInPayout  String?   @map("settled_in_payout") @db.Uuid
+
+  @@index([merchantId, status])
+  @@index([status, createdAt])
+  @@map("disputes")
+}
+
+// ───────────── trust-safety: issues and ratings (M7) ─────────────
+
+/// A customer's problem with a delivered order.
+model Issue {
+  id            String    @id @db.Uuid
+  orderId       String    @map("order_id") @db.Uuid
+  userId        String    @map("user_id") @db.Uuid
+  merchantId    String    @map("merchant_id") @db.Uuid
+  /// missing_item | wrong_item | damaged | quality | late | not_delivered | return_request
+  type          String
+  /// Variant ids of the lines concerned (item issues).
+  variantIds    String[]  @map("variant_ids") @db.Uuid
+  description   String?
+  photoMediaIds String[]  @map("photo_media_ids") @db.Uuid
+  claimedPaise  Int       @map("claimed_paise")
+  /// auto_resolved | pending_review | approved | rejected | return_pickup
+  status        String
+  trustScore    Float     @map("trust_score")
+  decision      Json
+  refundId      String?   @map("refund_id") @db.Uuid
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  decidedAt     DateTime? @map("decided_at") @db.Timestamptz(6)
+
+  @@index([userId, createdAt])
+  @@index([merchantId, createdAt])
+  @@index([orderId])
+  @@map("issues")
+}
+
+/// One rating per delivered order: the store, and the rider when a rider delivered.
+model Rating {
+  orderId     String   @id @map("order_id") @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  merchantId  String   @map("merchant_id") @db.Uuid
+  riderUserId String?  @map("rider_user_id") @db.Uuid
+  storeStars  Int      @map("store_stars")
+  riderStars  Int?     @map("rider_stars")
+  comment     String?
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([merchantId, createdAt])
+  @@index([riderUserId])
+  @@map("ratings")
 }
