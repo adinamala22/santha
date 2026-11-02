@@ -46,3 +46,13 @@ addressRepositoryContract('prisma', async () => ({
   repo: new PrismaAddressRepository(prisma),
   userId: async () => (await prisma.user.create({ data: { phone: `+9198${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id,
 }));
+
+// M4
+import { orderRepositoryContract, paymentsRepositoryContract, promoRepositoryContract } from '../contracts/m4.contract';
+import { PrismaOrderRepository } from '../../src/modules/orders/orders.repository';
+import { PrismaCartPricingRepository } from '../../src/modules/cart-pricing/cart-pricing.repository';
+import { PrismaPaymentsRepository } from '../../src/modules/payments-settlement/payments.repository';
+
+orderRepositoryContract('prisma', async () => new PrismaOrderRepository(prisma));
+promoRepositoryContract('prisma', async () => new PrismaCartPricingRepository(prisma));
+paymentsRepositoryContract('prisma', async () => new PrismaPaymentsRepository(prisma));

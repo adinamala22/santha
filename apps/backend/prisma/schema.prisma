@@ -299,6 +299,8 @@ model Merchant {
   radiusM           Int                                    @default(3000) @map("radius_m")
   hours             Json?
   movPaise          Int                                    @default(0) @map("mov_paise")
+  /// Per-order packaging charge set by the merchant; cart-pricing caps it at the fee rule.
+  packagingFeePaise Int                                    @default(0) @map("packaging_fee_paise")
   defaultFulfilment FulfilmentMode                         @default(rider) @map("default_fulfilment")
   returnPolicy      String?                                @map("return_policy")
   hygieneDeclaredAt DateTime?                              @map("hygiene_declared_at") @db.Timestamptz(6)
@@ -571,4 +573,260 @@ model AuditEvent {
   @@index([entity, entityId])
   @@index([actorId, createdAt])
   @@map("audit_events")
+}
+
+// ───────────── cart-pricing (M4) ─────────────
+
+/// One open cart per consumer, for one store at a time (multi-store carts are Phase 2).
+model Cart {
+  userId     String   @id @map("user_id") @db.Uuid
+  merchantId String   @map("merchant_id") @db.Uuid
+  /// [{ itemId, variantId, quantity, substitution }]
+  lines      Json
+  updatedAt  DateTime @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("carts")
+}
+
+/// Every price shown at checkout is snapshotted; POST /orders places exactly what was quoted.
+model Quote {
+  id            String   @id @db.Uuid
+  userId        String   @map("user_id") @db.Uuid
+  merchantId    String   @map("merchant_id") @db.Uuid
+  microMarketId String   @map("micro_market_id") @db.Uuid
+  totalPaise    Int      @map("total_paise")
+  /// Full computeQuote result plus the inputs it was computed from.
+  snapshot      Json
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  expiresAt     DateTime @map("expires_at") @db.Timestamptz(6)
+
+  @@index([userId, createdAt])
+  @@map("quotes")
+}
+
+enum PromoKind {
+  flat
+  percent
+}
+
+/// Coupon codes with budgets and limits. Ops edit them with audit.
+model Promo {
+  id                   String         @id @default(uuid()) @db.Uuid
+  code                 String         @unique
+  description          String
+  descriptionTe        String         @map("description_te")
+  kind                 PromoKind
+  /// flat: paise off; percent: whole percent off.
+  value                Int
+  maxDiscountPaise     Int?           @map("max_discount_paise")
+  minOrderPaise        Int            @default(0) @map("min_order_paise")
+  /// Total discount that may be given; null = unlimited.
+  budgetPaise          Int?           @map("budget_paise")
+  /// Reserved + used discount so far (released when an order fails before placement).
+  spentPaise           Int            @default(0) @map("spent_paise")
+  perUserLimit         Int            @default(1) @map("per_user_limit")
+  firstOrderOnly       Boolean        @default(false) @map("first_order_only")
+  /// Share of the discount the merchant funds (0-100); the rest is platform-funded.
+  merchantSharePercent Int            @default(0) @map("merchant_share_percent")
+  /// Empty = every micro-market / supply type / store.
+  microMarketIds       String[]       @default([]) @map("micro_market_ids") @db.Uuid
+  merchantTypes        MerchantType[] @default([]) @map("merchant_types")
+  merchantIds          String[]       @default([]) @map("merchant_ids") @db.Uuid
+  validFrom            DateTime       @map("valid_from") @db.Timestamptz(6)
+  validTo              DateTime?      @map("valid_to") @db.Timestamptz(6)
+  active               Boolean        @default(true)
+  createdBy            String?        @map("created_by") @db.Uuid
+  createdAt            DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime       @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  redemptions PromoRedemption[]
+
+  @@map("promos")
+}
+
+enum RedemptionStatus {
+  reserved
+  confirmed
+  released
+}
+
+model PromoRedemption {
+  id                 String           @id @default(uuid()) @db.Uuid
+  promoId            String           @map("promo_id") @db.Uuid
+  userId             String           @map("user_id") @db.Uuid
+  orderId            String           @unique @map("order_id") @db.Uuid
+  discountPaise      Int              @map("discount_paise")
+  merchantSharePaise Int              @map("merchant_share_paise")
+  status             RedemptionStatus
+  createdAt          DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime         @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  promo Promo @relation(fields: [promoId], references: [id])
+
+  @@index([promoId, userId])
+  @@map("promo_redemptions")
+}
+
+// ───────────── orders (M4) ─────────────
+
+/// Lifecycle in references/order-state-machine.md. AWAITING_PAYMENT and PAYMENT_FAILED come before
+/// the lifecycle for online payments: an order becomes PLACED only after capture or COD authorisation.
+enum OrderState {
+  AWAITING_PAYMENT
+  PAYMENT_FAILED
+  PLACED
+  ACCEPTED
+  PREPARING
+  READY
+  PICKED_UP
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  REJECTED
+  EXPIRED
+  FAILED_DELIVERY
+}
+
+enum PaymentMethod {
+  online
+  cod
+}
+
+/// Only orders/domain/state-machine.ts decides `state` (written through OrderRepository.transition).
+model Order {
+  id             String        @id @db.Uuid
+  /// Short code shown to customers and merchants, e.g. "SN4K7Q2".
+  code           String        @unique
+  userId         String        @map("user_id") @db.Uuid
+  merchantId     String        @map("merchant_id") @db.Uuid
+  microMarketId  String        @map("micro_market_id") @db.Uuid
+  state          OrderState
+  paymentMethod  PaymentMethod @map("payment_method")
+  /// asap | slot (home kitchens)
+  fulfilmentWhen String        @map("fulfilment_when")
+  slotId         String?       @map("slot_id") @db.Uuid
+  slotDate       String?       @map("slot_date")
+  slotStartsAt   DateTime?     @map("slot_starts_at") @db.Timestamptz(6)
+  /// Delivery address at ordering time (revealed to the merchant only after acceptance).
+  address        Json
+  instructions   String?
+  itemsPaise     Int           @map("items_paise")
+  feesPaise      Int           @map("fees_paise")
+  taxPaise       Int           @map("tax_paise")
+  discountPaise  Int           @map("discount_paise")
+  totalPaise     Int           @map("total_paise")
+  promoCode      String?       @map("promo_code")
+  /// The quote the customer accepted: the bill of record.
+  quote          Json
+  idempotencyKey String        @map("idempotency_key")
+  placedAt       DateTime?     @map("placed_at") @db.Timestamptz(6)
+  paymentDueAt   DateTime?     @map("payment_due_at") @db.Timestamptz(6)
+  createdAt      DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  lines   OrderLine[]
+  history OrderTransition[]
+
+  @@unique([userId, idempotencyKey])
+  @@index([userId, createdAt])
+  @@index([merchantId, state])
+  @@index([state, paymentDueAt])
+  @@index([merchantId, slotId, slotDate])
+  @@map("orders")
+}
+
+model OrderLine {
+  id             String @id @default(uuid()) @db.Uuid
+  orderId        String @map("order_id") @db.Uuid
+  itemId         String @map("item_id") @db.Uuid
+  variantId      String @map("variant_id") @db.Uuid
+  name           String
+  variantLabel   String @map("variant_label")
+  quantity       Int
+  unitPricePaise Int    @map("unit_price_paise")
+  mrpPaise       Int?   @map("mrp_paise")
+  linePaise      Int    @map("line_paise")
+  /// call_me | similar | remove: what to do if the item is unavailable when packing.
+  substitution   String
+  position       Int    @default(0)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("order_lines")
+}
+
+/// Append-only history of every state change (actor and reason).
+model OrderTransition {
+  id        String      @id @default(uuid()) @db.Uuid
+  orderId   String      @map("order_id") @db.Uuid
+  from      OrderState?
+  to        OrderState
+  actorType String      @map("actor_type")
+  actorId   String?     @map("actor_id") @db.Uuid
+  reason    String?
+  at        DateTime    @default(now()) @db.Timestamptz(6)
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, at])
+  @@map("order_transitions")
+}
+
+// ───────────── payments-settlement (M4) ─────────────
+
+enum PaymentStatus {
+  created
+  captured
+  failed
+}
+
+/// One payment attempt for an online order (provider order <-> our order).
+model PaymentIntent {
+  id                String        @id @db.Uuid
+  orderId           String        @unique @map("order_id") @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  microMarketId     String        @map("micro_market_id") @db.Uuid
+  amountPaise       Int           @map("amount_paise")
+  currency          String        @default("INR")
+  provider          String
+  providerOrderId   String        @unique @map("provider_order_id")
+  providerPaymentId String?       @map("provider_payment_id")
+  status            PaymentStatus
+  failureReason     String?       @map("failure_reason")
+  capturedAt        DateTime?     @map("captured_at") @db.Timestamptz(6)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@map("payment_intents")
+}
+
+/// Raw provider webhooks, stored after signature verification and deduped by provider event id.
+model WebhookEvent {
+  id              String    @id @default(uuid()) @db.Uuid
+  provider        String
+  providerEventId String    @map("provider_event_id")
+  eventType       String    @map("event_type")
+  payload         Json
+  receivedAt      DateTime  @default(now()) @map("received_at") @db.Timestamptz(6)
+  processedAt     DateTime? @map("processed_at") @db.Timestamptz(6)
+
+  @@unique([provider, providerEventId])
+  @@map("webhook_events")
+}
+
+/// Wallet ledger: refund credits only in the MVP (no top-ups). Balance = sum of entries.
+model WalletEntry {
+  id          String   @id @default(uuid()) @db.Uuid
+  userId      String   @map("user_id") @db.Uuid
+  amountPaise Int      @map("amount_paise")
+  /// refund_credit | adjustment
+  kind        String
+  orderId     String?  @map("order_id") @db.Uuid
+  note        String?
+  createdBy   String?  @map("created_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([userId, createdAt])
+  @@map("wallet_entries")
 }

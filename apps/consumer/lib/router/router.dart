@@ -12,6 +12,9 @@ import '../features/location/location_page.dart';
 import '../features/location/map_pin_page.dart';
 import '../features/search/search_page.dart';
 import '../features/store/store_page.dart';
+import '../features/cart/cart_page.dart';
+import '../features/checkout/checkout_page.dart';
+import '../features/orders/orders_page.dart';
 
 abstract final class Routes {
   static const splash = '/splash';
@@ -55,6 +58,12 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: Routes.location,
         builder: (context, state) => const LocationPage(),
         routes: [GoRoute(path: 'pin', builder: (context, state) => const MapPinPage())],
+      ),
+      GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
+      GoRoute(path: '/checkout', builder: (context, state) => const CheckoutPage()),
+      GoRoute(
+        path: '/orders/:id',
+        builder: (context, state) => OrderDetailPage(id: state.pathParameters['id']!, justPlaced: state.uri.queryParameters['placed'] == '1'),
       ),
       GoRoute(
         path: '/store/:id',

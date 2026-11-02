@@ -42,3 +42,5 @@ class LocationServiceOff extends LocateResult {
 class LocationDenied extends LocateResult {
   const LocationDenied();
 }
+
+final checkoutApiProvider = Provider<CheckoutApi>((ref) => CheckoutApi(ref.watch(apiClientProvider)));

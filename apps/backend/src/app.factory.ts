@@ -35,7 +35,8 @@ export function buildOpenApi(app: INestApplication): OpenAPIObject {
 }
 
 export async function createApp(): Promise<INestApplication> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  // rawBody: webhook signatures are verified over the exact bytes received.
+  const app = await NestFactory.create(AppModule, { bufferLogs: true, rawBody: true });
   app.useLogger(app.get(Logger));
   configureApp(app);
   const doc = buildOpenApi(app);

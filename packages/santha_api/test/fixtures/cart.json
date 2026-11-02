@@ -1,0 +1,50 @@
+{
+ "merchant": {
+  "id": "10000000-0000-4000-8000-000000000201",
+  "name": "Ramesh Stores",
+  "nameTe": "రమేష్ స్టోర్స్",
+  "type": "retail",
+  "movPaise": 9900
+ },
+ "lines": [
+  {
+   "itemId": "40000000-0000-4000-8000-201000000001",
+   "variantId": "70000000-0000-4000-8000-201000000100",
+   "name": "Annapoorna Chakki Atta",
+   "nameTe": "గోధుమ పిండి",
+   "variantLabel": "1 kg",
+   "quantity": 2,
+   "unitPricePaise": 6000,
+   "mrpPaise": 6200,
+   "linePaise": 12000,
+   "stock": "low",
+   "stale": false,
+   "available": true,
+   "maxPerOrder": null,
+   "substitution": "similar",
+   "imageUrl": null,
+   "foodMark": "veg"
+  },
+  {
+   "itemId": "40000000-0000-4000-8000-201000000003",
+   "variantId": "70000000-0000-4000-8000-201000000300",
+   "name": "Annapoorna Basmati Rice",
+   "nameTe": "బాస్మతి బియ్యం",
+   "variantLabel": "1 kg",
+   "quantity": 1,
+   "unitPricePaise": 17700,
+   "mrpPaise": 18900,
+   "linePaise": 17700,
+   "stock": "in",
+   "stale": false,
+   "available": true,
+   "maxPerOrder": null,
+   "substitution": "call_me",
+   "imageUrl": null,
+   "foodMark": "veg"
+  }
+ ],
+ "itemsPaise": 29700,
+ "itemCount": 3,
+ "updatedAt": "2026-11-02T11:18:23.663Z"
+}

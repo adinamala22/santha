@@ -20,6 +20,10 @@ export const FeeRulesSchema = z.object({
   smallOrderFeePaise: paise,
   platformFeePaise: paise,
   packagingFeeCapPaise: paise,
+  /** GST on the platform's own fees (delivery, platform, small-order). Item prices are GST-inclusive (MRP rules). */
+  gstOnFeesPercent: z.number().int().min(0).max(28).default(18),
+  /** Cooked food from home kitchens: GST the platform collects as e-commerce operator (CGST s.9(5)), on food + packaging. */
+  gstCookedFoodPercent: z.number().int().min(0).max(28).default(5),
 });
 
 /** COD gating (PRD 8.6): retail/fashion only, capped order value; never cooked food. */
@@ -99,6 +103,8 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
     smallOrderFeePaise: 1500,
     platformFeePaise: 500,
     packagingFeeCapPaise: 2000,
+    gstOnFeesPercent: 18,
+    gstCookedFoodPercent: 5,
   },
   cod: { enabled: true, maxOrderPaise: 150000, allowedTypes: ['retail', 'fashion'] },
   sla: { merchantAcceptSec: 20, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },

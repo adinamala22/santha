@@ -1,0 +1,114 @@
+{
+ "quoteId": "d32f8cbd-9101-410c-bd6f-d669cd958fae",
+ "expiresAt": "2026-11-02T11:48:23.686Z",
+ "merchant": {
+  "id": "10000000-0000-4000-8000-000000000201",
+  "name": "Ramesh Stores",
+  "nameTe": "రమేష్ స్టోర్స్",
+  "type": "retail"
+ },
+ "address": {
+  "addressId": "80000000-0000-4000-8000-000000000001",
+  "label": "home",
+  "name": null,
+  "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+  "landmark": "Near Dargamitta Temple",
+  "pincode": "524003",
+  "location": {
+   "lat": 14.4535,
+   "lng": 79.99600000000001
+  }
+ },
+ "when": {
+  "mode": "asap"
+ },
+ "bill": {
+  "lines": [
+   {
+    "itemId": "40000000-0000-4000-8000-201000000001",
+    "variantId": "70000000-0000-4000-8000-201000000100",
+    "name": "Annapoorna Chakki Atta",
+    "nameTe": "గోధుమ పిండి",
+    "variantLabel": "1 kg",
+    "quantity": 2,
+    "unitPricePaise": 6000,
+    "mrpPaise": 6200,
+    "linePaise": 12000,
+    "savingsPaise": 400,
+    "stock": "low",
+    "stale": false,
+    "available": true,
+    "substitution": "similar"
+   },
+   {
+    "itemId": "40000000-0000-4000-8000-201000000003",
+    "variantId": "70000000-0000-4000-8000-201000000300",
+    "name": "Annapoorna Basmati Rice",
+    "nameTe": "బాస్మతి బియ్యం",
+    "variantLabel": "1 kg",
+    "quantity": 1,
+    "unitPricePaise": 17700,
+    "mrpPaise": 18900,
+    "linePaise": 17700,
+    "savingsPaise": 1200,
+    "stock": "in",
+    "stale": false,
+    "available": true,
+    "substitution": "call_me"
+   }
+  ],
+  "itemCount": 3,
+  "itemsPaise": 29700,
+  "mrpSavingsPaise": 1600,
+  "fees": [
+   {
+    "code": "delivery",
+    "amountPaise": 0,
+    "waivedPaise": 2856
+   },
+   {
+    "code": "platform",
+    "amountPaise": 500,
+    "waivedPaise": 0
+   }
+  ],
+  "feesPaise": 500,
+  "taxes": [
+   {
+    "code": "gst_fees",
+    "ratePercent": 18,
+    "basePaise": 500,
+    "amountPaise": 90
+   }
+  ],
+  "taxPaise": 90,
+  "discount": {
+   "code": "TINY",
+   "discountPaise": 6000,
+   "merchantSharePaise": 0
+  },
+  "discountPaise": 6000,
+  "totalPaise": 24290,
+  "toFreeDeliveryPaise": 0,
+  "distanceM": 445
+ },
+ "promo": {
+  "code": "TINY",
+  "applied": true,
+  "reason": null,
+  "description": "₹60 off (demo code with a ₹100 budget)",
+  "descriptionTe": "₹60 తగ్గింపు (₹100 బడ్జెట్ ఉన్న డెమో కోడ్)",
+  "discountPaise": 6000,
+  "minOrderPaise": null
+ },
+ "problems": [],
+ "placeable": true,
+ "payment": {
+  "online": true,
+  "cod": {
+   "available": true,
+   "reason": null,
+   "maxOrderPaise": 150000
+  }
+ }
+}

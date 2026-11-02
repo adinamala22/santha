@@ -14,6 +14,7 @@ class CartLine {
     required this.pricePaise,
     required this.quantity,
     this.maxPerOrder,
+    this.substitution = Substitution.callMe,
   });
 
   factory CartLine.fromJson(Json j) => CartLine(
@@ -24,6 +25,7 @@ class CartLine {
         pricePaise: j['pricePaise'] as int,
         quantity: j['quantity'] as int,
         maxPerOrder: j['maxPerOrder'] as int?,
+        substitution: Substitution.parse(j['substitution'] as String?),
       );
 
   final String itemId;
@@ -34,10 +36,34 @@ class CartLine {
   final int quantity;
   final int? maxPerOrder;
 
+  /// What the store should do if this item is unavailable when packing.
+  final Substitution substitution;
+
   int get totalPaise => pricePaise * quantity;
 
-  CartLine withQuantity(int q) =>
-      CartLine(itemId: itemId, variantId: variantId, name: name, variantLabel: variantLabel, pricePaise: pricePaise, quantity: q, maxPerOrder: maxPerOrder);
+  CartLine withQuantity(int q) => CartLine(
+        itemId: itemId,
+        variantId: variantId,
+        name: name,
+        variantLabel: variantLabel,
+        pricePaise: pricePaise,
+        quantity: q,
+        maxPerOrder: maxPerOrder,
+        substitution: substitution,
+      );
+
+  CartLine withSubstitution(Substitution s) => CartLine(
+        itemId: itemId,
+        variantId: variantId,
+        name: name,
+        variantLabel: variantLabel,
+        pricePaise: pricePaise,
+        quantity: quantity,
+        maxPerOrder: maxPerOrder,
+        substitution: s,
+      );
+
+  CartLineInput toInput() => CartLineInput(itemId: itemId, variantId: variantId, quantity: quantity, substitution: substitution);
 
   Json toJson() => {
         'itemId': itemId,
@@ -47,6 +73,7 @@ class CartLine {
         'pricePaise': pricePaise,
         'quantity': quantity,
         'maxPerOrder': maxPerOrder,
+        'substitution': substitution.wire,
       };
 }
 
@@ -194,6 +221,15 @@ class CartController extends Notifier<Cart> {
   void setSlot(String merchantId, CartSlot slot) {
     if (!state.isEmpty && state.merchantId != merchantId) return;
     _save(Cart(merchantId: state.merchantId ?? merchantId, merchantName: state.merchantName, lines: state.lines, slot: slot));
+  }
+
+  void setSubstitution(String variantId, Substitution s) {
+    _save(Cart(
+      merchantId: state.merchantId,
+      merchantName: state.merchantName,
+      lines: [for (final l in state.lines) l.variantId == variantId ? l.withSubstitution(s) : l],
+      slot: state.slot,
+    ));
   }
 
   void clear() => _save(Cart.empty);

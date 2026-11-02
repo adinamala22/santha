@@ -55,6 +55,7 @@ export interface UpdateMerchantInput {
   hours?: WeeklyHours | undefined;
   radiusM?: number | undefined;
   movPaise?: number | undefined;
+  packagingFeePaise?: number | undefined;
   defaultFulfilment?: FulfilmentMode | undefined;
 }
 
@@ -133,7 +134,7 @@ export class MerchantsService {
       patch.location = input.location;
       patch.microMarketId = hit?.market.id ?? null;
     }
-    for (const k of ['hours', 'radiusM', 'movPaise', 'defaultFulfilment'] as const) if (input[k] !== undefined) (patch as Record<string, unknown>)[k] = input[k];
+    for (const k of ['hours', 'radiusM', 'movPaise', 'packagingFeePaise', 'defaultFulfilment'] as const) if (input[k] !== undefined) (patch as Record<string, unknown>)[k] = input[k];
 
     const merchant = await this.repo.transaction(async (tx) => {
       const updated = await tx.update(current.id, patch);

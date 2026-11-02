@@ -73,7 +73,7 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
   delete process.env.REDIS_URL;
 
   const mod = await Test.createTestingModule({ imports: [AppModule] }).compile();
-  const app = mod.createNestApplication({ logger: false });
+  const app = mod.createNestApplication({ logger: false, rawBody: true });
   configureApp(app);
   await app.init();
 

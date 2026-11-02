@@ -19,6 +19,7 @@ const base: MerchantRecord = {
   radiusM: 3000,
   hours: everyDay('08:00', '21:00'),
   movPaise: 0,
+  packagingFeePaise: 0,
   defaultFulfilment: 'self',
   returnPolicy: null,
   hygieneDeclaredAt: null,

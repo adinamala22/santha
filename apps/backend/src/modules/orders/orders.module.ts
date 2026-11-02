@@ -1,9 +1,39 @@
 import { Module } from '@nestjs/common';
+import { IdempotencyService } from '../../common/idempotency/idempotency.service';
+import { ENV } from '../../config/config.module';
+import type { Env } from '../../config/env';
+import { FakeSinks } from '../../infra/fake/fake-sinks';
+import { PrismaService } from '../../infra/prisma/prisma.service';
+import { AnalyticsConfigModule } from '../analytics-config/analytics-config.module';
+import { CartPricingModule } from '../cart-pricing/cart-pricing.module';
+import { IdentityKycModule } from '../identity-kyc/identity-kyc.module';
+import { MerchantCatalogueModule } from '../merchant-catalogue/merchant-catalogue.module';
+import { PaymentsSettlementModule } from '../payments-settlement/payments-settlement.module';
+import { PaymentExpiryJob } from './jobs/payment-expiry.job';
+import { DevOrderJobsController, OrdersController } from './orders.controller';
+import { InMemoryOrderRepository, OrderRepository, PrismaOrderRepository } from './orders.repository';
+import { OrdersService } from './orders.service';
 
 /**
- * orders — order aggregate and the single guarded transition() (M4, M5).
- * Scaffolded in M0; see BUILD-PLAN.md for the milestone that fills it in.
- * Owns its tables; other modules use its exported services or its events only.
+ * orders — checkout, placing orders (Idempotency-Key), and the order aggregate with the single
+ * guarded transition() (state-machine.ts). M4: placement and payment states; M5: the lifecycle.
+ * Events out: order.created, order.placed, order.payment_failed (+ lifecycle events in M5).
+ * Events in: payment.captured. Owns orders, order_lines, order_transitions.
  */
-@Module({})
+@Module({
+  imports: [CartPricingModule, PaymentsSettlementModule, MerchantCatalogueModule, AnalyticsConfigModule, IdentityKycModule],
+  controllers: [OrdersController, DevOrderJobsController],
+  providers: [
+    OrdersService,
+    IdempotencyService,
+    PaymentExpiryJob,
+    {
+      provide: OrderRepository,
+      inject: [ENV, PrismaService, FakeSinks],
+      useFactory: (env: Env, prisma: PrismaService, sinks: FakeSinks) =>
+        env.DATA_STORE === 'memory' ? new InMemoryOrderRepository(sinks) : new PrismaOrderRepository(prisma),
+    },
+  ],
+  exports: [OrdersService],
+})
 export class OrdersModule {}

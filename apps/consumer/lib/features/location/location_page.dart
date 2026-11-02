@@ -149,9 +149,9 @@ class AddressTile extends StatelessWidget {
       contentPadding: EdgeInsets.zero,
       onTap: onTap,
       leading: CircleAvatar(backgroundColor: SanthaColors.indigo100, child: Icon(addressIcon(a.label), color: SanthaColors.indigo)),
-      title: Row(children: [
+      title: Wrap(spacing: SanthaSpacing.s2, crossAxisAlignment: WrapCrossAlignment.center, children: [
         Text(a.name ?? addressLabel(l, a.label), style: text.titleSmall),
-        if (a.isDefault) ...[const SizedBox(width: SanthaSpacing.s2), TrustBadge(label: l.defaultAddress, positive: false)],
+        if (a.isDefault) TrustBadge(label: l.defaultAddress, positive: false),
       ]),
       subtitle: Text(
         '${a.line} · $area',

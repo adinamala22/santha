@@ -47,7 +47,7 @@ export abstract class MerchantRepository {
 type Row = Merchant & { lat: number | null; lng: number | null };
 
 const SELECT = Prisma.sql`m.id::text, m.owner_user_id::text, m.micro_market_id::text, m.type::text, m.sells_food, m.category,
-  m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.hours, m.mov_paise,
+  m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.hours, m.mov_paise, m.packaging_fee_paise,
   m.default_fulfilment::text, m.return_policy, m.hygiene_declared_at, m.status::text, m.submitted_at, m.decided_at,
   m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
   ST_Y(m.location::geometry) AS lat, ST_X(m.location::geometry) AS lng`;
@@ -69,6 +69,7 @@ const toRecord = (r: Row): MerchantRecord => ({
   radiusM: r.radiusM,
   hours: (r.hours as WeeklyHours | null) ?? null,
   movPaise: r.movPaise,
+  packagingFeePaise: r.packagingFeePaise,
   defaultFulfilment: r.defaultFulfilment,
   returnPolicy: r.returnPolicy,
   hygieneDeclaredAt: r.hygieneDeclaredAt,
@@ -101,6 +102,7 @@ interface RawRow {
   radius_m: number;
   hours: Prisma.JsonValue;
   mov_paise: number;
+  packaging_fee_paise: number;
   default_fulfilment: Merchant['defaultFulfilment'];
   return_policy: string | null;
   hygiene_declared_at: Date | null;
@@ -135,6 +137,7 @@ const fromRaw = (r: RawRow): MerchantRecord =>
     radiusM: r.radius_m,
     hours: r.hours,
     movPaise: r.mov_paise,
+    packagingFeePaise: r.packaging_fee_paise,
     defaultFulfilment: r.default_fulfilment,
     returnPolicy: r.return_policy,
     hygieneDeclaredAt: r.hygiene_declared_at,
@@ -315,6 +318,7 @@ class MerchantStore extends MemoryStore<MemState> {
             radiusM: 3000,
             hours: null,
             movPaise: 0,
+            packagingFeePaise: 0,
             defaultFulfilment: 'rider',
             returnPolicy: null,
             hygieneDeclaredAt: null,

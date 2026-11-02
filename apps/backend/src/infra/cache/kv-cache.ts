@@ -8,6 +8,9 @@ import { REDIS } from '../redis/redis.module';
 export abstract class KvCache {
   abstract get<T>(key: string): Promise<T | null>;
   abstract set<T>(key: string, value: T, ttlSec: number): Promise<void>;
+  /** Atomic: stores only if the key is absent (or expired). Returns whether it stored. */
+  abstract setIfAbsent<T>(key: string, value: T, ttlSec: number): Promise<boolean>;
+  abstract delete(key: string): Promise<void>;
 }
 
 export class RedisKvCache extends KvCache {
@@ -22,6 +25,14 @@ export class RedisKvCache extends KvCache {
 
   async set<T>(key: string, value: T, ttlSec: number): Promise<void> {
     await this.redis.set(key, JSON.stringify(value), 'EX', ttlSec);
+  }
+
+  async setIfAbsent<T>(key: string, value: T, ttlSec: number): Promise<boolean> {
+    return (await this.redis.set(key, JSON.stringify(value), 'EX', ttlSec, 'NX')) === 'OK';
+  }
+
+  async delete(key: string): Promise<void> {
+    await this.redis.del(key);
   }
 }
 
@@ -46,6 +57,19 @@ export class MemoryKvCache extends KvCache {
   async set<T>(key: string, value: T, ttlSec: number): Promise<void> {
     if (this.map.size >= this.maxEntries) this.map.delete(this.map.keys().next().value!);
     this.map.set(key, { v: JSON.stringify(value), exp: Date.now() + ttlSec * 1000 });
+  }
+
+  async setIfAbsent<T>(key: string, value: T, ttlSec: number): Promise<boolean> {
+    // Check and write with no await in between, so concurrent callers cannot both win.
+    const e = this.map.get(key);
+    if (e && e.exp >= Date.now()) return false;
+    if (this.map.size >= this.maxEntries) this.map.delete(this.map.keys().next().value!);
+    this.map.set(key, { v: JSON.stringify(value), exp: Date.now() + ttlSec * 1000 });
+    return true;
+  }
+
+  async delete(key: string): Promise<void> {
+    this.map.delete(key);
   }
 }
 

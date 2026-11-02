@@ -28,3 +28,5 @@ PW_CHANNEL=chrome pnpm --filter web e2e  # use the installed Chrome instead of P
 pnpm --filter web build                # NEXT_STANDALONE=1 for the container image (ADR-002)
 ```
 The fake store resets when the backend restarts; restart it before re-running e2e locally (CI always starts fresh).
+
+M4: `/admin/promos` lists promo codes with budget usage, creates codes (admin, finance) and pauses/resumes them (admin, ops, finance); every change is audited.

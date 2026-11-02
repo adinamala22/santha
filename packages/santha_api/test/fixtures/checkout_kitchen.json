@@ -1,0 +1,101 @@
+{
+ "quoteId": "88a7a541-15bf-4407-bf5f-5bc61bedeec6",
+ "expiresAt": "2026-11-02T11:48:23.776Z",
+ "merchant": {
+  "id": "10000000-0000-4000-8000-000000000210",
+  "name": "Saraswathi's Kitchen",
+  "nameTe": "సరస్వతి కిచెన్",
+  "type": "home_kitchen"
+ },
+ "address": {
+  "addressId": "80000000-0000-4000-8000-000000000001",
+  "label": "home",
+  "name": null,
+  "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+  "landmark": "Near Dargamitta Temple",
+  "pincode": "524003",
+  "location": {
+   "lat": 14.4535,
+   "lng": 79.99600000000001
+  }
+ },
+ "when": {
+  "mode": "slot",
+  "slotId": "60000000-0000-4000-8000-210000000003",
+  "date": "2026-11-03",
+  "startsAt": "2026-11-03T14:00:00.000Z",
+  "end": "20:00"
+ },
+ "bill": {
+  "lines": [
+   {
+    "itemId": "40000000-0000-4000-8000-210000000002",
+    "variantId": "70000000-0000-4000-8000-210000000200",
+    "name": "Veg Meals",
+    "nameTe": "వెజ్ మీల్స్",
+    "variantLabel": "1 plate",
+    "quantity": 2,
+    "unitPricePaise": 14000,
+    "mrpPaise": null,
+    "linePaise": 28000,
+    "savingsPaise": 0,
+    "stock": "in",
+    "stale": false,
+    "available": true,
+    "substitution": "call_me"
+   }
+  ],
+  "itemCount": 2,
+  "itemsPaise": 28000,
+  "mrpSavingsPaise": 0,
+  "fees": [
+   {
+    "code": "delivery",
+    "amountPaise": 0,
+    "waivedPaise": 3059
+   },
+   {
+    "code": "platform",
+    "amountPaise": 500,
+    "waivedPaise": 0
+   },
+   {
+    "code": "packaging",
+    "amountPaise": 1000,
+    "waivedPaise": 0
+   }
+  ],
+  "feesPaise": 1500,
+  "taxes": [
+   {
+    "code": "gst_fees",
+    "ratePercent": 18,
+    "basePaise": 500,
+    "amountPaise": 90
+   },
+   {
+    "code": "gst_food",
+    "ratePercent": 5,
+    "basePaise": 29000,
+    "amountPaise": 1450
+   }
+  ],
+  "taxPaise": 1540,
+  "discount": null,
+  "discountPaise": 0,
+  "totalPaise": 31040,
+  "toFreeDeliveryPaise": 0,
+  "distanceM": 698
+ },
+ "promo": null,
+ "problems": [],
+ "placeable": true,
+ "payment": {
+  "online": true,
+  "cod": {
+   "available": false,
+   "reason": "cooked_food",
+   "maxOrderPaise": 150000
+  }
+ }
+}

@@ -411,7 +411,6 @@
     }
   },
   "itemTotal": "Item total",
-  "checkoutSoon": "Checkout and payment are coming in the next update.",
   "replaceCartTitle": "Start a new cart?",
   "replaceCartBody": "Your cart has items from {store}. A cart can hold one store at a time.",
   "@replaceCartBody": {
@@ -442,5 +441,263 @@
   "addAddress": "Add an address",
   "noAddresses": "No saved addresses yet.",
   "dayToday": "today",
-  "dayTomorrow": "tomorrow"
+  "dayTomorrow": "tomorrow",
+  "cartEmpty": "Your cart is empty. Add something from a store near you.",
+  "browseStores": "Browse stores",
+  "ifUnavailable": "If unavailable",
+  "subCallMe": "Call me",
+  "subSimilar": "Send a similar item",
+  "subRemove": "Remove it",
+  "proceedToCheckout": "Proceed to checkout",
+  "addMoreForFreeDelivery": "Add {amount} more for free delivery",
+  "@addMoreForFreeDelivery": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "checkoutTitle": "Checkout",
+  "deliverToAddress": "Deliver to",
+  "changeAddress": "Change",
+  "chooseAddress": "Choose a delivery address",
+  "deliveryTime": "Delivery time",
+  "asapLabel": "As soon as possible",
+  "slotOn": "{day}, {time}",
+  "@slotOn": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "instructionsLabel": "Delivery instructions (optional)",
+  "instructionsHint": "e.g. Ring the bell twice",
+  "couponLabel": "Coupon code",
+  "apply": "Apply",
+  "removeCoupon": "Remove coupon",
+  "couponApplied": "{code} applied · you save {amount}",
+  "@couponApplied": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "promo_not_found": "That code doesn't exist.",
+  "promo_inactive": "This code is paused right now.",
+  "promo_not_started": "This code isn't active yet.",
+  "promo_expired": "This code has expired.",
+  "promo_not_applicable": "This code doesn't apply to this store or order.",
+  "promo_min_order": "Add items worth {amount} to use this code.",
+  "@promo_min_order": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "promo_first_order_only": "This code is for your first order only.",
+  "promo_limit_reached": "You've already used this code.",
+  "promo_budget_exhausted": "This code has run out.",
+  "billDetails": "Bill details",
+  "billItems": "Item total",
+  "billDelivery": "Delivery fee",
+  "billSmallOrder": "Small order fee",
+  "billPlatform": "Platform fee",
+  "billPackaging": "Packaging",
+  "billGstFees": "GST on fees ({rate}%)",
+  "@billGstFees": {
+    "placeholders": {
+      "rate": {
+        "type": "int"
+      }
+    }
+  },
+  "billGstFood": "GST on food ({rate}%)",
+  "@billGstFood": {
+    "placeholders": {
+      "rate": {
+        "type": "int"
+      }
+    }
+  },
+  "billDiscount": "Coupon {code}",
+  "@billDiscount": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "billTotal": "To pay",
+  "billFree": "FREE",
+  "billSavings": "You save {amount} on MRP",
+  "@billSavings": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "pricesInclusive": "Item prices include GST.",
+  "paymentMethod": "Payment",
+  "payOnline": "Pay online",
+  "payOnlineSub": "UPI, cards, net banking",
+  "payCod": "Cash on delivery",
+  "cod_cooked_food": "Not available for home-cooked food",
+  "cod_type_not_allowed": "Not available for this store",
+  "cod_over_limit": "Only for orders up to {amount}",
+  "@cod_over_limit": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cod_disabled": "Not available in your area yet",
+  "cod_too_many_open": "You have cash orders still on the way",
+  "placeOrderCod": "Place order · {amount}",
+  "@placeOrderCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payAndPlace": "Pay {amount}",
+  "@payAndPlace": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "needsAttention": "Please fix these to continue",
+  "problem_EMPTY_CART": "Your cart is empty.",
+  "problem_ITEM_UNAVAILABLE": "An item is no longer sold. Remove it from your cart.",
+  "problem_OUT_OF_STOCK": "An item is out of stock. Remove it from your cart.",
+  "problem_MAX_PER_ORDER": "You can order up to {n} of an item.",
+  "@problem_MAX_PER_ORDER": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "problem_MIN_ORDER_NOT_MET": "Add {amount} more to reach the store minimum.",
+  "@problem_MIN_ORDER_NOT_MET": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "problem_NOT_DELIVERABLE": "This store doesn't deliver to this address.",
+  "problem_STORE_CLOSED": "The store is closed right now.",
+  "problem_SLOT_REQUIRED": "Choose a delivery slot.",
+  "problem_SLOT_NOT_ALLOWED": "This store delivers as soon as possible, not by slot.",
+  "problem_SLOT_UNAVAILABLE": "That slot is closed or full. Choose another.",
+  "problem_NOT_ON_MENU": "An item isn't on the menu that day.",
+  "problem_DAILY_CAPACITY": "An item has only {n} portions left for that day.",
+  "@problem_DAILY_CAPACITY": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "billChanged": "Your bill changed. Please check the new total.",
+  "quoteExpired": "Prices may have changed. We updated your bill.",
+  "couponRanOut": "{code} has run out. Place the order without it?",
+  "@couponRanOut": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "addAddressFirst": "Add a delivery address to continue",
+  "testPaymentTitle": "Test payment",
+  "testPaymentBody": "This is a test build. No real money moves.",
+  "payNow": "Pay {amount}",
+  "@payNow": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "failPayment": "Fail payment",
+  "paymentFailedTitle": "Payment didn't go through",
+  "paymentFailedBody": "No money was taken. If it was, it comes back automatically.",
+  "tryAgainPayment": "Try again",
+  "cancelOrder": "Cancel order",
+  "confirmingPayment": "Confirming your payment…",
+  "orderPlacedTitle": "Order placed!",
+  "orderPlacedBody": "{store} has your order. We will tell you when they accept it.",
+  "@orderPlacedBody": {
+    "placeholders": {
+      "store": {
+        "type": "String"
+      }
+    }
+  },
+  "orderCode": "Order {code}",
+  "@orderCode": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "orderItems": "{n, plural, =1{1 item} other{{n} items}}",
+  "@orderItems": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "state_AWAITING_PAYMENT": "Waiting for payment",
+  "state_PAYMENT_FAILED": "Payment not completed",
+  "state_PLACED": "Placed",
+  "state_ACCEPTED": "Accepted",
+  "state_PREPARING": "Being prepared",
+  "state_READY": "Ready for pickup",
+  "state_PICKED_UP": "Picked up",
+  "state_OUT_FOR_DELIVERY": "On the way",
+  "state_DELIVERED": "Delivered",
+  "state_CANCELLED": "Cancelled",
+  "state_REJECTED": "Store could not take it",
+  "state_EXPIRED": "Store did not respond",
+  "state_FAILED_DELIVERY": "Delivery attempt failed",
+  "completePayment": "Complete payment",
+  "payBy": "Pay by {time} or the order is cancelled",
+  "@payBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "paidOnline": "Paid online",
+  "payOnDelivery": "Pay {amount} in cash on delivery",
+  "@payOnDelivery": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "deliverySlot": "Delivery slot",
+  "ordersLoadError": "We couldn't load your orders.",
+  "wallet": "Santha wallet",
+  "walletSub": "Refund credits, used automatically in a future update"
 }

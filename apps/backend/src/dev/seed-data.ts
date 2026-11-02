@@ -216,3 +216,38 @@ export const SEED_ADDRESSES: readonly SeedAddress[] = [
   { id: '80000000-0000-4000-8000-000000000002', ownerPhone: '+919000000001', label: 'work', line: '2nd floor, Magunta Towers, Magunta Layout Main Road', pincode: '524003', microMarketSlug: 'magunta-layout', offset: { lat: 0.001, lng: -0.001 }, isDefault: false },
   { id: '80000000-0000-4000-8000-000000000003', ownerPhone: '+919000000002', label: 'home', line: '11-3, Balaji Nagar 3rd Street', landmark: 'Opposite water tank', pincode: '524002', microMarketSlug: 'balaji-nagar', offset: { lat: 0.002, lng: 0.0 }, isDefault: true },
 ];
+
+/**
+ * Demo promos (M4). NELLORE50 matches the home promo card; TINY has a ₹100 budget so budget
+ * exhaustion is easy to demo; KITCHEN20 is half merchant-funded.
+ */
+export interface SeedPromo {
+  id: string;
+  code: string;
+  description: string;
+  descriptionTe: string;
+  kind: 'flat' | 'percent';
+  value: number;
+  maxDiscountPaise: number | null;
+  minOrderPaise: number;
+  budgetPaise: number | null;
+  perUserLimit: number;
+  firstOrderOnly: boolean;
+  merchantSharePercent: number;
+  merchantTypes: Array<'retail' | 'fashion' | 'home_business' | 'home_kitchen'>;
+}
+
+export const SEED_PROMOS: readonly SeedPromo[] = [
+  {
+    id: '90000000-0000-4000-8000-000000000001', code: 'NELLORE50', description: '₹50 off your first Santha order', descriptionTe: 'మీ మొదటి సంత ఆర్డర్‌పై ₹50 తగ్గింపు',
+    kind: 'flat', value: 5000, maxDiscountPaise: null, minOrderPaise: 19900, budgetPaise: 5_000_000, perUserLimit: 1, firstOrderOnly: true, merchantSharePercent: 0, merchantTypes: [],
+  },
+  {
+    id: '90000000-0000-4000-8000-000000000002', code: 'KITCHEN20', description: '20% off home-kitchen meals, up to ₹60', descriptionTe: 'ఇంటి వంటలపై 20% తగ్గింపు, ₹60 వరకు',
+    kind: 'percent', value: 20, maxDiscountPaise: 6000, minOrderPaise: 14900, budgetPaise: 1_000_000, perUserLimit: 3, firstOrderOnly: false, merchantSharePercent: 50, merchantTypes: ['home_kitchen'],
+  },
+  {
+    id: '90000000-0000-4000-8000-000000000003', code: 'TINY', description: '₹60 off (demo code with a ₹100 budget)', descriptionTe: '₹60 తగ్గింపు (₹100 బడ్జెట్ ఉన్న డెమో కోడ్)',
+    kind: 'flat', value: 6000, maxDiscountPaise: null, minOrderPaise: 0, budgetPaise: 10_000, perUserLimit: 5, firstOrderOnly: false, merchantSharePercent: 0, merchantTypes: [],
+  },
+];
