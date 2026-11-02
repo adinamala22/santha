@@ -168,6 +168,8 @@ Future<(ProviderContainer, FakeCatalogueApi)> pumpCatalogue(WidgetTester tester,
       photoPickerProvider.overrideWithValue(({required bool camera}) async => PickedPhoto(Uint8List.fromList(List.filled(64, 1)), 'image/jpeg')),
     ],
   );
+  await tester.tap(find.text(locale == 'te' ? 'మరిన్ని' : 'More'));
+  await tester.pumpAndSettle();
   await tester.tap(find.byKey(const ValueKey('open-catalogue')));
   await tester.pumpAndSettle();
   container.read(catalogueApiProvider);

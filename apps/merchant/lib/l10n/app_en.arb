@@ -532,5 +532,183 @@
   "itemFoodMarkMissing": "Choose veg, non-veg or contains egg.",
   "kycAadhaarOtpPending": "Enter the OTP sent to your Aadhaar-linked mobile.",
   "slotToday": "Today",
-  "slotTomorrow": "Tomorrow"
+  "slotTomorrow": "Tomorrow",
+  "navOrders": "Orders",
+  "navCatalogue": "Catalogue",
+  "navEarnings": "Earnings",
+  "navMore": "More",
+  "storeOpen": "Open",
+  "storePaused": "Paused",
+  "storeToggleLabel": "Store open for orders",
+  "storePausedBanner": "Your store is paused. Customers cannot order right now.",
+  "storePausedMissed": "We paused your store after missed orders. Open it when you are ready.",
+  "storeResume": "Open store",
+  "newOrderTitle": "New order · #{code}",
+  "@newOrderTitle": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "itemsCount": "{count, plural, =1{1 item} other{{count} items}}",
+  "@itemsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "distanceKm": "{km} km",
+  "@distanceKm": {
+    "placeholders": {
+      "km": {
+        "type": "String"
+      }
+    }
+  },
+  "substitutesAllowed": "Substitutes: allowed for {count, plural, =1{1 item} other{{count} items}}",
+  "@substitutesAllowed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "acceptIn": "Accept {time}",
+  "@acceptIn": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptNow": "Accept",
+  "reject": "Reject",
+  "rejectTitle": "Why can you not take this order?",
+  "rejectOutOfStock": "Items out of stock",
+  "rejectStoreClosing": "Store is closing",
+  "rejectTooBusy": "Too busy right now",
+  "rejectCannotDeliver": "Cannot deliver there",
+  "rejectOther": "Another reason",
+  "rejectConfirm": "Reject order",
+  "tabPreparing": "Preparing",
+  "tabReady": "Ready",
+  "tabOut": "Out",
+  "tabDone": "Done",
+  "tabWithCount": "{label} ({count})",
+  "@tabWithCount": {
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "packBy": "Pack by {time}",
+  "@packBy": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "markReady": "Mark ready",
+  "itemUnavailable": "Item unavailable",
+  "unavailableTitle": "Which item is unavailable?",
+  "unavailRemove": "Remove and refund",
+  "unavailSubstitute": "Send a substitute",
+  "pickSubstitute": "Pick a substitute at the same price or less",
+  "noSubstitutes": "No in-stock item at this price or less.",
+  "custChoiceSimilar": "Customer: send something similar",
+  "custChoiceRemove": "Customer: remove it",
+  "custChoiceCallMe": "Customer: call me first",
+  "lineRemoved": "Removed · refund {amount}",
+  "@lineRemoved": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "lineSubstituted": "Sending {name} instead",
+  "@lineSubstituted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "refundedToWallet": "{amount} refunded to the customer",
+  "@refundedToWallet": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "todayTitle": "Today",
+  "todaySummary": "{count, plural, =1{1 order} other{{count} orders}} · {amount}",
+  "@todaySummary": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptanceRate": "Acceptance {pct}%",
+  "@acceptanceRate": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "avgPrep": "Avg prep {min} min",
+  "@avgPrep": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
+  "emptyTab": "No orders here yet.",
+  "waitingForOrders": "Waiting for orders. Keep the app open; we will ring for each new one.",
+  "payCod": "Cash on delivery · collect {amount}",
+  "@payCod": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "payOnline": "Paid online",
+  "deliverTo": "Deliver to: {address}",
+  "@deliverTo": {
+    "placeholders": {
+      "address": {
+        "type": "String"
+      }
+    }
+  },
+  "instructionsLabel": "Note: {text}",
+  "@instructionsLabel": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "orderTimeUp": "Time is up",
+  "orderChanged": "This order changed. We refreshed the list.",
+  "outcomeCancelled": "Cancelled",
+  "outcomeRejected": "Rejected",
+  "outcomeExpired": "Missed",
+  "outcomeDelivered": "Delivered",
+  "earningsSoon": "Payouts and statements will appear here."
 }
