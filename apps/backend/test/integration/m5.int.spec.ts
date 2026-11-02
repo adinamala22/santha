@@ -146,7 +146,7 @@ describe('M5 on Postgres + Redis', () => {
     const timers = app.get(QueuesService).get('timers');
     const job = await until(() => timers.getJob(`order:${o.id}:accept`), (j) => !!j);
     expect(job?.name).toBe('order.accept_timeout');
-    expect(await timers.getJob(`order:${o.id}:sms`)).toBeTruthy();
+    expect(await until(() => timers.getJob(`order:${o.id}:call`), (j) => !!j)).toBeTruthy(); // scheduled after accept and sms
     const owner = await signIn(kirana.ownerPhone.replace('+91', ''), 'merchant');
     const accepted = (await http().post(`/v1/orders/${o.id}/accept`).set(owner.headers).send({}).expect(200)).body;
     expect(accepted.state).toBe('PREPARING');
