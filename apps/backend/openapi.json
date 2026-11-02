@@ -16006,6 +16006,31 @@
                 },
                 "substitution": {
                   "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "ok",
+                    "removed",
+                    "substituted"
+                  ]
+                },
+                "substituteName": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "substituteVariantLabel": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "refundPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
@@ -16017,7 +16042,11 @@
                 "unitPricePaise",
                 "mrpPaise",
                 "linePaise",
-                "substitution"
+                "substitution",
+                "status",
+                "substituteName",
+                "substituteVariantLabel",
+                "refundPaise"
               ],
               "additionalProperties": false
             }
@@ -16303,6 +16332,20 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "refundedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "outcomeReason": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "canCancel": {
+            "type": "boolean"
+          },
           "promoCode": {
             "type": "array",
             "items": {
@@ -16443,6 +16486,9 @@
           "taxPaise",
           "discountPaise",
           "totalPaise",
+          "refundedPaise",
+          "outcomeReason",
+          "canCancel",
           "promoCode",
           "placedAt",
           "paymentDueAt",
@@ -16665,6 +16711,31 @@
                       },
                       "substitution": {
                         "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "ok",
+                          "removed",
+                          "substituted"
+                        ]
+                      },
+                      "substituteName": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "substituteVariantLabel": {
+                        "type": [
+                          "string",
+                          "null"
+                        ]
+                      },
+                      "refundPaise": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
                       }
                     },
                     "required": [
@@ -16676,7 +16747,11 @@
                       "unitPricePaise",
                       "mrpPaise",
                       "linePaise",
-                      "substitution"
+                      "substitution",
+                      "status",
+                      "substituteName",
+                      "substituteVariantLabel",
+                      "refundPaise"
                     ],
                     "additionalProperties": false
                   }
@@ -16962,6 +17037,20 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "refundedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "outcomeReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "canCancel": {
+                  "type": "boolean"
+                },
                 "promoCode": {
                   "type": [
                     "string",
@@ -17102,6 +17191,9 @@
                 "taxPaise",
                 "discountPaise",
                 "totalPaise",
+                "refundedPaise",
+                "outcomeReason",
+                "canCancel",
                 "promoCode",
                 "placedAt",
                 "paymentDueAt",

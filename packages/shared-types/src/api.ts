@@ -4028,6 +4028,11 @@ export interface components {
                 mrpPaise: number | null;
                 linePaise: number;
                 substitution: string;
+                /** @enum {string} */
+                status: "ok" | "removed" | "substituted";
+                substituteName: string | null;
+                substituteVariantLabel: string | null;
+                refundPaise: number;
             }[];
             bill: {
                 lines: {
@@ -4083,6 +4088,9 @@ export interface components {
             taxPaise: number;
             discountPaise: number;
             totalPaise: number;
+            refundedPaise: number;
+            outcomeReason: string[];
+            canCancel: boolean;
             promoCode: string[];
             /** Format: date-time */
             placedAt: string | null;
@@ -4165,6 +4173,11 @@ export interface components {
                     mrpPaise: number | null;
                     linePaise: number;
                     substitution: string;
+                    /** @enum {string} */
+                    status: "ok" | "removed" | "substituted";
+                    substituteName: string | null;
+                    substituteVariantLabel: string | null;
+                    refundPaise: number;
                 }[];
                 bill: {
                     lines: {
@@ -4220,6 +4233,9 @@ export interface components {
                 taxPaise: number;
                 discountPaise: number;
                 totalPaise: number;
+                refundedPaise: number;
+                outcomeReason: string | null;
+                canCancel: boolean;
                 promoCode: string | null;
                 /** Format: date-time */
                 placedAt: string | null;

@@ -1,0 +1,79 @@
+{
+ "items": [
+  {
+   "id": "6b93ec5d-90b1-4068-98c3-0644151b9754",
+   "code": "SNDBTX69",
+   "state": "PREPARING",
+   "paymentMethod": "cod",
+   "fulfilmentMode": "self",
+   "itemCount": 2,
+   "itemsPaise": 29700,
+   "totalPaise": 30290,
+   "refundedPaise": 20500,
+   "codDuePaise": 9790,
+   "when": {
+    "mode": "asap",
+    "slotDate": null,
+    "slotStartsAt": null
+   },
+   "distanceM": 445,
+   "address": {
+    "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+    "landmark": "Near Dargamitta Temple"
+   },
+   "instructions": null,
+   "lines": [
+    {
+     "itemId": "40000000-0000-4000-8000-201000000001",
+     "variantId": "70000000-0000-4000-8000-201000000100",
+     "name": "Annapoorna Chakki Atta",
+     "variantLabel": "1 kg",
+     "quantity": 2,
+     "unitPricePaise": 6000,
+     "linePaise": 12000,
+     "substitution": "similar",
+     "status": "substituted",
+     "substituteName": "Nellore Spice Co Garam Masala",
+     "substituteVariantLabel": "50 g",
+     "substituteUnitPaise": 4600,
+     "refundPaise": 2800
+    },
+    {
+     "itemId": "40000000-0000-4000-8000-201000000003",
+     "variantId": "70000000-0000-4000-8000-201000000300",
+     "name": "Annapoorna Basmati Rice",
+     "variantLabel": "1 kg",
+     "quantity": 1,
+     "unitPricePaise": 17700,
+     "linePaise": 17700,
+     "substitution": "remove",
+     "status": "removed",
+     "substituteName": null,
+     "substituteVariantLabel": null,
+     "substituteUnitPaise": null,
+     "refundPaise": 17700
+    }
+   ],
+   "placedAt": "2026-11-02T15:34:54.785Z",
+   "acceptBy": null,
+   "expiresAt": null,
+   "acceptedAt": "2026-11-02T15:34:54.809Z",
+   "packBy": "2026-11-02T15:44:54.809Z",
+   "readyAt": null,
+   "outcomeReason": null
+  }
+ ],
+ "counts": {
+  "new": 1,
+  "preparing": 1,
+  "ready": 0,
+  "out": 0,
+  "done": 0
+ },
+ "summary": {
+  "orders": 1,
+  "itemsPaise": 9200,
+  "acceptanceRate": 1,
+  "avgPrepMin": null
+ }
+}
