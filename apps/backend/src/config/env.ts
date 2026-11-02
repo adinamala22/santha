@@ -100,6 +100,16 @@ export const EnvSchema = z
     /** How often the catalogue staleness sweep runs (minutes). */
     STALENESS_SWEEP_MIN: z.coerce.number().int().positive().default(60),
 
+    /** Payments (M4). razorpay_sandbox = Razorpay test-mode keys; mock = in-process, dev/test only (fake mode always mock). */
+    PAYMENTS_PROVIDER: z.enum(['mock', 'razorpay_sandbox', 'razorpay']).default('mock'),
+    RAZORPAY_KEY_ID: z.string().optional(),
+    RAZORPAY_KEY_SECRET: z.string().optional(),
+    RAZORPAY_WEBHOOK_SECRET: z.string().optional(),
+    /** Minutes an online order waits for payment before it becomes PAYMENT_FAILED. */
+    PAYMENT_WINDOW_MIN: z.coerce.number().int().min(5).max(60).default(15),
+    /** Minutes a checkout quote stays valid. */
+    QUOTE_TTL_MIN: z.coerce.number().int().min(5).max(120).default(30),
+
     RUN_WORKERS: bool.default(true),
     OUTBOX_POLL_MS: z.coerce.number().int().positive().default(500),
   })
@@ -109,10 +119,15 @@ export const EnvSchema = z
         ctx.addIssue({ code: 'custom', path: ['OTP_PROVIDER'], message: 'mock OTP is not allowed in production' });
       if (env.KYC_PROVIDER === 'mock')
         ctx.addIssue({ code: 'custom', path: ['KYC_PROVIDER'], message: 'mock KYC is not allowed in production' });
+      if (env.PAYMENTS_PROVIDER !== 'razorpay')
+        ctx.addIssue({ code: 'custom', path: ['PAYMENTS_PROVIDER'], message: 'production takes live payments only (razorpay)' });
       for (const k of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'] as const)
         if (env[k].length < 32 || env[k].startsWith('change-me'))
           ctx.addIssue({ code: 'custom', path: [k], message: 'must be a strong secret (≥32 chars) in production' });
     }
+    if (env.PAYMENTS_PROVIDER !== 'mock')
+      for (const k of ['RAZORPAY_KEY_ID', 'RAZORPAY_KEY_SECRET', 'RAZORPAY_WEBHOOK_SECRET'] as const)
+        if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: `required when PAYMENTS_PROVIDER=${env.PAYMENTS_PROVIDER}` });
     if (env.MAPS_PROVIDER === 'google' && !env.GOOGLE_MAPS_SERVER_KEY)
       ctx.addIssue({ code: 'custom', path: ['GOOGLE_MAPS_SERVER_KEY'], message: 'required when MAPS_PROVIDER=google' });
     if (env.OTP_PROVIDER === 'msg91' && (!env.MSG91_AUTH_KEY || !env.MSG91_TEMPLATE_ID))

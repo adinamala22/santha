@@ -38,6 +38,7 @@ export const UpdateMerchantSchema = z
     hours: WeeklyHoursSchema,
     radiusM: z.number().int().min(500).max(10_000),
     movPaise: z.number().int().min(0).max(100_000).describe('Minimum order value, paise'),
+    packagingFeePaise: z.number().int().min(0).max(10_000).describe('Per-order packaging charge, paise (capped by the micro-market fee rule)'),
     defaultFulfilment: fulfilment,
   })
   .partial();
@@ -94,6 +95,7 @@ export const MerchantSchema = z.object({
   radiusM: z.number().int(),
   hours: WeeklyHoursSchema.nullable(),
   movPaise: z.number().int(),
+  packagingFeePaise: z.number().int(),
   defaultFulfilment: fulfilment,
   returnPolicy: z.string().nullable(),
   hygieneDeclaredAt: iso.nullable(),
@@ -174,6 +176,7 @@ export const toViewDto = (v: MerchantView) => {
       radiusM: m.radiusM,
       hours: m.hours,
       movPaise: m.movPaise,
+      packagingFeePaise: m.packagingFeePaise,
       defaultFulfilment: m.defaultFulfilment,
       returnPolicy: m.returnPolicy,
       hygieneDeclaredAt: isoOrNull(m.hygieneDeclaredAt),

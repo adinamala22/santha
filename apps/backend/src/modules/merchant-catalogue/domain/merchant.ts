@@ -21,6 +21,8 @@ export interface MerchantRecord {
   radiusM: number;
   hours: WeeklyHours | null;
   movPaise: number;
+  /** Per-order packaging charge (paise); cart-pricing caps it at the micro-market fee rule. */
+  packagingFeePaise: number;
   defaultFulfilment: FulfilmentMode;
   returnPolicy: string | null;
   hygieneDeclaredAt: Date | null;
@@ -87,7 +89,7 @@ export const PROFILE_FIELDS = [
   'returnPolicy',
   'hygieneDeclared',
 ] as const;
-export const OPERATIONAL_FIELDS = ['hours', 'radiusM', 'movPaise', 'defaultFulfilment'] as const;
+export const OPERATIONAL_FIELDS = ['hours', 'radiusM', 'movPaise', 'packagingFeePaise', 'defaultFulfilment'] as const;
 
 export const profileEditable = (s: MerchantStatus) => s === 'draft' || s === 'rejected';
 
