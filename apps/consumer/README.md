@@ -10,6 +10,8 @@ Flutter app (flavors dev / stg / prod). Conventions: `.claude/skills/santha-flut
 - M4: cart page (per-item "if unavailable" preference), checkout (address, ASAP or kitchen slot, coupon, bill with
   fees and GST, online or cash on delivery), Razorpay checkout (`razorpay_flutter`; a "Test payment" sheet when the
   backend runs the mock gateway), order confirmation, Orders tab and order detail, wallet balance (ADR-010).
+- M5: live order detail (realtime order.updated + polling), cancel before the store accepts, store changes to lines
+  (removed / substituted) with wallet refunds, WhatsApp order-updates opt-in in Account (ADR-011).
 
 ```bash
 melos run platforms                                   # once, generates android/ios around our flavor files

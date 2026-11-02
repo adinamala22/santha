@@ -30,3 +30,5 @@ pnpm --filter web build                # NEXT_STANDALONE=1 for the container ima
 The fake store resets when the backend restarts; restart it before re-running e2e locally (CI always starts fresh).
 
 M4: `/admin/promos` lists promo codes with budget usage, creates codes (admin, finance) and pauses/resumes them (admin, ops, finance); every change is audited.
+
+M5: `/admin/orders` lists orders with state filters and counts; `/admin/orders/[id]` shows line changes, refunds, the transition timeline with actors, payment and every message sent (comms log).

@@ -26,6 +26,21 @@ test/              e2e (HTTP, in-memory) · integration (Testcontainers) · mock
 Every authenticated request must send `X-Device-Id` matching the token. Use `@Public()` and `@Roles(...)` from
 `common/auth/decorators.ts` on new routes (the guard is global).
 
+## orders lifecycle (M5)
+| Endpoint | Auth | Notes |
+|---|---|---|
+| `GET /v1/merchants/me/orders?bucket=new\|preparing\|ready\|out\|done` | merchant | Board with counts per bucket and today's summary. Address only after accept. |
+| `POST /v1/orders/:id/accept` · `/reject` · `/ready` | merchant | Guarded transitions; 409 INVALID_STATE when the order moved on. Reject reasons: out_of_stock, store_closing, too_busy, cannot_deliver, other. |
+| `POST /v1/orders/:id/items/:variantId/unavailable` | merchant | `{ action: remove }` or `{ action: substitute, itemId, variantId }` (same price or less); the difference goes to the wallet at once. |
+| `PUT /v1/merchants/me/availability` | merchant | `{ open }`. Two missed orders auto-pause the store. |
+| `POST /v1/orders/:id/cancel` | consumer | Free while PLACED only. |
+| `PUT /v1/me/push-token` · `GET/PUT /v1/me/notification-preferences` | bearer | FCM token; WhatsApp opt-in. |
+| `GET /v1/ops/orders` · `GET /v1/ops/orders/:id` | ops | List; detail with timeline and comms log. |
+
+Realtime: Socket.IO at path `/v1/realtime`, `auth: { token, deviceId }`, events `order.new`, `order.updated`,
+`store.paused`. Timers (accept window, SMS/call reminders) are BullMQ delayed jobs on the `timers` queue. In fake
+mode, `POST /v1/dev/jobs/timers` fires the ones due at the dev clock (ADR-011).
+
 ## Commands
 ```bash
 pnpm --filter backend dev            # watch mode (reads ../../.env)
