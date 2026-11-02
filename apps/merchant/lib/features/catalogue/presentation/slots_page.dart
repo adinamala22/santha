@@ -83,7 +83,7 @@ class _SlotsPageState extends ConsumerState<SlotsPage> {
                 if (_next != null)
                   Padding(
                     padding: const EdgeInsets.only(top: SanthaSpacing.s3),
-                    child: Text(l.slotNext(_next!.date, _next!.start, _next!.end), style: text.bodyMedium?.copyWith(color: SanthaColors.leaf)),
+                    child: Text(l.slotNext(slotDayLabel(l, _next!.date, DateTime.now()), _next!.start, _next!.end), style: text.bodyMedium?.copyWith(color: SanthaColors.leaf)),
                   ),
                 const SizedBox(height: SanthaSpacing.s4),
                 if (_slots!.isEmpty) Padding(padding: const EdgeInsets.all(SanthaSpacing.s6), child: Text(l.slotsEmpty, textAlign: TextAlign.center)),
@@ -200,4 +200,15 @@ class _SlotSheetState extends State<_SlotSheet> {
       ]),
     );
   }
+}
+
+/// "Today" / "Tomorrow" / weekday for a slot date (YYYY-MM-DD, IST).
+String slotDayLabel(AppLocalizations l, String date, DateTime now) {
+  final ist = now.toUtc().add(const Duration(hours: 5, minutes: 30));
+  final today = DateTime.utc(ist.year, ist.month, ist.day);
+  final d = DateTime.parse('${date}T00:00:00Z');
+  final diff = d.difference(today).inDays;
+  if (diff == 0) return l.slotToday;
+  if (diff == 1) return l.slotTomorrow;
+  return l.dayLabel(weekDays[d.weekday - 1]);
 }

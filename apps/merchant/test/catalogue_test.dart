@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/features/catalogue/data/catalogue_controller.dart';
 import 'package:merchant/features/catalogue/presentation/scan_page.dart';
+import 'package:merchant/features/catalogue/presentation/slots_page.dart' show slotDayLabel;
+import 'package:merchant/l10n/gen/app_localizations.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
@@ -173,6 +175,14 @@ Future<(ProviderContainer, FakeCatalogueApi)> pumpCatalogue(WidgetTester tester,
 }
 
 void main() {
+  test('slot dates read as Today / Tomorrow / weekday (IST)', () {
+    final l = lookupAppLocalizations(const Locale('en'));
+    final now = DateTime.utc(2026, 11, 2, 20, 0); // 01:30 IST on 3 Nov
+    expect(slotDayLabel(l, '2026-11-03', now), 'Today');
+    expect(slotDayLabel(l, '2026-11-04', now), 'Tomorrow');
+    expect(slotDayLabel(l, '2026-11-06', now), 'Fri');
+  });
+
   testWidgets('a live store opens its catalogue; one tap marks an item out of stock', (tester) async {
     final (container, api) = await pumpCatalogue(tester);
     expect(find.text('Catalogue'), findsOneWidget);
@@ -194,7 +204,7 @@ void main() {
   testWidgets('items Santha built wait for approval; approve all puts them live', (tester) async {
     final (_, api) = await pumpCatalogue(tester, items: [_item('p1', 'Kanchi Pattu Saree', status: 'pending_merchant', category: 'sarees'), _item('i1', 'Toor Dal')]);
     expect(find.text('Catalogue pending your approval'), findsOneWidget);
-    expect(find.text('Santha added 1 items for you. Check them and approve.'), findsOneWidget);
+    expect(find.text('Santha added 1 item for you. Check them and approve.'), findsOneWidget);
     expect(find.text('Kanchi Pattu Saree'), findsNothing); // shown in the banner, not the list
     await tester.tap(find.text('Approve all'));
     await tester.pumpAndSettle();

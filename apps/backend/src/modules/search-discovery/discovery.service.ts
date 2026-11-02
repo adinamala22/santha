@@ -144,11 +144,8 @@ export class DiscoveryService {
     return true;
   }
 
-  /** Open stores by score; closed ones last, soonest to open first (FR-DIS-1). */
   private static order(a: StoreCard, b: StoreCard): number {
-    if (a.open !== b.open) return a.open ? -1 : 1;
-    if (!a.open) return (a.nextOpenAt?.getTime() ?? Infinity) - (b.nextOpenAt?.getTime() ?? Infinity) || b.score - a.score;
-    return b.score - a.score || a.id.localeCompare(b.id);
+    return orderStores(a, b);
   }
 
   async feed(pt: LatLng, tab: Tab, f: Filters) {
@@ -211,4 +208,24 @@ export class DiscoveryService {
       madeToOrder: d.madeToOrder,
     };
   }
+}
+
+/** Next slot as a sortable local key ("2026-11-03T12:30"); null = no open slot; undefined = not scheduled. */
+const slotKey = (c: StoreCard): string | null | undefined =>
+  c.eta.mode === 'scheduled' ? (c.eta.nextSlot ? `${c.eta.nextSlot.date}T${c.eta.nextSlot.start}` : null) : undefined;
+
+/**
+ * Feed order (FR-DIS-1). Kitchens that sell by slot: soonest open slot first, those with no open
+ * slot last. Otherwise open stores by score, closed ones after, soonest to open first.
+ */
+export function orderStores(a: StoreCard, b: StoreCard): number {
+  const sa = slotKey(a);
+  const sb = slotKey(b);
+  if (sa !== undefined && sb !== undefined) {
+    if (sa === null || sb === null) return sa === sb ? b.score - a.score : sa === null ? 1 : -1;
+    return sa.localeCompare(sb) || b.score - a.score || a.id.localeCompare(b.id);
+  }
+  if (a.open !== b.open) return a.open ? -1 : 1;
+  if (!a.open) return (a.nextOpenAt?.getTime() ?? Infinity) - (b.nextOpenAt?.getTime() ?? Infinity) || b.score - a.score;
+  return b.score - a.score || a.id.localeCompare(b.id);
 }

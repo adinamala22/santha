@@ -20,6 +20,8 @@ describe('console copy', () => {
 
   it('fills placeholders and maps error codes with a fallback', () => {
     expect(fill('{n} waiting · {f} food', { n: 3, f: 1 })).toBe('3 waiting · 1 food');
+    expect(fill('{n} {n|item|items}', { n: 1 })).toBe('1 item');
+    expect(fill('{n} {n|item|items}', { n: 2 })).toBe('2 items');
     expect(errorText(consoleMessages.te, 'POLYGON_OVERLAP')).toBe(consoleMessages.te.errors.POLYGON_OVERLAP);
     expect(errorText(consoleMessages.en, 'SOMETHING_NEW')).toBe(consoleMessages.en.errors.UNKNOWN);
   });
