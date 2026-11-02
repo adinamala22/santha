@@ -8,6 +8,7 @@
 import { Prisma, PrismaClient } from '@prisma/client';
 import { SEED_CITY, SEED_EFFECTIVE_FROM, SEED_MICRO_MARKETS, SEED_OPS_PASSWORD, SEED_PEOPLE } from '../src/dev/seed-data';
 import { buildSeedKyc, buildSeedMerchants } from '../src/dev/seed-records';
+import { buildSeedAddresses } from '../src/modules/identity-kyc/identity-kyc.module';
 import { buildSeedCatalogue, buildSeedMaster, renderStorePhoto, seedStorePhotoRecords } from '../src/dev/seed-catalogue';
 import { parseEnv } from '../src/config/env';
 import { S3ObjectStorage } from '../src/infra/storage/object-storage';
@@ -123,12 +124,26 @@ async function seedStorePhotos(): Promise<void> {
   }
 }
 
+/** M3: demo addresses of the two seeded consumers. */
+async function seedAddresses(marketIds: Map<string, string>): Promise<number> {
+  const rows = await buildSeedAddresses({ list: async () => [...marketIds].map(([slug, id]) => ({ market: { id, slug } })) as never });
+  for (const a of rows) {
+    if (await prisma.address.findUnique({ where: { id: a.id } })) continue;
+    await prisma.$executeRaw`
+      INSERT INTO addresses (id, user_id, label, name, line, landmark, pincode, location, micro_market_id, is_default, created_at, updated_at)
+      VALUES (${a.id}::uuid, ${a.userId}::uuid, ${a.label}, ${a.name}, ${a.line}, ${a.landmark}, ${a.pincode},
+        ST_SetSRID(ST_MakePoint(${a.location.lng}, ${a.location.lat}), 4326)::geography, ${a.microMarketId}::uuid, ${a.isDefault}, now(), now())`;
+  }
+  return rows.length;
+}
+
 async function main(): Promise<void> {
   if ((process.env.APP_ENV ?? 'dev') !== 'dev') throw new Error('The demo seed only runs with APP_ENV=dev');
   await seedPeople();
   const marketIds = await seedMicroMarkets();
   const merchants = await seedMerchants(marketIds);
   const catalogue = await seedCatalogue();
+  await seedAddresses(marketIds);
   await seedStorePhotos();
   console.log(`Seeded ${SEED_PEOPLE.length} users, ${marketIds.size} micro-markets, ${merchants} merchants, ${catalogue.master} master products, ${catalogue.items} new items.`);
   console.log('Ops console: admin@santha.local / SEED_OPS_PASSWORD (default santha-admin-dev), OTP 123456');

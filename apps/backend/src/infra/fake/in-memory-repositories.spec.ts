@@ -9,8 +9,12 @@ import { InMemoryKycRepository } from '../../modules/identity-kyc/kyc.repository
 import { InMemoryMerchantRepository } from '../../modules/merchant-catalogue/merchants.repository';
 import { InMemoryCatalogueRepository } from '../../modules/merchant-catalogue/in-memory-catalogue.repository';
 import { catalogueRepositoryContract } from '../../../test/contracts/catalogue.contract';
+import { addressRepositoryContract } from '../../../test/contracts/address.contract';
+import { InMemoryAddressRepository } from '../../modules/identity-kyc/addresses.repository';
+import { randomUUID } from 'node:crypto';
 
 microMarketRepositoryContract('in-memory', async () => new InMemoryMicroMarketRepository());
 merchantRepositoryContract('in-memory', async () => new InMemoryMerchantRepository());
 kycRepositoryContract('in-memory', async () => new InMemoryKycRepository());
 catalogueRepositoryContract('in-memory', async () => ({ catalogue: new InMemoryCatalogueRepository(), merchants: new InMemoryMerchantRepository() }));
+addressRepositoryContract('in-memory', async () => ({ repo: new InMemoryAddressRepository(), userId: async () => randomUUID() }));

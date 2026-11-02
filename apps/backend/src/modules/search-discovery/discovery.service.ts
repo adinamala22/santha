@@ -1,11 +1,15 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { CLOCK, type Clock } from '../../common/clock';
 import { haversineMeters, type LatLng } from '../../common/geo/polygon';
-import { openStatus } from '../../common/hours';
+import { istParts, openStatus } from '../../common/hours';
+import { DomainError } from '../../common/errors/domain-error';
+import { categoryBySlug } from '../merchant-catalogue/domain/taxonomy';
+import { buildDocs } from './search-indexer.service';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { CatalogueService } from '../merchant-catalogue/catalogue.service';
 import type { ItemDoc, MerchantDoc } from './domain/documents';
 import { rankStore, STALE_ITEM_FACTOR } from './domain/ranking';
+import { searchHints } from './domain/synonyms';
 import { EtaService } from './eta.service';
 import { SearchIndex } from './search-index';
 
@@ -43,6 +47,9 @@ export interface StoreCard {
 
 export interface ItemCard {
   id: string;
+  merchantId: string;
+  variantId: string;
+  variantLabel: string;
   name: string;
   nameTe: string | null;
   brand: string | null;
@@ -157,13 +164,13 @@ export class DiscoveryService {
     return { serviceability: { serviceable: true, microMarket: loc.market } as Serviceability, tab, tabs, stores };
   }
 
-  async search(q: string, pt: LatLng, f: Filters) {
+  async search(q: string, pt: LatLng, f: Filters, categorySlug?: string) {
     const started = performance.now();
     const loc = await this.locate(pt);
-    if (!loc) return { serviceability: { serviceable: false, microMarket: null } as Serviceability, query: q, groups: [], stores: [], totalItems: 0, zeroResult: true, tookMs: 0 };
+    if (!loc) return { serviceability: { serviceable: false, microMarket: null } as Serviceability, query: q, hints: [], groups: [], stores: [], totalItems: 0, zeroResult: true, tookMs: 0 };
     const [itemHits, storeHits, docs] = await Promise.all([
-      this.index.searchItems({ q, microMarketId: loc.market.id, inStockOnly: true, vegOnly: f.vegOnly, limit: 250 }),
-      this.index.searchMerchants(q, loc.market.id, 10),
+      this.index.searchItems({ q, microMarketId: loc.market.id, inStockOnly: true, vegOnly: f.vegOnly, categorySlug, limit: 250 }),
+      q.trim() ? this.index.searchMerchants(q, loc.market.id, 10) : Promise.resolve([]),
       this.index.merchantsIn(loc.market.id),
     ]);
     const cards = new Map((await this.cards(docs, pt, loc.version)).filter((c) => this.passes(c, f)).map((c) => [c.id, c]));
@@ -189,12 +196,75 @@ export class DiscoveryService {
     const totalItems = [...byStore.values()].reduce((n, l) => n + l.length, 0);
     const tookMs = Math.round(performance.now() - started);
     this.logger.debug(`search "${q}" → ${groups.length} stores, ${totalItems} items in ${tookMs} ms`);
-    return { serviceability: { serviceable: true, microMarket: loc.market } as Serviceability, query: q, groups, stores, totalItems, zeroResult: groups.length === 0 && stores.length === 0, tookMs };
+    return { serviceability: { serviceable: true, microMarket: loc.market } as Serviceability, query: q, hints: searchHints(q), groups, stores, totalItems, zeroResult: groups.length === 0 && stores.length === 0, tookMs };
+  }
+
+  /**
+   * Store / home-kitchen page (FR-DIS-5, FR-CAT-5): trust row, delivery info, categories, every
+   * sellable item with its sizes, and (kitchens) today's slots with cut-offs. Read straight from
+   * the catalogue so prices and stock are current; the app caches it for offline use.
+   */
+  async store(id: string, pt: LatLng) {
+    const snap = await this.catalogue.indexSnapshot(id);
+    const docs = snap ? buildDocs(snap) : null;
+    if (!snap || !docs) throw new DomainError('NOT_FOUND', 'This store is not on Santha right now.');
+    const loc = await this.locate(pt);
+    const version = loc?.version ?? (await this.markets.effective(docs.merchant.microMarketId, this.clock()));
+    if (!version) throw new DomainError('NOT_FOUND', 'This store is not on Santha right now.');
+    const [card] = await this.cards([docs.merchant], docs.merchant.location, version); // ETA etc. from the store itself…
+    const straight = haversineMeters(docs.merchant.location, pt);
+    const eta = await this.eta.estimate(docs.merchant, pt, version.discovery, version.sla.etaBufferMin); // …then for this customer
+    const store: StoreCard = {
+      ...card!,
+      distanceM: Math.round(straight),
+      eta: card!.eta.mode === 'scheduled' ? card!.eta : { mode: 'asap', minMin: eta.minMin, maxMin: eta.maxMin },
+    };
+    const today = istParts(this.clock());
+    const items = snap.items.map((v) => {
+      const i = v.item;
+      return {
+        ...this.itemCard(docs.items.find((d) => d.id === i.id)!),
+        description: i.description,
+        allergens: i.allergens,
+        leadTimeMin: i.leadTimeMin,
+        maxPerOrder: i.maxPerOrder,
+        stock: v.stock,
+        variants: i.variants.map((x) => ({ id: x.id, label: x.label, pricePaise: x.pricePaise, mrpPaise: x.mrpPaise, stock: x.stock })),
+        onMenuToday: i.availableDays.length === 0 || i.availableDays.includes(today.day),
+        dailyCapacity: i.dailyCapacity,
+        special: i.specialOn === today.date,
+      };
+    });
+    const counts = new Map<string, number>();
+    for (const it of items) counts.set(it.categorySlug, (counts.get(it.categorySlug) ?? 0) + 1);
+    const categories = [...counts].map(([slug, count]) => {
+      const c = categoryBySlug(slug);
+      return { slug, name: c?.name ?? slug, nameTe: c?.nameTe ?? slug, count };
+    });
+    const slots = docs.merchant.hasSlots ? await this.catalogue.slotAvailability(id, 2) : null;
+    return {
+      store,
+      description: docs.merchant.description,
+      microMarket: loc?.market ?? null,
+      deliversHere: straight <= docs.merchant.radiusM && loc?.market.id === docs.merchant.microMarketId,
+      photos: snap.photos.map((p) => ({ thumbUrl: p.thumbUrl, mediumUrl: p.mediumUrl })),
+      fssaiVerified: docs.merchant.fssaiVerified,
+      hygieneDeclared: docs.merchant.hygieneDeclared,
+      returnPolicy: docs.merchant.returnPolicy,
+      freeDeliveryAbovePaise: version.fees.freeDeliveryAbovePaise,
+      categories,
+      items,
+      slots,
+      generatedAt: this.clock(),
+    };
   }
 
   private itemCard(d: ItemDoc): ItemCard {
     return {
       id: d.id,
+      merchantId: d.merchantId,
+      variantId: d.variantId,
+      variantLabel: d.variantLabel,
       name: d.name,
       nameTe: d.nameTe,
       brand: d.brand,

@@ -20,6 +20,9 @@ export interface ItemDoc {
   /** Cheapest available size (or cheapest overall when all are out). */
   pricePaise: number;
   mrpPaise: number | null;
+  /** The size ADD puts in the cart: the cheapest available one. */
+  variantId: string;
+  variantLabel: string;
   variantCount: number;
   imageUrl: string | null;
   madeToOrder: boolean;
@@ -48,6 +51,8 @@ export interface MerchantDoc {
   catalogueUpdatedAt: number;
   movPaise: number;
   hygieneDeclared: boolean;
+  fssaiVerified: boolean;
+  returnPolicy: string | null;
   /** From reviews (M7); null until then. */
   rating: number | null;
   ratingCount: number;

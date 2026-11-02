@@ -82,3 +82,20 @@ export function expandQuery(q: string): QueryTerm[] {
   }
   return out;
 }
+
+/**
+ * Other words for what was typed, for the "Did you mean" line under the search box (FR-DIS-2):
+ * Telugu script and transliterations first. Up to four, never the typed words themselves.
+ */
+export function searchHints(q: string, max = 4): string[] {
+  const typed = new Set(tokenize(q));
+  const typedPhrase = tokenize(q).join(' ');
+  const out: string[] = [];
+  for (const term of expandQuery(q)) {
+    if (term.length < 2) continue;
+    const alts = term.map((t) => t.join(' ')).filter((a) => a !== typedPhrase && !a.split(' ').every((w) => typed.has(w)));
+    alts.sort((a, b) => Number(/[\u0C00-\u0C7F]/.test(b)) - Number(/[\u0C00-\u0C7F]/.test(a)));
+    for (const a of alts) if (!out.includes(a) && out.length < max) out.push(a);
+  }
+  return out;
+}

@@ -1,4 +1,10 @@
 import { Logger, Module } from '@nestjs/common';
+import { SEED_ADDRESSES, SEED_MICRO_MARKETS, SEED_EFFECTIVE_FROM, seedUserId } from '../../dev/seed-data';
+import { AnalyticsConfigModule } from '../analytics-config/analytics-config.module';
+import { MicroMarketsService } from '../analytics-config/micro-markets.service';
+import { AddressesController } from './addresses.controller';
+import { type AddressRecord, AddressRepository, InMemoryAddressRepository, PrismaAddressRepository } from './addresses.repository';
+import { AddressesService } from './addresses.service';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtModule } from '@nestjs/jwt';
 import type { Redis } from 'ioredis';
@@ -47,11 +53,44 @@ function createFakeIdentityRepository(): InMemoryIdentityRepository {
  * identity-kyc — users, roles, devices, sessions, OTP login. KYC (merchants/riders) arrives in M1.
  * Events out: user.registered, user.role_granted.
  */
+/** Demo addresses of the seeded consumers (same rows in fake mode and the Postgres seed). */
+export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'list'>): Promise<AddressRecord[]> {
+  const ids = new Map((await markets.list()).map((m) => [m.market.slug, m.market.id]));
+  return SEED_ADDRESSES.map((a) => {
+    const c = SEED_MICRO_MARKETS.find((m) => m.slug === a.microMarketSlug)!.centre;
+    return {
+      id: a.id,
+      userId: seedUserId(a.ownerPhone),
+      label: a.label,
+      name: a.name ?? null,
+      line: a.line,
+      landmark: a.landmark ?? null,
+      pincode: a.pincode,
+      location: { lat: c.lat + a.offset.lat, lng: c.lng + a.offset.lng },
+      microMarketId: ids.get(a.microMarketSlug) ?? null,
+      isDefault: a.isDefault,
+      createdAt: SEED_EFFECTIVE_FROM,
+      updatedAt: SEED_EFFECTIVE_FROM,
+    };
+  });
+}
+
 @Module({
-  imports: [JwtModule.register({})],
-  controllers: [AuthController, MeController],
+  imports: [JwtModule.register({}), AnalyticsConfigModule],
+  controllers: [AuthController, MeController, AddressesController],
   providers: [
     AuthService,
+    AddressesService,
+    {
+      provide: AddressRepository,
+      inject: [ENV, PrismaService, MicroMarketsService],
+      useFactory: async (env: Env, prisma: PrismaService, markets: MicroMarketsService) => {
+        if (env.DATA_STORE !== 'memory') return new PrismaAddressRepository(prisma);
+        const repo = new InMemoryAddressRepository();
+        repo.seed(await buildSeedAddresses(markets));
+        return repo;
+      },
+    },
     TokenService,
     {
       provide: IdentityRepository,
@@ -84,6 +123,6 @@ function createFakeIdentityRepository(): InMemoryIdentityRepository {
     },
     { provide: APP_GUARD, useClass: AuthGuard },
   ],
-  exports: [TokenService, KycService],
+  exports: [TokenService, KycService, AddressesService],
 })
 export class IdentityKycModule {}

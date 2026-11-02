@@ -53,6 +53,11 @@ export type Feed = Schemas['FeedDto_Output'];
 export type StoreCard = Feed['stores'][number];
 export type SearchResult = Schemas['SearchDto_Output'];
 
+// M3 — consumer discovery
+export type StorePage = Schemas['StoreDto_Output'];
+export type Address = Schemas['AddressDto_Output'];
+export type AddressList = Schemas['AddressListDto_Output'];
+
 /** Error envelope returned by every non-2xx response. */
 export interface ApiError {
   error: { code: string; message: string; details?: Record<string, unknown>; requestId?: string };

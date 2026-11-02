@@ -12,6 +12,8 @@ import { PrismaKycRepository } from '../../src/modules/identity-kyc/kyc.reposito
 import { PrismaMerchantRepository } from '../../src/modules/merchant-catalogue/merchants.repository';
 import { PrismaCatalogueRepository } from '../../src/modules/merchant-catalogue/catalogue.repository';
 import { catalogueRepositoryContract } from '../contracts/catalogue.contract';
+import { addressRepositoryContract } from '../contracts/address.contract';
+import { PrismaAddressRepository } from '../../src/modules/identity-kyc/addresses.repository';
 import { PrismaService } from '../../src/infra/prisma/prisma.service';
 import { kycRepositoryContract, merchantRepositoryContract, microMarketRepositoryContract } from '../contracts/repositories.contract';
 
@@ -40,3 +42,7 @@ microMarketRepositoryContract('prisma', async () => new PrismaMicroMarketReposit
 merchantRepositoryContract('prisma', async () => new PrismaMerchantRepository(prisma));
 kycRepositoryContract('prisma', async () => new PrismaKycRepository(prisma));
 catalogueRepositoryContract('prisma', async () => ({ catalogue: new PrismaCatalogueRepository(prisma), merchants: new PrismaMerchantRepository(prisma) }));
+addressRepositoryContract('prisma', async () => ({
+  repo: new PrismaAddressRepository(prisma),
+  userId: async () => (await prisma.user.create({ data: { phone: `+9198${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}` } })).id,
+}));

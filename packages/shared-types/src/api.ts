@@ -164,6 +164,118 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/me/addresses": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["AddressesController_list"];
+        put?: never;
+        post: operations["AddressesController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/me/addresses/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["AddressesController_remove"];
+        options?: never;
+        head?: never;
+        patch: operations["AddressesController_update"];
+        trace?: never;
+    };
+    "/v1/ops/micro-markets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMicroMarketsController_list"];
+        put?: never;
+        post: operations["OpsMicroMarketsController_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/micro-markets/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsMicroMarketsController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/micro-markets/{id}/versions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsMicroMarketsController_publish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/serviceability": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigController_serviceability"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/config/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ConfigController_flagsFor"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchants": {
         parameters: {
             query?: never;
@@ -852,86 +964,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/ops/micro-markets": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["OpsMicroMarketsController_list"];
-        put?: never;
-        post: operations["OpsMicroMarketsController_create"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/ops/micro-markets/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["OpsMicroMarketsController_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/ops/micro-markets/{id}/versions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post: operations["OpsMicroMarketsController_publish"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/serviceability": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ConfigController_serviceability"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/config/flags": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["ConfigController_flagsFor"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/feed": {
         parameters: {
             query?: never;
@@ -956,6 +988,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["DiscoveryController_search"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stores/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["DiscoveryController_store"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1100,316 +1148,22 @@ export interface components {
             locale: string;
             roles: ("consumer" | "merchant" | "merchant_staff" | "rider" | "admin" | "ops" | "finance" | "support")[];
         };
-        CreateMerchantDto: {
-            /** @enum {string} */
-            type: "retail" | "fashion" | "home_business" | "home_kitchen";
-            name: string;
-            /** @description Retail/home business that sells food (needs FSSAI). Always true for home kitchens. */
-            sellsFood?: boolean;
-            /**
-             * @description Retail only
-             * @enum {string|null}
-             */
-            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
-        };
-        MerchantViewDto_Output: {
-            merchant: {
+        AddressListDto_Output: {
+            items: {
                 /** Format: uuid */
                 id: string;
                 /** @enum {string} */
-                type: "retail" | "fashion" | "home_business" | "home_kitchen";
-                sellsFood: boolean;
-                category: string | null;
-                name: string;
-                nameTe: string | null;
-                description: string | null;
-                addressLine: string | null;
+                label: "home" | "work" | "other";
+                name: string | null;
+                line: string;
                 landmark: string | null;
                 pincode: string | null;
                 location: {
                     lat: number;
                     lng: number;
-                } | null;
-                radiusM: number;
-                hours: {
-                    mon: {
-                        open: string;
-                        close: string;
-                    }[];
-                    tue: {
-                        open: string;
-                        close: string;
-                    }[];
-                    wed: {
-                        open: string;
-                        close: string;
-                    }[];
-                    thu: {
-                        open: string;
-                        close: string;
-                    }[];
-                    fri: {
-                        open: string;
-                        close: string;
-                    }[];
-                    sat: {
-                        open: string;
-                        close: string;
-                    }[];
-                    sun: {
-                        open: string;
-                        close: string;
-                    }[];
-                } | null;
-                movPaise: number;
-                /** @enum {string} */
-                defaultFulfilment: "self" | "rider";
-                returnPolicy: string | null;
-                /** Format: date-time */
-                hygieneDeclaredAt: string | null;
-                /** @enum {string} */
-                status: "draft" | "submitted" | "approved" | "rejected" | "live";
-                /** Format: date-time */
-                submittedAt: string | null;
-                /** Format: date-time */
-                decidedAt: string | null;
-                rejectionCode: string | null;
-                rejectionNote: string | null;
-                /** Format: date-time */
-                liveAt: string | null;
-                /** Format: date-time */
-                createdAt: string;
-            };
-            microMarket: {
-                /** Format: uuid */
-                id: string;
-                slug: string;
-                name: string;
-                nameTe: string;
-            } | null;
-            staff: {
-                /** Format: uuid */
-                id: string;
-                name: string;
-                phoneMasked: string;
-                active: boolean;
-            }[];
-            kyc: {
-                /** @enum {string} */
-                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
-                /** @enum {string} */
-                status: "pending" | "verified" | "failed";
-                valueMasked: string | null;
-                valuePublic: string | null;
-                nameOnRecord: string | null;
-                provider: string;
-                failureReason: string | null;
-                details: {
-                    [key: string]: unknown;
-                } | null;
-                /** Format: date-time */
-                verifiedAt: string | null;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-            checklist: {
-                key: string;
-                done: boolean;
-            }[];
-            canSubmit: boolean;
-            photos: {
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                purpose: "item" | "store";
-                /** @enum {string} */
-                status: "uploading" | "pending_review" | "approved" | "rejected";
-                rejectReason: string | null;
-                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                thumbUrl: string | null;
-                mediumUrl: string | null;
-                /** Format: date-time */
-                createdAt: string;
-            }[];
-        };
-        UpdateMerchantDto: {
-            /** @enum {string} */
-            type?: "retail" | "fashion" | "home_business" | "home_kitchen";
-            sellsFood?: boolean;
-            /** @enum {string|null} */
-            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
-            name?: string;
-            nameTe?: string | null;
-            description?: string | null;
-            location?: {
-                lat: number;
-                lng: number;
-            };
-            addressLine?: string;
-            landmark?: string | null;
-            pincode?: string;
-            returnPolicy?: string | null;
-            /** @description Home kitchens: hygiene self-declaration (FR-TRS-2) */
-            hygieneDeclared?: boolean;
-            hours?: {
-                mon: {
-                    open: string;
-                    close: string;
-                }[];
-                tue: {
-                    open: string;
-                    close: string;
-                }[];
-                wed: {
-                    open: string;
-                    close: string;
-                }[];
-                thu: {
-                    open: string;
-                    close: string;
-                }[];
-                fri: {
-                    open: string;
-                    close: string;
-                }[];
-                sat: {
-                    open: string;
-                    close: string;
-                }[];
-                sun: {
-                    open: string;
-                    close: string;
-                }[];
-            };
-            radiusM?: number;
-            /** @description Minimum order value, paise */
-            movPaise?: number;
-            /** @enum {string} */
-            defaultFulfilment?: "self" | "rider";
-        };
-        PanDto: {
-            pan: string;
-            name: string;
-        };
-        KycCheckDto_Output: {
-            /** @enum {string} */
-            kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
-            /** @enum {string} */
-            status: "pending" | "verified" | "failed";
-            valueMasked: string[];
-            valuePublic: string[];
-            nameOnRecord: string[];
-            provider: string;
-            failureReason: string[];
-            details: {
-                [key: string]: unknown;
-            } | null;
-            /** Format: date-time */
-            verifiedAt: string | null;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        AadhaarStartDto: {
-            aadhaar: string;
-        };
-        AadhaarVerifyDto: {
-            otp: string;
-        };
-        GstinDto: {
-            gstin: string;
-        };
-        GstExemptionDto: {
-            /** @description e.g. turnover below the GST threshold */
-            reason: string;
-        };
-        LicenceNumberDto: {
-            number: string;
-        };
-        BankDto: {
-            accountNumber: string;
-            ifsc: string;
-            holderName: string;
-        };
-        AddStaffDto: {
-            name: string;
-            phone: string;
-        };
-        StaffDto_Output: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            phoneMasked: string;
-            active: boolean;
-        };
-        MerchantListDto_Output: {
-            items: {
-                merchant: {
-                    /** Format: uuid */
-                    id: string;
-                    /** @enum {string} */
-                    type: "retail" | "fashion" | "home_business" | "home_kitchen";
-                    sellsFood: boolean;
-                    category: string | null;
-                    name: string;
-                    nameTe: string | null;
-                    description: string | null;
-                    addressLine: string | null;
-                    landmark: string | null;
-                    pincode: string | null;
-                    location: {
-                        lat: number;
-                        lng: number;
-                    } | null;
-                    radiusM: number;
-                    hours: {
-                        mon: {
-                            open: string;
-                            close: string;
-                        }[];
-                        tue: {
-                            open: string;
-                            close: string;
-                        }[];
-                        wed: {
-                            open: string;
-                            close: string;
-                        }[];
-                        thu: {
-                            open: string;
-                            close: string;
-                        }[];
-                        fri: {
-                            open: string;
-                            close: string;
-                        }[];
-                        sat: {
-                            open: string;
-                            close: string;
-                        }[];
-                        sun: {
-                            open: string;
-                            close: string;
-                        }[];
-                    } | null;
-                    movPaise: number;
-                    /** @enum {string} */
-                    defaultFulfilment: "self" | "rider";
-                    returnPolicy: string | null;
-                    /** Format: date-time */
-                    hygieneDeclaredAt: string | null;
-                    /** @enum {string} */
-                    status: "draft" | "submitted" | "approved" | "rejected" | "live";
-                    /** Format: date-time */
-                    submittedAt: string | null;
-                    /** Format: date-time */
-                    decidedAt: string | null;
-                    rejectionCode: string | null;
-                    rejectionNote: string | null;
-                    /** Format: date-time */
-                    liveAt: string | null;
-                    /** Format: date-time */
-                    createdAt: string;
                 };
+                isDefault: boolean;
+                serviceable: boolean;
                 microMarket: {
                     /** Format: uuid */
                     id: string;
@@ -1417,536 +1171,60 @@ export interface components {
                     name: string;
                     nameTe: string;
                 } | null;
-                staff: {
-                    /** Format: uuid */
-                    id: string;
-                    name: string;
-                    phoneMasked: string;
-                    active: boolean;
-                }[];
-                kyc: {
-                    /** @enum {string} */
-                    kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
-                    /** @enum {string} */
-                    status: "pending" | "verified" | "failed";
-                    valueMasked: string | null;
-                    valuePublic: string | null;
-                    nameOnRecord: string | null;
-                    provider: string;
-                    failureReason: string | null;
-                    details: {
-                        [key: string]: unknown;
-                    } | null;
-                    /** Format: date-time */
-                    verifiedAt: string | null;
-                    /** Format: date-time */
-                    updatedAt: string;
-                }[];
-                checklist: {
-                    key: string;
-                    done: boolean;
-                }[];
-                canSubmit: boolean;
-                photos: {
-                    /** Format: uuid */
-                    id: string;
-                    /** @enum {string} */
-                    purpose: "item" | "store";
-                    /** @enum {string} */
-                    status: "uploading" | "pending_review" | "approved" | "rejected";
-                    rejectReason: string | null;
-                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                    thumbUrl: string | null;
-                    mediumUrl: string | null;
-                    /** Format: date-time */
-                    createdAt: string;
-                }[];
             }[];
         };
-        ApproveDto: {
-            note?: string;
-        };
-        RejectDto: {
+        AddressInputDto: {
             /** @enum {string} */
-            reasonCode: "kyc_mismatch" | "fssai_invalid" | "documents_unclear" | "outside_serviceable_area" | "restricted_category" | "duplicate_merchant" | "other";
-            note?: string;
+            label: "home" | "work" | "other";
+            /** @description Custom name when label is "other" */
+            name?: string | null;
+            /** @description House / flat, building, street */
+            line: string;
+            landmark?: string | null;
+            pincode?: string | null;
+            location: {
+                lat: number;
+                lng: number;
+            };
+            isDefault?: boolean;
         };
-        CategoryListDto_Output: {
-            items: {
+        AddressDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            label: "home" | "work" | "other";
+            name: string[];
+            line: string;
+            landmark: string[];
+            pincode: string[];
+            location: {
+                lat: number;
+                lng: number;
+            };
+            isDefault: boolean;
+            serviceable: boolean;
+            microMarket: {
+                /** Format: uuid */
+                id: string;
                 slug: string;
                 name: string;
                 nameTe: string;
-            }[];
-        };
-        ItemPageDto_Output: {
-            items: {
-                /** Format: uuid */
-                id: string;
-                /** Format: uuid */
-                merchantId: string;
-                /** Format: uuid */
-                masterProductId: string | null;
-                name: string;
-                nameTe: string | null;
-                description: string | null;
-                brand: string | null;
-                categorySlug: string;
-                /** @enum {string|null} */
-                foodMark: "veg" | "non_veg" | "egg" | null;
-                allergens: string[];
-                madeToOrder: boolean;
-                leadTimeMin: number | null;
-                maxPerOrder: number | null;
-                availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-                dailyCapacity: number | null;
-                specialOn: string | null;
-                /** @enum {string} */
-                status: "pending_merchant" | "in_review" | "active" | "hidden";
-                reviewReason: string | null;
-                /** @enum {string} */
-                source: "merchant" | "master" | "import" | "ops";
-                images: {
-                    /** Format: uuid */
-                    id: string;
-                    /** @enum {string} */
-                    purpose: "item" | "store";
-                    /** @enum {string} */
-                    status: "uploading" | "pending_review" | "approved" | "rejected";
-                    rejectReason: string | null;
-                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                    thumbUrl: string | null;
-                    mediumUrl: string | null;
-                    /** Format: date-time */
-                    createdAt: string;
-                }[];
-                imageUrl: string | null;
-                /** @enum {string} */
-                stock: "in" | "low" | "out";
-                /** @description Not confirmed within the staleness window (72 h); confirm to clear */
-                stale: boolean;
-                /** Format: date-time */
-                confirmedAt: string;
-                variants: {
-                    /** Format: uuid */
-                    id: string;
-                    label: string;
-                    /** @enum {string} */
-                    unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
-                    unitQty: number;
-                    pricePaise: number;
-                    mrpPaise: number | null;
-                    /** @enum {string} */
-                    stock: "in" | "low" | "out";
-                }[];
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: date-time */
-                updatedAt: string;
-            }[];
-            total: number;
-        };
-        CreateItemDto: {
-            /**
-             * Format: uuid
-             * @description From a barcode scan or master search; pre-fills name, brand, category, MRP
-             */
-            masterProductId?: string | null;
-            name?: string;
-            nameTe?: string | null;
-            description?: string | null;
-            brand?: string | null;
-            categorySlug?: string;
-            /** @enum {string|null} */
-            foodMark?: "veg" | "non_veg" | "egg" | null;
-            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
-            madeToOrder?: boolean;
-            leadTimeMin?: number | null;
-            maxPerOrder?: number | null;
-            /** @description Home kitchens: menu days (empty = every day) */
-            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-            /** @description Home kitchens: portions per day */
-            dailyCapacity?: number | null;
-            /**
-             * Format: date
-             * @description Home kitchens: the date it is today's special
-             */
-            specialOn?: string | null;
-            imageIds?: string[];
-            variants: {
-                /**
-                 * Format: uuid
-                 * @description Existing variant (keep its id when editing)
-                 */
-                id?: string;
-                /** @description "500 g", "Large", "Serves 2" */
-                label: string;
-                /** @enum {string} */
-                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
-                unitQty: number;
-                /** @description integer paise */
-                pricePaise: number;
-                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
-                mrpPaise?: number | null;
-                /** @enum {string} */
-                stock?: "in" | "low" | "out";
-            }[];
-        };
-        ItemDto_Output: {
-            /** Format: uuid */
-            id: string;
-            /** Format: uuid */
-            merchantId: string;
-            /** Format: uuid */
-            masterProductId: string | null;
-            name: string;
-            nameTe: string[];
-            description: string[];
-            brand: string[];
-            categorySlug: string;
-            /** @enum {string|null} */
-            foodMark: "veg" | "non_veg" | "egg" | null;
-            allergens: string[];
-            madeToOrder: boolean;
-            leadTimeMin: number | null;
-            maxPerOrder: number | null;
-            availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-            dailyCapacity: number | null;
-            specialOn: string[];
-            /** @enum {string} */
-            status: "pending_merchant" | "in_review" | "active" | "hidden";
-            reviewReason: string[];
-            /** @enum {string} */
-            source: "merchant" | "master" | "import" | "ops";
-            images: {
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                purpose: "item" | "store";
-                /** @enum {string} */
-                status: "uploading" | "pending_review" | "approved" | "rejected";
-                rejectReason: string | null;
-                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                thumbUrl: string | null;
-                mediumUrl: string | null;
-                /** Format: date-time */
-                createdAt: string;
-            }[];
-            imageUrl: string[];
-            /** @enum {string} */
-            stock: "in" | "low" | "out";
-            /** @description Not confirmed within the staleness window (72 h); confirm to clear */
-            stale: boolean;
-            /** Format: date-time */
-            confirmedAt: string;
-            variants: {
-                /** Format: uuid */
-                id: string;
-                label: string;
-                /** @enum {string} */
-                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
-                unitQty: number;
-                pricePaise: number;
-                mrpPaise: number | null;
-                /** @enum {string} */
-                stock: "in" | "low" | "out";
-            }[];
-            /** Format: date-time */
-            createdAt: string;
-            /** Format: date-time */
-            updatedAt: string;
-        };
-        ConfirmResultDto_Output: {
-            confirmed: number;
-        };
-        ImportDto: {
-            /** @description CSV text: name,name_te,category,size,unit,qty,price,mrp,stock,food_mark,allergens,barcode,description */
-            csv: string;
-            /**
-             * @description Validate only and return the report
-             * @default false
-             */
-            dryRun: boolean;
-        };
-        ImportReportDto_Output: {
-            dryRun: boolean;
-            rows: number;
-            created: number;
-            held: number;
-            items: {
-                lines: number[];
-                name: string;
-                /** Format: uuid */
-                itemId: string | null;
-            }[];
-            rejected: {
-                line: number;
-                reasons: string[];
-            }[];
-        };
-        ApprovePendingDto: {
-            /** @description Item ids, or "all" */
-            ids: string[] | "all";
-        };
-        ApprovePendingResultDto_Output: {
-            approved: number;
-            held: number;
-        };
-        UpdateItemDto: {
-            name?: string;
-            nameTe?: string | null;
-            description?: string | null;
-            brand?: string | null;
-            categorySlug?: string;
-            /** @enum {string|null} */
-            foodMark?: "veg" | "non_veg" | "egg" | null;
-            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
-            madeToOrder?: boolean;
-            leadTimeMin?: number | null;
-            maxPerOrder?: number | null;
-            /** @description Home kitchens: menu days (empty = every day) */
-            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-            /** @description Home kitchens: portions per day */
-            dailyCapacity?: number | null;
-            /**
-             * Format: date
-             * @description Home kitchens: the date it is today's special
-             */
-            specialOn?: string | null;
-            imageIds?: string[];
-            variants?: {
-                /**
-                 * Format: uuid
-                 * @description Existing variant (keep its id when editing)
-                 */
-                id?: string;
-                /** @description "500 g", "Large", "Serves 2" */
-                label: string;
-                /** @enum {string} */
-                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
-                unitQty: number;
-                /** @description integer paise */
-                pricePaise: number;
-                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
-                mrpPaise?: number | null;
-                /** @enum {string} */
-                stock?: "in" | "low" | "out";
-            }[];
-            /** @description Hide from customers without deleting */
-            hidden?: boolean;
-        };
-        StockDto: {
-            /** @enum {string} */
-            stock: "in" | "low" | "out";
-            /**
-             * Format: uuid
-             * @description Omit for every size
-             */
-            variantId?: string | null;
-        };
-        SlotListDto_Output: {
-            slots: {
-                label: string | null;
-                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-                start: string;
-                end: string;
-                /** @description Orders close this many minutes before the slot starts */
-                cutoffMin: number;
-                /** @description Orders per slot per day */
-                capacity: number;
-                /** Format: uuid */
-                id: string;
-            }[];
-            occurrences: {
-                /** Format: uuid */
-                slotId: string;
-                date: string;
-                start: string;
-                end: string;
-                /** Format: date-time */
-                startsAt: string;
-                /** Format: date-time */
-                cutoffAt: string;
-                capacity: number;
-                booked: number;
-                /** @enum {string} */
-                state: "open" | "closed" | "full";
-            }[];
-            nextOpen: {
-                /** Format: uuid */
-                slotId: string;
-                date: string;
-                start: string;
-                end: string;
-                /** Format: date-time */
-                startsAt: string;
-                /** Format: date-time */
-                cutoffAt: string;
-                capacity: number;
-                booked: number;
-                /** @enum {string} */
-                state: "open" | "closed" | "full";
             } | null;
         };
-        SlotsDto: {
-            slots: {
-                label?: string | null;
-                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
-                start: string;
-                end: string;
-                /** @description Orders close this many minutes before the slot starts */
-                cutoffMin: number;
-                /** @description Orders per slot per day */
-                capacity: number;
-            }[];
-        };
-        PhotosDto: {
-            mediaIds: string[];
-        };
-        UploadRequestDto: {
+        AddressPatchDto: {
             /** @enum {string} */
-            purpose: "item" | "store";
-            /** @enum {string} */
-            contentType: "image/jpeg" | "image/png" | "image/webp";
-        };
-        UploadTicketDto_Output: {
-            media: {
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                purpose: "item" | "store";
-                /** @enum {string} */
-                status: "uploading" | "pending_review" | "approved" | "rejected";
-                rejectReason: string | null;
-                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                thumbUrl: string | null;
-                mediumUrl: string | null;
-                /** Format: date-time */
-                createdAt: string;
+            label?: "home" | "work" | "other";
+            /** @description Custom name when label is "other" */
+            name?: string | null;
+            /** @description House / flat, building, street */
+            line?: string;
+            landmark?: string | null;
+            pincode?: string | null;
+            location?: {
+                lat: number;
+                lng: number;
             };
-            upload: {
-                url: string;
-                /** @enum {string} */
-                method: "PUT";
-                headers: {
-                    [key: string]: string;
-                };
-                /** Format: date-time */
-                expiresAt: string;
-            };
-        };
-        MediaDto_Output: {
-            /** Format: uuid */
-            id: string;
-            /** @enum {string} */
-            purpose: "item" | "store";
-            /** @enum {string} */
-            status: "uploading" | "pending_review" | "approved" | "rejected";
-            rejectReason: string[];
-            /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-            thumbUrl: string[];
-            mediumUrl: string[];
-            /** Format: date-time */
-            createdAt: string;
-        };
-        BarcodeResultDto_Output: {
-            /** @enum {string} */
-            source: "master" | "open_barcode";
-            product: {
-                /** Format: uuid */
-                id: string;
-                barcode: string;
-                name: string;
-                brand: string | null;
-                mrpPaise: number | null;
-                packLabel: string | null;
-                /** @enum {string|null} */
-                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
-                unitQty: number | null;
-                categorySlug: string;
-                imageUrl: string | null;
-                /** @enum {string} */
-                source: "seed" | "import" | "open_barcode" | "ops";
-            };
-            /** Format: uuid */
-            existingItemId: string | null;
-        };
-        MasterListDto_Output: {
-            items: {
-                /** Format: uuid */
-                id: string;
-                barcode: string;
-                name: string;
-                brand: string | null;
-                mrpPaise: number | null;
-                packLabel: string | null;
-                /** @enum {string|null} */
-                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
-                unitQty: number | null;
-                categorySlug: string;
-                imageUrl: string | null;
-                /** @enum {string} */
-                source: "seed" | "import" | "open_barcode" | "ops";
-            }[];
-        };
-        QaSummaryDto_Output: {
-            heldItems: number;
-            pendingMerchantApproval: number;
-            staleItems: number;
-            photosToReview: number;
-            barcodeRequests: number;
-        };
-        ReviewItemDto: {
-            /** @enum {string} */
-            decision: "release" | "reject";
-            note?: string;
-        };
-        MediaListDto_Output: {
-            items: {
-                /** Format: uuid */
-                id: string;
-                /** @enum {string} */
-                purpose: "item" | "store";
-                /** @enum {string} */
-                status: "uploading" | "pending_review" | "approved" | "rejected";
-                rejectReason: string | null;
-                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
-                thumbUrl: string | null;
-                mediumUrl: string | null;
-                /** Format: date-time */
-                createdAt: string;
-                /** Format: uuid */
-                merchantId: string;
-            }[];
-        };
-        ReviewMediaDto: {
-            /** @enum {string} */
-            decision: "approve" | "reject";
-            reason?: string;
-        };
-        BarcodeRequestListDto_Output: {
-            items: {
-                barcode: string;
-                scanCount: number;
-                lastMerchantId: string | null;
-                /** @enum {string} */
-                status: "open" | "resolved";
-                /** Format: date-time */
-                createdAt: string;
-            }[];
-        };
-        EnrichBarcodeDto: {
-            barcode: string;
-            name: string;
-            brand?: string | null;
-            /** @description integer paise */
-            mrpPaise?: number | null;
-            packLabel?: string | null;
-            categorySlug: string;
-            /** Format: uri */
-            imageUrl?: string | null;
-        };
-        SweepResultDto_Output: {
-            flagged: number;
+            isDefault?: boolean;
         };
         MicroMarketListDto_Output: {
             cities: {
@@ -2814,6 +2092,854 @@ export interface components {
                 [key: string]: boolean;
             };
         };
+        CreateMerchantDto: {
+            /** @enum {string} */
+            type: "retail" | "fashion" | "home_business" | "home_kitchen";
+            name: string;
+            /** @description Retail/home business that sells food (needs FSSAI). Always true for home kitchens. */
+            sellsFood?: boolean;
+            /**
+             * @description Retail only
+             * @enum {string|null}
+             */
+            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
+        };
+        MerchantViewDto_Output: {
+            merchant: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                sellsFood: boolean;
+                category: string | null;
+                name: string;
+                nameTe: string | null;
+                description: string | null;
+                addressLine: string | null;
+                landmark: string | null;
+                pincode: string | null;
+                location: {
+                    lat: number;
+                    lng: number;
+                } | null;
+                radiusM: number;
+                hours: {
+                    mon: {
+                        open: string;
+                        close: string;
+                    }[];
+                    tue: {
+                        open: string;
+                        close: string;
+                    }[];
+                    wed: {
+                        open: string;
+                        close: string;
+                    }[];
+                    thu: {
+                        open: string;
+                        close: string;
+                    }[];
+                    fri: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sat: {
+                        open: string;
+                        close: string;
+                    }[];
+                    sun: {
+                        open: string;
+                        close: string;
+                    }[];
+                } | null;
+                movPaise: number;
+                /** @enum {string} */
+                defaultFulfilment: "self" | "rider";
+                returnPolicy: string | null;
+                /** Format: date-time */
+                hygieneDeclaredAt: string | null;
+                /** @enum {string} */
+                status: "draft" | "submitted" | "approved" | "rejected" | "live";
+                /** Format: date-time */
+                submittedAt: string | null;
+                /** Format: date-time */
+                decidedAt: string | null;
+                rejectionCode: string | null;
+                rejectionNote: string | null;
+                /** Format: date-time */
+                liveAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            };
+            microMarket: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+            } | null;
+            staff: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                phoneMasked: string;
+                active: boolean;
+            }[];
+            kyc: {
+                /** @enum {string} */
+                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                /** @enum {string} */
+                status: "pending" | "verified" | "failed";
+                valueMasked: string | null;
+                valuePublic: string | null;
+                nameOnRecord: string | null;
+                provider: string;
+                failureReason: string | null;
+                details: {
+                    [key: string]: unknown;
+                } | null;
+                /** Format: date-time */
+                verifiedAt: string | null;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            checklist: {
+                key: string;
+                done: boolean;
+            }[];
+            canSubmit: boolean;
+            photos: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        UpdateMerchantDto: {
+            /** @enum {string} */
+            type?: "retail" | "fashion" | "home_business" | "home_kitchen";
+            sellsFood?: boolean;
+            /** @enum {string|null} */
+            category?: "kirana" | "supermarket" | "pharmacy" | "bakery" | "meat_fish" | "fruits_vegetables" | "stationery" | "electronics" | "other" | null;
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            location?: {
+                lat: number;
+                lng: number;
+            };
+            addressLine?: string;
+            landmark?: string | null;
+            pincode?: string;
+            returnPolicy?: string | null;
+            /** @description Home kitchens: hygiene self-declaration (FR-TRS-2) */
+            hygieneDeclared?: boolean;
+            hours?: {
+                mon: {
+                    open: string;
+                    close: string;
+                }[];
+                tue: {
+                    open: string;
+                    close: string;
+                }[];
+                wed: {
+                    open: string;
+                    close: string;
+                }[];
+                thu: {
+                    open: string;
+                    close: string;
+                }[];
+                fri: {
+                    open: string;
+                    close: string;
+                }[];
+                sat: {
+                    open: string;
+                    close: string;
+                }[];
+                sun: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+            radiusM?: number;
+            /** @description Minimum order value, paise */
+            movPaise?: number;
+            /** @enum {string} */
+            defaultFulfilment?: "self" | "rider";
+        };
+        PanDto: {
+            pan: string;
+            name: string;
+        };
+        KycCheckDto_Output: {
+            /** @enum {string} */
+            kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+            /** @enum {string} */
+            status: "pending" | "verified" | "failed";
+            valueMasked: string[];
+            valuePublic: string[];
+            nameOnRecord: string[];
+            provider: string;
+            failureReason: string[];
+            details: {
+                [key: string]: unknown;
+            } | null;
+            /** Format: date-time */
+            verifiedAt: string | null;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        AadhaarStartDto: {
+            aadhaar: string;
+        };
+        AadhaarVerifyDto: {
+            otp: string;
+        };
+        GstinDto: {
+            gstin: string;
+        };
+        GstExemptionDto: {
+            /** @description e.g. turnover below the GST threshold */
+            reason: string;
+        };
+        LicenceNumberDto: {
+            number: string;
+        };
+        BankDto: {
+            accountNumber: string;
+            ifsc: string;
+            holderName: string;
+        };
+        AddStaffDto: {
+            name: string;
+            phone: string;
+        };
+        StaffDto_Output: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            phoneMasked: string;
+            active: boolean;
+        };
+        MerchantListDto_Output: {
+            items: {
+                merchant: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                    sellsFood: boolean;
+                    category: string | null;
+                    name: string;
+                    nameTe: string | null;
+                    description: string | null;
+                    addressLine: string | null;
+                    landmark: string | null;
+                    pincode: string | null;
+                    location: {
+                        lat: number;
+                        lng: number;
+                    } | null;
+                    radiusM: number;
+                    hours: {
+                        mon: {
+                            open: string;
+                            close: string;
+                        }[];
+                        tue: {
+                            open: string;
+                            close: string;
+                        }[];
+                        wed: {
+                            open: string;
+                            close: string;
+                        }[];
+                        thu: {
+                            open: string;
+                            close: string;
+                        }[];
+                        fri: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sat: {
+                            open: string;
+                            close: string;
+                        }[];
+                        sun: {
+                            open: string;
+                            close: string;
+                        }[];
+                    } | null;
+                    movPaise: number;
+                    /** @enum {string} */
+                    defaultFulfilment: "self" | "rider";
+                    returnPolicy: string | null;
+                    /** Format: date-time */
+                    hygieneDeclaredAt: string | null;
+                    /** @enum {string} */
+                    status: "draft" | "submitted" | "approved" | "rejected" | "live";
+                    /** Format: date-time */
+                    submittedAt: string | null;
+                    /** Format: date-time */
+                    decidedAt: string | null;
+                    rejectionCode: string | null;
+                    rejectionNote: string | null;
+                    /** Format: date-time */
+                    liveAt: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                };
+                microMarket: {
+                    /** Format: uuid */
+                    id: string;
+                    slug: string;
+                    name: string;
+                    nameTe: string;
+                } | null;
+                staff: {
+                    /** Format: uuid */
+                    id: string;
+                    name: string;
+                    phoneMasked: string;
+                    active: boolean;
+                }[];
+                kyc: {
+                    /** @enum {string} */
+                    kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                    /** @enum {string} */
+                    status: "pending" | "verified" | "failed";
+                    valueMasked: string | null;
+                    valuePublic: string | null;
+                    nameOnRecord: string | null;
+                    provider: string;
+                    failureReason: string | null;
+                    details: {
+                        [key: string]: unknown;
+                    } | null;
+                    /** Format: date-time */
+                    verifiedAt: string | null;
+                    /** Format: date-time */
+                    updatedAt: string;
+                }[];
+                checklist: {
+                    key: string;
+                    done: boolean;
+                }[];
+                canSubmit: boolean;
+                photos: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    purpose: "item" | "store";
+                    /** @enum {string} */
+                    status: "uploading" | "pending_review" | "approved" | "rejected";
+                    rejectReason: string | null;
+                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                    thumbUrl: string | null;
+                    mediumUrl: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                }[];
+            }[];
+        };
+        ApproveDto: {
+            note?: string;
+        };
+        RejectDto: {
+            /** @enum {string} */
+            reasonCode: "kyc_mismatch" | "fssai_invalid" | "documents_unclear" | "outside_serviceable_area" | "restricted_category" | "duplicate_merchant" | "other";
+            note?: string;
+        };
+        CategoryListDto_Output: {
+            items: {
+                slug: string;
+                name: string;
+                nameTe: string;
+            }[];
+        };
+        ItemPageDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                merchantId: string;
+                /** Format: uuid */
+                masterProductId: string | null;
+                name: string;
+                nameTe: string | null;
+                description: string | null;
+                brand: string | null;
+                categorySlug: string;
+                /** @enum {string|null} */
+                foodMark: "veg" | "non_veg" | "egg" | null;
+                allergens: string[];
+                madeToOrder: boolean;
+                leadTimeMin: number | null;
+                maxPerOrder: number | null;
+                availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                dailyCapacity: number | null;
+                specialOn: string | null;
+                /** @enum {string} */
+                status: "pending_merchant" | "in_review" | "active" | "hidden";
+                reviewReason: string | null;
+                /** @enum {string} */
+                source: "merchant" | "master" | "import" | "ops";
+                images: {
+                    /** Format: uuid */
+                    id: string;
+                    /** @enum {string} */
+                    purpose: "item" | "store";
+                    /** @enum {string} */
+                    status: "uploading" | "pending_review" | "approved" | "rejected";
+                    rejectReason: string | null;
+                    /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                    thumbUrl: string | null;
+                    mediumUrl: string | null;
+                    /** Format: date-time */
+                    createdAt: string;
+                }[];
+                imageUrl: string | null;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+                /** @description Not confirmed within the staleness window (72 h); confirm to clear */
+                stale: boolean;
+                /** Format: date-time */
+                confirmedAt: string;
+                variants: {
+                    /** Format: uuid */
+                    id: string;
+                    label: string;
+                    /** @enum {string} */
+                    unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                    unitQty: number;
+                    pricePaise: number;
+                    mrpPaise: number | null;
+                    /** @enum {string} */
+                    stock: "in" | "low" | "out";
+                }[];
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            total: number;
+        };
+        CreateItemDto: {
+            /**
+             * Format: uuid
+             * @description From a barcode scan or master search; pre-fills name, brand, category, MRP
+             */
+            masterProductId?: string | null;
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            brand?: string | null;
+            categorySlug?: string;
+            /** @enum {string|null} */
+            foodMark?: "veg" | "non_veg" | "egg" | null;
+            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
+            madeToOrder?: boolean;
+            leadTimeMin?: number | null;
+            maxPerOrder?: number | null;
+            /** @description Home kitchens: menu days (empty = every day) */
+            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            /** @description Home kitchens: portions per day */
+            dailyCapacity?: number | null;
+            /**
+             * Format: date
+             * @description Home kitchens: the date it is today's special
+             */
+            specialOn?: string | null;
+            imageIds?: string[];
+            variants: {
+                /**
+                 * Format: uuid
+                 * @description Existing variant (keep its id when editing)
+                 */
+                id?: string;
+                /** @description "500 g", "Large", "Serves 2" */
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                /** @description integer paise */
+                pricePaise: number;
+                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
+                mrpPaise?: number | null;
+                /** @enum {string} */
+                stock?: "in" | "low" | "out";
+            }[];
+        };
+        ItemDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            merchantId: string;
+            /** Format: uuid */
+            masterProductId: string | null;
+            name: string;
+            nameTe: string[];
+            description: string[];
+            brand: string[];
+            categorySlug: string;
+            /** @enum {string|null} */
+            foodMark: "veg" | "non_veg" | "egg" | null;
+            allergens: string[];
+            madeToOrder: boolean;
+            leadTimeMin: number | null;
+            maxPerOrder: number | null;
+            availableDays: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            dailyCapacity: number | null;
+            specialOn: string[];
+            /** @enum {string} */
+            status: "pending_merchant" | "in_review" | "active" | "hidden";
+            reviewReason: string[];
+            /** @enum {string} */
+            source: "merchant" | "master" | "import" | "ops";
+            images: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            imageUrl: string[];
+            /** @enum {string} */
+            stock: "in" | "low" | "out";
+            /** @description Not confirmed within the staleness window (72 h); confirm to clear */
+            stale: boolean;
+            /** Format: date-time */
+            confirmedAt: string;
+            variants: {
+                /** Format: uuid */
+                id: string;
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                pricePaise: number;
+                mrpPaise: number | null;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+            }[];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ConfirmResultDto_Output: {
+            confirmed: number;
+        };
+        ImportDto: {
+            /** @description CSV text: name,name_te,category,size,unit,qty,price,mrp,stock,food_mark,allergens,barcode,description */
+            csv: string;
+            /**
+             * @description Validate only and return the report
+             * @default false
+             */
+            dryRun: boolean;
+        };
+        ImportReportDto_Output: {
+            dryRun: boolean;
+            rows: number;
+            created: number;
+            held: number;
+            items: {
+                lines: number[];
+                name: string;
+                /** Format: uuid */
+                itemId: string | null;
+            }[];
+            rejected: {
+                line: number;
+                reasons: string[];
+            }[];
+        };
+        ApprovePendingDto: {
+            /** @description Item ids, or "all" */
+            ids: string[] | "all";
+        };
+        ApprovePendingResultDto_Output: {
+            approved: number;
+            held: number;
+        };
+        UpdateItemDto: {
+            name?: string;
+            nameTe?: string | null;
+            description?: string | null;
+            brand?: string | null;
+            categorySlug?: string;
+            /** @enum {string|null} */
+            foodMark?: "veg" | "non_veg" | "egg" | null;
+            allergens?: ("gluten" | "milk" | "egg" | "peanut" | "tree_nuts" | "soy" | "fish" | "shellfish" | "sesame" | "mustard" | "celery" | "sulphites" | "lupin" | "molluscs")[];
+            madeToOrder?: boolean;
+            leadTimeMin?: number | null;
+            maxPerOrder?: number | null;
+            /** @description Home kitchens: menu days (empty = every day) */
+            availableDays?: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+            /** @description Home kitchens: portions per day */
+            dailyCapacity?: number | null;
+            /**
+             * Format: date
+             * @description Home kitchens: the date it is today's special
+             */
+            specialOn?: string | null;
+            imageIds?: string[];
+            variants?: {
+                /**
+                 * Format: uuid
+                 * @description Existing variant (keep its id when editing)
+                 */
+                id?: string;
+                /** @description "500 g", "Large", "Serves 2" */
+                label: string;
+                /** @enum {string} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion";
+                unitQty: number;
+                /** @description integer paise */
+                pricePaise: number;
+                /** @description Printed MRP; selling price may not exceed it (FR-CAT-6) */
+                mrpPaise?: number | null;
+                /** @enum {string} */
+                stock?: "in" | "low" | "out";
+            }[];
+            /** @description Hide from customers without deleting */
+            hidden?: boolean;
+        };
+        StockDto: {
+            /** @enum {string} */
+            stock: "in" | "low" | "out";
+            /**
+             * Format: uuid
+             * @description Omit for every size
+             */
+            variantId?: string | null;
+        };
+        SlotListDto_Output: {
+            slots: {
+                label: string | null;
+                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                start: string;
+                end: string;
+                /** @description Orders close this many minutes before the slot starts */
+                cutoffMin: number;
+                /** @description Orders per slot per day */
+                capacity: number;
+                /** Format: uuid */
+                id: string;
+            }[];
+            occurrences: {
+                /** Format: uuid */
+                slotId: string;
+                date: string;
+                start: string;
+                end: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                cutoffAt: string;
+                capacity: number;
+                booked: number;
+                /** @enum {string} */
+                state: "open" | "closed" | "full";
+            }[];
+            nextOpen: {
+                /** Format: uuid */
+                slotId: string;
+                date: string;
+                start: string;
+                end: string;
+                /** Format: date-time */
+                startsAt: string;
+                /** Format: date-time */
+                cutoffAt: string;
+                capacity: number;
+                booked: number;
+                /** @enum {string} */
+                state: "open" | "closed" | "full";
+            } | null;
+        };
+        SlotsDto: {
+            slots: {
+                label?: string | null;
+                days: ("mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun")[];
+                start: string;
+                end: string;
+                /** @description Orders close this many minutes before the slot starts */
+                cutoffMin: number;
+                /** @description Orders per slot per day */
+                capacity: number;
+            }[];
+        };
+        PhotosDto: {
+            mediaIds: string[];
+        };
+        UploadRequestDto: {
+            /** @enum {string} */
+            purpose: "item" | "store";
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+        };
+        UploadTicketDto_Output: {
+            media: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            };
+            upload: {
+                url: string;
+                /** @enum {string} */
+                method: "PUT";
+                headers: {
+                    [key: string]: string;
+                };
+                /** Format: date-time */
+                expiresAt: string;
+            };
+        };
+        MediaDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            purpose: "item" | "store";
+            /** @enum {string} */
+            status: "uploading" | "pending_review" | "approved" | "rejected";
+            rejectReason: string[];
+            /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+            thumbUrl: string[];
+            mediumUrl: string[];
+            /** Format: date-time */
+            createdAt: string;
+        };
+        BarcodeResultDto_Output: {
+            /** @enum {string} */
+            source: "master" | "open_barcode";
+            product: {
+                /** Format: uuid */
+                id: string;
+                barcode: string;
+                name: string;
+                brand: string | null;
+                mrpPaise: number | null;
+                packLabel: string | null;
+                /** @enum {string|null} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
+                unitQty: number | null;
+                categorySlug: string;
+                imageUrl: string | null;
+                /** @enum {string} */
+                source: "seed" | "import" | "open_barcode" | "ops";
+            };
+            /** Format: uuid */
+            existingItemId: string | null;
+        };
+        MasterListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                barcode: string;
+                name: string;
+                brand: string | null;
+                mrpPaise: number | null;
+                packLabel: string | null;
+                /** @enum {string|null} */
+                unit: "kg" | "g" | "l" | "ml" | "pc" | "pack" | "portion" | null;
+                unitQty: number | null;
+                categorySlug: string;
+                imageUrl: string | null;
+                /** @enum {string} */
+                source: "seed" | "import" | "open_barcode" | "ops";
+            }[];
+        };
+        QaSummaryDto_Output: {
+            heldItems: number;
+            pendingMerchantApproval: number;
+            staleItems: number;
+            photosToReview: number;
+            barcodeRequests: number;
+        };
+        ReviewItemDto: {
+            /** @enum {string} */
+            decision: "release" | "reject";
+            note?: string;
+        };
+        MediaListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                purpose: "item" | "store";
+                /** @enum {string} */
+                status: "uploading" | "pending_review" | "approved" | "rejected";
+                rejectReason: string | null;
+                /** @description Absolute URL, or a path starting with / to resolve against the API base (fake mode) */
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: uuid */
+                merchantId: string;
+            }[];
+        };
+        ReviewMediaDto: {
+            /** @enum {string} */
+            decision: "approve" | "reject";
+            reason?: string;
+        };
+        BarcodeRequestListDto_Output: {
+            items: {
+                barcode: string;
+                scanCount: number;
+                lastMerchantId: string | null;
+                /** @enum {string} */
+                status: "open" | "resolved";
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        EnrichBarcodeDto: {
+            barcode: string;
+            name: string;
+            brand?: string | null;
+            /** @description integer paise */
+            mrpPaise?: number | null;
+            packLabel?: string | null;
+            categorySlug: string;
+            /** Format: uri */
+            imageUrl?: string | null;
+        };
+        SweepResultDto_Output: {
+            flagged: number;
+        };
         FeedDto_Output: {
             serviceability: {
                 serviceable: boolean;
@@ -2883,6 +3009,8 @@ export interface components {
                 } | null;
             };
             query: string;
+            /** @description "Did you mean": synonyms and Telugu forms of the query */
+            hints: string[];
             groups: {
                 store: {
                     /** Format: uuid */
@@ -2928,6 +3056,14 @@ export interface components {
                 items: {
                     /** Format: uuid */
                     id: string;
+                    /** Format: uuid */
+                    merchantId: string;
+                    /**
+                     * Format: uuid
+                     * @description Default size for one-tap ADD
+                     */
+                    variantId: string;
+                    variantLabel: string;
                     name: string;
                     nameTe: string | null;
                     brand: string | null;
@@ -2987,6 +3123,151 @@ export interface components {
             totalItems: number;
             zeroResult: boolean;
             tookMs: number;
+        };
+        StoreDto_Output: {
+            store: {
+                /** Format: uuid */
+                id: string;
+                name: string;
+                nameTe: string | null;
+                /** @enum {string} */
+                type: "retail" | "fashion" | "home_business" | "home_kitchen";
+                category: string | null;
+                photoUrl: string | null;
+                distanceM: number;
+                eta: {
+                    /** @enum {string} */
+                    mode: "asap";
+                    minMin: number;
+                    maxMin: number;
+                } | {
+                    /** @enum {string} */
+                    mode: "scheduled";
+                    nextSlot: {
+                        date: string;
+                        start: string;
+                        end: string;
+                        /** Format: date-time */
+                        cutoffAt: string;
+                    } | null;
+                };
+                open: boolean;
+                /** Format: date-time */
+                nextOpenAt: string | null;
+                /** Format: date-time */
+                closesAt: string | null;
+                selfDelivers: boolean;
+                hygieneDeclared: boolean;
+                rating: number | null;
+                ratingCount: number;
+                movPaise: number;
+                itemCount: number;
+                /** @description Ranking score 0..1 (for debugging ranking weights) */
+                score: number;
+            };
+            description: string[];
+            microMarket: {
+                /** Format: uuid */
+                id: string;
+                slug: string;
+                name: string;
+                nameTe: string;
+            } | null;
+            /** @description Inside the store radius and the same micro-market as the customer */
+            deliversHere: boolean;
+            photos: {
+                thumbUrl: string | null;
+                mediumUrl: string | null;
+            }[];
+            fssaiVerified: boolean;
+            hygieneDeclared: boolean;
+            returnPolicy: string[];
+            freeDeliveryAbovePaise: number;
+            categories: {
+                slug: string;
+                name: string;
+                nameTe: string;
+                count: number;
+            }[];
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** Format: uuid */
+                merchantId: string;
+                /**
+                 * Format: uuid
+                 * @description Default size for one-tap ADD
+                 */
+                variantId: string;
+                variantLabel: string;
+                name: string;
+                nameTe: string | null;
+                brand: string | null;
+                categorySlug: string;
+                pricePaise: number;
+                mrpPaise: number | null;
+                /** @enum {string|null} */
+                foodMark: "veg" | "non_veg" | "egg" | null;
+                imageUrl: string | null;
+                variantCount: number;
+                stale: boolean;
+                madeToOrder: boolean;
+                description: string | null;
+                allergens: string[];
+                leadTimeMin: number | null;
+                maxPerOrder: number | null;
+                /** @enum {string} */
+                stock: "in" | "low" | "out";
+                variants: {
+                    /** Format: uuid */
+                    id: string;
+                    label: string;
+                    pricePaise: number;
+                    mrpPaise: number | null;
+                    /** @enum {string} */
+                    stock: "in" | "low" | "out";
+                }[];
+                /** @description Home kitchens: on today's menu */
+                onMenuToday: boolean;
+                /** @description Portions per day (left = capacity − ordered, from M4) */
+                dailyCapacity: number | null;
+                /** @description Today's special */
+                special: boolean;
+            }[];
+            slots: {
+                occurrences: {
+                    /** Format: uuid */
+                    slotId: string;
+                    date: string;
+                    start: string;
+                    end: string;
+                    /** Format: date-time */
+                    startsAt: string;
+                    /** Format: date-time */
+                    cutoffAt: string;
+                    capacity: number;
+                    booked: number;
+                    /** @enum {string} */
+                    state: "open" | "closed" | "full";
+                }[];
+                nextOpen: {
+                    /** Format: uuid */
+                    slotId: string;
+                    date: string;
+                    start: string;
+                    end: string;
+                    /** Format: date-time */
+                    startsAt: string;
+                    /** Format: date-time */
+                    cutoffAt: string;
+                    capacity: number;
+                    booked: number;
+                    /** @enum {string} */
+                    state: "open" | "closed" | "full";
+                } | null;
+            } | null;
+            /** Format: date-time */
+            generatedAt: string;
         };
     };
     responses: never;
@@ -3216,6 +3497,243 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["MeDto_Output"];
+                };
+            };
+        };
+    };
+    AddressesController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressListDto_Output"];
+                };
+            };
+        };
+    };
+    AddressesController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressInputDto"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressDto_Output"];
+                };
+            };
+        };
+    };
+    AddressesController_remove: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    AddressesController_update: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddressPatchDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AddressDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_list: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_create: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateMicroMarketDto"];
+            };
+        };
+        responses: {
+            /** @description Created with version 1 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMicroMarketsController_publish: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PublishVersionDto"];
+            };
+        };
+        responses: {
+            /** @description New version published */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["VersionDto_Output"];
+                };
+            };
+        };
+    };
+    ConfigController_serviceability: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ServiceabilityDto_Output"];
+                };
+            };
+        };
+    };
+    ConfigController_flagsFor: {
+        parameters: {
+            query?: {
+                microMarketId?: string;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagsDto_Output"];
                 };
             };
         };
@@ -4411,149 +4929,6 @@ export interface operations {
             };
         };
     };
-    OpsMicroMarketsController_list: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Device-Id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MicroMarketListDto_Output"];
-                };
-            };
-        };
-    };
-    OpsMicroMarketsController_create: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Device-Id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["CreateMicroMarketDto"];
-            };
-        };
-        responses: {
-            /** @description Created with version 1 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
-                };
-            };
-        };
-    };
-    OpsMicroMarketsController_get: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Device-Id": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MicroMarketDetailDto_Output"];
-                };
-            };
-        };
-    };
-    OpsMicroMarketsController_publish: {
-        parameters: {
-            query?: never;
-            header: {
-                "X-Device-Id": string;
-            };
-            path: {
-                id: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PublishVersionDto"];
-            };
-        };
-        responses: {
-            /** @description New version published */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["VersionDto_Output"];
-                };
-            };
-        };
-    };
-    ConfigController_serviceability: {
-        parameters: {
-            query: {
-                lat: number;
-                lng: number;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ServiceabilityDto_Output"];
-                };
-            };
-        };
-    };
-    ConfigController_flagsFor: {
-        parameters: {
-            query?: {
-                microMarketId?: string;
-            };
-            header: {
-                "X-Device-Id": string;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            default: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["FlagsDto_Output"];
-                };
-            };
-        };
-    };
     DiscoveryController_feed: {
         parameters: {
             query: {
@@ -4591,7 +4966,9 @@ export interface operations {
             query: {
                 lat: number;
                 lng: number;
-                q: string;
+                q?: string;
+                /** @description Category browse (platform taxonomy slug); q may be empty */
+                category?: string;
                 /** @description Only stores open now */
                 openNow?: "true" | "false";
                 /** @description Veg items only (search) */
@@ -4614,6 +4991,31 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SearchDto_Output"];
+                };
+            };
+        };
+    };
+    DiscoveryController_store: {
+        parameters: {
+            query: {
+                lat: number;
+                lng: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Store / home-kitchen page: trust row, delivery info, categories, items with sizes, slots */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreDto_Output"];
                 };
             };
         };
