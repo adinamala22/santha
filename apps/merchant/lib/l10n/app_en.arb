@@ -883,5 +883,28 @@
   "disputeOpen": "Dispute sent — we will decide within 48 hours",
   "disputeAccepted": "Dispute accepted — credited in your next payout",
   "disputeRejected": "Dispute not accepted",
-  "disputeWindowClosed": "Refunds can only be disputed within 48 hours."
+  "disputeWindowClosed": "Refunds can only be disputed within 48 hours.",
+  "reviewsTitle": "Customer reviews",
+  "reviewsEmpty": "No reviews yet.",
+  "reviewStars": "{stars} out of 5 stars",
+  "@reviewStars": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewYourReply": "Your reply: {text}",
+  "@reviewYourReply": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "reviewReply": "Reply",
+  "reviewReplyTitle": "Reply to this review",
+  "reviewReplyHint": "Thank the customer or explain what happened. Shown publicly with the review.",
+  "reviewReplySend": "Post reply",
+  "reviewReplySent": "Reply posted"
 }
