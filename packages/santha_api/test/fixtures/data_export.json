@@ -1,0 +1,153 @@
+{
+ "generatedAt": "2026-11-02T21:21:56.584Z",
+ "account": {
+  "id": "00000000-0000-4000-8000-000000000001",
+  "phone": "+919000000001",
+  "name": "Test Consumer One",
+  "locale": "en",
+  "roles": [
+   "consumer"
+  ]
+ },
+ "addresses": [
+  {
+   "address": {
+    "id": "80000000-0000-4000-8000-000000000001",
+    "userId": "00000000-0000-4000-8000-000000000001",
+    "label": "home",
+    "name": null,
+    "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+    "landmark": "Near Dargamitta Temple",
+    "pincode": "524003",
+    "location": {
+     "lat": 14.4535,
+     "lng": 79.99600000000001
+    },
+    "microMarketId": "d6484831-534a-48bb-8185-a6ab7330b30c",
+    "isDefault": true,
+    "createdAt": "2025-12-31T18:30:00.000Z",
+    "updatedAt": "2025-12-31T18:30:00.000Z"
+   },
+   "microMarket": {
+    "id": "d6484831-534a-48bb-8185-a6ab7330b30c",
+    "slug": "dargamitta",
+    "name": "Dargamitta",
+    "nameTe": "దర్గామిట్ట"
+   }
+  },
+  {
+   "address": {
+    "id": "80000000-0000-4000-8000-000000000002",
+    "userId": "00000000-0000-4000-8000-000000000001",
+    "label": "work",
+    "name": null,
+    "line": "2nd floor, Magunta Towers, Magunta Layout Main Road",
+    "landmark": null,
+    "pincode": "524003",
+    "location": {
+     "lat": 14.4535,
+     "lng": 79.97399999999999
+    },
+    "microMarketId": "35f642e6-08e9-4b0b-a555-eba0c27d9514",
+    "isDefault": false,
+    "createdAt": "2025-12-31T18:30:00.000Z",
+    "updatedAt": "2025-12-31T18:30:00.000Z"
+   },
+   "microMarket": {
+    "id": "35f642e6-08e9-4b0b-a555-eba0c27d9514",
+    "slug": "magunta-layout",
+    "name": "Magunta Layout",
+    "nameTe": "మాగుంట లేఅవుట్"
+   }
+  }
+ ],
+ "orders": [
+  {
+   "id": "17613b8e-e465-4a62-b5db-dcf66601751c",
+   "code": "SNWHD7ET",
+   "state": "DELIVERED",
+   "store": "Ramesh Stores",
+   "totalPaise": 30290,
+   "placedAt": "2026-11-02T21:21:56.482Z",
+   "address": {
+    "addressId": "80000000-0000-4000-8000-000000000001",
+    "label": "home",
+    "name": null,
+    "line": "4-12, Sai Residency, Dargamitta 2nd Lane",
+    "landmark": "Near Dargamitta Temple",
+    "pincode": "524003",
+    "location": {
+     "lat": 14.4535,
+     "lng": 79.99600000000001
+    }
+   }
+  }
+ ],
+ "wallet": {
+  "balancePaise": 0,
+  "entries": []
+ },
+ "consents": [
+  {
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "purpose": "terms",
+   "version": "terms-2026-11",
+   "granted": true,
+   "source": "app",
+   "id": "d4d35664-dae8-4db9-954b-73032cd679a6",
+   "createdAt": "2026-11-02T21:21:56.561Z"
+  },
+  {
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "purpose": "privacy",
+   "version": "privacy-2026-11",
+   "granted": true,
+   "source": "app",
+   "id": "f7f2b826-7dca-4eda-8ae5-b06ac2852af0",
+   "createdAt": "2026-11-02T21:21:56.565Z"
+  },
+  {
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "purpose": "marketing",
+   "version": "marketing-2026-11",
+   "granted": false,
+   "source": "app",
+   "id": "3acc69b0-fd06-4795-b188-b864932870df",
+   "createdAt": "2026-11-02T21:21:56.570Z"
+  }
+ ],
+ "grievances": [
+  {
+   "id": "73999162-6cfb-4aa0-aa0f-2f94a0269ce6",
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "app": "consumer",
+   "orderId": "17613b8e-e465-4a62-b5db-dcf66601751c",
+   "category": "refund",
+   "description": "My refund for the atta has not arrived yet.",
+   "status": "open",
+   "ackDueAt": "2026-11-04T21:21:56.575Z",
+   "resolveDueAt": "2026-12-02T21:21:56.575Z",
+   "resolution": null,
+   "acknowledgedAt": null,
+   "resolvedAt": null,
+   "handledBy": null,
+   "createdAt": "2026-11-02T21:21:56.575Z"
+  }
+ ],
+ "ratings": [
+  {
+   "status": "visible",
+   "flagReason": null,
+   "reply": null,
+   "replyAt": null,
+   "orderId": "17613b8e-e465-4a62-b5db-dcf66601751c",
+   "userId": "00000000-0000-4000-8000-000000000001",
+   "merchantId": "10000000-0000-4000-8000-000000000201",
+   "riderUserId": null,
+   "storeStars": 5,
+   "riderStars": null,
+   "comment": "Fresh atta and quick delivery, thank you",
+   "createdAt": "2026-11-02T21:21:56.555Z"
+  }
+ ]
+}

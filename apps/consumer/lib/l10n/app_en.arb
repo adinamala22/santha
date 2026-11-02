@@ -865,5 +865,48 @@
       }
     }
   },
-  "walletEmpty": "No wallet activity yet. Refunds land here instantly."
+  "walletEmpty": "No wallet activity yet. Refunds land here instantly.",
+  "loginConsent": "By continuing you agree to the Santha Terms and Privacy notice (santha.in/legal).",
+  "privacyHelp": "Privacy and help",
+  "privacyHelpSub": "Your data, offers, and raising a grievance",
+  "privacyTitle": "Your privacy",
+  "marketingConsent": "Offers and news from Santha",
+  "marketingConsentSub": "Only if you say yes. You can change this any time.",
+  "downloadData": "Download my data",
+  "dataSummary": "We hold: your account, {addresses, plural, =1{1 address} other{{addresses} addresses}}, {orders, plural, =1{1 order} other{{orders} orders}} and {consents, plural, =1{1 consent record} other{{consents} consent records}}.",
+  "@dataSummary": {
+    "placeholders": {
+      "addresses": {
+        "type": "int"
+      },
+      "orders": {
+        "type": "int"
+      },
+      "consents": {
+        "type": "int"
+      }
+    }
+  },
+  "deleteAccount": "Delete my account",
+  "deleteConfirmTitle": "Delete your account?",
+  "deleteConfirmBody": "We remove your phone, name and addresses. Order and tax records keep only an id, as the law requires. We confirm within 7 days.",
+  "deleteConfirm": "Delete",
+  "cancel": "Cancel",
+  "deleteRequested": "Request received. We will confirm within 7 days.",
+  "requestOpen": "You already have this request open.",
+  "helpTitle": "Help",
+  "raiseGrievance": "Raise a grievance",
+  "grievanceCategory": "About",
+  "catOrder": "An order",
+  "catPayment": "A payment",
+  "catRefund": "A refund",
+  "catAccount": "My account",
+  "catPrivacy": "Privacy",
+  "catOther": "Something else",
+  "grievanceText": "What happened? (at least 10 characters)",
+  "grievanceSend": "Send to the grievance officer",
+  "grievanceSent": "Received. We acknowledge within 48 hours and resolve within a month.",
+  "grievanceOpen": "Open",
+  "grievanceAcknowledged": "Being looked at",
+  "grievanceResolved": "Resolved"
 }

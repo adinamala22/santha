@@ -1,0 +1,15 @@
+{
+ "id": "73999162-6cfb-4aa0-aa0f-2f94a0269ce6",
+ "app": "consumer",
+ "orderId": "17613b8e-e465-4a62-b5db-dcf66601751c",
+ "category": "refund",
+ "description": "My refund for the atta has not arrived yet.",
+ "status": "open",
+ "resolution": null,
+ "ackDueAt": "2026-11-04T21:21:56.575Z",
+ "resolveDueAt": "2026-12-02T21:21:56.575Z",
+ "acknowledgedAt": null,
+ "resolvedAt": null,
+ "createdAt": "2026-11-02T21:21:56.575Z",
+ "overdue": false
+}
