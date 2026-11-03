@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { valuesFor } from './values';
 
 const bool = z
   .enum(['true', 'false', '1', '0'])
@@ -8,13 +9,17 @@ const bool = z
  * Every environment variable the backend reads. Parsed once at boot; the process refuses to
  * start on invalid config. Documented for humans in the root `.env.example`.
  */
-export const EnvSchema = z
-  .object({
+const EnvObject = z.object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     APP_ENV: z.enum(['dev', 'staging', 'production']).default('dev'),
     PORT: z.coerce.number().int().positive().default(4000),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
+    /**
+     * Reverse proxies in front of the API, counted from the server (0 = none). Behind Caddy it is 1. Without it
+     * every request looks like it comes from the proxy, so the per-IP OTP and login limits would block all users.
+     */
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
 
     /**
      * `postgres` (default): Postgres + PostGIS and Redis from docker-compose.
@@ -122,7 +127,12 @@ export const EnvSchema = z
 
     RUN_WORKERS: bool.default(true),
     OUTBOX_POLL_MS: z.coerce.number().int().positive().default(500),
-  })
+});
+
+/** Names of every variable the backend reads (values files may only set these). */
+export const ENV_KEYS: ReadonlySet<string> = new Set(Object.keys(EnvObject.shape));
+
+export const EnvSchema = EnvObject
   .superRefine((env, ctx) => {
     if (env.APP_ENV === 'production') {
       if (env.OTP_PROVIDER === 'mock')
@@ -168,7 +178,10 @@ export const workersEnabled = (env: Env): boolean => env.RUN_WORKERS && env.DATA
 
 export function parseEnv(source: Record<string, string | undefined>): Env {
   // `KEY=` in a .env file means "not set" (the .env.example lists optional keys with empty values).
-  const cleaned = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== undefined && v.trim() !== ''));
+  const set = Object.fromEntries(Object.entries(source).filter(([, v]) => v !== undefined && v.trim() !== ''));
+  // With SANTHA_ENV=test|prod, non-secret settings come from config/values/<env>.values.yaml (and the
+  // <SANTHA_CLOUD>.<env> overlay). Real environment variables still win; secrets only ever come from them.
+  const cleaned = { ...valuesFor(set, ENV_KEYS), ...set };
   const result = EnvSchema.safeParse(cleaned);
   if (!result.success) {
     const lines = result.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);

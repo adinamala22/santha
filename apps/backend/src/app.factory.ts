@@ -13,6 +13,8 @@ export const API_PREFIX = 'v1';
 export function configureApp(app: INestApplication): void {
   const env = parseEnv(process.env);
   app.setGlobalPrefix(API_PREFIX);
+  // Client IP for rate limits: trust exactly TRUST_PROXY hops (Caddy), so X-Forwarded-For cannot be spoofed.
+  if (env.TRUST_PROXY > 0) (app.getHttpAdapter().getInstance() as { set(k: string, v: unknown): void }).set('trust proxy', env.TRUST_PROXY);
   app.enableCors({
     origin: env.CORS_ORIGINS.split(',').map((s) => s.trim()),
     credentials: true,

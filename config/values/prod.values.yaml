@@ -1,0 +1,40 @@
+# Santha — PRODUCTION. Non-secret settings only, committed.
+# Secrets live in the server's .env / secret manager: see secrets.md. The backend refuses to start in
+# production with mock OTP, mock KYC or non-live payments.
+# Host-specific settings (storage endpoint, region…) can go in an overlay: <cloud>.prod.values.yaml,
+# selected with SANTHA_CLOUD (e.g. gcp.prod.values.yaml).
+environment: prod
+
+deploy:
+  apiDomain: api.santha.app
+  webDomain: santha.app
+  mediaDomain: ""               # production uses a managed bucket, no storage container
+  robotsTag: all
+  composeProfiles: ""           # managed Postgres and bucket: no extra containers
+
+backend:
+  appEnv: production
+  nodeEnv: production
+  logLevel: info
+  trustProxy: 1
+  corsOrigins: https://santha.app
+  webBaseUrl: https://santha.app
+  otpProvider: msg91
+  kycProvider: digio
+  paymentsProvider: razorpay
+  pushProvider: fcm
+  mapsProvider: google
+  barcodeProvider: openfoodfacts
+  # Default storage: DigitalOcean Spaces, Bangalore (India). Overlays replace these for other hosts.
+  s3Endpoint: https://blr1.digitaloceanspaces.com
+  s3Region: ap-south-1
+  s3Bucket: santha-production
+
+web:
+  siteUrl: https://santha.app
+  apiUrl: https://api.santha.app
+  mediaOrigin: https://blr1.digitaloceanspaces.com   # photos are served path-style: <endpoint>/<bucket>/…
+
+apps:
+  flavor: prod
+  apiBaseUrl: https://api.santha.app
