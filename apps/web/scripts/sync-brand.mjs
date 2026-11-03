@@ -22,3 +22,13 @@ for (const [from, to] of copies) {
   copyFileSync(resolve(design, from), dest);
 }
 console.log(`sync-brand: copied ${copies.length} files from design/`);
+
+// MapLibre 6 runs its worker as an ES module next to the library. Bundled by Next, it cannot find it, so the
+// worker and the chunk it imports are served from /maplibre/ and the maps call setWorkerUrl (ADR-007).
+const maplibre = resolve(web, 'node_modules/maplibre-gl/dist');
+for (const f of ['maplibre-gl-worker.mjs', 'maplibre-gl-shared.mjs']) {
+  const dest = resolve(web, 'public/maplibre', f);
+  mkdirSync(dirname(dest), { recursive: true });
+  copyFileSync(resolve(maplibre, f), dest);
+}
+console.log('sync-brand: copied the MapLibre worker to public/maplibre/');
