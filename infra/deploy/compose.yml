@@ -105,7 +105,7 @@ services:
     logging: *logs
 
   postgres:
-    image: postgis/postgis:16-3.4
+    image: imresamu/postgis:16-3.4   # Postgres 16 + PostGIS 3.4 like postgis/postgis, built for amd64 and arm64
     restart: unless-stopped
     profiles: [localdb]
     environment:

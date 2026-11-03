@@ -26,13 +26,14 @@ Each environment is one Linux VM in India with Docker. Any provider works:
 
 Costs are compared in `docs/deployment-and-costs.md`.
 
-1. Create the VM: Ubuntu 24.04, at least 2 vCPU / 4 GB; ARM is fine. Open ports 22, 80 and 443 only.
-2. Install Docker and create the deploy user:
-   ```sh
-   curl -fsSL https://get.docker.com | sh
-   sudo adduser --disabled-password deploy && sudo usermod -aG docker deploy
-   sudo mkdir -p /opt/santha && sudo chown deploy: /opt/santha
-   ```
+1. Create the VM: Ubuntu 24.04, at least 2 vCPU / 4 GB. ARM or x86 both work: the images are built for both.
+   Open ports 22, 80 and 443 only.
+2. Prepare it with `sudo bash infra/deploy/setup-server.sh` (copy the file over first). It:
+   - installs Docker;
+   - creates the `deploy` user and `/opt/santha`;
+   - opens 80/443 in the host firewall;
+   - adds swap on small machines;
+   - turns on security updates.
 3. **prod only:** create a managed **Postgres 16** in an Indian region, then run `CREATE EXTENSION postgis;`.
    Allow only the prod VM to connect, and turn on daily backups with point-in-time restore. Also create a
    **bucket** in India for photos and a second one for database dumps.
@@ -43,6 +44,39 @@ Costs are compared in `docs/deployment-and-costs.md`.
 5. **Secrets:** on each VM, copy `infra/deploy/server.env.example` to `/opt/santha/.env` and fill it in
    (`config/values/secrets.md` explains each value). Set `SANTHA_ENV=test` or `SANTHA_ENV=prod`, then run
    `chmod 600 /opt/santha/.env`.
+
+### Free test server: Oracle Cloud Always Free, step by step
+Always Free resources don't expire. They include up to 4 ARM cores and 24 GB RAM, 200 GB of disk and 10 TB of
+traffic a month. A card is needed at sign-up for identity checks only; stay on Always Free resources and nothing
+is charged.
+
+1. **Sign up** at cloud.oracle.com. Choose **India South (Hyderabad)** or **India West (Mumbai)** as the home
+   region. Only home-region resources are free, and the home region can't be changed later.
+2. **Create the VM:** Compute → Instances → Create instance.
+   - **Image:** Canonical Ubuntu 24.04.
+   - **Shape:** Ampere → `VM.Standard.A1.Flex`, 2 OCPU and 12 GB, or up to 4 OCPU and 24 GB.
+     - If you see "Out of capacity", try another availability domain, a smaller size, or again later.
+   - **Networking:** create a new VCN with a public subnet, and assign a public IPv4 address.
+   - **SSH keys:** upload your public key, or download the generated one and keep it safe.
+   - **Boot volume:** 100 GB is plenty, and up to 200 GB total is free.
+3. **Open the web ports in Oracle's network.**
+   - Go to Networking → Virtual cloud networks → your VCN → Security Lists → Default.
+   - Add ingress rules from `0.0.0.0/0` for TCP 80 and TCP 443 (and UDP 443 for HTTP/3).
+4. **Make the IP permanent.** On the instance, go to Attached VNICs → IPv4 addresses and change the public IP to
+   **reserved**. A reserved IP is free while it's attached.
+5. **Log in and prepare the server:**
+   ```sh
+   scp infra/deploy/setup-server.sh ubuntu@<ip>:
+   ssh ubuntu@<ip> 'sudo bash setup-server.sh'
+   ```
+   The script also opens 80/443 in Ubuntu's own firewall. Oracle's images block them by default, which is the
+   most common reason a fresh Oracle server "doesn't respond".
+6. **DNS (Hostinger → Domains → DNS / Nameservers → DNS records):** add **A** records for `test`, `api.test` and
+   `media.test`, each pointing to the server's IP, with TTL 300.
+7. Carry on with **Secrets** below (`SANTHA_ENV=test`, plus a long random `LOCALDB_PASSWORD`), then section 2.
+
+Oracle may reclaim Always Free instances that sit almost idle for 7 days. A deployed test stack normally isn't
+idle, but if the instance is stopped, start it again from the console. The data on its disk is kept.
 
 ## 2. GitHub (once)
 1. **Settings → Environments:** create `test` and `prod`. In each, add these secrets:

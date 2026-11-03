@@ -65,7 +65,7 @@ db_url() {
   # pg_dump/psql run in a postgres container on the compose network (reaches the localdb or a managed DB).
   echo "${DATABASE_URL}"
 }
-pg() { docker run --rm -i --network "santha-${SANTHA_ENV}_default" -e PGCONNECT_TIMEOUT=10 postgis/postgis:16-3.4 "$@"; }
+pg() { docker run --rm -i --network "santha-${SANTHA_ENV}_default" -e PGCONNECT_TIMEOUT=10 imresamu/postgis:16-3.4 "$@"; }
 s3() {
   docker run --rm -i -e AWS_ACCESS_KEY_ID="${BACKUP_S3_ACCESS_KEY:?}" -e AWS_SECRET_ACCESS_KEY="${BACKUP_S3_SECRET_KEY:?}" \
     -e AWS_DEFAULT_REGION=ap-south-1 amazon/aws-cli --endpoint-url "${BACKUP_S3_ENDPOINT:?}" "$@"
