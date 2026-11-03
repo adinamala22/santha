@@ -35,6 +35,8 @@ ACME_EMAIL=unused@example.com
 CLOUDFLARE_TUNNEL_TOKEN=
 
 LOCALDB_PASSWORD=${db}
+# Host port for SQL tools (127.0.0.1 only); 5432 is taken by the local dev stack.
+LOCALDB_PORT=5433
 DATABASE_URL=postgresql://santha:${db}@postgres:5432/santha
 JWT_ACCESS_SECRET=$(rand 32)
 JWT_REFRESH_SECRET=$(rand 32)

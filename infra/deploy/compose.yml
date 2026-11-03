@@ -2,8 +2,8 @@
 # (copied to ./values by the deploy; santha.sh exports its deploy section). Secrets come from ./.env (server.env.example).
 # Run it through ./santha.sh (deploy, migrate, bootstrap, backup, restore), not docker compose directly.
 #
-# Public ports: only Caddy (80/443, automatic HTTPS). Postgres, Redis and Typesense are reachable only inside
-# the compose network.
+# Public ports: only Caddy (80/443, automatic HTTPS). Redis and Typesense are reachable only inside the compose
+# network; the test Postgres also listens on the server's 127.0.0.1 for SSH-tunnelled SQL tools.
 # Optional profiles:
 #   localdb  Postgres + PostGIS in a container (test VM). Prod uses a managed database.
 #   storage  RustFS S3-compatible storage (test VM). Prod uses a managed bucket in India.
@@ -112,6 +112,10 @@ services:
       POSTGRES_USER: santha
       POSTGRES_PASSWORD: ${LOCALDB_PASSWORD:-}
       POSTGRES_DB: santha
+    # The server's own loopback only, never the internet: lets a desktop SQL tool (DBeaver) connect through an
+    # SSH tunnel (docs/deploy/README.md, "Querying the test database"). LOCALDB_PORT in .env; laptop.sh uses 5433
+    # so it doesn't clash with the local dev stack's 5432.
+    ports: ["127.0.0.1:${LOCALDB_PORT:-5432}:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck: { test: ["CMD-SHELL", "pg_isready -U santha"], interval: 5s, retries: 20 }
     logging: *logs
