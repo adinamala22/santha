@@ -78,6 +78,49 @@ is charged.
 Oracle may reclaim Always Free instances that sit almost idle for 7 days. A deployed test stack normally isn't
 idle, but if the instance is stopped, start it again from the console. The data on its disk is kept.
 
+### Test on your own computer (Cloudflare Tunnel, ₹0)
+Use this while there is no cloud server yet. The test stack runs in Docker on your PC (WSL 2 on Windows), and a
+free **Cloudflare Tunnel** brings `test`, `api.test` and `media.test` to it over HTTPS. There are no open ports
+and no router changes, and it works behind any home or office network. The apps and the website use the same
+addresses as on a cloud VM, so nothing needs rebuilding when test moves to one.
+
+Limits: test is only up while the PC is on, awake and signed in. Turn off sleep while plugged in (Settings →
+System → Power). It suits a few testers, not a pilot with real shops.
+
+1. **Domain on Cloudflare (once).** Sign up at dash.cloudflare.com (Free plan) → **Add a domain** → enter
+   your domain. Cloudflare shows two nameservers. At your registrar (Hostinger → Domains → Nameservers →
+   change to custom), replace the nameservers with Cloudflare's. Wait until Cloudflare says the domain is
+   **Active** (minutes to a few hours). Then put your domain in place of `santha.app` in
+   `config/values/test.values.yaml` (and `prod.values.yaml` and `packages/santha_core/lib/src/config/app_config.dart`).
+2. **Create the tunnel.** Cloudflare dashboard → **Zero Trust** → Networks → **Tunnels** → Create a tunnel →
+   **Cloudflared** → name it `santha-test`. On the "install connector" page, copy the long token after
+   `--token` (don't run the install command it shows; Docker runs cloudflared for you).
+3. **Public hostnames.** In the tunnel → **Public Hostname** → add three, each with service type **HTTP** and
+   URL **`caddy:80`**:
+   - `api.test.<your domain>`
+   - `test.<your domain>`
+   - `media.test.<your domain>`
+
+   Cloudflare creates the DNS records itself.
+4. **Deploy** from the repo folder in PowerShell:
+   ```powershell
+   .\infra\deploy\laptop\test-env.ps1 deploy
+   ```
+   - The first run creates `/opt/santha/.env` in WSL with random secrets and stops. Open it with
+     `wsl -d Ubuntu-24.04 -u root nano /opt/santha/.env`, paste the token into `CLOUDFLARE_TUNNEL_TOKEN`, save,
+     and run `deploy` again.
+   - It builds the images from your checkout (several minutes the first time), runs migrations, starts the
+     stack and waits until `https://api.test.<domain>/v1/health/ready` answers.
+   - Run `deploy` again whenever you want test to have your latest code. On Linux, run
+     `sudo infra/deploy/laptop/laptop.sh deploy` instead.
+5. **Once:** `.\infra\deploy\laptop\test-env.ps1 bootstrap` (first admin and city), then section 3 from step 3.
+6. **Keep it up:** `.\infra\deploy\laptop\test-env.ps1 autostart` starts it at every Windows sign-in. Without
+   it, WSL stops when idle and the test site goes down. Other commands: `status`, `logs api`, `rollback`, `stop`.
+
+Payments use the in-app mock until you add Razorpay **test** keys to `.env` and delete its
+`PAYMENTS_PROVIDER=mock` line. Settings: `config/values/laptop.test.values.yaml`. When test moves to a cloud VM,
+point the three hostnames at the VM in DNS instead of the tunnel, and delete the tunnel.
+
 ## 2. GitHub (once)
 1. **Settings → Environments:** create `test` and `prod`. In each, add these secrets:
    - `SSH_HOST`

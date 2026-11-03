@@ -56,6 +56,10 @@ describe('values files (SANTHA_ENV / SANTHA_CLOUD)', () => {
       const env = parseEnv({ SANTHA_ENV: 'test', SANTHA_VALUES_DIR: real, ...SECRETS, RAZORPAY_KEY_ID: 'k', RAZORPAY_KEY_SECRET: 's', RAZORPAY_WEBHOOK_SECRET: 'w' });
       expect(env).toMatchObject({ APP_ENV: 'staging', OTP_PROVIDER: 'mock', PAYMENTS_PROVIDER: 'razorpay_sandbox', TRUST_PROXY: 1, CORS_ORIGINS: 'https://test.santha.app' });
     });
+    it('test on a laptop behind a Cloudflare Tunnel: one more proxy hop, everything else as test', () => {
+      const env = parseEnv({ SANTHA_ENV: 'test', SANTHA_CLOUD: 'laptop', SANTHA_VALUES_DIR: real, ...SECRETS, PAYMENTS_PROVIDER: 'mock' });
+      expect(env).toMatchObject({ APP_ENV: 'staging', PAYMENTS_PROVIDER: 'mock', TRUST_PROXY: 2, CORS_ORIGINS: 'https://test.santha.app' });
+    });
     it('prod: live providers; refuses to start until the secrets are set', () => {
       const prodSecrets = {
         ...SECRETS, RAZORPAY_KEY_ID: 'rzp_live_x', RAZORPAY_KEY_SECRET: 's', RAZORPAY_WEBHOOK_SECRET: 'w', MSG91_AUTH_KEY: 'k', MSG91_TEMPLATE_ID: 't',

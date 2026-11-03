@@ -8,6 +8,7 @@ Secrets are never in these files: see [secrets.md](secrets.md).
 | `test.values.yaml` | `SANTHA_ENV=test` (the testing environment) |
 | `prod.values.yaml` | `SANTHA_ENV=prod` (production) |
 | `<cloud>.<env>.values.yaml`, e.g. `gcp.prod.values.yaml` | additionally, when `SANTHA_CLOUD=gcp` (host-specific overrides) |
+| `laptop.test.values.yaml` | test on your own computer behind a Cloudflare Tunnel (`SANTHA_CLOUD=laptop`, `infra/deploy/laptop/`) |
 
 Values are merged in this order, and the last one wins:
 1. the base file;

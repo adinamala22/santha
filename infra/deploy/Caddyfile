@@ -1,6 +1,12 @@
 # Automatic HTTPS (Let's Encrypt) for the API and the website. Domains come from the server's .env.
+# Behind a Cloudflare Tunnel (deploy.ingress: tunnel, compose.tunnel.yml) Cloudflare terminates HTTPS:
+# SITE_SCHEME=http serves plain HTTP inside the compose network, and TRUSTED_PROXIES lets Caddy keep the
+# client IP and X-Forwarded-Proto that cloudflared sends. On a public VM both stay at their defaults.
 {
 	email {$ACME_EMAIL}
+	servers {
+		trusted_proxies static {$TRUSTED_PROXIES:127.0.0.1/32}
+	}
 }
 
 (common) {
@@ -13,7 +19,7 @@
 	}
 }
 
-{$API_DOMAIN} {
+{$SITE_SCHEME:https}://{$API_DOMAIN} {
 	import common
 	# REST and the Socket.IO realtime gateway (WebSockets pass through reverse_proxy).
 	reverse_proxy api:4000 {
@@ -21,7 +27,7 @@
 	}
 }
 
-{$WEB_DOMAIN} {
+{$SITE_SCHEME:https}://{$WEB_DOMAIN} {
 	import common
 	reverse_proxy web:3000
 }

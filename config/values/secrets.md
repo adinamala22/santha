@@ -21,5 +21,6 @@ manager that injects environment variables. Use different values in test and pro
 | `POSTHOG_KEY` | optional | optional | PostHog project |
 | `BACKUP_S3_ENDPOINT`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ACCESS_KEY`, `BACKUP_S3_SECRET_KEY` | bucket for dumps | bucket for dumps | provider console (India region) |
 | `BACKUP_KEEP_DAYS` | `7` | `30` | — |
+| `CLOUDFLARE_TUNNEL_TOKEN` | only with `deploy.ingress: tunnel` (e.g. `SANTHA_CLOUD=laptop`) | (unused) | Cloudflare Zero Trust → Networks → Tunnels → the token after `--token` |
 
 Template: `infra/deploy/server.env.example`.
