@@ -37,8 +37,11 @@ export default defineConfig({
           setupFiles: ['test/setup-env.ts'],
           testTimeout: 120_000,
           hookTimeout: 180_000,
+          // One forked worker, files one after another (Vitest 4 replacement for poolOptions.forks.singleFork):
+          // the suites share the Testcontainers database.
           pool: 'forks',
-          poolOptions: { forks: { singleFork: true } },
+          maxWorkers: 1,
+          fileParallelism: false,
         },
       },
     ],
