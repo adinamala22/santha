@@ -5,16 +5,19 @@ There are two environments. Every piece of Santha exists in both:
 | | **test** (for testing) | **prod** (real users) |
 |---|---|---|
 | Settings | `config/values/test.values.yaml` | `config/values/prod.values.yaml` (+ optional `<cloud>.prod.values.yaml`) |
-| Backend API + worker | `https://api.test.santha.app` | `https://api.santha.app` |
-| Website + ops console | `https://test.santha.app` (not indexed by search engines) | `https://santha.app` |
+| Backend API + worker | `https://api.test.santhaapp.com` | `https://api.santhaapp.com` |
+| Website + ops console | `https://test.santhaapp.com` (not indexed by search engines) | `https://santhaapp.com` |
 | Database | Postgres container on the test server | Managed Postgres 16 + PostGIS in India |
-| Photos and files | Storage container at `media.test.santha.app` | Managed bucket in India |
+| Photos and files | Storage container at `media.test.santhaapp.com` | Managed bucket in India |
 | Payments, login SMS | Razorpay **test** mode; fixed OTP `123456` | Razorpay live; MSG91 SMS |
 | Apps | "Santha Test", "Santha Partner Test", "Santha Rider Test" (flavor `stg`, installs next to prod) | "Santha", "Santha Partner", "Santha Rider" (flavor `prod`) |
 | How it ships | Automatically on every push to `main` | By hand: run **deploy** with a commit already checked on test |
 
-The domain in the values files is `santha.app`. If you use another one, change it in both values files and in
-the apps' fallback addresses in `packages/santha_core/lib/src/config/app_config.dart`.
+The domain is `santhaapp.com`, registered at GoDaddy. To change it, edit both values files and the apps' fallback
+addresses in `packages/santha_core/lib/src/config/app_config.dart`.
+
+**Test today:** an AWS EC2 `t4g.small` in Hyderabad (ap-south-2) at Elastic IP `98.130.34.49`. GoDaddy DNS has
+A records for `test`, `api.test` and `media.test` pointing to it.
 
 ## 1. Servers (once per environment)
 Each environment is one Linux VM in India with Docker. Any provider works:
@@ -90,8 +93,8 @@ System → Power). It suits a few testers, not a pilot with real shops.
 1. **Domain on Cloudflare (once).** Sign up at dash.cloudflare.com (Free plan) → **Add a domain** → enter
    your domain. Cloudflare shows two nameservers. At your registrar (Hostinger → Domains → Nameservers →
    change to custom), replace the nameservers with Cloudflare's. Wait until Cloudflare says the domain is
-   **Active** (minutes to a few hours). Then put your domain in place of `santha.app` in
-   `config/values/test.values.yaml` (and `prod.values.yaml` and `packages/santha_core/lib/src/config/app_config.dart`).
+   **Active** (minutes to a few hours). If the test A records point at a cloud server,
+   delete them first; the tunnel creates its own records.
 2. **Create the tunnel.** Cloudflare dashboard → **Zero Trust** → Networks → **Tunnels** → Create a tunnel →
    **Cloudflared** → name it `santha-test`. On the "install connector" page, copy the long token after
    `--token` (don't run the install command it shows; Docker runs cloudflared for you).
@@ -136,7 +139,7 @@ point the three hostnames at the VM in DNS instead of the tunnel, and delete the
    - To redeploy by hand: Actions → deploy → Run workflow → `test` and the full commit SHA.
 2. On the test VM, once: `cd /opt/santha && ./santha.sh bootstrap`. It creates the city and the first ops admin,
    and asks for the email, mobile and password.
-3. Sign in at `https://test.santha.app/admin`.
+3. Sign in at `https://test.santhaapp.com/admin`.
 4. Create the micro-markets (Console → Micro-markets).
 5. Import products: `./santha.sh import products.csv`.
 6. When test looks good, deploy **prod**: Actions → deploy → Run workflow → `prod`, with the same commit SHA.
@@ -190,4 +193,4 @@ See `docs/launch/launch-checklist.md`. In particular:
 - Firebase config in the apps (push notifications);
 - real masked calling (Exotel) and WhatsApp providers;
 - the MSG91 DLT templates;
-- Razorpay live keys and the webhook URL `https://api.santha.app/v1/webhooks/razorpay`. In Razorpay test mode, use `https://api.test.santha.app/v1/webhooks/razorpay`.
+- Razorpay live keys and the webhook URL `https://api.santhaapp.com/v1/webhooks/razorpay`. In Razorpay test mode, use `https://api.test.santhaapp.com/v1/webhooks/razorpay`.

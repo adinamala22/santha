@@ -17,9 +17,9 @@ class AppConfig {
         app: app,
         apiBaseUrl: switch (flavor) {
           Flavor.dev => const String.fromEnvironment('API_BASE_URL', defaultValue: 'http://10.0.2.2:4000'),
-          Flavor.stg => const String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.test.santha.app'),
+          Flavor.stg => const String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.test.santhaapp.com'),
           // Release builds get the real address from CI (--dart-define=API_BASE_URL=…, see apps-release.yml).
-          Flavor.prod => const String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.santha.app'),
+          Flavor.prod => const String.fromEnvironment('API_BASE_URL', defaultValue: 'https://api.santhaapp.com'),
         },
       );
 

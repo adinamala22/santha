@@ -27,7 +27,7 @@ Rider features: onboarding, shift, offers, job, proof, earnings.
 
 ## Rules
 - Riverpod (`AsyncNotifier`) for state; no global singletons except via providers. Optimistic cart updates, server-validated at checkout.
-- go_router typed routes; deep links `santha.app/s/{slug}` (store) and `santha.app/o/{id}` (tracking) + App/Universal Links.
+- go_router typed routes; deep links `santhaapp.com/s/{slug}` (store) and `santhaapp.com/o/{id}` (tracking) + App/Universal Links.
 - Every screen handles loading, empty, error and offline; errors are human and in both languages.
 - Images via CDN variants (≤40 KB WebP thumbnails); use `cached_network_image`; lists virtualised; avoid rebuilding whole lists on cart change.
 - Localisation: every string in `app_en.arb` and `app_te.arb`; fallback font for Telugu; test at 130% text scale.
