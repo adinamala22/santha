@@ -1,0 +1,45 @@
+# Santha — TEST environment. Non-secret settings only, committed.
+# Secrets (JWT, database URL, provider keys…) live in the server's .env / secret manager: see secrets.md.
+# Read by: the backend (SANTHA_ENV=test), infra/deploy/santha.sh (deploy section), the deploy workflow (web)
+# and the apps-release workflow (apps).
+environment: test
+
+# Server and HTTPS (infra/deploy)
+deploy:
+  apiDomain: api.test.santha.app
+  webDomain: test.santha.app
+  # Public address of the storage container (photo uploads use signed URLs, so phones must reach it)
+  mediaDomain: media.test.santha.app
+  robotsTag: noindex            # keep the test site out of search engines
+  composeProfiles: localdb,storage   # Postgres and S3 storage run on the test VM itself
+
+# Backend process (keys are env var names in camelCase: appEnv → APP_ENV)
+backend:
+  appEnv: staging
+  nodeEnv: production
+  logLevel: info
+  trustProxy: 1                 # Caddy in front
+  corsOrigins: https://test.santha.app
+  webBaseUrl: https://test.santha.app
+  # Test providers: fixed OTP for testers, mock KYC, Razorpay TEST mode (rzp_test_ keys in .env)
+  otpProvider: mock
+  mockOtpCode: "123456"
+  kycProvider: mock
+  paymentsProvider: razorpay_sandbox
+  pushProvider: mock
+  mapsProvider: mock
+  barcodeProvider: openfoodfacts
+  s3Endpoint: https://media.test.santha.app
+  s3Region: ap-south-1
+  s3Bucket: santha-test
+
+# Website image build (NEXT_PUBLIC_*; fixed at build time)
+web:
+  siteUrl: https://test.santha.app
+  apiUrl: https://api.test.santha.app
+  mediaOrigin: https://media.test.santha.app
+
+# Flutter apps: flavor stg → "Santha Test", "Santha Partner Test", "Santha Rider Test"
+apps:
+  flavor: stg
+  apiBaseUrl: https://api.test.santha.app

@@ -6,6 +6,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+// Release signing: CI (apps-release.yml) sets these from secrets. Without them, release builds fall back to the
+// debug key so local `flutter build --release` still works (such builds cannot be uploaded to Play).
+val releaseKeystore: String? = System.getenv("SANTHA_KEYSTORE_PATH")
+
 android {
     namespace = "app.santha.rider"
     compileSdk = flutter.compileSdkVersion
@@ -41,7 +45,7 @@ android {
             dimension = "env"
             applicationIdSuffix = ".stg"
             versionNameSuffix = "-stg"
-            resValue("string", "app_name", "Santha Rider Stg")
+            resValue("string", "app_name", "Santha Rider Test")
         }
         create("prod") {
             dimension = "env"
@@ -49,10 +53,20 @@ android {
         }
     }
 
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = System.getenv("SANTHA_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("SANTHA_KEY_ALIAS")
+                keyPassword = System.getenv("SANTHA_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // Release signing comes from CI secrets (fastlane) — debug keys only for local runs.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (releaseKeystore != null) "release" else "debug")
             isMinifyEnabled = true
             isShrinkResources = true
         }

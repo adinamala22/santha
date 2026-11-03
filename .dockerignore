@@ -1,0 +1,24 @@
+# Keep Docker build contexts small and free of secrets.
+**/node_modules
+**/.next
+**/dist
+**/build
+**/.dart_tool
+**/coverage
+**/playwright-report
+**/test-results
+**/.env
+**/.env.*
+!**/.env.example
+.git
+graphify-out
+apps/consumer
+apps/merchant
+apps/rider
+packages/santha_*
+docs
+infra
+**/*.apk
+**/*.aab
+**/*.jks
+**/*.keystore

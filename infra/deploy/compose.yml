@@ -1,0 +1,129 @@
+# Santha server stack: the same file for test and prod. Settings come from config/values/<SANTHA_ENV>.values.yaml
+# (copied to ./values by the deploy; santha.sh exports its deploy section). Secrets come from ./.env (server.env.example).
+# Run it through ./santha.sh (deploy, migrate, bootstrap, backup, restore), not docker compose directly.
+#
+# Public ports: only Caddy (80/443, automatic HTTPS). Postgres, Redis and Typesense are reachable only inside
+# the compose network.
+# Optional profiles:
+#   localdb  Postgres + PostGIS in a container (test VM). Prod uses a managed database.
+#   storage  RustFS S3-compatible storage (test VM). Prod uses a managed bucket in India.
+# Profiles, domains and robots tag come from the values file (deploy section) via santha.sh.
+name: santha-${SANTHA_ENV:?set SANTHA_ENV to test or prod}
+
+x-backend: &backend
+  image: ${REGISTRY:?}/santha-backend:${TAG:?}
+  restart: unless-stopped
+  env_file: .env
+  # One source of settings on the server: the values/ folder the deploy copies (same commit as the images).
+  volumes: [./values:/app/config/values:ro]
+  environment:
+    REDIS_URL: redis://redis:6379
+    TYPESENSE_HOST: typesense
+    TYPESENSE_PORT: "8108"
+    TYPESENSE_PROTOCOL: http
+    SEARCH_ENGINE: typesense
+    DATA_STORE: postgres
+  depends_on:
+    redis: { condition: service_started }
+    typesense: { condition: service_started }
+  logging: &logs
+    driver: json-file
+    options: { max-size: "20m", max-file: "5" }
+
+services:
+  api:
+    <<: *backend
+    environment:
+      REDIS_URL: redis://redis:6379
+      TYPESENSE_HOST: typesense
+      TYPESENSE_PORT: "8108"
+      TYPESENSE_PROTOCOL: http
+      SEARCH_ENGINE: typesense
+      DATA_STORE: postgres
+      RUN_WORKERS: "false" # the worker service runs the outbox relay and queues
+      PORT: "4000"
+
+  worker:
+    <<: *backend
+    command: ["node", "dist/worker.js"]
+    healthcheck: { disable: true }
+
+  # One-off jobs (migrations, bootstrap, reindex, catalogue import). Run by santha.sh, never left running.
+  tools:
+    image: ${REGISTRY:?}/santha-tools:${TAG:?}
+    env_file: .env
+    volumes: [./values:/repo/config/values:ro]
+    environment:
+      REDIS_URL: redis://redis:6379
+      TYPESENSE_HOST: typesense
+      TYPESENSE_PORT: "8108"
+      TYPESENSE_PROTOCOL: http
+      SEARCH_ENGINE: typesense
+      DATA_STORE: postgres
+      RUN_WORKERS: "false"
+    profiles: [tools]
+    logging: *logs
+
+  web:
+    image: ${REGISTRY:?}/santha-web-${SANTHA_ENV}:${TAG:?}
+    restart: unless-stopped
+    environment:
+      API_URL: http://api:4000 # server-side calls from the console stay inside the network
+    depends_on: [api]
+    logging: *logs
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    volumes: [redis:/data]
+    logging: *logs
+
+  typesense:
+    image: typesense/typesense:27.1
+    restart: unless-stopped
+    command: ["--data-dir", "/data", "--api-key", "${TYPESENSE_API_KEY:?}"]
+    volumes: [typesense:/data]
+    logging: *logs
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      API_DOMAIN: ${API_DOMAIN:?}
+      WEB_DOMAIN: ${WEB_DOMAIN:?}
+      ACME_EMAIL: ${ACME_EMAIL:?}
+      ROBOTS_TAG: ${ROBOTS_TAG:-all}
+      MEDIA_DOMAIN: ${MEDIA_DOMAIN:-}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy.d:/etc/caddy/caddy.d:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [api, web]
+    logging: *logs
+
+  postgres:
+    image: imresamu/postgis:16-3.4   # Postgres 16 + PostGIS 3.4 like postgis/postgis, built for amd64 and arm64
+    restart: unless-stopped
+    profiles: [localdb]
+    environment:
+      POSTGRES_USER: santha
+      POSTGRES_PASSWORD: ${LOCALDB_PASSWORD:-}
+      POSTGRES_DB: santha
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL", "pg_isready -U santha"], interval: 5s, retries: 20 }
+    logging: *logs
+
+  storage:
+    image: rustfs/rustfs:latest
+    restart: unless-stopped
+    profiles: [storage]
+    environment:
+      RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:-}
+      RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-}
+    volumes: [storage:/data]
+    logging: *logs
+
+volumes: { redis: {}, typesense: {}, caddy_data: {}, caddy_config: {}, pgdata: {}, storage: {} }

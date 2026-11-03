@@ -1,0 +1,111 @@
+name: apps-release
+
+# Builds the three Flutter apps for one environment (run by hand: Actions → apps-release → Run workflow).
+# Flavor and API address come from config/values/<env>.values.yaml (the apps section).
+#   test  → flavor stg: "Santha Test", "Santha Partner Test" and "Santha Rider Test" (app ids *.stg).
+#           Signed APKs for testers, plus optional Firebase App Distribution.
+#   prod  → flavor prod: "Santha", "Santha Partner" and "Santha Rider". Signed app bundles (.aab), plus an
+#           optional upload to the Play internal track (promote in the Play Console).
+# Secrets per app (CONSUMER_ / MERCHANT_ / RIDER_): KEYSTORE_B64, KEYSTORE_PASSWORD, KEY_ALIAS, KEY_PASSWORD.
+# Optional: PLAY_SERVICE_ACCOUNT_JSON, FIREBASE_SERVICE_ACCOUNT_JSON. Setup: docs/deploy/README.md.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [test, prod]
+        default: test
+      apps:
+        description: Which apps
+        type: choice
+        options: [all, consumer, merchant, rider]
+        default: all
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      apps: ${{ steps.p.outputs.apps }}
+    steps:
+      - id: p
+        run: |
+          if [ "${{ inputs.apps }}" = all ]; then echo 'apps=["consumer","merchant","rider"]' >> "$GITHUB_OUTPUT"
+          else echo 'apps=["${{ inputs.apps }}"]' >> "$GITHUB_OUTPUT"; fi
+
+  build:
+    needs: plan
+    name: ${{ matrix.app }} (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: ${{ fromJson(needs.plan.outputs.apps) }}
+    env:
+      # Build number: grows with every run, so each upload is newer than the last.
+      BUILD_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: { distribution: temurin, java-version: '21' }
+      - uses: subosito/flutter-action@v2
+        with: { channel: stable, cache: true }
+      - name: Read the values file
+        run: |
+          f="config/values/${{ inputs.environment }}.values.yaml"
+          echo "FLAVOR=$(yq '.apps.flavor' "$f")" >> "$GITHUB_ENV"
+          api="$(yq '.apps.apiBaseUrl' "$f")"
+          [[ "$api" == https://* ]] || { echo "apps.apiBaseUrl in $f must be https://…"; exit 1; }
+          echo "API_BASE_URL=$api" >> "$GITHUB_ENV"
+      - run: dart pub global activate melos && melos bootstrap
+      - name: Platform files (Gradle wrapper etc. are not committed)
+        working-directory: apps/${{ matrix.app }}
+        run: flutter create --no-pub --platforms=android --org app.santha --project-name ${{ matrix.app }} .
+      - name: Signing key
+        env:
+          KEYSTORE_B64: ${{ secrets[format('{0}_KEYSTORE_B64', matrix.app)] }}
+        run: |
+          [ -n "$KEYSTORE_B64" ] || { echo "Missing secret ${{ matrix.app }}_KEYSTORE_B64 (see docs/deploy/README.md)"; exit 1; }
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          echo "SANTHA_KEYSTORE_PATH=$RUNNER_TEMP/upload.jks" >> "$GITHUB_ENV"
+      - name: Build
+        working-directory: apps/${{ matrix.app }}
+        env:
+          SANTHA_KEYSTORE_PASSWORD: ${{ secrets[format('{0}_KEYSTORE_PASSWORD', matrix.app)] }}
+          SANTHA_KEY_ALIAS: ${{ secrets[format('{0}_KEY_ALIAS', matrix.app)] }}
+          SANTHA_KEY_PASSWORD: ${{ secrets[format('{0}_KEY_PASSWORD', matrix.app)] }}
+        run: |
+          args=(--flavor "$FLAVOR" -t "lib/main_$FLAVOR.dart" --release --build-number "$BUILD_NUMBER" --dart-define=API_BASE_URL="$API_BASE_URL")
+          flutter build appbundle "${args[@]}"
+          [ "$FLAVOR" = stg ] && flutter build apk "${args[@]}"
+          true
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.app }}-${{ inputs.environment }}-${{ github.run_number }}
+          path: |
+            apps/${{ matrix.app }}/build/app/outputs/bundle/${{ env.FLAVOR }}Release/*.aab
+            apps/${{ matrix.app }}/build/app/outputs/flutter-apk/*-${{ env.FLAVOR }}-release.apk
+          retention-days: 30
+
+      # Test: send the APK to testers through Firebase App Distribution (no store listing needed).
+      - name: Firebase App Distribution (test)
+        if: inputs.environment == 'test' && vars[format('FIREBASE_APP_ID_{0}_STG', matrix.app)] != ''
+        uses: wzieba/Firebase-Distribution-Github-Action@v1
+        with:
+          appId: ${{ vars[format('FIREBASE_APP_ID_{0}_STG', matrix.app)] }}
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          groups: santha-testers
+          file: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/app-stg-release.apk
+
+      # Prod: upload to the Play internal track; promote to closed/production in the Play Console.
+      - name: Google Play internal track (prod)
+        if: inputs.environment == 'prod' && vars.PLAY_UPLOAD == 'true'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: app.santha.${{ matrix.app }}
+          releaseFiles: apps/${{ matrix.app }}/build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          track: internal
+          status: completed

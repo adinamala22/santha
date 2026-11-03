@@ -1,0 +1,12 @@
+# Overlay: production on Google Cloud (SANTHA_ENV=prod SANTHA_CLOUD=gcp). Only what differs from prod.values.yaml.
+# Data stays in India: Mumbai region asia-south1 for the VM (or Cloud Run), Cloud SQL Postgres 16 with PostGIS,
+# and the bucket.
+# Photos use Cloud Storage through its S3-compatible XML API: create HMAC keys for a service account and put them
+# in .env as S3_ACCESS_KEY / S3_SECRET_KEY.
+backend:
+  s3Endpoint: https://storage.googleapis.com
+  s3Region: asia-south1
+  s3Bucket: santha-production-in
+
+web:
+  mediaOrigin: https://storage.googleapis.com

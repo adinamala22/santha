@@ -10,7 +10,17 @@ description: Local development, environments, CI/CD, infrastructure as code, sec
 No Docker: `pnpm dev:fake` runs the backend with `DATA_STORE=memory` (in-memory stores + demo seed, mock providers, OTP `123456`) plus web; refused outside `APP_ENV=dev` (ADR-005).
 `.env.example` documents every variable; copy to `.env` (git-ignored). Providers default to `mock` locally.
 
-## Environments
+## Environments (current: ADR-015)
+Two environments, `test` and `prod`. Each is one VM in India running `infra/deploy/compose.yml` through `infra/deploy/santha.sh`.
+- Non-secret settings: `config/values/<env>.values.yaml` (+ `<cloud>.<env>` overlay), loaded by the backend via `SANTHA_ENV`/`SANTHA_CLOUD`; never put secrets there.
+- Secrets: the server `.env` (`infra/deploy/server.env.example`).
+- Deploy: `.github/workflows/deploy.yml` (test on push to main, prod by hand).
+- Apps: `apps-release.yml`.
+- Guide: `docs/deploy/README.md`.
+
+The AWS layout below is the scale-up target.
+
+### AWS target
 dev (shared cloud, small) · staging (prod replica, sandboxes, internal app tracks) · production (Multi-AZ, blue/green). All in AWS ap-south-1. Resource names `santha-{env}-{component}`; tags `env`, `component`, `cost-centre`.
 
 ## Pipelines (.github/workflows)

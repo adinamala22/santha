@@ -114,7 +114,13 @@ Goldens are compared on Linux only (CI); on Windows/macOS they are skipped becau
 See `docs/decisions/`: ADR-001 stack · 002 web hosting · 003 local object storage · 004 separate apps · 005 in-memory fake mode ·
 006 M1 scope · 007 ops console session & maps · 008 M2 catalogue & search · 009 M3 consumer discovery · 010 M4 pricing, orders &
 payments · 011 M5 order lifecycle · 012 M6 hybrid fulfilment · 013 M7 settlements, refunds & disputes · 014 M8 trust & safety,
-analytics, hardening & launch.
+analytics, hardening & launch · 015 environments & values files.
+
+## Environments and deployment
+Two environments, **test** and **prod**, for the backend, database, website and all three apps. Non-secret settings
+are in `config/values/<env>.values.yaml` (overlay `<cloud>.<env>.values.yaml`, e.g. `gcp.prod`); secrets stay
+on the servers. Test deploys on every push to `main`; prod is deployed by hand. Step-by-step: `docs/deploy/README.md`
+(ADR-015). App builds for either environment: Actions → **apps-release**.
 
 ## Security and launch
 CodeQL (`.github/workflows/codeql.yml`) on PRs and weekly, failing on error-level findings (SARIF kept as an artifact); OWASP ZAP baseline and API scans (`zap.yml`) weekly against the fake

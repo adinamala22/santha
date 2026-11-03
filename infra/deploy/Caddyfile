@@ -1,0 +1,30 @@
+# Automatic HTTPS (Let's Encrypt) for the API and the website. Domains come from the server's .env.
+{
+	email {$ACME_EMAIL}
+}
+
+(common) {
+	encode zstd gzip
+	# Staging sets ROBOTS_TAG=noindex so search engines never list the test site.
+	header X-Robots-Tag "{$ROBOTS_TAG}"
+	log {
+		output stdout
+		format json
+	}
+}
+
+{$API_DOMAIN} {
+	import common
+	# REST and the Socket.IO realtime gateway (WebSockets pass through reverse_proxy).
+	reverse_proxy api:4000 {
+		health_uri /v1/health
+	}
+}
+
+{$WEB_DOMAIN} {
+	import common
+	reverse_proxy web:3000
+}
+
+# Extra sites written by santha.sh (e.g. media.<domain> for the test storage container).
+import /etc/caddy/caddy.d/*.caddy
