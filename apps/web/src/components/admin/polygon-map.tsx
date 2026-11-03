@@ -17,6 +17,8 @@ export interface Shape {
  * Raster tiles for the editor. OpenStreetMap by default (fine for internal ops use at low volume);
  * production can point NEXT_PUBLIC_MAP_TILES_URL at Google/MapTiler tiles (ADR-007).
  */
+/** Served from public/ by scripts/sync-brand.mjs (MapLibre 6 cannot locate its worker inside a Next bundle). */
+const MAPLIBRE_WORKER = '/maplibre/maplibre-gl-worker.mjs';
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const C = tokens.colors;
 
@@ -50,6 +52,7 @@ export function PolygonMap({
     (async () => {
       try {
         const ml = await import('maplibre-gl');
+        ml.setWorkerUrl(MAPLIBRE_WORKER);
         if (cancelled || !box.current) return;
         lib.current = ml;
         const m = new ml.Map({

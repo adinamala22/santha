@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import tokens from '../../../../../../../design/tokens/tailwind.tokens.js';
 
+/** Served from public/ by scripts/sync-brand.mjs (MapLibre 6 cannot locate its worker inside a Next bundle). */
+const MAPLIBRE_WORKER = '/maplibre/maplibre-gl-worker.mjs';
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const C = tokens.colors;
 
@@ -28,6 +30,7 @@ export function LiveMap({ points, unavailable, height = 380 }: { points: LivePoi
     (async () => {
       try {
         const ml = await import('maplibre-gl');
+        ml.setWorkerUrl(MAPLIBRE_WORKER);
         if (cancelled || !box.current) return;
         const m = new ml.Map({
           container: box.current,
