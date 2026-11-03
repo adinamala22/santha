@@ -1,4 +1,5 @@
 import { type APIRequestContext, expect, type Page, test } from '@playwright/test';
+import { stubMapTiles } from './tiles';
 
 test.setTimeout(150_000);
 
@@ -49,6 +50,7 @@ async function signIn(page: Page) {
 }
 
 test('live board: KPIs, the rider on the job, and ops reassigns it to another rider', async ({ page, request }) => {
+  await stubMapTiles(page);
   const { owner, consumer, store, zone } = await setup(request);
   const r1 = await appSignIn(request, '9000000101', 'rider');
   const r2 = await appSignIn(request, '9000000102', 'rider');

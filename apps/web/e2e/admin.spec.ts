@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page, test } from '@playwright/test';
+import { stubMapTiles } from './tiles';
 
 test.setTimeout(120_000); // first visit to each page compiles it in dev mode
 
@@ -54,6 +55,7 @@ test('wrong password shows one generic error', async ({ page }) => {
 
 test.describe('signed in', () => {
   test.beforeEach(async ({ page }) => {
+    await stubMapTiles(page);
     await signIn(page);
     await expect(page.getByRole('heading', { name: 'Overview' })).toBeVisible();
   });
@@ -92,6 +94,8 @@ test.describe('signed in', () => {
   });
 
   test('publish a micro-market version (fee change) and see it in history', async ({ page }) => {
+    const cspViolations: string[] = [];
+    page.on('console', (m) => m.text().includes('Content Security Policy') && cspViolations.push(m.text()));
     await page.getByRole('link', { name: 'Micro-markets' }).click();
     await page.getByRole('row', { name: /Dargamitta/ }).getByRole('link', { name: 'View' }).click();
     await expect(page.getByText(/Version 1 · since/).first()).toBeVisible();
@@ -101,6 +105,7 @@ test.describe('signed in', () => {
     await page.getByRole('button', { name: 'Publish a new version' }).click();
     await expect(page.getByText('Version 2 published.')).toBeVisible();
     await expect(page.getByText('Platform fee to ₹7')).toBeVisible();
+    expect(cspViolations, 'the map (tiles, workers) must not be blocked by the CSP').toEqual([]);
   });
 
   test('the console works in Telugu', async ({ page }) => {

@@ -19,7 +19,9 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   `img-src 'self' data: blob: ${api} ${tiles} https://*.tile.openstreetmap.org`,
   "font-src 'self' data:",
-  `connect-src 'self' ${api} ${api.replace(/^http/, 'ws')}`,
+  // MapLibre downloads tiles with fetch() (connect-src, not img-src) and runs its workers from blob: URLs.
+  `connect-src 'self' ${api} ${api.replace(/^http/, 'ws')} ${tiles} https://*.tile.openstreetmap.org`,
+  "worker-src 'self' blob:",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
