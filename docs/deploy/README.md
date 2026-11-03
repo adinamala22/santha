@@ -162,6 +162,17 @@ Every deploy:
 | `./santha.sh reindex` | Rebuild search |
 | `./santha.sh migrate` | Run migrations only |
 
+### Querying the test database
+The test Postgres listens on the server's `127.0.0.1:5432` only (`LOCALDB_PORT`), never on the internet.
+- **Terminal:** `ssh -t -i <key.pem> ubuntu@<server> "sudo docker exec -it santha-test-postgres-1 psql -U santha -d santha"`
+- **DBeaver** (or Beekeeper Studio, pgAdmin): New connection → PostgreSQL.
+  - Main tab: host `localhost`, port `5432`, database `santha`, user `santha`, password = `LOCALDB_PASSWORD` from
+    the server's `.env`.
+  - SSH tab: use an SSH tunnel to the server (`ubuntu`, public key auth with the `.pem`).
+
+Read only. Change data through the apps or the console: order states, money and audit events must go through the
+backend. Prod uses a managed database; give tools a read-only user there.
+
 ## 5. Apps (test and prod builds)
 1. **Signing keys.** Create one upload key per app and keep each `.jks` file and its passwords safe (not in git):
    `keytool -genkeypair -keystore consumer-upload.jks -alias upload -keyalg RSA -keysize 2048 -validity 10000`.
