@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 
 const origin = (url: string | undefined, fallback: string) => {
@@ -9,6 +10,9 @@ const origin = (url: string | undefined, fallback: string) => {
 };
 const api = origin(process.env.NEXT_PUBLIC_API_URL, 'http://localhost:4000');
 const tiles = origin(process.env.NEXT_PUBLIC_MAP_TILES_URL?.replace(/\{[a-z]\}/g, 'a'), 'https://tile.openstreetmap.org');
+// Where product photos and documents are served from (bucket, CDN or the staging media host). Empty locally:
+// fake mode serves media through the API.
+const media = process.env.NEXT_PUBLIC_MEDIA_ORIGIN ? origin(process.env.NEXT_PUBLIC_MEDIA_ORIGIN, '') : '';
 const dev = process.env.NODE_ENV !== 'production';
 
 // The App Router inlines its bootstrap scripts, so script-src needs 'unsafe-inline' unless nonces are added.
@@ -17,7 +21,7 @@ const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${api} ${tiles} https://*.tile.openstreetmap.org`,
+  `img-src 'self' data: blob: ${api} ${tiles} https://*.tile.openstreetmap.org ${media}`.trim(),
   "font-src 'self' data:",
   // MapLibre downloads tiles with fetch() (connect-src, not img-src) and runs its workers from blob: URLs.
   `connect-src 'self' ${api} ${api.replace(/^http/, 'ws')} ${tiles} https://*.tile.openstreetmap.org`,
@@ -43,6 +47,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Container builds set NEXT_STANDALONE=1 (standalone needs symlink rights, which Windows dev boxes often lack).
   output: process.env.NEXT_STANDALONE === '1' ? 'standalone' : undefined,
+  // pnpm monorepo: trace server dependencies from the repo root so the standalone bundle is complete.
+  outputFileTracingRoot: resolve(__dirname, '../..'),
   transpilePackages: ['@santha/shared-types'],
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }];
