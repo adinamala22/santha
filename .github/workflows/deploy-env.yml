@@ -1,0 +1,59 @@
+name: deploy-env
+
+# Deploys one tag to one environment (test or prod) over SSH. Called by deploy.yml.
+# Uses that GitHub environment's secrets:
+#   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS (output of `ssh-keyscan <host>`)
+# The server keeps its own /opt/santha/.env with the secrets; this job never sees them.
+on:
+  workflow_call:
+    inputs:
+      environment: { type: string, required: true }
+      tag: { type: string, required: true }
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: deploy ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+      url: ${{ steps.v.outputs.site }}
+    steps:
+      - name: Check the tag
+        run: |
+          [[ "${{ inputs.tag }}" =~ ^[0-9a-f]{40}$ ]] || { echo "tag must be a full commit SHA"; exit 1; }
+      - uses: actions/checkout@v4
+        with: { ref: '${{ inputs.tag }}', sparse-checkout: "infra/deploy\nconfig/values" }
+      - id: v
+        name: Read the values file
+        run: |
+          f="config/values/${{ inputs.environment }}.values.yaml"
+          echo "site=$(yq '.web.siteUrl' "$f")" >> "$GITHUB_OUTPUT"
+          echo "api=$(yq '.web.apiUrl' "$f")" >> "$GITHUB_OUTPUT"
+      - name: SSH setup
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+      - name: Copy the stack files and values (never the server's .env)
+        env: { HOST: '${{ secrets.SSH_HOST }}', USER: '${{ secrets.SSH_USER }}' }
+        run: |
+          scp -i ~/.ssh/id_deploy -r infra/deploy/compose.yml infra/deploy/Caddyfile infra/deploy/santha.sh infra/deploy/server.env.example "$USER@$HOST:/opt/santha/"
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" 'rm -rf /opt/santha/values && mkdir -p /opt/santha/values'
+          scp -i ~/.ssh/id_deploy config/values/*.values.yaml "$USER@$HOST:/opt/santha/values/"
+      - name: Deploy
+        env:
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
+            "echo '$TOKEN' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin >/dev/null && chmod +x /opt/santha/santha.sh && /opt/santha/santha.sh deploy ${{ inputs.tag }}; rc=\$?; docker logout ghcr.io >/dev/null; exit \$rc"
+      - name: Smoke test
+        run: curl -fsS "${{ steps.v.outputs.api }}/v1/health/ready" && echo
