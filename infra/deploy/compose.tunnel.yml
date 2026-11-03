@@ -1,0 +1,24 @@
+# Overlay on compose.yml when the values file says deploy.ingress: tunnel (e.g. test on a laptop behind NAT,
+# config/values/laptop.test.values.yaml). santha.sh adds it automatically.
+#
+# No public ports: cloudflared opens an outbound tunnel to Cloudflare, which serves HTTPS on the real domains
+# and forwards every hostname to Caddy over plain HTTP. In the Cloudflare dashboard, each public hostname
+# (api.test…, test…, media.test…) points to the service http://caddy:80 (docs/deploy/README.md).
+services:
+  caddy:
+    ports: !reset []
+    environment:
+      SITE_SCHEME: http
+      TRUSTED_PROXIES: private_ranges # cloudflared, inside the compose network
+
+  cloudflared:
+    image: cloudflare/cloudflared:2026.10.7
+    restart: unless-stopped
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      # From .env (Cloudflare → Zero Trust → Networks → Tunnels). laptop.sh refuses to deploy while it is empty.
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on: [caddy]
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }

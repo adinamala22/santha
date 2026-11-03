@@ -1,0 +1,9 @@
+# Overlay: TEST on your own computer behind a Cloudflare Tunnel (SANTHA_ENV=test SANTHA_CLOUD=laptop).
+# Only what differs from test.values.yaml: domains, providers and app settings stay the same, so the website
+# and test app builds work unchanged when test later moves to a cloud VM.
+# Run it with infra/deploy/laptop/laptop.sh (docs/deploy/README.md, "Test on your own computer").
+deploy:
+  ingress: tunnel               # cloudflared instead of public ports 80/443 (infra/deploy/compose.tunnel.yml)
+
+backend:
+  trustProxy: 2                 # cloudflared → Caddy → API

@@ -6,10 +6,10 @@ environment: test
 
 # Server and HTTPS (infra/deploy)
 deploy:
-  apiDomain: api.test.santha.app
-  webDomain: test.santha.app
+  apiDomain: api.test.santhaapp.com
+  webDomain: test.santhaapp.com
   # Public address of the storage container (photo uploads use signed URLs, so phones must reach it)
-  mediaDomain: media.test.santha.app
+  mediaDomain: media.test.santhaapp.com
   robotsTag: noindex            # keep the test site out of search engines
   composeProfiles: localdb,storage   # Postgres and S3 storage run on the test VM itself
 
@@ -19,8 +19,8 @@ backend:
   nodeEnv: production
   logLevel: info
   trustProxy: 1                 # Caddy in front
-  corsOrigins: https://test.santha.app
-  webBaseUrl: https://test.santha.app
+  corsOrigins: https://test.santhaapp.com
+  webBaseUrl: https://test.santhaapp.com
   # Test providers: fixed OTP for testers, mock KYC, Razorpay TEST mode (rzp_test_ keys in .env)
   otpProvider: mock
   mockOtpCode: "123456"
@@ -29,17 +29,17 @@ backend:
   pushProvider: mock
   mapsProvider: mock
   barcodeProvider: openfoodfacts
-  s3Endpoint: https://media.test.santha.app
+  s3Endpoint: https://media.test.santhaapp.com
   s3Region: ap-south-1
   s3Bucket: santha-test
 
 # Website image build (NEXT_PUBLIC_*; fixed at build time)
 web:
-  siteUrl: https://test.santha.app
-  apiUrl: https://api.test.santha.app
-  mediaOrigin: https://media.test.santha.app
+  siteUrl: https://test.santhaapp.com
+  apiUrl: https://api.test.santhaapp.com
+  mediaOrigin: https://media.test.santhaapp.com
 
 # Flutter apps: flavor stg → "Santha Test", "Santha Partner Test", "Santha Rider Test"
 apps:
   flavor: stg
-  apiBaseUrl: https://api.test.santha.app
+  apiBaseUrl: https://api.test.santhaapp.com

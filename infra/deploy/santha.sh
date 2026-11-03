@@ -36,12 +36,15 @@ load_values
 
 TAG="${TAG:-$(cat .tag 2>/dev/null || true)}"
 export TAG
-dc() { docker compose -f compose.yml --env-file .env "$@"; }
+COMPOSE_FILES=(-f compose.yml)
+# deploy.ingress: tunnel → no public ports; a Cloudflare Tunnel brings traffic in (compose.tunnel.yml).
+[ "${INGRESS:-}" = tunnel ] && COMPOSE_FILES+=(-f compose.tunnel.yml)
+dc() { docker compose "${COMPOSE_FILES[@]}" --env-file .env "$@"; }
 
 caddy_extras() {
   mkdir -p caddy.d
   if [[ ",${COMPOSE_PROFILES:-}," == *",storage,"* && -n "${MEDIA_DOMAIN:-}" ]]; then
-    printf '{$MEDIA_DOMAIN} {\n\timport common\n\treverse_proxy storage:9000\n}\n' > caddy.d/media.caddy
+    printf '{$SITE_SCHEME:https}://{$MEDIA_DOMAIN} {\n\timport common\n\treverse_proxy storage:9000\n}\n' > caddy.d/media.caddy
   else
     rm -f caddy.d/media.caddy
   fi
