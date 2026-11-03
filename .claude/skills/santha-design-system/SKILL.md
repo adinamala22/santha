@@ -41,6 +41,17 @@ Source of truth: `design/tokens/tokens.json`. Consume it through the generated f
 - Files: `design/brand/logo/santha-primary.svg` (on light), `santha-primary-reverse.svg` (on indigo), `santha-mark.svg` (mark only), `santha-mono-*.svg`. App icons in `design/brand/app-icon/` (indigo default). Favicon `santha-favicon.svg`.
 - Clear space = height of the pin head; minimum lockup width 120 px, mark 24 px. Never recolour, stretch, rotate, add shadows/gradients, or set "Santha" in another typeface. Don't separate సంత from the wordmark except when using the mark alone.
 - Android adaptive icon: foreground = mark on transparent, background = Indigo. Notification icon: `santha-notification-icon.svg` (white silhouette).
+- App names and icons:
+
+  | App | Name | Icon |
+  |---|---|---|
+  | `apps/consumer` | **Santha** | `santha-app-icon.svg` (indigo) |
+  | `apps/merchant` | **Santha Partner** | `santha-app-icon-marigold.svg` |
+  | `apps/rider` | **Santha Rider** | `santha-app-icon-light.svg` |
+
+  - The adaptive background is the variant's own colour.
+  - Generate every launcher icon (Android legacy and adaptive, iOS) with `node scripts/app-icons.mjs`. Never hand-edit the PNGs.
+  - Dev and stg builds append "Dev" / "Stg" to the Android label.
 
 ## Voice
 Plain, warm, specific. English + Telugu in every string. Use local words where natural (kirana, tiffin, santha). Never promise "10 minutes"; show the computed ETA range.

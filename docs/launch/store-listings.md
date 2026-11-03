@@ -5,7 +5,7 @@ Screenshots come from `design/mockups/` (1080 × 1920). Category:
 - merchant and rider: Business.
 Every app is rated 18+. Before publishing, a native Telugu speaker on the city team checks the Telugu copy.
 
-## Santha — consumer
+## Santha — consumer app (`apps/consumer`, icon: indigo)
 **Short description (80).**
 - en: The whole town, one app. Your neighbourhood shops, delivered in 30–45 minutes.
 - te: ఊరంతా, ఒక్క యాప్‌లో. మీ పక్క దుకాణాలు, 30–45 నిమిషాల్లో డెలివరీ.
@@ -29,7 +29,7 @@ Every app is rated 18+. Before publishing, a native Telugu speaker on the city t
   - తప్పిపోయిన లేదా పాడైన వస్తువును ఆర్డర్ స్క్రీన్ నుండే తెలియజేయండి, సంత వాలెట్‌కు రీఫండ్
   - తెలుగు మరియు ఇంగ్లీష్‌లో
 
-## Santha for Stores — merchant
+## Santha Partner — merchant app (`apps/merchant`, icon: marigold)
 **Short description.**
 - en: Sell to your whole neighbourhood. Orders, catalogue and payouts in one app.
 - te: మీ ఇరుగుపొరుగు అంతటికీ అమ్మండి. ఆర్డర్లు, కేటలాగ్, చెల్లింపులు ఒకే యాప్‌లో.
@@ -48,7 +48,7 @@ Every app is rated 18+. Before publishing, a native Telugu speaker on the city t
   - మరుసటి రోజే చెల్లింపు, స్పష్టమైన స్టేట్‌మెంట్‌తో: ప్రతి లైన్‌పై కమీషన్, GST, TCS, TDS
   - కస్టమర్ సమీక్షలకు సమాధానం ఇవ్వండి
 
-## Santha Rider — rider
+## Santha Rider — rider app (`apps/rider`, icon: light)
 **Short description.**
 - en: Deliver in your own town and earn every day. See the pay before you accept.
 - te: మీ ఊరిలో డెలివరీ చేయండి, రోజూ సంపాదించండి. అంగీకరించే ముందే చెల్లింపు చూడండి.
