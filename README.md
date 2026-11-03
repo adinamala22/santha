@@ -11,9 +11,9 @@ Start with `CLAUDE.md` (project guide), `BUILD-PLAN.md` (milestones M0–M8) and
 ```
 apps/backend     NestJS modular monolith (REST /v1, outbox → BullMQ, Prisma + PostGIS)
 apps/web         Next.js — landing (/), sign-up pages, legal, store links (/s/[slug]), ops console (/admin)
-apps/consumer    Flutter consumer app          ┐
-apps/merchant    Flutter merchant app          ├ flavors dev / stg / prod
-apps/rider       Flutter rider app             ┘
+apps/consumer    Flutter app "Santha" (customers)        ┐
+apps/merchant    Flutter app "Santha Partner" (stores)  ├ flavors dev / stg / prod
+apps/rider       Flutter app "Santha Rider" (riders)    ┘
 packages/shared-types   TS types generated from the backend OpenAPI
 packages/santha_ui      Flutter design system (tokens, theme, components, fonts)
 packages/santha_api     Flutter API client (Dio, device-bound auth, token refresh)
@@ -59,6 +59,8 @@ resets when the backend restarts. Use it for UI work and quick device testing; a
 serviceability or order transactions needs the real stack above. Fake mode is refused outside `APP_ENV=dev`.
 
 ### Flutter apps
+Launcher icons come from `design/brand/app-icon/` (Santha indigo, Santha Partner marigold, Santha Rider light). Regenerate them with
+`node scripts/app-icons.mjs` after a brand change; it writes the Android legacy and adaptive icons and every iOS size.
 ```bash
 melos bootstrap                           # pub get for every package (+ l10n generation)
 melos run platforms                       # once: generate android/ios files around our flavor config
