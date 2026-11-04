@@ -13,9 +13,10 @@ users have WhatsApp. Not everyone does, and Meta can fail, so WhatsApp can't be 
   authentication template with a copy-code button, English and Telugu; retries in English when the Telugu
   translation is missing). Selected by `WHATSAPP_PROVIDER`; fake mode always uses the mock.
 - `OtpDeliveryService` (identity-kyc) decides the channel. With the PostHog flag **`whatsapp_otp`** on (default
-  off; also `FLAG_OVERRIDES`), it tries WhatsApp, then SMS with the same code. With it off, SMS only. The flag
+  **on** since 2026-11-04; switch off with PostHog or `FLAG_OVERRIDES`), it tries WhatsApp, then SMS with the same code. With it off, SMS only. The flag
   is evaluated per device (`device:<id>`) because there is no user before sign-in.
-- Production never uses the mock WhatsApp provider, even with the flag on.
+- Production never uses the mock WhatsApp provider, even with the flag on, so defaulting the flag on is safe: until
+  `WHATSAPP_PROVIDER=cloud` is configured, production keeps sending SMS.
 - The fixed `MOCK_OTP_CODE` applies only when every channel in the plan is a mock, so a live channel never
   carries a guessable code.
 - `otp/request` and `ops/login` responses include `channel`. The apps and console say "sent on WhatsApp" (en + te).

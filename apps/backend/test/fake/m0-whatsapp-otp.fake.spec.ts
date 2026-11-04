@@ -1,5 +1,5 @@
 /**
- * WhatsApp login OTP in fake mode (ADR-017): with the `whatsapp_otp` flag on, every login OTP (all three apps and
+ * WhatsApp login OTP in fake mode (ADR-017): with the `whatsapp_otp` flag on (the default), every login OTP (all three apps and
  * the ops console's second factor) is sent on WhatsApp and the API says so; with it off, SMS as before. Fake mode
  * always uses the mock WhatsApp provider, even if WHATSAPP_PROVIDER=cloud is set.
  */
@@ -8,17 +8,16 @@ import { WhatsAppOtpProvider } from '../../src/infra/providers/whatsapp/whatsapp
 import { bootFakeApp, type FakeApp } from './harness';
 
 describe('M0 · WhatsApp OTP (flag whatsapp_otp)', () => {
-  describe('flag on', () => {
+  describe('flag on (default, no override)', () => {
     let fake: FakeApp;
     beforeAll(async () => {
       fake = await bootFakeApp({
-        FLAG_OVERRIDES: '{"whatsapp_otp":true}',
         // Must be ignored in fake mode: no live provider without Docker/credentials.
         WHATSAPP_PROVIDER: 'cloud',
         WHATSAPP_ACCESS_TOKEN: 'not-used',
         WHATSAPP_PHONE_NUMBER_ID: '1',
       });
-    });
+    }, 60_000);
     afterAll(() => fake.close());
 
     it('fake mode uses the mock WhatsApp provider', () => {
@@ -43,11 +42,11 @@ describe('M0 · WhatsApp OTP (flag whatsapp_otp)', () => {
     });
   });
 
-  describe('flag off (default)', () => {
+  describe('flag off (kill switch)', () => {
     let fake: FakeApp;
     beforeAll(async () => {
-      fake = await bootFakeApp();
-    });
+      fake = await bootFakeApp({ FLAG_OVERRIDES: '{"whatsapp_otp":false}' });
+    }, 60_000);
     afterAll(() => fake.close());
 
     it('the code goes by SMS and the API says sms', async () => {

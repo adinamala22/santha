@@ -20,6 +20,8 @@ describe('identity-kyc + outbox (Postgres/PostGIS + Redis)', () => {
   let redis: StartedRedisContainer;
   let app: INestApplication;
   let sms: import('../../src/infra/providers/sms/sms.provider').MockSmsProvider;
+  // whatsapp_otp is on by default: login codes go to the WhatsApp mock.
+  let whatsapp: import('../../src/infra/providers/whatsapp/whatsapp-otp.provider').MockWhatsAppOtpProvider;
 
   beforeAll(async () => {
     [pg, redis] = await Promise.all([
@@ -41,9 +43,13 @@ describe('identity-kyc + outbox (Postgres/PostGIS + Redis)', () => {
     const { configureApp } = await import('../../src/app.factory');
     const { MockSmsProvider, SmsProvider } = await import('../../src/infra/providers/sms/sms.provider');
     sms = new MockSmsProvider();
+    const { MockWhatsAppOtpProvider, WhatsAppOtpProvider } = await import('../../src/infra/providers/whatsapp/whatsapp-otp.provider');
+    whatsapp = new MockWhatsAppOtpProvider();
     const mod = await Test.createTestingModule({ imports: [AppModule] })
       .overrideProvider(SmsProvider)
       .useValue(sms)
+      .overrideProvider(WhatsAppOtpProvider)
+      .useValue(whatsapp)
       .compile();
     app = mod.createNestApplication({ logger: false });
     configureApp(app);
@@ -67,7 +73,7 @@ describe('identity-kyc + outbox (Postgres/PostGIS + Redis)', () => {
       .post('/v1/auth/otp/request')
       .send({ phone: '9000000001', deviceId: DEVICE, app: 'consumer' })
       .expect(200);
-    const code = sms.lastCodeFor('+919000000001')!;
+    const code = whatsapp.lastCodeFor('+919000000001')!;
     const r2 = await http()
       .post('/v1/auth/otp/verify')
       .send({ challengeId: r1.body.challengeId, code, deviceId: DEVICE, app: 'consumer', platform: 'android' })

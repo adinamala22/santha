@@ -27,8 +27,13 @@ function setup(env: Record<string, string>, whatsapp: WhatsAppOtpProvider = new 
 const ON = { FLAG_OVERRIDES: '{"whatsapp_otp":true}' };
 
 describe('OtpDeliveryService', () => {
-  it('flag off: SMS only', async () => {
+  it('flag on by default: WhatsApp first', async () => {
     const { svc } = setup({});
+    expect((await svc.plan('d1')).channels).toEqual(['whatsapp', 'sms']);
+  });
+
+  it('flag off: SMS only', async () => {
+    const { svc } = setup({ FLAG_OVERRIDES: '{"whatsapp_otp":false}' });
     expect(await svc.plan('d1')).toEqual({ channels: ['sms'], allMock: true });
   });
 

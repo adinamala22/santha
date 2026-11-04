@@ -8,7 +8,7 @@ problem), the same code goes by SMS. Decision: [ADR-017](../decisions/ADR-017-wh
 ## How it is switched
 | Setting | Where | Meaning |
 |---|---|---|
-| Feature flag **`whatsapp_otp`** | PostHog, or `flagOverrides: '{"whatsapp_otp":true}'` in the values file | The toggle. Off by default. Evaluated per device, so a PostHog % rollout works. |
+| Feature flag **`whatsapp_otp`** | PostHog, or `flagOverrides: '{"whatsapp_otp":false}'` in the values file to switch it off | The toggle. **On by default.** Evaluated per device, so a PostHog % rollout and an instant kill switch work. Until `whatsappProvider: cloud` is set, production still sends SMS (the mock is never used there); dev/test send to the mock and log the code. |
 | `whatsappProvider` | values file | `mock` (default: records messages, dev/test/fake mode) or `cloud` (Meta). Production never uses `mock`, even with the flag on: it falls back to SMS. |
 | `whatsappPhoneNumberId` | values file | The sender's **Phone number ID** from WhatsApp Manager (not the number itself). |
 | `whatsappOtpTemplate` | values file | Approved authentication template name, default `santha_login_otp`. |
@@ -39,10 +39,10 @@ and the apps and console say "sent on WhatsApp" (en + te) when it went there.
 
 ## Turn it on
 - **Test:** in `config/values/test.values.yaml` uncomment `whatsappProvider: cloud`, `whatsappPhoneNumberId`,
-  `whatsappOtpTemplate` and `flagOverrides`, add `WHATSAPP_ACCESS_TOKEN=…` to `/opt/santha/.env`, merge → deploy.
+  `whatsappOtpTemplate` (the flag is already on by default), add `WHATSAPP_ACCESS_TOKEN=…` to `/opt/santha/.env`, merge → deploy.
   The fixed test code `123456` stops applying once a live channel is used; real codes arrive on WhatsApp.
-- **Prod:** same keys in `prod.values.yaml` + prod `.env`. Prefer the PostHog flag for prod so you can roll out
-  10 % → 100 % and switch off instantly without a deploy.
+- **Prod:** same keys in `prod.values.yaml` + prod `.env`. Because the flag defaults on, setting
+  `whatsappProvider: cloud` switches every user to WhatsApp at once; use the PostHog flag to roll back or limit to a %.
 
 ## Checking it works
 - API logs: `OTP sent` with `channel` and `fallback: true|false`; `OTP channel failed` with Meta's `metaCode`.

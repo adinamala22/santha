@@ -32,6 +32,8 @@ function setup(overrides: Record<string, string> = {}) {
     limiter,
     sms,
     whatsapp,
+    /** Latest code sent to the phone on either channel (WhatsApp by default, SMS when the flag is off or as fallback). */
+    code: (phone: string) => whatsapp.lastCodeFor(phone) ?? sms.lastCodeFor(phone),
     tokens,
     auth,
     advance: (sec: number) => {
@@ -46,7 +48,7 @@ async function expectCode(p: Promise<unknown>, code: string) {
 
 async function login(ctx: ReturnType<typeof setup>, app: 'consumer' | 'merchant' | 'rider' = 'consumer') {
   const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app, ip: '1.2.3.4' });
-  const code = ctx.sms.lastCodeFor(E164)!;
+  const code = ctx.code(E164)!;
   return ctx.auth.verifyOtp({ challengeId, code, deviceId: DEVICE, app, platform: 'android' });
 }
 
@@ -57,12 +59,12 @@ describe('AuthService', () => {
   });
 
   describe('requestOtp', () => {
-    it('normalises the phone, stores a hashed code and sends the SMS', async () => {
+    it('normalises the phone, stores a hashed code and sends it (WhatsApp by default)', async () => {
       const r = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: '1.2.3.4' });
-      expect(r).toEqual({ challengeId: expect.any(String), expiresInSec: 300, resendAfterSec: 30, channel: 'sms' });
+      expect(r).toEqual({ challengeId: expect.any(String), expiresInSec: 300, resendAfterSec: 30, channel: 'whatsapp' });
       const c = ctx.repo.challenges.get(r.challengeId)!;
       expect(c.phone).toBe(E164);
-      const code = ctx.sms.lastCodeFor(E164)!;
+      const code = ctx.code(E164)!;
       expect(code).toMatch(/^\d{6}$/);
       expect(c.codeHash).not.toContain(code);
     });
@@ -89,22 +91,23 @@ describe('AuthService', () => {
     it('uses MOCK_OTP_CODE when configured with the mock provider', async () => {
       const c = setup({ MOCK_OTP_CODE: '123456' });
       await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
-      expect(c.sms.lastCodeFor(E164)).toBe('123456');
+      expect(c.code(E164)).toBe('123456');
     });
   });
 
   describe('WhatsApp OTP (flag whatsapp_otp)', () => {
     const WA_ON = { FLAG_OVERRIDES: '{"whatsapp_otp":true}' };
 
-    it('flag off (default): the code goes by SMS and the response says sms', async () => {
-      const r = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
+    it('flag off: the code goes by SMS and the response says sms', async () => {
+      const c = setup({ FLAG_OVERRIDES: '{"whatsapp_otp":false}' });
+      const r = await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
       expect(r.channel).toBe('sms');
-      expect(ctx.sms.lastCodeFor(E164)).toBeDefined();
-      expect(ctx.whatsapp.sent).toHaveLength(0);
+      expect(c.sms.lastCodeFor(E164)).toBeDefined();
+      expect(c.whatsapp.sent).toHaveLength(0);
     });
 
-    it('flag on: the code goes on WhatsApp only, in the requested language, and signs in', async () => {
-      const c = setup(WA_ON);
+    it('flag on by default: the code goes on WhatsApp only, in the requested language, and signs in', async () => {
+      const c = setup();
       const { challengeId, channel } = await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', locale: 'te', ip: 'x' });
       expect(channel).toBe('whatsapp');
       expect(c.sms.lastCodeFor(E164)).toBeUndefined();
@@ -157,7 +160,7 @@ describe('AuthService', () => {
 
     it('rejects a wrong code and counts attempts, then locks the challenge', async () => {
       const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
-      const right = ctx.sms.lastCodeFor(E164)!;
+      const right = ctx.code(E164)!;
       const wrong = right === '000000' ? '111111' : '000000';
       for (let i = 0; i < ctx.env.OTP_MAX_ATTEMPTS; i++)
         await expectCode(ctx.auth.verifyOtp({ challengeId, code: wrong, deviceId: DEVICE, app: 'consumer', platform: 'android' }), 'OTP_INVALID');
@@ -171,21 +174,21 @@ describe('AuthService', () => {
       const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
       ctx.advance(301);
       await expectCode(
-        ctx.auth.verifyOtp({ challengeId, code: ctx.sms.lastCodeFor(E164)!, deviceId: DEVICE, app: 'consumer', platform: 'android' }),
+        ctx.auth.verifyOtp({ challengeId, code: ctx.code(E164)!, deviceId: DEVICE, app: 'consumer', platform: 'android' }),
         'OTP_EXPIRED',
       );
     });
 
     it('binds the challenge to the requesting device and app', async () => {
       const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
-      const code = ctx.sms.lastCodeFor(E164)!;
+      const code = ctx.code(E164)!;
       await expectCode(ctx.auth.verifyOtp({ challengeId, code, deviceId: 'another-device', app: 'consumer', platform: 'android' }), 'OTP_INVALID');
       await expectCode(ctx.auth.verifyOtp({ challengeId, code, deviceId: DEVICE, app: 'rider', platform: 'android' }), 'OTP_INVALID');
     });
 
     it('a code cannot be used twice', async () => {
       const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
-      const code = ctx.sms.lastCodeFor(E164)!;
+      const code = ctx.code(E164)!;
       await ctx.auth.verifyOtp({ challengeId, code, deviceId: DEVICE, app: 'consumer', platform: 'android' });
       await expectCode(ctx.auth.verifyOtp({ challengeId, code, deviceId: DEVICE, app: 'consumer', platform: 'android' }), 'OTP_INVALID');
     });
@@ -198,7 +201,7 @@ describe('AuthService', () => {
       const eventsBefore = ctx.repo.events.length;
       const { challengeId } = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'rider', ip: 'x' });
       await expectCode(
-        ctx.auth.verifyOtp({ challengeId, code: ctx.sms.lastCodeFor(E164)!, deviceId: DEVICE, app: 'rider', platform: 'android' }),
+        ctx.auth.verifyOtp({ challengeId, code: ctx.code(E164)!, deviceId: DEVICE, app: 'rider', platform: 'android' }),
         'ACCOUNT_BLOCKED',
       );
       expect(ctx.repo.challenges.get(challengeId)!.consumedAt).toBeNull();

@@ -24,13 +24,13 @@ backend:
   # Test providers: fixed OTP for testers, mock KYC, Razorpay TEST mode (rzp_test_ keys in .env)
   otpProvider: mock
   mockOtpCode: "123456"
-  # WhatsApp login OTP (ADR-017, docs/integrations/whatsapp-otp.md). To try real WhatsApp delivery on test,
-  # uncomment these and put WHATSAPP_ACCESS_TOKEN in the server's .env. With a live channel the fixed code
+  # WhatsApp login OTP (ADR-017, docs/integrations/whatsapp-otp.md). The flag whatsapp_otp is on by default; with
+  # the mock provider the code goes nowhere and 123456 works. To try real WhatsApp delivery on test, uncomment these and put WHATSAPP_ACCESS_TOKEN in the server's .env. With a live channel the fixed code
   # above no longer applies: real codes arrive on WhatsApp (or by SMS as the fallback).
   # whatsappProvider: cloud
   # whatsappPhoneNumberId: "123456789012345"
   # whatsappOtpTemplate: santha_login_otp
-  # flagOverrides: '{"whatsapp_otp":true}'
+  # To force SMS instead: flagOverrides: '{"whatsapp_otp":false}'
   kycProvider: mock
   paymentsProvider: razorpay_sandbox
   pushProvider: mock
