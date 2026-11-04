@@ -10,6 +10,7 @@
   "sendCode": "కోడ్ పంపండి",
   "codeTitle": "కోడ్ నమోదు చేయండి",
   "codeSubtitle": "{phone} కి 6 అంకెల కోడ్ పంపాము",
+  "codeSubtitleWhatsApp": "{phone} కి WhatsApp లో 6 అంకెల కోడ్ పంపాము",
   "codeLabel": "6 అంకెల కోడ్",
   "verify": "ధృవీకరించి కొనసాగండి",
   "resend": "కోడ్ మళ్లీ పంపండి",

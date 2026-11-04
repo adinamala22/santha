@@ -11,6 +11,7 @@ import { configureApp } from '../../src/app.factory';
 import { AppModule } from '../../src/app.module';
 import { PrismaService } from '../../src/infra/prisma/prisma.service';
 import { MockSmsProvider, SmsProvider } from '../../src/infra/providers/sms/sms.provider';
+import { MockWhatsAppOtpProvider, WhatsAppOtpProvider } from '../../src/infra/providers/whatsapp/whatsapp-otp.provider';
 import { REDIS } from '../../src/infra/redis/redis.module';
 import { IdentityRepository } from '../../src/modules/identity-kyc/identity.repository';
 import { RateLimiter } from '../../src/modules/identity-kyc/rate-limiter';
@@ -21,6 +22,8 @@ const DEVICE = 'pixel-7a-install-42';
 describe('auth over HTTP', () => {
   let app: INestApplication;
   const sms = new MockSmsProvider();
+  // whatsapp_otp is on by default: login codes go to the WhatsApp mock.
+  const whatsapp = new MockWhatsAppOtpProvider();
   const repo = new InMemoryIdentityRepository();
 
   beforeAll(async () => {
@@ -31,6 +34,8 @@ describe('auth over HTTP', () => {
       .useValue(new InMemoryRateLimiter())
       .overrideProvider(SmsProvider)
       .useValue(sms)
+      .overrideProvider(WhatsAppOtpProvider)
+      .useValue(whatsapp)
       .overrideProvider(PrismaService)
       .useValue({ $disconnect: async () => undefined })
       .overrideProvider(REDIS)
@@ -64,8 +69,8 @@ describe('auth over HTTP', () => {
       .post('/v1/auth/otp/request')
       .send({ phone: '9876500001', deviceId: DEVICE, app: 'merchant', locale: 'te' })
       .expect(200);
-    const code = sms.lastCodeFor('+919876500001')!;
-    expect(sms.sent.at(-1)!.locale).toBe('te');
+    const code = whatsapp.lastCodeFor('+919876500001')!;
+    expect(whatsapp.sent.at(-1)!.locale).toBe('te');
 
     const bad = await http()
       .post('/v1/auth/otp/verify')

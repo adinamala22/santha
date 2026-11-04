@@ -45,6 +45,7 @@ export function LoginForm({ copy, next }: { copy: Copy; next?: string }) {
   const [otp, setOtp] = useState('');
   const [challengeId, setChallengeId] = useState<string | null>(null);
   const [sentTo, setSentTo] = useState<string | null>(null);
+  const [channel, setChannel] = useState<'whatsapp' | 'sms'>('sms');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -54,11 +55,15 @@ export function LoginForm({ copy, next }: { copy: Copy; next?: string }) {
     if (!password) return setError(copy.errors.passwordRequired);
     setError(null);
     setBusy(true);
-    const r = await post<{ challengeId: string; phoneMasked?: string }>('/api/ops/login', { email: email.trim(), password });
+    const r = await post<{ challengeId: string; phoneMasked?: string; channel?: 'whatsapp' | 'sms' }>('/api/ops/login', {
+      email: email.trim(),
+      password,
+    });
     setBusy(false);
     if (!r.ok) return setError(errorFor(r.code, r.status, copy));
     setChallengeId(r.data.challengeId);
     setSentTo(r.data.phoneMasked ?? null);
+    setChannel(r.data.channel ?? 'sms');
     setStep('otp');
   }
 
@@ -85,7 +90,13 @@ export function LoginForm({ copy, next }: { copy: Copy; next?: string }) {
     return (
       <form onSubmit={submitOtp} noValidate aria-describedby={error ? ids.error : undefined}>
         <h1 className="text-4xl font-bold text-indigo">{copy.otpTitle}</h1>
-        <p className="mt-2 text-slate">{sentTo ? copy.sentTo.replace('{phone}', sentTo) : copy.otpSub}</p>
+        <p className="mt-2 text-slate">
+          {channel === 'whatsapp'
+            ? copy.sentToWhatsApp.replace('{phone}', sentTo ?? copy.registeredPhone)
+            : sentTo
+              ? copy.sentTo.replace('{phone}', sentTo)
+              : copy.otpSub}
+        </p>
         <label htmlFor={ids.otp} className="mt-10 block text-sm font-medium text-ink">
           {copy.otpLabel}
         </label>

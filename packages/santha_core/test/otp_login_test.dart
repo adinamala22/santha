@@ -13,11 +13,17 @@ class _Backend implements HttpClientAdapter {
   final requests = <RequestOptions>[];
   String validCode = '123456';
 
+  /// What the server says about where the code went (`null` = an older server that doesn't say).
+  String? channel;
+
   @override
   Future<ResponseBody> fetch(RequestOptions o, Stream<Uint8List>? _, Future<void>? _) async {
     requests.add(o);
     final (status, body) = switch ('${o.method} ${o.path}') {
-      'POST /v1/auth/otp/request' => (200, {'challengeId': 'c1', 'expiresInSec': 300, 'resendAfterSec': 30}),
+      'POST /v1/auth/otp/request' => (
+          200,
+          {'challengeId': 'c1', 'expiresInSec': 300, 'resendAfterSec': 30, if (channel != null) 'channel': channel},
+        ),
       'POST /v1/auth/otp/verify' when (o.data as Map)['code'] == validCode => (
           200,
           {
@@ -54,6 +60,7 @@ const strings = OtpLoginStrings(
   sendCode: 'Send code',
   codeTitle: 'Enter the code',
   codeSubtitle: _sentTo,
+  codeSubtitleWhatsApp: _sentOnWhatsApp,
   codeLabel: '6-digit code',
   verify: 'Verify',
   resend: 'Resend code',
@@ -71,14 +78,15 @@ const strings = OtpLoginStrings(
   sessionExpired: 'Please sign in again',
 );
 String _sentTo(String p) => 'Sent to $p';
+String _sentOnWhatsApp(String p) => 'Sent on WhatsApp to $p';
 String _resendIn(String t) => 'Resend in $t';
 
 void main() {
   late _Backend backend;
   late ProviderContainer container;
 
-  Future<void> pump(WidgetTester tester) async {
-    backend = _Backend();
+  Future<void> pump(WidgetTester tester, {String? channel}) async {
+    backend = _Backend()..channel = channel;
     final kv = MemoryKeyValueStore();
     container = ProviderContainer(
       overrides: [
@@ -150,4 +158,19 @@ void main() {
     // countdown timer still running — advance past it so no timers are pending at teardown
     await tester.pump(const Duration(seconds: 31));
   });
+
+  for (final (channel, expected) in [
+    ('whatsapp', 'Sent on WhatsApp to +91 98765 43210'),
+    ('sms', 'Sent to +91 98765 43210'),
+  ]) {
+    testWidgets('code step says where the code went: $channel', (tester) async {
+      await pump(tester, channel: channel);
+      await tester.enterText(find.byKey(const ValueKey('phone')), '9876543210');
+      await tester.tap(find.text('Send code'));
+      await tester.pump(const Duration(milliseconds: 100));
+      await tester.pump(const Duration(milliseconds: 100));
+      expect(find.text(expected), findsOneWidget);
+      await tester.pump(const Duration(seconds: 31));
+    });
+  }
 }

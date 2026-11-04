@@ -20,6 +20,14 @@
       }
     }
   },
+  "codeSubtitleWhatsApp": "We sent a 6-digit code on WhatsApp to {phone}",
+  "@codeSubtitleWhatsApp": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
   "codeLabel": "6-digit code",
   "verify": "Verify and continue",
   "resend": "Resend code",

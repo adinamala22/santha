@@ -2464,6 +2464,8 @@ export interface components {
             challengeId: string;
             expiresInSec: number;
             resendAfterSec: number;
+            /** @enum {string} */
+            channel: "whatsapp" | "sms";
         };
         OtpVerifyDto: {
             /** Format: uuid */
@@ -2509,6 +2511,8 @@ export interface components {
             challengeId: string;
             expiresInSec: number;
             resendAfterSec: number;
+            /** @enum {string} */
+            channel: "whatsapp" | "sms";
             /** @description Where the second-factor code was sent */
             phoneMasked: string;
         };

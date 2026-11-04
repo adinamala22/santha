@@ -6,7 +6,8 @@ import { DomainError } from '../../common/errors/domain-error';
 import { maskPhone } from '../../common/pii';
 import { ENV } from '../../config/config.module';
 import type { Env } from '../../config/env';
-import { SmsProvider, type SmsLocale } from '../../infra/providers/sms/sms.provider';
+import type { SmsLocale } from '../../infra/providers/sms/sms.provider';
+import { OtpDeliveryService, type OtpChannel } from './otp-delivery.service';
 import { normalizeIndianMobile } from './domain/phone';
 import { OPS_ROLES, SIGNUP_ROLE, type SignupApp } from './domain/roles';
 import {
@@ -79,13 +80,13 @@ export class AuthService {
   constructor(
     private readonly repo: IdentityRepository,
     private readonly tokens: TokenService,
-    private readonly sms: SmsProvider,
+    private readonly delivery: OtpDeliveryService,
     private readonly limiter: RateLimiter,
     @Inject(ENV) private readonly env: Env,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
-  async requestOtp(input: OtpRequestInput): Promise<{ challengeId: string; expiresInSec: number; resendAfterSec: number }> {
+  async requestOtp(input: OtpRequestInput): Promise<{ challengeId: string; expiresInSec: number; resendAfterSec: number; channel: OtpChannel }> {
     const phone = normalizeIndianMobile(input.phone);
     const now = this.clock();
 
@@ -107,9 +108,12 @@ export class AuthService {
     return this.issueChallenge(phone, input.deviceId, input.app, input.locale ?? 'en', now);
   }
 
+  /** Every login OTP (apps and the ops console's second factor) goes through here: WhatsApp or SMS per OtpDeliveryService. */
   private async issueChallenge(phone: string, deviceId: string, app: AppId, locale: SmsLocale, now: Date) {
     const challengeId = randomUUID();
-    const code = this.env.OTP_PROVIDER === 'mock' && this.env.MOCK_OTP_CODE ? this.env.MOCK_OTP_CODE : generateOtpCode();
+    const plan = await this.delivery.plan(deviceId);
+    // The fixed test code only when nothing real can deliver it (all channels are mocks).
+    const code = plan.allMock && this.env.MOCK_OTP_CODE ? this.env.MOCK_OTP_CODE : generateOtpCode();
     await this.repo.createChallenge({
       id: challengeId,
       phone,
@@ -119,16 +123,17 @@ export class AuthService {
       expiresAt: new Date(now.getTime() + this.env.OTP_TTL_SEC * 1000),
     });
 
+    let channel: OtpChannel;
     try {
-      await this.sms.sendOtp(phone, code, locale);
+      channel = await this.delivery.send(plan, phone, code, locale);
     } catch (err) {
-      this.logger.error({ err, phone: maskPhone(phone), provider: this.sms.name }, 'OTP send failed');
+      this.logger.error({ err, phone: maskPhone(phone), channels: plan.channels }, 'OTP send failed');
       throw err instanceof DomainError
         ? err
         : new DomainError('PROVIDER_UNAVAILABLE', 'We could not send the code. Please try again.');
     }
 
-    return { challengeId, expiresInSec: this.env.OTP_TTL_SEC, resendAfterSec: this.env.OTP_RESEND_COOLDOWN_SEC };
+    return { challengeId, expiresInSec: this.env.OTP_TTL_SEC, resendAfterSec: this.env.OTP_RESEND_COOLDOWN_SEC, channel };
   }
 
   /**

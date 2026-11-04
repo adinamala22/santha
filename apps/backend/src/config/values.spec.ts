@@ -36,6 +36,20 @@ describe('values files (SANTHA_ENV / SANTHA_CLOUD)', () => {
     expect(env.TRUST_PROXY).toBe(1);
   });
 
+  it('WhatsApp OTP settings belong in values files; the access token does not', () => {
+    const d = dir({
+      'test.values.yaml':
+        'backend:\n  whatsappProvider: cloud\n  whatsappPhoneNumberId: "123456789012345"\n  whatsappOtpTemplate: santha_login_otp\n' +
+        `  flagOverrides: '{"whatsapp_otp":true}'\n`,
+    });
+    const env = parseEnv({ SANTHA_ENV: 'test', SANTHA_VALUES_DIR: d, ...SECRETS, WHATSAPP_ACCESS_TOKEN: 'EAAx' });
+    expect(env).toMatchObject({ WHATSAPP_PROVIDER: 'cloud', WHATSAPP_PHONE_NUMBER_ID: '123456789012345', FLAG_OVERRIDES: { whatsapp_otp: true } });
+    expect(() => parseEnv({ SANTHA_ENV: 'test', SANTHA_VALUES_DIR: d, ...SECRETS })).toThrow(/WHATSAPP_ACCESS_TOKEN/);
+
+    const bad = dir({ 'test.values.yaml': 'backend:\n  whatsappAccessToken: EAAx\n' });
+    expect(() => valuesFor({ SANTHA_ENV: 'test', SANTHA_VALUES_DIR: bad }, ENV_KEYS)).toThrow(/whatsappAccessToken is a secret/);
+  });
+
   it('refuses secrets, unknown keys (typos) and nested values', () => {
     const d = dir({ 'test.values.yaml': 'backend:\n  jwtAccessSecret: abc\n  logLevl: info\n  otp:\n    provider: mock\n' });
     expect(() => valuesFor({ SANTHA_ENV: 'test', SANTHA_VALUES_DIR: d }, ENV_KEYS)).toThrow(

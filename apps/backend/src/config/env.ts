@@ -52,6 +52,21 @@ const EnvObject = z.object({
     KYC_PROVIDER: z.enum(['mock', 'digio']).default('mock'),
     MSG91_TEMPLATE_ID: z.string().optional(),
 
+    /**
+     * WhatsApp login OTPs (Meta WhatsApp Cloud API, authentication template). Used only while the feature flag
+     * `whatsapp_otp` is on; SMS stays the fallback. `mock` records messages (dev/test/fake mode); `cloud` calls Meta.
+     */
+    WHATSAPP_PROVIDER: z.enum(['mock', 'cloud']).default('mock'),
+    /** Permanent System User token with whatsapp_business_messaging (secret). */
+    WHATSAPP_ACCESS_TOKEN: z.string().optional(),
+    /** Phone number ID of the sending number (WhatsApp Manager → API setup); not the phone number itself. */
+    WHATSAPP_PHONE_NUMBER_ID: z.string().regex(/^\d+$/).optional(),
+    /** Approved authentication template with a copy-code button, in English and Telugu. */
+    WHATSAPP_OTP_TEMPLATE: z.string().regex(/^[a-z0-9_]+$/).default('santha_login_otp'),
+    WHATSAPP_API_VERSION: z.string().regex(/^v\d+\.\d+$/).default('v23.0'),
+    WHATSAPP_GRAPH_URL: z.string().url().default('https://graph.facebook.com'),
+    WHATSAPP_TIMEOUT_MS: z.coerce.number().int().positive().default(8000),
+
     /** PostHog (self-hosted, India region) project key for feature flags; unset = code defaults + FLAG_OVERRIDES. */
     POSTHOG_KEY: z.string().optional(),
     POSTHOG_HOST: z.string().url().optional(),
@@ -152,6 +167,9 @@ export const EnvSchema = EnvObject
       ctx.addIssue({ code: 'custom', path: ['FCM_SERVICE_ACCOUNT_B64'], message: 'required when PUSH_PROVIDER=fcm' });
     if (env.MAPS_PROVIDER === 'google' && !env.GOOGLE_MAPS_SERVER_KEY)
       ctx.addIssue({ code: 'custom', path: ['GOOGLE_MAPS_SERVER_KEY'], message: 'required when MAPS_PROVIDER=google' });
+    if (env.WHATSAPP_PROVIDER === 'cloud')
+      for (const k of ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID'] as const)
+        if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: 'required when WHATSAPP_PROVIDER=cloud' });
     if (env.OTP_PROVIDER === 'msg91' && (!env.MSG91_AUTH_KEY || !env.MSG91_TEMPLATE_ID))
       ctx.addIssue({ code: 'custom', path: ['MSG91_AUTH_KEY'], message: 'MSG91_AUTH_KEY and MSG91_TEMPLATE_ID required' });
     if (env.DATA_STORE === 'memory') {

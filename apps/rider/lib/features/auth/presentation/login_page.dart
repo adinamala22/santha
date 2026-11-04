@@ -42,6 +42,7 @@ class LoginPage extends ConsumerWidget {
         sendCode: l.sendCode,
         codeTitle: l.codeTitle,
         codeSubtitle: l.codeSubtitle,
+        codeSubtitleWhatsApp: l.codeSubtitleWhatsApp,
         codeLabel: l.codeLabel,
         verify: l.verify,
         resend: l.resend,

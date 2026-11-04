@@ -15,6 +15,13 @@ export const FLAG_DEFAULTS = {
   serviceability_waitlist: true,
   /** Cash on delivery (also gated by each micro-market's COD rules). */
   cod_payments: true,
+  /**
+   * Send login OTPs (apps and ops console) on WhatsApp instead of SMS, to cut OTP cost. SMS stays the fallback
+   * when WhatsApp fails (number not on WhatsApp, Meta down). On by default. Safe because production never uses
+   * the mock WhatsApp provider: until WHATSAPP_PROVIDER=cloud is configured there, OTPs still go by SMS.
+   * Evaluated per device before sign-in, so PostHog % rollouts and an instant kill switch work.
+   */
+  whatsapp_otp: true,
 } as const satisfies Record<string, boolean>;
 
 export type FlagName = keyof typeof FLAG_DEFAULTS;
