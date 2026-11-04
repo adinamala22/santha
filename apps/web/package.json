@@ -13,7 +13,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/sync-brand.mjs && vitest run",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:live": "playwright test -c playwright.live.config.ts",
+    "e2e:live:watch": "playwright test -c playwright.live.config.ts --headed"
   },
   "dependencies": {
     "@santha/shared-types": "workspace:^",

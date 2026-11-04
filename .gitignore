@@ -31,6 +31,7 @@ Thumbs.db
 *.iml
 **/lib/l10n/gen/
 playwright-report/
+playwright-report-live/
 test-results/
 
 # graphify knowledge-graph output (local tool, not part of the product)
