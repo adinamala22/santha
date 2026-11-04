@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
 import { type LatLng, polygonProblems } from '../../common/geo/polygon';
-import { changedFields, type MicroMarketConfig } from './domain/micro-market-config';
+import { changedFields, type CityCoverage, type MicroMarketConfig } from './domain/micro-market-config';
 import {
   type CityRecord,
   type Effective,
@@ -31,6 +31,12 @@ export interface PublishVersionInput {
   config: MicroMarketConfig;
   effectiveFrom?: Date | undefined;
   note?: string | undefined;
+}
+
+export interface ServiceabilityExplained {
+  hit: (Effective & { matchedBy: 'area' | 'nearest' }) | null;
+  /** The nearest effective area (distance 0 when inside), even when it does not serve the point. */
+  nearest: (Effective & { distanceM: number }) | null;
 }
 
 /** Allowed clock skew between the console and the API when "now" is sent explicitly. */
@@ -73,9 +79,56 @@ export class MicroMarketsService {
     return { market, versions, current };
   }
 
-  /** Serviceability: which micro-market (if any) covers this point right now. */
-  resolve(pt: LatLng, at = this.clock()): Promise<Effective | null> {
-    return this.repo.resolvePoint(pt, at);
+  /**
+   * Serviceability: which micro-market serves this point right now: the one whose area covers it, or
+   * (city-wide coverage on, ADR-019) the nearest one of that city within its `maxDistanceM`.
+   */
+  async resolve(pt: LatLng, at = this.clock()): Promise<Effective | null> {
+    return (await this.explain(pt, at)).hit;
+  }
+
+  /** `resolve` with the why: how the point matched, and the nearest area (for "not deliverable" messages). */
+  async explain(pt: LatLng, at = this.clock()): Promise<ServiceabilityExplained> {
+    const inside = await this.repo.resolvePoint(pt, at);
+    if (inside) return { hit: { ...inside, matchedBy: 'area' }, nearest: { ...inside, distanceM: 0 } };
+    const near = await this.repo.nearest(pt, at);
+    if (near) {
+      const city = await this.repo.getCity(near.market.cityId);
+      if (city?.coverage.nearestFallback && near.distanceM <= city.coverage.maxDistanceM)
+        return { hit: { market: near.market, version: near.version, matchedBy: 'nearest' }, nearest: near };
+    }
+    return { hit: null, nearest: near };
+  }
+
+  async getCity(id: string): Promise<CityRecord> {
+    const c = await this.repo.getCity(id);
+    if (!c) throw new DomainError('NOT_FOUND', 'City not found');
+    return c;
+  }
+
+  /** Ops: city-wide coverage (audited; serviceability uses it at once). */
+  async setCoverage(cityId: string, coverage: CityCoverage, actor: Actor): Promise<CityRecord> {
+    const before = await this.getCity(cityId);
+    return this.repo.transaction(async (tx) => {
+      const city = (await tx.updateCityCoverage(cityId, coverage))!;
+      await tx.appendEvent({
+        type: 'config.city_coverage_changed',
+        aggregate: { type: 'city', id: cityId },
+        actor: { type: 'ops', id: actor.userId },
+        payload: { city_id: cityId, before: before.coverage, after: coverage },
+      });
+      await tx.appendAudit({
+        entity: 'city',
+        entityId: cityId,
+        action: 'coverage_changed',
+        actorId: actor.userId,
+        microMarketId: null,
+        before: before.coverage,
+        after: coverage,
+        requestId: actor.requestId ?? null,
+      });
+      return city;
+    });
   }
 
   async effective(microMarketId: string, at = this.clock()): Promise<VersionRecord | null> {

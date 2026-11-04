@@ -2,6 +2,7 @@ import { createZodDto } from '../../../common/zod-dto';
 import { z } from 'zod';
 import { WeeklyHoursSchema } from '../../../common/hours';
 import {
+  CityCoverageSchema,
   CodRulesSchema,
   FeeRulesSchema,
   DiscoverySchema,
@@ -59,7 +60,9 @@ const MarketSchema = z.object({
   nameTe: z.string(),
 });
 
-const CitySchema = z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string(), state: z.string() });
+const CitySchema = z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string(), state: z.string(), coverage: CityCoverageSchema });
+export class CityDto extends createZodDto(CitySchema) {}
+export class CityCoverageDto extends createZodDto(CityCoverageSchema.extend({ nearestFallback: z.boolean(), maxDistanceM: z.number().int().min(500).max(50_000) })) {}
 
 export const MicroMarketSummarySchema = MarketSchema.extend({
   currentVersion: z.number().int().nullable(),
@@ -88,6 +91,12 @@ export class ServiceabilityDto extends createZodDto(
     serviceable: z.boolean(),
     microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable(),
     waitlist: z.boolean().describe('Show the "join waitlist" CTA when not serviceable'),
+    matchedBy: z.enum(['area', 'nearest']).nullable().describe('area: inside a micro-market; nearest: city-wide coverage (ADR-019)'),
+    reason: z.enum(['outside_service_area']).nullable().describe('Why the point is not served'),
+    nearest: z
+      .object({ name: z.string(), nameTe: z.string(), distanceM: z.number().int() })
+      .nullable()
+      .describe('Nearest served area when not serviceable'),
   }),
 ) {}
 
@@ -115,4 +124,4 @@ export const toVersionDto = (v: VersionRecord) => ({
 });
 
 export const toMarketDto = (m: MicroMarketRecord) => ({ id: m.id, cityId: m.cityId, slug: m.slug, name: m.name, nameTe: m.nameTe });
-export const toCityDto = (c: CityRecord) => ({ id: c.id, slug: c.slug, name: c.name, nameTe: c.nameTe, state: c.state });
+export const toCityDto = (c: CityRecord) => ({ id: c.id, slug: c.slug, name: c.name, nameTe: c.nameTe, state: c.state, coverage: c.coverage });

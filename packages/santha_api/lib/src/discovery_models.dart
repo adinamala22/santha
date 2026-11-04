@@ -23,13 +23,51 @@ enum FeedTab implements Wire {
   static FeedTab parse(String s) => values.firstWhere((t) => t.wire == s);
 }
 
+/// The nearest served area when an address is not deliverable.
+class NearestArea {
+  const NearestArea({required this.name, required this.nameTe, required this.distanceM});
+  factory NearestArea.fromJson(Json j) => NearestArea(name: j['name'] as String, nameTe: j['nameTe'] as String, distanceM: j['distanceM'] as int);
+  final String name;
+  final String nameTe;
+  final int distanceM;
+  String displayName(String locale) => locale == 'te' ? nameTe : name;
+  Json toJson() => {'name': name, 'nameTe': nameTe, 'distanceM': distanceM};
+}
+
 class Serviceability {
-  const Serviceability({required this.serviceable, this.microMarket});
-  factory Serviceability.fromJson(Json j) =>
-      Serviceability(serviceable: j['serviceable'] as bool, microMarket: j['microMarket'] == null ? null : MicroMarketRef.fromJson(j['microMarket'] as Json));
+  const Serviceability({required this.serviceable, this.microMarket, this.nearest, this.matchedByNearest = false});
+  factory Serviceability.fromJson(Json j) => Serviceability(
+        serviceable: j['serviceable'] as bool,
+        microMarket: j['microMarket'] == null ? null : MicroMarketRef.fromJson(j['microMarket'] as Json),
+        nearest: j['nearest'] == null ? null : NearestArea.fromJson(j['nearest'] as Json),
+        matchedByNearest: j['matchedBy'] == 'nearest',
+      );
   final bool serviceable;
   final MicroMarketRef? microMarket;
-  Json toJson() => {'serviceable': serviceable, 'microMarket': microMarket == null ? null : _mm(microMarket!)};
+
+  /// Not serviceable: the nearest served area and how far it is (ADR-019).
+  final NearestArea? nearest;
+
+  /// Served through city-wide coverage (outside every area, near one).
+  final bool matchedByNearest;
+  Json toJson() => {
+        'serviceable': serviceable,
+        'microMarket': microMarket == null ? null : _mm(microMarket!),
+        'nearest': nearest?.toJson(),
+        'matchedBy': serviceable ? (matchedByNearest ? 'nearest' : 'area') : null,
+      };
+}
+
+/// Why a store does not deliver to the customer's address (ADR-019).
+enum NotDeliveringReason implements Wire {
+  outsideServiceArea('outside_service_area'),
+  otherArea('other_area'),
+  tooFar('too_far');
+
+  const NotDeliveringReason(this.wire);
+  @override
+  final String wire;
+  static NotDeliveringReason? parse(Object? v) => v == null ? null : values.where((x) => x.wire == v).firstOrNull;
 }
 
 Json _mm(MicroMarketRef m) => {'id': m.id, 'slug': m.slug, 'name': m.name, 'nameTe': m.nameTe};
@@ -411,6 +449,8 @@ class StorePage {
   const StorePage({
     required this.store,
     required this.deliversHere,
+    this.deliveryRadiusM = 0,
+    this.notDeliveringReason,
     required this.photos,
     required this.fssaiVerified,
     required this.hygieneDeclared,
@@ -429,6 +469,8 @@ class StorePage {
         description: j['description'] as String?,
         microMarket: j['microMarket'] == null ? null : MicroMarketRef.fromJson(j['microMarket'] as Json),
         deliversHere: j['deliversHere'] as bool,
+        deliveryRadiusM: j['deliveryRadiusM'] as int? ?? 0,
+        notDeliveringReason: NotDeliveringReason.parse(j['notDeliveringReason']),
         photos: _list(j['photos'], (p) => (p['mediumUrl'] ?? p['thumbUrl']) as String?).whereType<String>().toList(),
         fssaiVerified: j['fssaiVerified'] as bool,
         hygieneDeclared: j['hygieneDeclared'] as bool,
@@ -444,6 +486,10 @@ class StorePage {
   final String? description;
   final MicroMarketRef? microMarket;
   final bool deliversHere;
+
+  /// How far the store delivers (m); 0 in pages cached before ADR-019.
+  final int deliveryRadiusM;
+  final NotDeliveringReason? notDeliveringReason;
 
   /// Medium-size photo URLs.
   final List<String> photos;
@@ -465,6 +511,8 @@ class StorePage {
         'description': description,
         'microMarket': microMarket == null ? null : _mm(microMarket!),
         'deliversHere': deliversHere,
+        'deliveryRadiusM': deliveryRadiusM,
+        'notDeliveringReason': notDeliveringReason?.wire,
         'photos': photos.map((u) => {'thumbUrl': null, 'mediumUrl': u}).toList(),
         'fssaiVerified': fssaiVerified,
         'hygieneDeclared': hygieneDeclared,

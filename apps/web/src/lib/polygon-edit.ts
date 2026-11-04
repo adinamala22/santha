@@ -52,3 +52,17 @@ export function bounds(rings: Position[][]): [Position, Position] | null {
     [Math.max(...lngs), Math.max(...lats)],
   ];
 }
+
+/**
+ * A circle as an open ring of `sides` points (ops define a micro-market as centre + radius, ADR-019).
+ * Same projection as the backend's circlePolygon, so both agree to the centimetre.
+ */
+export function circleRing(centre: { lat: number; lng: number }, radiusM: number, sides = 48): Position[] {
+  const R = 6_371_008.8;
+  const dLat = (radiusM / R) * (180 / Math.PI);
+  const dLng = dLat / Math.cos((centre.lat * Math.PI) / 180);
+  return Array.from({ length: sides }, (_, i) => {
+    const a = (2 * Math.PI * i) / sides;
+    return roundPos([centre.lng + dLng * Math.cos(a), centre.lat + dLat * Math.sin(a)]);
+  });
+}

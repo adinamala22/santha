@@ -58,7 +58,7 @@ describe('M1 · micro-markets in fake mode', () => {
     const inside = await fake.http().get(at(dargamitta.centre)).expect(200);
     expect(inside.body).toMatchObject({ serviceable: true, microMarket: { slug: 'dargamitta', nameTe: 'దర్గామిట్ట' } });
     const outside = await fake.http().get(at(SEED_OUTSIDE_POINT)).expect(200);
-    expect(outside.body).toEqual({ serviceable: false, microMarket: null, waitlist: true });
+    expect(outside.body).toMatchObject({ serviceable: false, microMarket: null, waitlist: true, matchedBy: null, reason: 'outside_service_area' });
   });
 
   it('a new micro-market is serviceable immediately and audited', async () => {

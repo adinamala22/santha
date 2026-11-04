@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { covers, type GeoPolygon, haversineMeters, interiorsOverlap, polygonProblems, rect } from './polygon';
+import { circlePolygon, covers, distanceToPolygonMeters, type GeoPolygon, haversineMeters, interiorsOverlap, polygonProblems, rect } from './polygon';
 
 const square = rect(0, 0, 1, 1);
 
@@ -34,5 +34,28 @@ describe('polygon geometry (fake-mode stand-in for PostGIS)', () => {
   it('measures distance in metres', () => {
     // Nellore: ~0.01° latitude ≈ 1.11 km
     expect(haversineMeters({ lat: 14.44, lng: 79.98 }, { lat: 14.45, lng: 79.98 })).toBeCloseTo(1112, -1);
+  });
+});
+
+describe('distance to a service area, circle areas', () => {
+  const box = rect(79.985, 14.445, 80.005, 14.46);
+  it('is 0 inside and the distance to the nearest edge outside', () => {
+    expect(distanceToPolygonMeters(box, { lat: 14.45, lng: 79.99 })).toBe(0);
+    // 0.01° of latitude south of the bottom edge ≈ 1112 m
+    expect(distanceToPolygonMeters(box, { lat: 14.435, lng: 79.995 })).toBeCloseTo(1112, -1);
+    // diagonal from a corner
+    const corner = distanceToPolygonMeters(box, { lat: 14.44, lng: 79.98 });
+    expect(corner).toBeCloseTo(haversineMeters({ lat: 14.44, lng: 79.98 }, { lat: 14.445, lng: 79.985 }), -1);
+  });
+
+  it('a circle polygon is valid, covers its centre and points within the radius, not beyond', () => {
+    const centre = { lat: 14.4426, lng: 79.9865 };
+    const c = circlePolygon(centre, 3000);
+    expect(polygonProblems(c)).toEqual([]);
+    expect(c.coordinates[0]).toHaveLength(49);
+    expect(covers(c, centre)).toBe(true);
+    expect(covers(c, { lat: centre.lat + 0.025, lng: centre.lng })).toBe(true); // ~2.8 km north
+    expect(covers(c, { lat: centre.lat + 0.03, lng: centre.lng })).toBe(false); // ~3.3 km north
+    for (const [lng, lat] of c.coordinates[0]) expect(haversineMeters(centre, { lat, lng })).toBeCloseTo(3000, -1);
   });
 });

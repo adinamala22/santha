@@ -7,6 +7,7 @@ import { mediaSrc } from '@/lib/media';
 import { dateOnly, dateTime, km, rupees } from '@/lib/format';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 import { DecisionPanel } from './decision-panel';
+import { RadiusForm } from './radius-form';
 
 export const metadata = { title: 'Merchant' };
 
@@ -170,6 +171,10 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
 
           <Card title={c.decision}>
             <DecisionPanel id={m.id} name={m.name} market={marketName} status={m.status} canDecide={!!session?.canDecide} copy={copy} />
+          </Card>
+
+          <Card title={c.radiusEdit.title}>
+            <RadiusForm id={m.id} radiusM={m.radiusM} canEdit={!!session?.canDecide} copy={copy} />
           </Card>
 
           <Card title={c.history}>

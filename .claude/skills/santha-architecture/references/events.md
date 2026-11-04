@@ -10,7 +10,7 @@ payments: payment.intent_created · payment.captured · payment.failed · refund
 settlement: settlement.run_completed · payout.transferred · payout.failed · reconciliation.exception
 trust: issue.reported · issue.resolved · rating.submitted · rating.moderated (both carry merchant_id; the search indexer rebuilds the store) · listing.moderation_flagged · trust_score.changed
 rider: rider.online · rider.offline · rider.location_updated (not persisted beyond 24 h)
-config: config.micro_market_changed · flag.changed
+config: config.micro_market_changed · config.city_coverage_changed · flag.changed
 audit: audit.action (ops mutations)
 
 Consumers: notifications (most order/fulfilment events), analytics (all), settlement (order.delivered, refund.issued), search (item.*, media.approved|rejected, merchant.went_live|updated|catalogue_confirmed|slots_updated), trust (order.*, issue.*).

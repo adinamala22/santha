@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:santha_api/santha_api.dart';
+import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../../common/widgets.dart';
 import '../../data/discovery_providers.dart';
+import '../../data/format.dart';
 import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import 'location_controller.dart';
@@ -59,15 +61,19 @@ class _LocationPageState extends ConsumerState<LocationPage> {
 
   Future<DeliveryLocation?> _gps() async {
     final l = AppLocalizations.of(context);
-    final r = await ref.read(locationControllerProvider.notifier).useDeviceLocation();
+    final r = await ref.read(locationControllerProvider.notifier).locateDevice();
+    if (!mounted) return null;
     switch (r) {
       case Located():
-        final s = ref.read(locationControllerProvider);
-        return s is LocationSet ? s.location : null;
+        // Confirm on the map: the pin starts at the fix and the customer moves it to the door.
+        ref.read(analyticsProvider).track('gps_fix', {'accuracy_m': r.accuracyM?.round(), 'precise': r.precise});
+        await context.push('/location/pin', extra: r);
       case LocationServiceOff():
         setState(() => _message = l.locationOff);
       case LocationDenied():
         setState(() => _message = l.locationDenied);
+      case LocationUnavailable():
+        setState(() => _message = l.locationUnavailable);
     }
     return null;
   }
@@ -164,14 +170,16 @@ class AddressTile extends StatelessWidget {
   }
 }
 
-class NotServiceableCard extends StatelessWidget {
+/// Not deliverable here, with the nearest area we serve (ADR-019) for the point just checked.
+class NotServiceableCard extends ConsumerWidget {
   const NotServiceableCard({super.key, this.onTryAnother});
   final VoidCallback? onTryAnother;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
+    final nearest = ref.watch(deliveryPointProvider)?.serviceability.nearest;
     return Container(
       key: const ValueKey('not-serviceable'),
       padding: const EdgeInsets.all(SanthaSpacing.s5),
@@ -180,6 +188,14 @@ class NotServiceableCard extends StatelessWidget {
         Text(l.notServiceableTitle, style: text.titleMedium?.copyWith(color: SanthaColors.indigo)),
         const SizedBox(height: SanthaSpacing.s1),
         Text(l.notServiceableBody, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+        if (nearest != null && nearest.distanceM > 0) ...[
+          const SizedBox(height: SanthaSpacing.s1),
+          Text(
+            l.notServiceableNearest(nearest.displayName(l.localeName), distance(l, nearest.distanceM)),
+            key: const ValueKey('nearest-area'),
+            style: text.bodySmall?.copyWith(color: SanthaColors.indigo, fontWeight: FontWeight.w600),
+          ),
+        ],
         if (onTryAnother != null) ...[
           const SizedBox(height: SanthaSpacing.s3),
           SanthaButton(label: l.tryAnotherAddress, expand: false, onPressed: onTryAnother),

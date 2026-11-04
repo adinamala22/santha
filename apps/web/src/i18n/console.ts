@@ -53,6 +53,7 @@ export const consoleMessages = {
     types: { retail: 'Retail store', fashion: 'Fashion & lifestyle', home_business: 'Home business', home_kitchen: 'Home kitchen' },
     statuses: { draft: 'Draft', submitted: 'Waiting for review', approved: 'Approved', rejected: 'Rejected', live: 'Live' },
     merchant: {
+      radiusEdit: { title: 'Delivery radius', hint: 'How far this store delivers. Customers beyond it see why the store cannot deliver.', km: 'Delivers up to (km)', reason: 'Reason (kept in the audit log)', save: 'Save radius', saved: 'Radius saved' },
       details: 'Store details',
       address: 'Address',
       location: 'Location',
@@ -125,6 +126,7 @@ export const consoleMessages = {
         approved: 'Approved',
         rejected: 'Sent back',
         went_live: 'Went live',
+        radius_changed: 'Delivery radius changed',
         created: 'Created',
         version_published: 'Version published',
         released: 'Allowed',
@@ -138,6 +140,8 @@ export const consoleMessages = {
     markets: {
       title: 'Micro-markets',
       sub: 'Serviceable areas and their versioned rules',
+      circle: { title: 'Circle area', hint: 'Centre and radius. Replaces the drawn area (you can still adjust the points).', lat: 'Centre latitude', lng: 'Centre longitude', km: 'Radius (km)', apply: 'Use circle', invalid: 'Enter a centre and a radius between 0.5 and 25 km.' },
+      coverage: { title: 'City-wide coverage', hint: 'When on, an address outside every micro-market is served by the nearest one if it is within this distance of it. Each store still delivers only within its own radius.', on: 'Serve addresses near an area', km: 'Up to (km) from an area', save: 'Save coverage', saved: 'Coverage saved', statusOn: 'On · up to {km} km', statusOff: 'Off · only inside micro-markets' },
       new: 'New micro-market',
       cols: { name: 'Micro-market', version: 'Current version', since: 'In force since', versions: 'Versions' },
       empty: 'No micro-markets yet.',
@@ -255,6 +259,7 @@ export const consoleMessages = {
     types: { retail: 'రిటైల్ షాపు', fashion: 'ఫ్యాషన్ & లైఫ్‌స్టైల్', home_business: 'ఇంటి వ్యాపారం', home_kitchen: 'ఇంటి వంటశాల' },
     statuses: { draft: 'డ్రాఫ్ట్', submitted: 'సమీక్ష కోసం వేచి ఉంది', approved: 'ఆమోదించారు', rejected: 'తిరస్కరించారు', live: 'లైవ్' },
     merchant: {
+      radiusEdit: { title: 'డెలివరీ పరిధి', hint: 'ఈ షాప్ ఎంత దూరం డెలివరీ చేస్తుంది. దాని కంటే దూరంలో ఉన్న కస్టమర్లకు కారణం కనిపిస్తుంది.', km: 'గరిష్ఠ దూరం (కి.మీ)', reason: 'కారణం (ఆడిట్ లాగ్‌లో ఉంటుంది)', save: 'పరిధి సేవ్ చేయండి', saved: 'పరిధి సేవ్ అయింది' },
       details: 'షాపు వివరాలు',
       address: 'చిరునామా',
       location: 'స్థానం',
@@ -327,6 +332,7 @@ export const consoleMessages = {
         approved: 'ఆమోదించారు',
         rejected: 'తిరిగి పంపారు',
         went_live: 'లైవ్ అయింది',
+        radius_changed: 'డెలివరీ పరిధి మార్చారు',
         created: 'సృష్టించారు',
         version_published: 'వెర్షన్ ప్రచురించారు',
         released: 'అనుమతించారు',
@@ -339,6 +345,8 @@ export const consoleMessages = {
     },
     markets: {
       title: 'మైక్రో-మార్కెట్లు',
+      circle: { title: 'వృత్తాకార ప్రాంతం', hint: 'కేంద్రం మరియు వ్యాసార్థం. గీసిన ప్రాంతాన్ని మారుస్తుంది (పాయింట్లు ఇంకా సరిచేయవచ్చు).', lat: 'కేంద్రం అక్షాంశం', lng: 'కేంద్రం రేఖాంశం', km: 'వ్యాసార్థం (కి.మీ)', apply: 'వృత్తం వాడండి', invalid: 'కేంద్రం, 0.5 నుండి 25 కి.మీ మధ్య వ్యాసార్థం ఇవ్వండి.' },
+      coverage: { title: 'నగరమంతా సేవ', hint: 'ఆన్‌లో ఉంటే, ఏ మైక్రో-మార్కెట్‌లోనూ లేని అడ్రస్‌కు దగ్గరి మైక్రో-మార్కెట్ ఈ దూరంలో ఉంటే అది సేవ చేస్తుంది. ప్రతి షాప్ తన డెలివరీ పరిధిలోనే డెలివరీ చేస్తుంది.', on: 'ప్రాంతానికి దగ్గరి అడ్రస్‌లకు సేవ', km: 'ప్రాంతం నుండి గరిష్ఠం (కి.మీ)', save: 'సేవ పరిధి సేవ్ చేయండి', saved: 'సేవ్ అయింది', statusOn: 'ఆన్ · {km} కి.మీ వరకు', statusOff: 'ఆఫ్ · మైక్రో-మార్కెట్ల లోపల మాత్రమే' },
       sub: 'సేవా ప్రాంతాలు మరియు వాటి వెర్షన్ నియమాలు',
       new: 'కొత్త మైక్రో-మార్కెట్',
       cols: { name: 'మైక్రో-మార్కెట్', version: 'ప్రస్తుత వెర్షన్', since: 'అమలులో ఉన్నప్పటి నుండి', versions: 'వెర్షన్లు' },

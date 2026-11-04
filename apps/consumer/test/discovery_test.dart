@@ -184,6 +184,13 @@ void main() {
     expect(find.byKey(const ValueKey('open-reviews')), findsNothing);
   });
 
+  testWidgets('store page says why it does not deliver here', (tester) async {
+    final h = await pumpAtHome(tester);
+    h.backend.kiranaPagePatch = {'deliversHere': false, 'notDeliveringReason': 'too_far', 'deliveryRadiusM': 3000};
+    await tapVisible(tester, find.text('Ramesh Stores'));
+    expect(find.text('This store delivers up to 3.0 km away, and your address is farther.'), findsOneWidget);
+  });
+
   testWidgets('home in Telugu', (tester) async {
     await pumpAtHome(tester, locale: 'te');
     expect(find.text('వర్గం వారీగా కొనండి'), findsOneWidget);

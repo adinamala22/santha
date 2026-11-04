@@ -244,6 +244,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/cities/{id}/coverage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["OpsCitiesController_coverage"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/serviceability": {
         parameters: {
             query?: never;
@@ -558,6 +574,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["OpsMerchantsController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/merchants/{id}/radius": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["OpsMerchantsController_radius"];
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -2646,6 +2678,12 @@ export interface components {
                 name: string;
                 nameTe: string;
                 state: string;
+                coverage: {
+                    /** @default false */
+                    nearestFallback: boolean;
+                    /** @default 5000 */
+                    maxDistanceM: number;
+                };
             }[];
             items: {
                 /** Format: uuid */
@@ -3583,6 +3621,24 @@ export interface components {
             /** Format: date-time */
             createdAt: string;
         };
+        CityCoverageDto: {
+            nearestFallback: boolean;
+            maxDistanceM: number;
+        };
+        CityDto_Output: {
+            /** Format: uuid */
+            id: string;
+            slug: string;
+            name: string;
+            nameTe: string;
+            state: string;
+            coverage: {
+                /** @default false */
+                nearestFallback: boolean;
+                /** @default 5000 */
+                maxDistanceM: number;
+            };
+        };
         ServiceabilityDto_Output: {
             serviceable: boolean;
             microMarket: {
@@ -3594,6 +3650,22 @@ export interface components {
             } | null;
             /** @description Show the "join waitlist" CTA when not serviceable */
             waitlist: boolean;
+            /**
+             * @description area: inside a micro-market; nearest: city-wide coverage (ADR-019)
+             * @enum {string|null}
+             */
+            matchedBy: "area" | "nearest" | null;
+            /**
+             * @description Why the point is not served
+             * @enum {string|null}
+             */
+            reason: "outside_service_area" | null;
+            /** @description Nearest served area when not serviceable */
+            nearest: {
+                name: string;
+                nameTe: string;
+                distanceM: number;
+            } | null;
         };
         FlagsDto_Output: {
             flags: {
@@ -3987,6 +4059,10 @@ export interface components {
         RejectDto: {
             /** @enum {string} */
             reason: "out_of_stock" | "store_closing" | "too_busy" | "cannot_deliver" | "other";
+        };
+        OpsRadiusDto: {
+            radiusM: number;
+            reason: string;
         };
         CategoryListDto_Output: {
             items: {
@@ -4700,6 +4776,10 @@ export interface components {
             } | null;
             /** @description Inside the store radius and the same micro-market as the customer */
             deliversHere: boolean;
+            /** @description How far the store delivers */
+            deliveryRadiusM: number;
+            /** @enum {string|null} */
+            notDeliveringReason: "outside_service_area" | "other_area" | "too_far" | null;
             photos: {
                 thumbUrl: string | null;
                 mediumUrl: string | null;
@@ -7253,6 +7333,34 @@ export interface operations {
             };
         };
     };
+    OpsCitiesController_coverage: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CityCoverageDto"];
+            };
+        };
+        responses: {
+            /** @description Audited; serviceability uses it at once */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CityDto_Output"];
+                };
+            };
+        };
+    };
     ConfigController_serviceability: {
         parameters: {
             query: {
@@ -7757,6 +7865,34 @@ export interface operations {
             };
         };
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_radius: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsRadiusDto"];
+            };
+        };
+        responses: {
+            /** @description How far the store delivers (audited) */
             200: {
                 headers: {
                     [name: string]: unknown;

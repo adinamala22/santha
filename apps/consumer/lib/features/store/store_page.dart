@@ -116,7 +116,12 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
           child: Padding(
             padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s3, SanthaSpacing.s5, 0),
             child: Text(
-              l.notDeliveringHere,
+              switch (p.notDeliveringReason) {
+                NotDeliveringReason.tooFar when p.deliveryRadiusM > 0 => l.notDeliveringTooFar(distance(l, p.deliveryRadiusM)),
+                NotDeliveringReason.otherArea => l.notDeliveringOtherArea,
+                NotDeliveringReason.outsideServiceArea => l.notDeliveringOutside,
+                _ => l.notDeliveringHere,
+              },
               key: const ValueKey('not-delivering'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
           ),
         ),

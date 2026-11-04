@@ -253,6 +253,15 @@ export class DiscoveryService {
       description: docs.merchant.description,
       microMarket: loc?.market ?? null,
       deliversHere: straight <= docs.merchant.radiusM && loc?.market.id === docs.merchant.microMarketId,
+      deliveryRadiusM: docs.merchant.radiusM,
+      // Why not (ADR-019): the customer is in no served area, in another area, or beyond the store's radius.
+      notDeliveringReason: !loc
+        ? ('outside_service_area' as const)
+        : loc.market.id !== docs.merchant.microMarketId
+          ? ('other_area' as const)
+          : straight > docs.merchant.radiusM
+            ? ('too_far' as const)
+            : null,
       photos: snap.photos.map((p) => ({ thumbUrl: p.thumbUrl, mediumUrl: p.mediumUrl })),
       fssaiVerified: docs.merchant.fssaiVerified,
       hygieneDeclared: docs.merchant.hygieneDeclared,

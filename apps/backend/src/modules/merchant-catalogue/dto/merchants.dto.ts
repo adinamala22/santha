@@ -141,6 +141,11 @@ export const OpsQueueQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(100),
 });
 export class OpsQueueQueryDto extends createZodDto(OpsQueueQuerySchema) {}
+/** Ops: delivery radius (ADR-019). */
+export class OpsRadiusDto extends createZodDto(
+  z.object({ radiusM: z.number().int().min(500).max(10_000), reason: z.string().trim().min(3).max(200) }),
+) {}
+
 export class ApproveDto extends createZodDto(z.object({ note: z.string().trim().max(500).optional() })) {}
 export class RejectDto extends createZodDto(
   z.object({ reasonCode: z.enum(REJECTION_CODES), note: z.string().trim().max(500).optional() }),
