@@ -14,6 +14,7 @@ COPY apps/web/package.json apps/web/
 COPY packages/shared-types/package.json packages/shared-types/
 RUN pnpm install --frozen-lockfile --filter web...
 COPY design design
+COPY packages/santha_ui/fonts packages/santha_ui/fonts
 COPY packages/shared-types packages/shared-types
 COPY apps/web apps/web
 ARG NEXT_PUBLIC_SITE_URL
