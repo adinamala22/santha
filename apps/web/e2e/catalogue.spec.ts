@@ -8,7 +8,7 @@ test.setTimeout(120_000);
  * barcodes) and assisted catalogue entry. Merchant-side setup goes straight to the API as a seeded
  * merchant (OTP 123456), the way the merchant app would.
  */
-const API = 'http://localhost:4000';
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 4000}`;
 
 async function settled(page: Page) {
   await page.waitForLoadState('networkidle');

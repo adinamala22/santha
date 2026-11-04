@@ -4,7 +4,7 @@ import { stubMapTiles } from './tiles';
 test.setTimeout(150_000);
 
 /** M6 console: live board with dispatch overrides, and the public staff delivery link. */
-const API = 'http://localhost:4000/v1';
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 4000}/v1`;
 const KIRANA = '10000000-0000-4000-8000-000000000201';
 
 type Headers = Record<string, string>;

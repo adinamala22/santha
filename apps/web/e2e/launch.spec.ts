@@ -3,7 +3,7 @@ import { type APIRequestContext, expect, type Page, test } from '@playwright/tes
 test.setTimeout(150_000);
 
 /** M8: public site (landing, sign-up pages with lead forms, legal, store links) and the trust/compliance console. */
-const API = 'http://localhost:4000/v1';
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 4000}/v1`;
 type Headers = Record<string, string>;
 
 async function appSignIn(request: APIRequestContext, phone: string, app: 'consumer' | 'merchant'): Promise<Headers> {

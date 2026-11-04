@@ -43,7 +43,7 @@ docs             PRD, BRD, tech plan, diagrams, wireframes
 - No secrets in the repo. `.env.example` lists variables; real values live in AWS Secrets Manager / local `.env` (git-ignored).
 - Feature flags (PostHog) for anything risky or per-micro-market.
 - Every backend storage port has a Prisma and an in-memory implementation; the fake service (`pnpm dev:fake`, `DATA_STORE=memory`) must run each milestone's features with demo data from `apps/backend/src/dev/seed-data.ts` (ADR-005, santha-backend "Fake service").
-- Definition of done: acceptance criteria met on staging, tests added, fake service updated with automated fake-mode acceptance tests (`test/fake/m<N>-*.fake.spec.ts`, green in `pnpm --filter backend test:fake` and CI), analytics events emitted and listed in `docs/events.md`, en+te strings, accessibility labels, error/empty/loading states, logs + metrics, docs updated.
+- Definition of done: acceptance criteria met on staging, tests added, fake service updated with automated fake-mode acceptance tests (`test/fake/m<N>-*.fake.spec.ts`, green in `pnpm --filter backend test:fake` and CI), Playwright e2e added or updated for the change (`apps/web/e2e/features/<feature>.spec.ts`, plus `journeys/` if a core flow changes; live-safe so it also runs against test after deploy, see `docs/testing/e2e.md`), analytics events emitted and listed in `docs/events.md`, en+te strings, accessibility labels, error/empty/loading states, logs + metrics, docs updated.
 
 ## How to work in this repo
 - Small, reviewable commits with conventional messages (`feat(orders): …`, `fix(dispatch): …`). One milestone step per PR where possible.

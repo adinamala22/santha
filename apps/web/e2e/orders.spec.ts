@@ -3,7 +3,7 @@ import { type APIRequestContext, expect, type Page, test } from '@playwright/tes
 test.setTimeout(120_000);
 
 /** M5 console: live orders — a COD order placed and accepted through the API shows up with its timeline and comms. */
-const API = 'http://localhost:4000/v1';
+const API = `http://localhost:${process.env.E2E_API_PORT ?? 4000}/v1`;
 const KIRANA = '10000000-0000-4000-8000-000000000201';
 const DAR = { lat: 14.4535, lng: 79.996 };
 

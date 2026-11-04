@@ -1,0 +1,64 @@
+name: live e2e
+
+# The Playwright suite against the TEST server, after every successful deploy to test (and by hand).
+# Specs: apps/web/e2e/{smoke,journeys,features} (docs/testing/e2e.md). Ops console specs use the QA ops user
+# (secrets E2E_OPS_EMAIL / E2E_OPS_PASSWORD, environment "test"); without them those specs are skipped.
+on:
+  workflow_run:
+    workflows: [deploy]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      web_url:
+        description: Website to test
+        default: https://test.santhaapp.com
+      api_url:
+        description: API to test
+        default: https://api.test.santhaapp.com
+
+concurrency:
+  group: live-e2e-test
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  live:
+    name: Playwright · live (test)
+    # Only after a push-triggered deploy (= test) that succeeded; never after a manual prod deploy.
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
+    runs-on: ubuntu-latest
+    environment: test
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The commit that was deployed, so specs match the build under test.
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with: { node-version-file: .nvmrc, cache: pnpm }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: Wait until the API is ready
+        run: |
+          for i in $(seq 1 30); do
+            curl -fsS "${API_URL}/v1/health/ready" && exit 0
+            sleep 10
+          done
+          exit 1
+        env:
+          API_URL: ${{ inputs.api_url || 'https://api.test.santhaapp.com' }}
+      - run: pnpm --filter web e2e:live
+        env:
+          CI: 'true'
+          E2E_WEB_URL: ${{ inputs.web_url || 'https://test.santhaapp.com' }}
+          E2E_API_URL: ${{ inputs.api_url || 'https://api.test.santhaapp.com' }}
+          E2E_OPS_EMAIL: ${{ secrets.E2E_OPS_EMAIL }}
+          E2E_OPS_PASSWORD: ${{ secrets.E2E_OPS_PASSWORD }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-live-report
+          path: apps/web/playwright-report-live
+          retention-days: 14
