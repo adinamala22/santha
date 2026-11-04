@@ -53,7 +53,7 @@ export const consoleMessages = {
     types: { retail: 'Retail store', fashion: 'Fashion & lifestyle', home_business: 'Home business', home_kitchen: 'Home kitchen' },
     statuses: { draft: 'Draft', submitted: 'Waiting for review', approved: 'Approved', rejected: 'Rejected', live: 'Live' },
     merchant: {
-      radiusEdit: { title: 'Delivery radius', hint: 'How far this store delivers. Customers beyond it see why the store cannot deliver.', km: 'Delivers up to (km)', reason: 'Reason (kept in the audit log)', save: 'Save radius', saved: 'Radius saved' },
+      radiusEdit: { title: 'Delivery radius', hint: 'How far this store delivers. Customers beyond it see why the store cannot deliver.', km: 'Delivers up to (km)', reason: 'Why the change? (kept in the audit log)', save: 'Save radius', saved: 'Radius saved' },
       details: 'Store details',
       address: 'Address',
       location: 'Location',
@@ -259,7 +259,7 @@ export const consoleMessages = {
     types: { retail: 'రిటైల్ షాపు', fashion: 'ఫ్యాషన్ & లైఫ్‌స్టైల్', home_business: 'ఇంటి వ్యాపారం', home_kitchen: 'ఇంటి వంటశాల' },
     statuses: { draft: 'డ్రాఫ్ట్', submitted: 'సమీక్ష కోసం వేచి ఉంది', approved: 'ఆమోదించారు', rejected: 'తిరస్కరించారు', live: 'లైవ్' },
     merchant: {
-      radiusEdit: { title: 'డెలివరీ పరిధి', hint: 'ఈ షాప్ ఎంత దూరం డెలివరీ చేస్తుంది. దాని కంటే దూరంలో ఉన్న కస్టమర్లకు కారణం కనిపిస్తుంది.', km: 'గరిష్ఠ దూరం (కి.మీ)', reason: 'కారణం (ఆడిట్ లాగ్‌లో ఉంటుంది)', save: 'పరిధి సేవ్ చేయండి', saved: 'పరిధి సేవ్ అయింది' },
+      radiusEdit: { title: 'డెలివరీ పరిధి', hint: 'ఈ షాప్ ఎంత దూరం డెలివరీ చేస్తుంది. దాని కంటే దూరంలో ఉన్న కస్టమర్లకు కారణం కనిపిస్తుంది.', km: 'గరిష్ఠ దూరం (కి.మీ)', reason: 'మార్పు ఎందుకు? (ఆడిట్ లాగ్‌లో ఉంటుంది)', save: 'పరిధి సేవ్ చేయండి', saved: 'పరిధి సేవ్ అయింది' },
       details: 'షాపు వివరాలు',
       address: 'చిరునామా',
       location: 'స్థానం',
