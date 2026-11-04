@@ -1,19 +1,25 @@
 import type { Metadata, Viewport } from 'next';
-import { Noto_Sans_Telugu, Poppins } from 'next/font/google';
+import localFont from 'next/font/local';
 import type { ReactNode } from 'react';
 import tokens from '../../../../design/tokens/tailwind.tokens.js';
 import './globals.css';
 
-const poppins = Poppins({
-  subsets: ['latin'],
-  weight: ['400', '500', '700'],
+// Self-hosted (the same files the apps ship, copied from packages/santha_ui/fonts by sync:brand): builds
+// never fetch Google Fonts, which made the ARM image build fail now and then.
+const poppins = localFont({
+  src: [
+    { path: './fonts/Poppins-Regular.ttf', weight: '400', style: 'normal' },
+    { path: './fonts/Poppins-Medium.ttf', weight: '500', style: 'normal' },
+    { path: './fonts/Poppins-Bold.ttf', weight: '700', style: 'normal' },
+  ],
   display: 'swap',
   variable: '--font-poppins',
 });
 
-const telugu = Noto_Sans_Telugu({
-  subsets: ['telugu'],
-  weight: ['400', '500', '700'],
+// Variable font: one file for every weight.
+const telugu = localFont({
+  src: './fonts/NotoSansTelugu.ttf',
+  weight: '100 900',
   display: 'swap',
   variable: '--font-telugu',
 });

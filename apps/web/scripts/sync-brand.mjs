@@ -14,6 +14,11 @@ const copies = [
   ['brand/logo/santha-mark.svg', 'public/brand/santha-mark.svg'],
   ['brand/logo/santha-mark-reverse.svg', 'public/brand/santha-mark-reverse.svg'],
   ['brand/app-icon/santha-favicon.svg', 'src/app/icon.svg'],
+  // Fonts: one copy in the repo, shared with the Flutter apps (santha_ui).
+  ['../packages/santha_ui/fonts/Poppins-Regular.ttf', 'src/app/fonts/Poppins-Regular.ttf'],
+  ['../packages/santha_ui/fonts/Poppins-Medium.ttf', 'src/app/fonts/Poppins-Medium.ttf'],
+  ['../packages/santha_ui/fonts/Poppins-Bold.ttf', 'src/app/fonts/Poppins-Bold.ttf'],
+  ['../packages/santha_ui/fonts/NotoSansTelugu.ttf', 'src/app/fonts/NotoSansTelugu.ttf'],
 ];
 
 for (const [from, to] of copies) {

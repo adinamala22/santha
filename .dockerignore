@@ -16,6 +16,8 @@ apps/consumer
 apps/merchant
 apps/rider
 packages/santha_*
+# …except the shared fonts, which the web build self-hosts (apps/web/scripts/sync-brand.mjs)
+!packages/santha_ui/fonts
 docs
 infra
 **/*.apk
