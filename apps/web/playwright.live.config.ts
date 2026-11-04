@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { defineConfig, devices } from '@playwright/test';
 
 /**
@@ -8,6 +10,15 @@ import { defineConfig, devices } from '@playwright/test';
  * Runs only specs written to be safe and repeatable on a shared server: smoke/, journeys/, features/.
  * The older console specs depend on fresh fake data and stay fake-only.
  */
+// Local runs: the QA ops login from apps/web/.env.e2e.local (git-ignored), unless already set (CI secrets).
+// pnpm --filter web runs in apps/web; also works from the repo root.
+const local = [resolve('.env.e2e.local'), resolve('apps/web/.env.e2e.local')].find((f) => existsSync(f));
+if (local)
+  for (const line of readFileSync(local, 'utf8').split(/\r?\n/)) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/);
+    if (m) process.env[m[1]!] ??= m[2]!;
+  }
+
 process.env.E2E_TARGET ??= 'live';
 process.env.E2E_API_URL ??= 'https://api.test.santhaapp.com';
 const web = process.env.E2E_WEB_URL ?? 'https://test.santhaapp.com';

@@ -50,6 +50,7 @@ export async function appSignIn(request: APIRequestContext, phone: string, app: 
   if (r.status() === 429) {
     // Resend cooldown: wait it out once.
     const wait = Number((await r.json()).error?.details?.retryAfterSec ?? 30);
+    if (wait > 60) throw new Error(`OTP limit for ${phone} (${app}): retry in ${Math.ceil(wait / 60)} min. On test the limits are in config/values/test.values.yaml.`);
     await new Promise((res) => setTimeout(res, (wait + 1) * 1000));
     r = await request.post(`${API}/auth/otp/request`, { data: { phone, app, deviceId } });
   }
