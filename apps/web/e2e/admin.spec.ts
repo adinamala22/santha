@@ -31,7 +31,8 @@ async function signIn(page: Page, next = '/admin') {
   await page.getByLabel('Work email').fill('admin@santha.local');
   await page.getByLabel('Password').fill('santha-admin-dev');
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByText(/Code sent to \+9190\*+00/)).toBeVisible();
+  // whatsapp_otp is on by default, so the ops second factor goes on WhatsApp (ADR-017).
+  await expect(page.getByText(/Code sent on WhatsApp to \+9190\*+00/)).toBeVisible();
   await page.getByLabel('One-time code').fill('123456');
   await page.getByRole('button', { name: 'Verify and sign in' }).click();
 }
