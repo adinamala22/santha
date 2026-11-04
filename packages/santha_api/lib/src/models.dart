@@ -7,18 +7,29 @@ enum SanthaApp { consumer, merchant, rider }
 
 enum ClientPlatform { android, ios, web }
 
+/// Where a login code was sent: WhatsApp (flag `whatsapp_otp`) or SMS (default, and the WhatsApp fallback).
+enum OtpChannel { whatsapp, sms }
+
 class OtpChallenge {
-  const OtpChallenge({required this.challengeId, required this.expiresInSec, required this.resendAfterSec});
+  const OtpChallenge({
+    required this.challengeId,
+    required this.expiresInSec,
+    required this.resendAfterSec,
+    this.channel = OtpChannel.sms,
+  });
 
   factory OtpChallenge.fromJson(Json j) => OtpChallenge(
         challengeId: j['challengeId'] as String,
         expiresInSec: j['expiresInSec'] as int,
         resendAfterSec: j['resendAfterSec'] as int,
+        // Older servers don't send it: SMS.
+        channel: j['channel'] == 'whatsapp' ? OtpChannel.whatsapp : OtpChannel.sms,
       );
 
   final String challengeId;
   final int expiresInSec;
   final int resendAfterSec;
+  final OtpChannel channel;
 }
 
 class Me {

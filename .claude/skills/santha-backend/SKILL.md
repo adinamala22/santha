@@ -27,7 +27,7 @@ test/ e2e/  mocks/  fake/ (harness.ts + m<N>-<topic>.fake.spec.ts per milestone)
 - Events: write to `outbox` in the same transaction (`prisma.$transaction`), relay worker publishes to BullMQ queue `events`; handlers dedupe on `event_id` in `processed_events`.
 - Jobs: queues `events`, `timers`, `dispatch`, `notifications`, `settlement`, `indexing`. Delayed timer jobs are keyed `order:{id}:{timer}` and removed on transition.
 - Controllers are thin: validate (Zod) → service → DTO. Services own transactions. Repositories own queries.
-- Auth: OTP via MSG91 (mock in dev), JWT access 15 min + refresh 30 d, device binding, roles in claims; `@Roles()` guard for ops; rate-limit OTP by phone/device/IP.
+- Auth: OTP via MSG91, or WhatsApp Cloud API when flag `whatsapp_otp` is on with SMS fallback (`OtpDeliveryService`, ADR-017; mocks in dev), JWT access 15 min + refresh 30 d, device binding, roles in claims; `@Roles()` guard for ops; rate-limit OTP by phone/device/IP.
 - Idempotency interceptor on money/order POSTs (Redis, 24 h).
 - Audit interceptor on all `/ops/**` mutations.
 - Providers behind interfaces with three implementations: `live`, `sandbox`, `mock`; selected by env. Dev/test never hit live providers.

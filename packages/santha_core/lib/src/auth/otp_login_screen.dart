@@ -18,6 +18,7 @@ class OtpLoginStrings {
     required this.sendCode,
     required this.codeTitle,
     required this.codeSubtitle,
+    this.codeSubtitleWhatsApp,
     required this.codeLabel,
     required this.verify,
     required this.resend,
@@ -44,6 +45,10 @@ class OtpLoginStrings {
 
   /// e.g. "Sent to +91 98765 43210".
   final String Function(String phone) codeSubtitle;
+
+  /// e.g. "We sent a 6-digit code on WhatsApp to +91 98765 43210". Used when the server sent the code on
+  /// WhatsApp (flag `whatsapp_otp`); falls back to [codeSubtitle] when not given.
+  final String Function(String phone)? codeSubtitleWhatsApp;
   final String codeLabel;
   final String verify;
   final String resend;
@@ -161,6 +166,13 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
     }
   }
 
+  /// "Sent on WhatsApp" when the server says so (flag `whatsapp_otp`), otherwise the SMS wording.
+  String _codeSubtitle(OtpLoginStrings s, String phone) {
+    final whatsapp = s.codeSubtitleWhatsApp;
+    if (_challenge?.channel == OtpChannel.whatsapp && whatsapp != null) return whatsapp(phone);
+    return s.codeSubtitle(phone);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -194,7 +206,7 @@ class _OtpLoginScreenState extends ConsumerState<OtpLoginScreen> {
                     Text(onCodeStep ? s.codeTitle : s.title, style: theme.textTheme.headlineMedium),
                     const SizedBox(height: SanthaSpacing.s2),
                     Text(
-                      onCodeStep ? s.codeSubtitle('+91 ${_digits.substring(0, 5)} ${_digits.substring(5)}') : s.subtitle,
+                      onCodeStep ? _codeSubtitle(s, '+91 ${_digits.substring(0, 5)} ${_digits.substring(5)}') : s.subtitle,
                       style: theme.textTheme.bodyMedium?.copyWith(color: SanthaColors.slate),
                     ),
                     const SizedBox(height: SanthaSpacing.s8),

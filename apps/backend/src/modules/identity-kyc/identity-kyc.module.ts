@@ -17,7 +17,9 @@ import { PrismaService } from '../../infra/prisma/prisma.service';
 import { FakeSinks } from '../../infra/fake/fake-sinks';
 import { DigioKycProvider, KycProvider, MockKycProvider } from '../../infra/providers/kyc/kyc.provider';
 import { MockSmsProvider, Msg91SmsProvider, SmsProvider } from '../../infra/providers/sms/sms.provider';
+import { CloudWhatsAppOtpProvider, MockWhatsAppOtpProvider, WhatsAppOtpProvider } from '../../infra/providers/whatsapp/whatsapp-otp.provider';
 import { REDIS } from '../../infra/redis/redis.module';
+import { OtpDeliveryService } from './otp-delivery.service';
 import { AuthController, MeController } from './auth.controller';
 import { AuthGuard } from './auth.guard';
 import { AuthService } from './auth.service';
@@ -109,6 +111,14 @@ export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'lis
       inject: [ENV],
       useFactory: (env: Env) => (env.OTP_PROVIDER === 'msg91' ? new Msg91SmsProvider() : new MockSmsProvider()),
     },
+    {
+      provide: WhatsAppOtpProvider,
+      inject: [ENV],
+      // Fake mode always mocks external providers.
+      useFactory: (env: Env) =>
+        env.WHATSAPP_PROVIDER === 'cloud' && env.DATA_STORE !== 'memory' ? new CloudWhatsAppOtpProvider(env) : new MockWhatsAppOtpProvider(),
+    },
+    OtpDeliveryService,
     KycService,
     {
       provide: KycRepository,

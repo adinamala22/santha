@@ -103,7 +103,7 @@ Each row: what it's for, the **free / cheapest** choice, the paid upgrade, and t
 | Secrets | `.env` on the server, readable only by the app user; GitHub encrypted secrets for CI | Doppler free / AWS Secrets Manager | ₹0 |
 
 **Code still to do:** the MSG91 provider is a stub (`apps/backend/src/infra/providers/sms/sms.provider.ts`).
-WhatsApp OTP would be a new provider behind the same port.
+WhatsApp OTP is built (flag `whatsapp_otp`, SMS fallback): see docs/integrations/whatsapp-otp.md and ADR-017.
 
 ### M1 — Micro-markets, merchants, KYC
 

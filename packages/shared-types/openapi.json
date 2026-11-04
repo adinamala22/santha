@@ -7439,12 +7439,20 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
+          },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "sms"
+            ]
           }
         },
         "required": [
           "challengeId",
           "expiresInSec",
-          "resendAfterSec"
+          "resendAfterSec",
+          "channel"
         ],
         "additionalProperties": false
       },
@@ -7624,6 +7632,13 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "channel": {
+            "type": "string",
+            "enum": [
+              "whatsapp",
+              "sms"
+            ]
+          },
           "phoneMasked": {
             "type": "string",
             "description": "Where the second-factor code was sent"
@@ -7633,6 +7648,7 @@
           "challengeId",
           "expiresInSec",
           "resendAfterSec",
+          "channel",
           "phoneMasked"
         ],
         "additionalProperties": false

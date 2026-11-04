@@ -4,7 +4,10 @@ import { InMemoryIdentityRepository, InMemoryRateLimiter } from '../../../test/m
 import { DomainError } from '../../common/errors/domain-error';
 import { parseEnv, type Env } from '../../config/env';
 import { MockSmsProvider } from '../../infra/providers/sms/sms.provider';
+import { MockWhatsAppOtpProvider } from '../../infra/providers/whatsapp/whatsapp-otp.provider';
+import { FlagsService } from '../analytics-config/flags.service';
 import { AuthService } from './auth.service';
+import { OtpDeliveryService } from './otp-delivery.service';
 import { TokenService } from './token.service';
 
 const PHONE = '98765 43210';
@@ -19,13 +22,16 @@ function setup(overrides: Record<string, string> = {}) {
   repo.clock = clock;
   const limiter = new InMemoryRateLimiter();
   const sms = new MockSmsProvider();
+  const whatsapp = new MockWhatsAppOtpProvider();
   const tokens = new TokenService(new JwtService({}), env);
-  const auth = new AuthService(repo, tokens, sms, limiter, env, clock);
+  const delivery = new OtpDeliveryService(sms, whatsapp, new FlagsService(env), env);
+  const auth = new AuthService(repo, tokens, delivery, limiter, env, clock);
   return {
     env,
     repo,
     limiter,
     sms,
+    whatsapp,
     tokens,
     auth,
     advance: (sec: number) => {
@@ -53,7 +59,7 @@ describe('AuthService', () => {
   describe('requestOtp', () => {
     it('normalises the phone, stores a hashed code and sends the SMS', async () => {
       const r = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: '1.2.3.4' });
-      expect(r).toEqual({ challengeId: expect.any(String), expiresInSec: 300, resendAfterSec: 30 });
+      expect(r).toEqual({ challengeId: expect.any(String), expiresInSec: 300, resendAfterSec: 30, channel: 'sms' });
       const c = ctx.repo.challenges.get(r.challengeId)!;
       expect(c.phone).toBe(E164);
       const code = ctx.sms.lastCodeFor(E164)!;
@@ -84,6 +90,42 @@ describe('AuthService', () => {
       const c = setup({ MOCK_OTP_CODE: '123456' });
       await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
       expect(c.sms.lastCodeFor(E164)).toBe('123456');
+    });
+  });
+
+  describe('WhatsApp OTP (flag whatsapp_otp)', () => {
+    const WA_ON = { FLAG_OVERRIDES: '{"whatsapp_otp":true}' };
+
+    it('flag off (default): the code goes by SMS and the response says sms', async () => {
+      const r = await ctx.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
+      expect(r.channel).toBe('sms');
+      expect(ctx.sms.lastCodeFor(E164)).toBeDefined();
+      expect(ctx.whatsapp.sent).toHaveLength(0);
+    });
+
+    it('flag on: the code goes on WhatsApp only, in the requested language, and signs in', async () => {
+      const c = setup(WA_ON);
+      const { challengeId, channel } = await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', locale: 'te', ip: 'x' });
+      expect(channel).toBe('whatsapp');
+      expect(c.sms.lastCodeFor(E164)).toBeUndefined();
+      expect(c.whatsapp.sent.at(-1)).toMatchObject({ phone: E164, locale: 'te' });
+      const r = await c.auth.verifyOtp({ challengeId, code: c.whatsapp.lastCodeFor(E164)!, deviceId: DEVICE, app: 'consumer', platform: 'android' });
+      expect(r.user.phone).toBe(E164);
+    });
+
+    it('flag on, number not on WhatsApp: falls back to SMS with the same challenge', async () => {
+      const c = setup(WA_ON);
+      c.whatsapp.undeliverable.add(E164);
+      const { challengeId, channel } = await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
+      expect(channel).toBe('sms');
+      const r = await c.auth.verifyOtp({ challengeId, code: c.sms.lastCodeFor(E164)!, deviceId: DEVICE, app: 'consumer', platform: 'android' });
+      expect(r.user.phone).toBe(E164);
+    });
+
+    it('flag on with mock providers: MOCK_OTP_CODE still applies (test env keeps 123456)', async () => {
+      const c = setup({ ...WA_ON, MOCK_OTP_CODE: '123456' });
+      await c.auth.requestOtp({ phone: PHONE, deviceId: DEVICE, app: 'consumer', ip: 'x' });
+      expect(c.whatsapp.lastCodeFor(E164)).toBe('123456');
     });
   });
 

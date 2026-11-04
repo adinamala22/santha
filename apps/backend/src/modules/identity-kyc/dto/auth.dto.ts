@@ -24,6 +24,8 @@ export const OtpChallengeSchema = z
     challengeId: z.uuid(),
     expiresInSec: z.number().int(),
     resendAfterSec: z.number().int(),
+    /** Where the code went, so the app can say "sent on WhatsApp". SMS is also the fallback when WhatsApp fails. */
+    channel: z.enum(['whatsapp', 'sms']),
   });
 export class OtpChallengeDto extends createZodDto(OtpChallengeSchema) {}
 

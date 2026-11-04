@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   }
   const json = await r.json().catch(() => null);
   const res = NextResponse.json(
-    r.ok ? { challengeId: json.challengeId, phoneMasked: json.phoneMasked } : json,
+    r.ok ? { challengeId: json.challengeId, phoneMasked: json.phoneMasked, channel: json.channel } : json,
     { status: r.ok ? 200 : r.status },
   );
   res.cookies.set(COOKIE.device, deviceId, cookieOptions(YEAR));

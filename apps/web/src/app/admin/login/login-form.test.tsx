@@ -34,6 +34,18 @@ describe('LoginForm', () => {
     expect(fetchMock).toHaveBeenCalledWith('/api/ops/login', expect.objectContaining({ method: 'POST' }));
   });
 
+  it('says WhatsApp when the code went on WhatsApp (flag whatsapp_otp)', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response(JSON.stringify({ challengeId: 'c1', phoneMasked: '+9190******00', channel: 'whatsapp' }), { status: 200 })),
+    );
+    render(<LoginForm copy={copy} />);
+    await userEvent.type(screen.getByLabelText(copy.email), 'priya@santha.in');
+    await userEvent.type(screen.getByLabelText(copy.password), 'secret-pass');
+    await userEvent.click(screen.getByRole('button', { name: copy.continue }));
+    expect(await screen.findByText('Code sent on WhatsApp to +9190******00.')).toBeInTheDocument();
+  });
+
   it('shows the same message for a wrong password and an unknown email', async () => {
     vi.stubGlobal(
       'fetch',
