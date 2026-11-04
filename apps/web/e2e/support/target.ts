@@ -64,6 +64,7 @@ export async function appSignIn(request: APIRequestContext, phone: string, app: 
 }
 
 /** JSON call that must succeed with `status`; returns the body. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- JSON bodies are checked by the assertions that use them
 export async function call<T = any>(
   request: APIRequestContext,
   method: 'get' | 'post' | 'put' | 'patch' | 'delete',
