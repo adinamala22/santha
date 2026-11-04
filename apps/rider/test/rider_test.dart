@@ -69,6 +69,8 @@ void main() {
     expect(find.text('Online · Dargamitta'), findsOneWidget);
     expect(find.text('Waiting for orders near you…'), findsOneWidget);
     expect(find.text('Today · 0 deliveries · ₹0 · online 5 h 20 m'), findsOneWidget);
+    expect(find.text('Your rating 4.8 ★'), findsOneWidget);
+    expect(find.bySemanticsLabel(RegExp('Your rating: 4.8 out of 5')), findsOneWidget);
     final events = (container.read(analyticsProvider) as DebugAnalytics).events.map((e) => e.$1);
     expect(events, contains('online_toggled'));
   });

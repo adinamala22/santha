@@ -10,8 +10,9 @@ import { AnalyticsConfigModule } from '../analytics-config/analytics-config.modu
 import { IdentityKycModule } from '../identity-kyc/identity-kyc.module';
 import { PaymentsSettlementModule } from '../payments-settlement/payments-settlement.module';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SearchDiscoveryModule } from '../search-discovery/search-discovery.module';
 import { FakeSinks } from '../../infra/fake/fake-sinks';
-import { ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController } from './compliance.controller';
+import { ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController, StoreReviewsController } from './compliance.controller';
 import { ComplianceRepository, InMemoryComplianceRepository, PrismaComplianceRepository } from './compliance.repository';
 import { ComplianceService } from './compliance.service';
 import { IssuesController, OpsIssuesController } from './issues.controller';
@@ -24,13 +25,13 @@ import { IssuesService } from './issues.service';
  * (screening), which the catalogue imports, to keep the module graph acyclic.
  */
 @Module({
-  imports: [OrdersModule, MerchantCatalogueModule, DispatchTrackingModule, SettlementModule, PaymentsSettlementModule, IdentityKycModule, AnalyticsConfigModule, NotificationsModule],
-  controllers: [IssuesController, OpsIssuesController, ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController],
+  imports: [OrdersModule, MerchantCatalogueModule, DispatchTrackingModule, SettlementModule, PaymentsSettlementModule, IdentityKycModule, AnalyticsConfigModule, NotificationsModule, SearchDiscoveryModule],
+  controllers: [IssuesController, OpsIssuesController, ComplianceController, MerchantReviewsController, OpsComplianceController, PublicStoreController, StoreReviewsController],
   providers: [
     {
       provide: IssuesRepository,
-      inject: [ENV, PrismaService],
-      useFactory: (env: Env, prisma: PrismaService) => (env.DATA_STORE === 'memory' ? new InMemoryIssuesRepository() : new PrismaIssuesRepository(prisma)),
+      inject: [ENV, PrismaService, FakeSinks],
+      useFactory: (env: Env, prisma: PrismaService, sinks: FakeSinks) => (env.DATA_STORE === 'memory' ? new InMemoryIssuesRepository(sinks) : new PrismaIssuesRepository(prisma)),
     },
     {
       provide: ComplianceRepository,

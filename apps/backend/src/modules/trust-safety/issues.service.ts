@@ -7,6 +7,7 @@ import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { OrdersService } from '../orders/orders.service';
 import { decideRefund, type IssueType, type MerchantKind, trustScore, withinWindow } from '../payments-settlement/settlement/domain/money';
 import { RefundsService } from '../payments-settlement/settlement/refunds.service';
+import { StoreRatings } from '../search-discovery/store-ratings';
 import { screenReview } from './domain/review-screen';
 import { type IssueRecord, IssuesRepository, type RatingRecord } from './issues.repository';
 
@@ -26,10 +27,13 @@ export class IssuesService implements OnModuleInit {
     private readonly merchants: MerchantsService,
     private readonly dispatch: DispatchService,
     private readonly refunds: RefundsService,
+    private readonly storeRatings: StoreRatings,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   onModuleInit(): void {
+    // Store cards, ranking and the "4★ and above" filter read ratings through search-discovery.
+    this.storeRatings.use((merchantId) => this.repo.storeSummary(merchantId));
     this.refunds.onSettled(async (r) => {
       if (!r.issueId) return;
       const issue = await this.repo.issue(r.issueId);
@@ -134,17 +138,31 @@ export class IssuesService implements OnModuleInit {
   async rate(userId: string, orderId: string, input: { storeStars: number; riderStars?: number | undefined; comment?: string | undefined }): Promise<RatingRecord> {
     const { order, fulfilment } = await this.ownedDelivered(userId, orderId);
     const riderUserId = fulfilment?.mode === 'rider' ? fulfilment.riderUserId : null;
-    const added = await this.repo.addRating({
-      orderId,
-      userId,
-      merchantId: order.merchantId,
-      riderUserId,
-      storeStars: input.storeStars,
-      riderStars: riderUserId ? (input.riderStars ?? null) : null,
-      comment: input.comment ?? null,
-      // Comments are screened (M8): contact details, links or abuse wait for a person.
-      ...(screenReview(input.comment).flagged ? { status: 'flagged' as const, flagReason: screenReview(input.comment).reasons.join(',') } : {}),
-    });
+    const riderStars = riderUserId ? (input.riderStars ?? null) : null;
+    const comment = input.comment?.trim() || null;
+    // Comments are screened (M8): contact details, links or abuse wait for a person.
+    const screened = screenReview(comment);
+    const added = await this.repo.addRating(
+      {
+        orderId,
+        userId,
+        merchantId: order.merchantId,
+        riderUserId,
+        storeStars: input.storeStars,
+        riderStars,
+        comment,
+        ...(screened.flagged ? { status: 'flagged' as const, flagReason: screened.reasons.join(',') } : {}),
+      },
+      [
+        {
+          type: 'rating.submitted',
+          aggregate: { type: 'order', id: orderId },
+          microMarketId: order.microMarketId,
+          actor: { type: 'user', id: userId },
+          payload: { order_id: orderId, merchant_id: order.merchantId, rider_user_id: riderUserId, store_stars: input.storeStars, rider_stars: riderStars, has_comment: !!comment, flagged: screened.flagged },
+        },
+      ],
+    );
     if (!added) throw new DomainError('ALREADY_EXISTS', 'You already rated this order.');
     if (riderUserId && input.riderStars) {
       const avg = await this.repo.averages({ riderUserId });
@@ -157,7 +175,19 @@ export class IssuesService implements OnModuleInit {
     return this.repo.rating(orderId);
   }
 
+  /** The customer's own rating of their order, or null if not rated yet. */
+  async ratingFor(userId: string, orderId: string): Promise<RatingRecord | null> {
+    const order = await this.orders.get(orderId);
+    if (!order || order.userId !== userId) throw new DomainError('NOT_FOUND', 'Order not found');
+    return this.repo.rating(orderId);
+  }
+
   merchantRating(merchantId: string) {
     return this.repo.averages({ merchantId });
+  }
+
+  /** Average, count and 1–5 star breakdown (hidden reviews excluded). Feeds the search index and store pages. */
+  storeSummary(merchantId: string) {
+    return this.repo.storeSummary(merchantId);
   }
 }

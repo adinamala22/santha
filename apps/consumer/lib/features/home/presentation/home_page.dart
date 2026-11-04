@@ -52,12 +52,15 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   var _tab = FeedTab.stores;
+  var _topRated = false;
+
+  FeedQuery get _query => (tab: _tab, topRated: _topRated);
 
   @override
   Widget build(BuildContext context) {
     final loc = ref.watch(deliveryPointProvider);
     if (loc == null) return const Scaffold(body: LoadingView());
-    final feed = loc.serviceable ? ref.watch(feedProvider(_tab)) : null;
+    final feed = loc.serviceable ? ref.watch(feedProvider(_query)) : null;
     final stores = feed?.value?.value.stores ?? const <StoreSummary>[];
     final fastest = stores.where((s) => s.open && !s.eta.scheduled).map((s) => s.eta).fold<Eta?>(null, (a, e) => a == null || e.minMin < a.minMin ? e : a);
 
@@ -65,7 +68,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: SanthaColors.white,
       body: RefreshIndicator(
         color: SanthaColors.indigo,
-        onRefresh: () async => ref.refresh(feedProvider(_tab).future).ignore(),
+        onRefresh: () async => ref.refresh(feedProvider(_query).future).ignore(),
         child: CustomScrollView(slivers: [
           SliverToBoxAdapter(
             child: _Header(
@@ -84,7 +87,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             )
           else ...switch (feed!) {
             AsyncData(:final value) => _body(context, value.value, stale: value.fresh ? null : value.savedAt),
-            AsyncError() => [SliverFillRemaining(hasScrollBody: false, child: ErrorView(onRetry: () => ref.invalidate(feedProvider(_tab))))],
+            AsyncError() => [SliverFillRemaining(hasScrollBody: false, child: ErrorView(onRetry: () => ref.invalidate(feedProvider(_query))))],
             _ => [const SliverToBoxAdapter(child: LoadingView())],
           },
         ]),
@@ -141,10 +144,27 @@ class _HomePageState extends ConsumerState<HomePage> {
       ],
       SliverPadding(
         padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s6, SanthaSpacing.s5, SanthaSpacing.s3),
-        sliver: SliverToBoxAdapter(child: Text(title, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
+        sliver: SliverToBoxAdapter(
+          child: Row(children: [
+            Expanded(child: Text(title, style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
+            const SizedBox(width: SanthaSpacing.s2),
+            FilterChip(
+              key: const ValueKey('filter-top-rated'),
+              avatar: const Icon(Icons.star_rounded, size: 18, color: SanthaColors.marigold),
+              label: Text(l.filterTopRatedShort),
+              tooltip: l.filterTopRated,
+              selected: _topRated,
+              showCheckmark: false,
+              visualDensity: VisualDensity.compact,
+              selectedColor: SanthaColors.marigold100,
+              side: BorderSide(color: _topRated ? SanthaColors.marigold : SanthaColors.indigo100),
+              onSelected: (on) => setState(() => _topRated = on),
+            ),
+          ]),
+        ),
       ),
       if (feed.stores.isEmpty)
-        SliverToBoxAdapter(child: EmptyView(message: l.feedEmpty))
+        SliverToBoxAdapter(child: EmptyView(message: _topRated ? l.topRatedEmpty : l.feedEmpty))
       else
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, 0, SanthaSpacing.s5, SanthaSpacing.s6),

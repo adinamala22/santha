@@ -48,6 +48,13 @@ class FakeBackend implements HttpClientAdapter {
   final issues = <Map<String, dynamic>>[];
   Map<String, dynamic>? rating;
 
+  Map<String, dynamic>? _rating() => rating == null
+      ? null
+      : {'orderId': _order()['id'], 'storeStars': rating!['storeStars'], 'riderStars': rating!['riderStars'], 'comment': rating!['comment'], 'createdAt': '2026-11-02T08:00:00.000Z'};
+
+  // Ratings: the kirana's rating on its card/page (null keeps the captured fixture as is).
+  ({double avg, int count})? kiranaRating;
+
   // M8 state
   final consents = <String, bool>{};
   final grievances = <Map<String, dynamic>>[];
@@ -72,6 +79,16 @@ class FakeBackend implements HttpClientAdapter {
       ...orderPatch,
       'state': state,
     };
+  }
+
+  /// The captured feed, with the kirana's rating applied and `minRating` filtered like the API does.
+  Map<String, dynamic> _feed(Map<String, dynamic> q) {
+    final feed = fixture(q['tab'] == 'home_kitchens' ? 'feed_kitchens' : 'feed_stores');
+    var stores = (feed['stores'] as List).cast<Map<String, dynamic>>();
+    if (kiranaRating case final k?) stores = [for (final s in stores) s['id'] == kiranaId ? {...s, 'rating': k.avg, 'ratingCount': k.count} : s];
+    final min = q['minRating'] as num?;
+    if (min != null) stores = stores.where((s) => s['rating'] != null && (s['rating'] as num) >= min).toList();
+    return {...feed, 'stores': stores};
   }
 
   @override
@@ -116,9 +133,11 @@ class FakeBackend implements HttpClientAdapter {
         })(),
       final r when r.startsWith('GET /v1/orders/') && r.endsWith('/issues') => (200, {'items': issues}),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/rating') => (() {
+          if (rating != null) return (409, <String, Object?>{'error': {'code': 'ALREADY_EXISTS', 'message': 'You already rated this order.'}});
           rating = Map<String, dynamic>.from(o.data as Map);
-          return (201, {'orderId': _order()['id'], 'storeStars': rating!['storeStars'], 'riderStars': rating!['riderStars'], 'comment': null, 'createdAt': '2026-11-02T08:00:00.000Z'});
+          return (201, _rating()!);
         })(),
+      final r when r.startsWith('GET /v1/orders/') && r.endsWith('/rating') => (200, {'rating': _rating()}),
       final r when r.startsWith('GET /v1/orders/') => (200, _order()),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/cancel') => _order()['state'] == 'PLACED'
           ? (200, (() {
@@ -178,9 +197,14 @@ class FakeBackend implements HttpClientAdapter {
           }
         ),
       'GET /v1/me/addresses' => (200, fixture('address_list')),
-      'GET /v1/feed' => (200, fixture(o.queryParameters['tab'] == 'home_kitchens' ? 'feed_kitchens' : 'feed_stores')),
+      'GET /v1/feed' => (200, _feed(o.queryParameters)),
       'GET /v1/search' => (200, fixture('search_atta')),
-      'GET /v1/stores/$kiranaId' => (200, fixture('store_kirana')),
+      'GET /v1/stores/$kiranaId/reviews' => (200, fixture('store_reviews_public')),
+      'GET /v1/stores/$kiranaId' => (200, (() {
+          final page = fixture('store_kirana');
+          if (kiranaRating case final k?) page['store'] = {...page['store'] as Map<String, dynamic>, 'rating': k.avg, 'ratingCount': k.count};
+          return page;
+        })()),
       'GET /v1/stores/$kitchenId' => (200, fixture('store_kitchen')),
       _ => (404, <String, Object?>{'error': {'code': 'NOT_FOUND', 'message': 'not found'}}),
     };

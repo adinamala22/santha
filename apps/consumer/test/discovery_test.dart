@@ -134,9 +134,61 @@ void main() {
     expect(find.text("Saraswathi's Kitchen"), findsOneWidget);
   });
 
+  testWidgets('ratings: "4★ & above" keeps only stores rated 4 or more; none yet says so', (tester) async {
+    final h = await pumpAtHome(tester);
+    expect(find.text('Ramesh Stores'), findsOneWidget);
+    // Unrated: the filter leaves nothing and explains why.
+    await tapVisible(tester, find.byKey(const ValueKey('filter-top-rated')));
+    await settle(tester, 6);
+    expect(find.text('No stores rated 4★ or above here yet.'), findsOneWidget);
+    expect(find.text('Ramesh Stores'), findsNothing);
+    await tapVisible(tester, find.byKey(const ValueKey('filter-top-rated')));
+    await settle(tester, 6);
+    expect(find.text('Ramesh Stores'), findsOneWidget);
+
+    h.backend.kiranaRating = (avg: 4.3, count: 12);
+    await tapVisible(tester, find.byKey(const ValueKey('filter-top-rated')));
+    await settle(tester, 6);
+    expect(find.text('Ramesh Stores'), findsOneWidget);
+    expect(find.textContaining('★ 4.3'), findsOneWidget);
+    expect(h.analytics.events.where((e) => e.$1 == 'feed_viewed').last.$2['top_rated'], isTrue);
+  });
+
+  testWidgets('store page: rating opens the breakdown and published reviews with the store reply', (tester) async {
+    final h = await pumpAtHome(tester);
+    h.backend.kiranaRating = (avg: 4.0, count: 3);
+    await tapVisible(tester, find.text('Ramesh Stores'));
+    expect(find.text('★ 4.0 (3)'), findsOneWidget);
+    final open = find.byKey(const ValueKey('open-reviews'));
+    await tester.scrollUntilVisible(open, 300, scrollable: vertical);
+    await settle(tester, 4);
+    expect(find.text('4.0 · 3 ratings'), findsOneWidget);
+    await tester.tap(open);
+    await settle(tester, 10);
+    expect(find.byKey(const ValueKey('store-reviews')), findsOneWidget);
+    expect(find.text('Ratings & reviews'), findsWidgets);
+    expect(find.text('3 ratings'), findsOneWidget);
+    expect(find.text('Good, packing could be better'), findsOneWidget);
+    expect(find.text('Reply from the store'), findsOneWidget);
+    expect(find.text('Thank you! See you again.'), findsOneWidget);
+    expect(h.backend.requests, contains('GET /v1/stores/$kiranaId/reviews'));
+  });
+
+  testWidgets('store page of an unrated store: "No ratings yet", no reviews link', (tester) async {
+    await pumpAtHome(tester);
+    await tapVisible(tester, find.text('Ramesh Stores'));
+    final section = find.byKey(const ValueKey('ratings-section'));
+    await tester.scrollUntilVisible(section, 300, scrollable: vertical);
+    await settle(tester, 4);
+    expect(find.descendant(of: section, matching: find.textContaining('No ratings yet')), findsOneWidget);
+    expect(find.byKey(const ValueKey('open-reviews')), findsNothing);
+  });
+
   testWidgets('home in Telugu', (tester) async {
     await pumpAtHome(tester, locale: 'te');
     expect(find.text('వర్గం వారీగా కొనండి'), findsOneWidget);
+    expect(find.text('4.0+'), findsOneWidget); // the rating filter
+    await tester.scrollUntilVisible(find.text('రమేష్ స్టోర్స్'), 200, scrollable: vertical);
     expect(find.text('రమేష్ స్టోర్స్'), findsOneWidget);
     expect(find.text('స్వయంగా డెలివరీ'), findsOneWidget);
   });

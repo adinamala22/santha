@@ -10,12 +10,14 @@ import { EtaService } from './eta.service';
 import { InMemorySearchIndex } from './in-memory-search.index';
 import { SearchIndex } from './search-index';
 import { SearchIndexer } from './search-indexer.service';
+import { StoreRatings } from './store-ratings';
 import { TypesenseSearchIndex } from './typesense-search.index';
 
 /**
  * search-discovery — search index (Typesense; in-memory in fake mode), indexing from catalogue
  * events, /v1/feed and /v1/search, ETA v1 and ranking from micro-market config (M2).
- * Events in: merchant.* and item.* (see SearchIndexer.INDEXED_EVENTS), media.approved|rejected.
+ * Events in: merchant.*, item.* and rating.* (see SearchIndexer.INDEXED_EVENTS), media.approved|rejected.
+ * Store ratings come from trust-safety through StoreRatings (registered at start-up).
  * Reads the catalogue only through CatalogueService.
  */
 @Module({
@@ -25,6 +27,7 @@ import { TypesenseSearchIndex } from './typesense-search.index';
     DiscoveryService,
     EtaService,
     SearchIndexer,
+    StoreRatings,
     {
       provide: SearchIndex,
       inject: [ENV],
@@ -38,6 +41,6 @@ import { TypesenseSearchIndex } from './typesense-search.index';
         env.MAPS_PROVIDER === 'google' && env.DATA_STORE !== 'memory' && env.NODE_ENV !== 'test' ? new GoogleRoutesProvider(env.GOOGLE_MAPS_SERVER_KEY!) : new MockMapsProvider(),
     },
   ],
-  exports: [DiscoveryService, SearchIndexer],
+  exports: [DiscoveryService, SearchIndexer, StoreRatings],
 })
 export class SearchDiscoveryModule {}

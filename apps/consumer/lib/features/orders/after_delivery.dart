@@ -12,6 +12,9 @@ import 'tracking_view.dart';
 
 final issuesProvider = FutureProvider.autoDispose.family<List<Issue>, String>((ref, orderId) => ref.watch(checkoutApiProvider).issues(orderId));
 
+/// The customer's rating of this order (null until rated), so a rated order is not offered the stars again.
+final myRatingProvider = FutureProvider.autoDispose.family<OrderRating?, String>((ref, orderId) => ref.watch(checkoutApiProvider).myRating(orderId));
+
 /// After delivery (M7): rate the store (and rider) once, and report a problem within the window.
 class AfterDelivery extends ConsumerStatefulWidget {
   const AfterDelivery({super.key, required this.order});
@@ -25,6 +28,38 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
   int _store = 0;
   int _rider = 0;
   bool _rated = false;
+  bool _sending = false;
+  final _comment = TextEditingController();
+
+  @override
+  void dispose() {
+    _comment.dispose();
+    super.dispose();
+  }
+
+  Future<void> _send(bool riderDelivered) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final comment = _comment.text.trim();
+    setState(() => _sending = true);
+    try {
+      await ref.read(checkoutApiProvider).rate(widget.order.id, storeStars: _store, riderStars: riderDelivered && _rider > 0 ? _rider : null, comment: comment.isEmpty ? null : comment);
+      ref.read(analyticsProvider).track('rating_submitted', {'order_id': widget.order.id, 'store_stars': _store, 'rider_stars': _rider, 'has_comment': comment.isNotEmpty});
+    } on ApiException catch (e) {
+      if (e.code != 'ALREADY_EXISTS') {
+        if (mounted) setState(() => _sending = false);
+        messenger.showSnackBar(SnackBar(content: Text(l.rateFailed)));
+        return;
+      }
+    }
+    ref.invalidate(myRatingProvider(widget.order.id));
+    if (!mounted) return;
+    setState(() {
+      _rated = true;
+      _sending = false;
+    });
+    messenger.showSnackBar(SnackBar(content: Text(l.rateThanks)));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,28 +67,38 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
     final text = Theme.of(context).textTheme;
     final issues = ref.watch(issuesProvider(widget.order.id)).value ?? const [];
     final riderDelivered = ref.watch(trackingProvider(widget.order.id)).value?.mode == DeliveryMode.rider;
+    final mine = ref.watch(myRatingProvider(widget.order.id));
+    // Until we know whether the order is rated, show neither the stars nor "Your rating".
+    final existing = mine.value;
+    final canRate = !_rated && mine.hasValue && existing == null;
     return Column(key: const ValueKey('after-delivery'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-      if (!_rated) ...[
+      if (existing != null) ...[
+        _YourRating(rating: existing),
+        const SizedBox(height: SanthaSpacing.s4),
+      ],
+      if (canRate) ...[
         Text(l.rateTitle, style: text.titleMedium),
         _Stars(key: const ValueKey('stars-store'), label: l.rateStore, value: _store, onChanged: (v) => setState(() => _store = v)),
         if (riderDelivered) _Stars(key: const ValueKey('stars-rider'), label: l.rateRider, value: _rider, onChanged: (v) => setState(() => _rider = v)),
-        if (_store > 0)
+        if (_store > 0) ...[
+          TextField(
+            key: const ValueKey('rating-comment'),
+            controller: _comment,
+            maxLength: 500,
+            minLines: 2,
+            maxLines: 4,
+            textCapitalization: TextCapitalization.sentences,
+            decoration: InputDecoration(labelText: l.rateCommentHint, helperText: l.rateCommentNote, helperMaxLines: 2, border: const OutlineInputBorder()),
+          ),
+          const SizedBox(height: SanthaSpacing.s2),
           SanthaButton(
             key: const ValueKey('send-rating'),
             label: l.rateSend,
             variant: SanthaButtonVariant.outline,
-            onPressed: () async {
-              final messenger = ScaffoldMessenger.of(context);
-              try {
-                await ref.read(checkoutApiProvider).rate(widget.order.id, storeStars: _store, riderStars: riderDelivered && _rider > 0 ? _rider : null);
-                ref.read(analyticsProvider).track('rating_submitted', {'order_id': widget.order.id, 'store_stars': _store, 'rider_stars': _rider});
-              } on ApiException catch (e) {
-                if (e.code != 'ALREADY_EXISTS') rethrow;
-              }
-              setState(() => _rated = true);
-              messenger.showSnackBar(SnackBar(content: Text(l.rateThanks)));
-            },
+            loading: _sending,
+            onPressed: () => _send(riderDelivered),
           ),
+        ],
         const SizedBox(height: SanthaSpacing.s4),
       ],
       for (final i in issues) _IssueOutcome(issue: i),
@@ -107,6 +152,31 @@ class _IssueOutcome extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: SanthaSpacing.s3),
       child: Text(text, key: ValueKey('issue-${issue.type.wire}'), style: TextStyle(color: color)),
     );
+  }
+}
+
+class _YourRating extends StatelessWidget {
+  const _YourRating({required this.rating});
+  final OrderRating rating;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    return Column(key: const ValueKey('your-rating'), crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Text(l.youRated, style: text.titleMedium),
+      const SizedBox(height: SanthaSpacing.s1),
+      Row(children: [
+        Expanded(child: Text(l.rateStore)),
+        StarRow(value: rating.storeStars.toDouble(), semanticLabel: l.rateStars(rating.storeStars)),
+      ]),
+      if (rating.riderStars case final r?)
+        Row(children: [
+          Expanded(child: Text(l.rateRider)),
+          StarRow(value: r.toDouble(), semanticLabel: l.rateStars(r)),
+        ]),
+      if (rating.comment case final c?) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text('“$c”', style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
+    ]);
   }
 }
 

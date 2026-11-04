@@ -13,15 +13,27 @@ Duration? _noRetry(int retryCount, Object error) => null;
 /// Points ~100 m apart share cache entries.
 String _cell(LatLng p) => '${p.lat.toStringAsFixed(3)},${p.lng.toStringAsFixed(3)}';
 
+/// One home feed: a tab, optionally only stores rated 4★ and above (PRD discovery filter).
+typedef FeedQuery = ({FeedTab tab, bool topRated});
+
+/// Minimum rating behind the "4★ & above" chip.
+const topRatedMin = 4.0;
+
 /// Home feed for one tab. Network first, cached copy (with its age) when offline.
-final feedProvider = FutureProvider.autoDispose.family<Cached<Feed>, FeedTab>(retry: _noRetry, (ref, tab) async {
+final feedProvider = FutureProvider.autoDispose.family<Cached<Feed>, FeedQuery>(retry: _noRetry, (ref, q) async {
+  final tab = q.tab;
   final loc = ref.watch(deliveryPointProvider);
   if (loc == null) throw StateError('no delivery location');
   final cache = await ref.watch(jsonCacheProvider.future);
   final api = ref.watch(discoveryApiProvider);
-  final r = await cache.fetch('feed:${tab.wire}:${_cell(loc.point)}', () => api.feedJson(loc.point, tab: tab), (j) => Feed.fromJson(j! as Json));
+  final r = await cache.fetch(
+    'feed:${tab.wire}${q.topRated ? ':top' : ''}:${_cell(loc.point)}',
+    () => api.feedJson(loc.point, tab: tab, minRating: q.topRated ? topRatedMin : null),
+    (j) => Feed.fromJson(j! as Json),
+  );
   ref.read(analyticsProvider).track('feed_viewed', {
     'tab': tab.wire,
+    'top_rated': q.topRated,
     'store_count': r.value.stores.length,
     'micro_market': r.value.serviceability.microMarket?.slug,
     'from_cache': !r.fresh,
@@ -66,3 +78,6 @@ final searchProvider = FutureProvider.autoDispose.family<SearchResult, SearchQue
 
 /// Saved addresses (signed in).
 final addressesProvider = FutureProvider.autoDispose<List<Address>>(retry: _noRetry, (ref) => ref.watch(addressApiProvider).list());
+
+/// A store's rating breakdown and published reviews (store page → "See reviews"). Online only.
+final storeReviewsProvider = FutureProvider.autoDispose.family<StoreReviews, String>(retry: _noRetry, (ref, storeId) => ref.watch(discoveryApiProvider).reviews(storeId));

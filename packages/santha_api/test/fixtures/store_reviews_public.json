@@ -1,0 +1,29 @@
+{
+ "summary": {
+  "avg": 4,
+  "count": 3,
+  "distribution": [
+   0,
+   0,
+   1,
+   1,
+   1
+  ]
+ },
+ "items": [
+  {
+   "storeStars": 4,
+   "comment": "Good, packing could be better",
+   "reply": null,
+   "replyAt": null,
+   "createdAt": "2026-11-04T11:27:05.166Z"
+  },
+  {
+   "storeStars": 5,
+   "comment": "Fresh atta and quick delivery, thank you",
+   "reply": "Thank you! See you again.",
+   "replyAt": "2026-11-04T11:27:05.495Z",
+   "createdAt": "2026-11-04T11:27:04.637Z"
+  }
+ ]
+}

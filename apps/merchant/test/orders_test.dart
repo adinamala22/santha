@@ -277,13 +277,21 @@ void main() {
     await pumpSignedIn(tester, view: _liveView(), overrides: [
       complianceApiProvider.overrideWith((ref) => reviews = FakeComplianceApi(ref.watch(apiClientProvider), [
             {'orderId': 'o1', 'storeStars': 4, 'comment': 'Fresh atta, a little late', 'reply': null, 'createdAt': '2026-11-02T08:00:00.000Z'},
+            {'orderId': 'o2', 'storeStars': 3, 'comment': 'OK', 'reply': 'Thanks!', 'createdAt': '2026-11-01T08:00:00.000Z'},
           ])),
     ]);
     await tester.tap(find.text('Earnings'));
     await tester.pumpAndSettle();
     await tester.scrollUntilVisible(find.byKey(const ValueKey('review-o1')), 200, scrollable: find.byType(Scrollable).last);
     expect(find.textContaining('Fresh atta, a little late'), findsOneWidget);
+    // The store's rating with its breakdown; 3.5 is below 4, so the coaching tip shows.
+    expect(find.byKey(const ValueKey('store-rating')), findsOneWidget);
+    expect(find.text('3.5'), findsOneWidget);
+    expect(find.text('2 ratings'), findsOneWidget);
+    expect(find.byKey(const ValueKey('rating-tip')), findsOneWidget);
     expect(find.bySemanticsLabel(RegExp('4 out of 5 stars')), findsOneWidget);
+    await tester.ensureVisible(find.byKey(const ValueKey('reply-o1')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('reply-o1')));
     await tester.pumpAndSettle();
     expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('reply-send'))).onPressed, isNull);

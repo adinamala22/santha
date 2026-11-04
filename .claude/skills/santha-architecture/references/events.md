@@ -8,7 +8,7 @@ orders: order.created (awaiting payment) · order.payment_failed · order.placed
 fulfilment: fulfilment.requested · fulfilment.offered · fulfilment.offer_declined · fulfilment.assigned · fulfilment.fallback_triggered · fulfilment.picked_up · fulfilment.proof_captured
 payments: payment.intent_created · payment.captured · payment.failed · refund.requested · refund.issued · wallet.credited
 settlement: settlement.run_completed · payout.transferred · payout.failed · reconciliation.exception
-trust: issue.reported · issue.resolved · rating.submitted · listing.moderation_flagged · trust_score.changed
+trust: issue.reported · issue.resolved · rating.submitted · rating.moderated (both carry merchant_id; the search indexer rebuilds the store) · listing.moderation_flagged · trust_score.changed
 rider: rider.online · rider.offline · rider.location_updated (not persisted beyond 24 h)
 config: config.micro_market_changed · flag.changed
 audit: audit.action (ops mutations)

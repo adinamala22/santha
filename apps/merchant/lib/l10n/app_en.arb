@@ -914,5 +914,35 @@
   "reviewReplyTitle": "Reply to this review",
   "reviewReplyHint": "Thank the customer or explain what happened. Shown publicly with the review.",
   "reviewReplySend": "Post reply",
-  "reviewReplySent": "Reply posted"
+  "reviewReplySent": "Reply posted",
+  "storeRatingTitle": "Your store rating",
+  "ratingsCount": "{count, plural, =1{1 rating} other{{count} ratings}}",
+  "@ratingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ratedOutOf5": "Rated {rating} out of 5",
+  "@ratedOutOf5": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "starBar": "{stars} stars: {count, plural, =1{1 rating} other{{count} ratings}}",
+  "@starBar": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "storeNoRatings": "No ratings yet. Customers can rate you after each delivered order.",
+  "ratingLowTip": "Stores below 4★ show lower in search and are left out of the \"4★ & above\" filter. Check packing, keep stock up to date and accept orders quickly."
 }

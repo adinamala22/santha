@@ -13,6 +13,7 @@ import '../../l10n/gen/app_localizations.dart';
 import '../cart/cart_controller.dart';
 import '../home/store_tile.dart';
 import 'product_sheet.dart';
+import 'reviews_sheet.dart';
 
 /// Store page (wireframe 03) and home-kitchen page (wireframe 04).
 class StorePageScreen extends ConsumerStatefulWidget {
@@ -114,7 +115,9 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s3, SanthaSpacing.s5, 0),
-            child: Text(l.notDeliveringHere, key: const ValueKey('not-delivering'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
+            child: Text(
+              l.notDeliveringHere,
+              key: const ValueKey('not-delivering'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
           ),
         ),
       if (p.isKitchen) ..._kitchen(context, p, items) else ...[
@@ -167,6 +170,7 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
             ),
           ),
       ],
+      SliverToBoxAdapter(child: _RatingsSection(store: p.store)),
     ]);
   }
 
@@ -241,6 +245,41 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
   }
 }
 
+/// Store rating at the foot of the page; the breakdown and reviews open in a sheet.
+class _RatingsSection extends StatelessWidget {
+  const _RatingsSection({required this.store});
+  final StoreSummary store;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final rating = store.rating;
+    return Padding(
+      key: const ValueKey('ratings-section'),
+      padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s2, SanthaSpacing.s5, SanthaSpacing.s6),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.reviewsTitle, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: SanthaSpacing.s2),
+        if (rating == null || store.ratingCount == 0)
+          Text(l.noRatingsYet, style: text.bodyMedium?.copyWith(color: SanthaColors.slate))
+        else
+          Row(children: [
+            StarRow(value: rating, semanticLabel: l.ratedOutOf5(rating.toStringAsFixed(1))),
+            const SizedBox(width: SanthaSpacing.s2),
+            Expanded(child: Text('${rating.toStringAsFixed(1)} · ${l.ratingsCount(store.ratingCount)}', style: text.bodyMedium)),
+            TextButton(
+              key: const ValueKey('open-reviews'),
+              style: TextButton.styleFrom(minimumSize: const Size(44, 44), foregroundColor: SanthaColors.indigo),
+              onPressed: () => showStoreReviews(context, store.id),
+              child: Text(l.seeReviews),
+            ),
+          ]),
+      ]),
+    );
+  }
+}
+
 /// Photo with back button, and the info card overlapping it.
 class _Hero extends ConsumerWidget {
   const _Hero({required this.page});
@@ -297,7 +336,19 @@ class _Hero extends ConsumerWidget {
             Text(meta, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
             const SizedBox(height: SanthaSpacing.s2),
             Wrap(spacing: SanthaSpacing.s2, runSpacing: SanthaSpacing.s1, children: [
-              if (s.rating != null) TrustBadge(label: l.ratingWithCount(s.rating!.toStringAsFixed(1), s.ratingCount)) else TrustBadge(label: l.newOnSantha, positive: false),
+              if (s.rating != null)
+                Semantics(
+                  button: true,
+                  label: '${l.ratedOutOf5(s.rating!.toStringAsFixed(1))}, ${l.ratingsCount(s.ratingCount)}. ${l.seeReviews}',
+                  excludeSemantics: true,
+                  child: GestureDetector(
+                    key: const ValueKey('rating-badge'),
+                    onTap: () => showStoreReviews(context, s.id),
+                    child: TrustBadge(label: l.ratingWithCount(s.rating!.toStringAsFixed(1), s.ratingCount)),
+                  ),
+                )
+              else
+                TrustBadge(label: l.newOnSantha, positive: false),
               if (page.fssaiVerified) TrustBadge(label: l.fssaiOk, icon: Icons.verified_outlined),
               if (page.hygieneDeclared) TrustBadge(label: l.hygieneOk, icon: Icons.clean_hands_outlined),
               if (!page.isKitchen) etaChipFor(context, s),

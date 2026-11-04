@@ -3159,6 +3159,17 @@
               "maximum": 180,
               "type": "integer"
             }
+          },
+          {
+            "name": "minRating",
+            "required": false,
+            "in": "query",
+            "description": "Only stores rated at least this (e.g. 4); unrated stores are left out",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
+            }
           }
         ],
         "responses": {
@@ -3270,6 +3281,17 @@
               "minimum": 10,
               "maximum": 180,
               "type": "integer"
+            }
+          },
+          {
+            "name": "minRating",
+            "required": false,
+            "in": "query",
+            "description": "Only stores rated at least this (e.g. 4); unrated stores are left out",
+            "schema": {
+              "minimum": 1,
+              "maximum": 5,
+              "type": "number"
             }
           }
         ],
@@ -6348,6 +6370,47 @@
         "tags": [
           "orders"
         ]
+      },
+      "get": {
+        "operationId": "IssuesController_myRating",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Your rating of this order; rating is null until you rate it",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyRatingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
       }
     },
     "/v1/ops/issues": {
@@ -6670,11 +6733,11 @@
         ],
         "responses": {
           "default": {
-            "description": "Published reviews, newest first",
+            "description": "Rating summary and published reviews, newest first",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ReviewListDto_Output"
+                  "$ref": "#/components/schemas/MerchantReviewListDto_Output"
                 }
               }
             }
@@ -7050,6 +7113,44 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/PublicStoreDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "discovery"
+        ]
+      }
+    },
+    "/v1/stores/{id}/reviews": {
+      "get": {
+        "operationId": "StoreReviewsController_reviews",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Rating summary (1–5 star breakdown) and the newest published reviews that have a comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreReviewsDto_Output"
                 }
               }
             }
@@ -24676,6 +24777,54 @@
         ],
         "additionalProperties": false
       },
+      "MyRatingDto_Output": {
+        "type": "object",
+        "properties": {
+          "rating": {
+            "type": "object",
+            "properties": {
+              "orderId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "storeStars": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "riderStars": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991,
+                "nullable": true
+              },
+              "comment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "createdAt": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "orderId",
+              "storeStars",
+              "riderStars",
+              "comment",
+              "createdAt"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "rating"
+        ],
+        "additionalProperties": false
+      },
       "OpsIssueListDto_Output": {
         "type": "object",
         "properties": {
@@ -25256,9 +25405,42 @@
         ],
         "additionalProperties": false
       },
-      "ReviewListDto_Output": {
+      "MerchantReviewListDto_Output": {
         "type": "object",
         "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "avg": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "distribution": {
+                "minItems": 5,
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "description": "Counts for 1, 2, 3, 4 and 5 stars"
+              }
+            },
+            "required": [
+              "avg",
+              "count",
+              "distribution"
+            ],
+            "additionalProperties": false
+          },
           "items": {
             "type": "array",
             "items": {
@@ -25324,6 +25506,7 @@
           }
         },
         "required": [
+          "summary",
           "items"
         ],
         "additionalProperties": false
@@ -25429,6 +25612,78 @@
           "note"
         ]
       },
+      "ReviewListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "orderId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "merchantId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "storeStars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "comment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "visible",
+                    "flagged",
+                    "hidden"
+                  ]
+                },
+                "flagReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reply": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "orderId",
+                "merchantId",
+                "storeStars",
+                "comment",
+                "status",
+                "flagReason",
+                "reply",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "ModerateDto": {
         "type": "object",
         "properties": {
@@ -25529,21 +25784,33 @@
           "rating": {
             "type": "object",
             "properties": {
-              "count": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
-              },
               "avg": {
                 "type": [
                   "number",
                   "null"
                 ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "distribution": {
+                "minItems": 5,
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "description": "Counts for 1, 2, 3, 4 and 5 stars"
               }
             },
             "required": [
+              "avg",
               "count",
-              "avg"
+              "distribution"
             ],
             "additionalProperties": false
           },
@@ -25595,6 +25862,91 @@
           "location",
           "rating",
           "reviews"
+        ],
+        "additionalProperties": false
+      },
+      "StoreReviewsDto_Output": {
+        "type": "object",
+        "properties": {
+          "summary": {
+            "type": "object",
+            "properties": {
+              "avg": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "count": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "distribution": {
+                "minItems": 5,
+                "maxItems": 5,
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "description": "Counts for 1, 2, 3, 4 and 5 stars"
+              }
+            },
+            "required": [
+              "avg",
+              "count",
+              "distribution"
+            ],
+            "additionalProperties": false
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "storeStars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "comment": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reply": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "replyAt": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "createdAt": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "storeStars",
+                "comment",
+                "reply",
+                "replyAt",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "summary",
+          "items"
         ],
         "additionalProperties": false
       },

@@ -538,3 +538,52 @@ class AddressInput {
         'isDefault': ?isDefault,
       };
 }
+
+/// A store's rating: average, count and the 1–5 star breakdown (hidden reviews excluded).
+class RatingSummary {
+  const RatingSummary({required this.avg, required this.count, required this.distribution});
+  factory RatingSummary.fromJson(Json j) => RatingSummary(
+        avg: (j['avg'] as num?)?.toDouble(),
+        count: j['count'] as int,
+        distribution: (j['distribution'] as List).map((e) => e as int).toList(),
+      );
+  static const empty = RatingSummary(avg: null, count: 0, distribution: [0, 0, 0, 0, 0]);
+
+  final double? avg;
+  final int count;
+
+  /// Counts for 1, 2, 3, 4 and 5 stars (index 0 is 1 star).
+  final List<int> distribution;
+
+  int stars(int n) => distribution[n - 1];
+
+  /// Share of ratings with [n] stars, 0…1.
+  double share(int n) => count == 0 ? 0 : stars(n) / count;
+
+  Json toJson() => {'avg': avg, 'count': count, 'distribution': distribution};
+}
+
+/// A published, verified-purchase review on a store page, with the store's reply.
+class PublicReview {
+  const PublicReview({required this.storeStars, required this.createdAt, this.comment, this.reply, this.replyAt});
+  factory PublicReview.fromJson(Json j) => PublicReview(
+        storeStars: j['storeStars'] as int,
+        comment: j['comment'] as String?,
+        reply: j['reply'] as String?,
+        replyAt: _date(j['replyAt']),
+        createdAt: DateTime.parse(j['createdAt'] as String),
+      );
+  final int storeStars;
+  final String? comment;
+  final String? reply;
+  final DateTime? replyAt;
+  final DateTime createdAt;
+}
+
+/// GET /v1/stores/{id}/reviews.
+class StoreReviews {
+  const StoreReviews({required this.summary, required this.items});
+  factory StoreReviews.fromJson(Json j) => StoreReviews(summary: RatingSummary.fromJson(j['summary'] as Json), items: _list(j['items'], PublicReview.fromJson));
+  final RatingSummary summary;
+  final List<PublicReview> items;
+}

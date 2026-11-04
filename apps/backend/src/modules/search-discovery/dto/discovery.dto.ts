@@ -14,6 +14,7 @@ const FilterFields = {
   veg: bool.describe('Veg items only (search)'),
   selfDelivered: bool.describe('Only stores that deliver themselves'),
   maxEta: z.coerce.number().int().min(10).max(180).optional().describe('Delivers within N minutes (30/45/60)'),
+  minRating: z.coerce.number().min(1).max(5).optional().describe('Only stores rated at least this (e.g. 4); unrated stores are left out'),
 };
 
 export class FeedQueryDto extends createZodDto(

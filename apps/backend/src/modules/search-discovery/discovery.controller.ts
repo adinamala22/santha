@@ -15,14 +15,14 @@ export class DiscoveryController {
   @Get('feed')
   @ZodResponse({ type: FeedDto, description: 'Home feed: stores of one supply type that deliver here, ranked, with ETA chips' })
   async feed(@Query() q: FeedQueryDto) {
-    const r = await this.discovery.feed({ lat: q.lat, lng: q.lng }, q.tab, { openNow: q.openNow, selfDelivered: q.selfDelivered, maxEtaMin: q.maxEta });
+    const r = await this.discovery.feed({ lat: q.lat, lng: q.lng }, q.tab, { openNow: q.openNow, selfDelivered: q.selfDelivered, maxEtaMin: q.maxEta, minRating: q.minRating });
     return { ...r, stores: r.stores.map(toStoreDto) };
   }
 
   @Get('search')
   @ZodResponse({ type: SearchDto, description: 'Search items and stores nearby, grouped by store (typo-tolerant, Telugu synonyms)' })
   async search(@Query() q: SearchQueryDto) {
-    const r = await this.discovery.search(q.q, { lat: q.lat, lng: q.lng }, { openNow: q.openNow, vegOnly: q.veg, selfDelivered: q.selfDelivered, maxEtaMin: q.maxEta }, q.category);
+    const r = await this.discovery.search(q.q, { lat: q.lat, lng: q.lng }, { openNow: q.openNow, vegOnly: q.veg, selfDelivered: q.selfDelivered, maxEtaMin: q.maxEta, minRating: q.minRating }, q.category);
     return { ...r, groups: r.groups.map((g) => ({ ...g, store: toStoreDto(g.store) })), stores: r.stores.map(toStoreDto) };
   }
 
