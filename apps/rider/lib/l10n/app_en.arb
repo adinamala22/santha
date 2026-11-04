@@ -284,5 +284,23 @@
         "type": "String"
       }
     }
-  }
+  },
+  "yourRating": "Your rating {rating} ★",
+  "@yourRating": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "ratedOutOf5": "Your rating: {rating} out of 5, from customers",
+  "@ratedOutOf5": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "noRatingYet": "No rating yet. Customers rate the delivery after each order.",
+  "ratingHelps": "A good rating gets you offers first."
 }

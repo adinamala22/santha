@@ -203,7 +203,16 @@ export class ComplianceService {
   async moderate(orderId: string, decision: 'publish' | 'hide', actor: OpsActor): Promise<RatingRecord> {
     const r = await this.ratings.rating(orderId);
     if (!r) throw new DomainError('NOT_FOUND', 'Review not found');
-    const next = (await this.ratings.updateRating(orderId, { status: decision === 'publish' ? 'visible' : 'hidden' }))!;
+    const status = decision === 'publish' ? 'visible' : 'hidden';
+    // Hiding a review takes its stars out of the store's rating, so the search index rebuilds the store.
+    const next = (await this.ratings.updateRating(orderId, { status }, [
+      {
+        type: 'rating.moderated',
+        aggregate: { type: 'order', id: orderId },
+        actor: { type: 'ops', id: actor.userId },
+        payload: { order_id: orderId, merchant_id: r.merchantId, from: r.status, to: status },
+      },
+    ]))!;
     await this.repo.appendAudit({ entity: 'review', entityId: orderId, action: `review.${decision === 'publish' ? 'published' : 'hidden'}`, actorId: actor.userId, requestId: actor.requestId, before: { status: r.status, flagReason: r.flagReason } });
     return next;
   }

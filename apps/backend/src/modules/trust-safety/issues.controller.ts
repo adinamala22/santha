@@ -44,9 +44,9 @@ class IssueListDto extends createZodDto(z.object({ items: z.array(IssueSchema) }
 class OpsIssueListDto extends createZodDto(
   z.object({ items: z.array(IssueSchema.extend({ userId: z.uuid(), merchantName: z.string(), trustScore: z.number(), flags: z.array(z.string()) })) }),
 ) {}
-class RatingDto extends createZodDto(
-  z.object({ orderId: z.uuid(), storeStars: int, riderStars: int.nullable(), comment: z.string().nullable(), createdAt: iso }),
-) {}
+const RatingSchema = z.object({ orderId: z.uuid(), storeStars: int, riderStars: int.nullable(), comment: z.string().nullable(), createdAt: iso });
+class RatingDto extends createZodDto(RatingSchema) {}
+class MyRatingDto extends createZodDto(z.object({ rating: RatingSchema.nullable() })) {}
 
 const toIssueDto = (i: IssueRecord) => {
   const d = i.decision as { amountPaise?: number; destination?: 'wallet' | 'source'; reason?: string };
@@ -91,6 +91,13 @@ export class IssuesController {
   @ZodResponse({ status: 201, type: RatingDto, description: 'Once per delivered order; 409 ALREADY_EXISTS' })
   async rate(@Param('id', ParseUUIDPipe) id: string, @Body() b: RateDto, @CurrentUser() u: AuthUser) {
     return toRatingDto(await this.issues.rate(u.userId, id, b));
+  }
+
+  @Get(':id/rating')
+  @ZodResponse({ type: MyRatingDto, description: 'Your rating of this order; rating is null until you rate it' })
+  async myRating(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
+    const r = await this.issues.ratingFor(u.userId, id);
+    return { rating: r ? toRatingDto(r) : null };
   }
 }
 

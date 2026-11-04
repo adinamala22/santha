@@ -390,5 +390,21 @@
   "grievanceOpen": "తెరిచి ఉంది",
   "grievanceAcknowledged": "పరిశీలనలో ఉంది",
   "grievanceResolved": "పరిష్కరించాం",
-  "grievanceOfficer": "ఫిర్యాదుల అధికారి, సంత టెక్నాలజీస్, నెల్లూరు 524001 · grievance@santha.in · సోమ–శని 10:00–18:00"
+  "grievanceOfficer": "ఫిర్యాదుల అధికారి, సంత టెక్నాలజీస్, నెల్లూరు 524001 · grievance@santha.in · సోమ–శని 10:00–18:00",
+  "filterTopRated": "4★ పైన",
+  "topRatedEmpty": "ఇక్కడ 4★ పైన రేటింగ్ ఉన్న షాపులు ఇంకా లేవు.",
+  "reviewsTitle": "రేటింగ్‌లు & సమీక్షలు",
+  "seeReviews": "సమీక్షలు చూడండి",
+  "ratingsCount": "{count, plural, =1{1 రేటింగ్} other{{count} రేటింగ్‌లు}}",
+  "ratedOutOf5": "5కి {rating} రేటింగ్",
+  "starBar": "{stars} నక్షత్రాలు: {count, plural, =1{1 రేటింగ్} other{{count} రేటింగ్‌లు}}",
+  "noRatingsYet": "ఇంకా రేటింగ్‌లు లేవు. మీ ఆర్డర్ తర్వాత మొదటి రేటింగ్ మీదే కావచ్చు.",
+  "noWrittenReviews": "ఇంకా రాసిన సమీక్షలు లేవు.",
+  "storeReply": "షాప్ నుంచి జవాబు",
+  "reviewsLoadFailed": "సమీక్షలు లోడ్ కాలేదు.",
+  "rateCommentHint": "ఈ ఆర్డర్ గురించి ఇతరులకు చెప్పండి (ఐచ్ఛికం)",
+  "rateCommentNote": "సమీక్షలు అందరికీ కనిపిస్తాయి. ఫోన్ నంబర్లు లేదా లింక్‌లు రాయకండి.",
+  "youRated": "మీ రేటింగ్",
+  "rateFailed": "మీ రేటింగ్ పంపలేకపోయాం. మళ్లీ ప్రయత్నించండి.",
+  "filterTopRatedShort": "4.0+"
 }

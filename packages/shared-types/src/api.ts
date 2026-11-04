@@ -2075,7 +2075,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        get: operations["IssuesController_myRating"];
         put?: never;
         post: operations["IssuesController_rate"];
         delete?: never;
@@ -2332,6 +2332,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["PublicStoreController_store"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/stores/{id}/reviews": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["StoreReviewsController_reviews"];
         put?: never;
         post?: never;
         delete?: never;
@@ -6469,6 +6485,16 @@ export interface components {
             comment: string | null;
             createdAt: string;
         };
+        MyRatingDto_Output: {
+            rating: {
+                /** Format: uuid */
+                orderId: string;
+                storeStars: number;
+                riderStars: number | null;
+                comment: string | null;
+                createdAt: string;
+            } | null;
+        };
         OpsIssueListDto_Output: {
             items: {
                 /** Format: uuid */
@@ -6596,7 +6622,13 @@ export interface components {
                 completedAt: string | null;
             }[];
         };
-        ReviewListDto_Output: {
+        MerchantReviewListDto_Output: {
+            summary: {
+                avg: number | null;
+                count: number;
+                /** @description Counts for 1, 2, 3, 4 and 5 stars */
+                distribution: number[];
+            };
             items: {
                 /** Format: uuid */
                 orderId: string;
@@ -6635,6 +6667,21 @@ export interface components {
             decision: "complete" | "reject";
             note: string;
         };
+        ReviewListDto_Output: {
+            items: {
+                /** Format: uuid */
+                orderId: string;
+                /** Format: uuid */
+                merchantId: string;
+                storeStars: number;
+                comment: string | null;
+                /** @enum {string} */
+                status: "visible" | "flagged" | "hidden";
+                flagReason: string | null;
+                reply: string | null;
+                createdAt: string;
+            }[];
+        };
         ModerateDto: {
             /** @enum {string} */
             decision: "publish" | "hide";
@@ -6661,13 +6708,30 @@ export interface components {
                 lng: number;
             } | null;
             rating: {
-                count: number;
                 avg: number | null;
+                count: number;
+                /** @description Counts for 1, 2, 3, 4 and 5 stars */
+                distribution: number[];
             };
             reviews: {
                 storeStars: number;
                 comment: string | null;
                 reply: string | null;
+                createdAt: string;
+            }[];
+        };
+        StoreReviewsDto_Output: {
+            summary: {
+                avg: number | null;
+                count: number;
+                /** @description Counts for 1, 2, 3, 4 and 5 stars */
+                distribution: number[];
+            };
+            items: {
+                storeStars: number;
+                comment: string | null;
+                reply: string | null;
+                replyAt: string | null;
                 createdAt: string;
             }[];
         };
@@ -8465,6 +8529,8 @@ export interface operations {
                 selfDelivered?: "true" | "false";
                 /** @description Delivers within N minutes (30/45/60) */
                 maxEta?: number;
+                /** @description Only stores rated at least this (e.g. 4); unrated stores are left out */
+                minRating?: number;
             };
             header?: never;
             path?: never;
@@ -8499,6 +8565,8 @@ export interface operations {
                 selfDelivered?: "true" | "false";
                 /** @description Delivers within N minutes (30/45/60) */
                 maxEta?: number;
+                /** @description Only stores rated at least this (e.g. 4); unrated stores are left out */
+                minRating?: number;
             };
             header?: never;
             path?: never;
@@ -10236,6 +10304,30 @@ export interface operations {
             };
         };
     };
+    IssuesController_myRating: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Your rating of this order; rating is null until you rate it */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyRatingDto_Output"];
+                };
+            };
+        };
+    };
     IssuesController_rate: {
         parameters: {
             query?: never;
@@ -10458,13 +10550,13 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description Published reviews, newest first */
+            /** @description Rating summary and published reviews, newest first */
             default: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ReviewListDto_Output"];
+                    "application/json": components["schemas"]["MerchantReviewListDto_Output"];
                 };
             };
         };
@@ -10692,6 +10784,30 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PublicStoreDto_Output"];
+                };
+            };
+        };
+    };
+    StoreReviewsController_reviews: {
+        parameters: {
+            query: {
+                limit: string;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Rating summary (1–5 star breakdown) and the newest published reviews that have a comment */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StoreReviewsDto_Output"];
                 };
             };
         };

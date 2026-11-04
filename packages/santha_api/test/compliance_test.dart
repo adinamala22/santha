@@ -41,4 +41,28 @@ void main() {
     expect(replied.orderId, r.orderId);
     expect(replied.reply, 'Thank you! See you again.');
   });
+
+  test('ratings: store page breakdown with replies; my rating, or none yet; merchant summary', () {
+    final page = StoreReviews.fromJson(fixture('store_reviews_public'));
+    expect(page.summary.count, 3);
+    expect(page.summary.avg, 4.0);
+    expect(page.summary.distribution, [0, 0, 1, 1, 1]);
+    expect(page.summary.share(5), closeTo(1 / 3, 1e-9));
+    expect(page.items, hasLength(2)); // the stars-only rating is not listed
+    expect(page.items.last.reply, 'Thank you! See you again.');
+    expect(page.items.last.replyAt, isNotNull);
+    expect(page.summary.toJson()['distribution'], [0, 0, 1, 1, 1]);
+
+    final mine = OrderRating.fromJson(fixture('order_rating')['rating'] as Map<String, dynamic>);
+    expect(mine.storeStars, 4);
+    expect(mine.riderStars, isNull);
+    expect(mine.comment, 'Good, packing could be better');
+    expect(fixture('order_rating_none')['rating'], isNull);
+
+    final merchant = fixture('merchant_reviews');
+    final summary = RatingSummary.fromJson(merchant['summary'] as Map<String, dynamic>);
+    expect(summary.count, page.summary.count);
+    expect(items('merchant_reviews').map(StoreReview.fromJson).first.storeStars, isPositive);
+    expect(RatingSummary.empty.share(1), 0);
+  });
 }

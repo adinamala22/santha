@@ -19,28 +19,31 @@ class DiscoveryApi {
         return (serviceability: Serviceability.fromJson(r.data!), waitlist: r.data!['waitlist'] as bool? ?? false);
       });
 
-  Future<Feed> feed(LatLng at, {FeedTab tab = FeedTab.stores, bool openNow = false, bool selfDelivered = false, int? maxEta}) async =>
-      Feed.fromJson(await feedJson(at, tab: tab, openNow: openNow, selfDelivered: selfDelivered, maxEta: maxEta));
+  /// [minRating]: only stores rated at least this ("4★ and above"); unrated stores are left out.
+  Future<Feed> feed(LatLng at, {FeedTab tab = FeedTab.stores, bool openNow = false, bool selfDelivered = false, int? maxEta, double? minRating}) async =>
+      Feed.fromJson(await feedJson(at, tab: tab, openNow: openNow, selfDelivered: selfDelivered, maxEta: maxEta, minRating: minRating));
 
-  Future<Json> feedJson(LatLng at, {FeedTab tab = FeedTab.stores, bool openNow = false, bool selfDelivered = false, int? maxEta}) => _call(() async {
+  Future<Json> feedJson(LatLng at, {FeedTab tab = FeedTab.stores, bool openNow = false, bool selfDelivered = false, int? maxEta, double? minRating}) => _call(() async {
         final r = await _dio.get<Json>('/v1/feed', queryParameters: {
           ..._at(at),
           'tab': tab.wire,
           if (openNow) 'openNow': 'true',
           if (selfDelivered) 'selfDelivered': 'true',
           'maxEta': ?maxEta,
+          'minRating': ?minRating,
         });
         return r.data!;
       });
 
   /// Free-text search, or category browse when [q] is empty and [category] is set.
-  Future<SearchResult> search(LatLng at, {String q = '', String? category, bool vegOnly = false, bool openNow = false}) => _call(() async {
+  Future<SearchResult> search(LatLng at, {String q = '', String? category, bool vegOnly = false, bool openNow = false, double? minRating}) => _call(() async {
         final r = await _dio.get<Json>('/v1/search', queryParameters: {
           ..._at(at),
           if (q.trim().isNotEmpty) 'q': q.trim(),
           'category': ?category,
           if (vegOnly) 'veg': 'true',
           if (openNow) 'openNow': 'true',
+          'minRating': ?minRating,
         });
         return SearchResult.fromJson(r.data!);
       });
@@ -48,6 +51,10 @@ class DiscoveryApi {
   Future<Json> storeJson(String id, LatLng at) => _call(() async => (await _dio.get<Json>('/v1/stores/$id', queryParameters: _at(at))).data!);
 
   Future<StorePage> store(String id, LatLng at) async => StorePage.fromJson(await storeJson(id, at));
+
+  /// Rating breakdown and the newest published reviews with comments (and the store's replies).
+  Future<StoreReviews> reviews(String storeId, {int limit = 20}) =>
+      _call(() async => StoreReviews.fromJson((await _dio.get<Json>('/v1/stores/$storeId/reviews', queryParameters: {'limit': limit})).data!));
 
   static Map<String, Object> _at(LatLng p) => {'lat': p.lat, 'lng': p.lng};
 }

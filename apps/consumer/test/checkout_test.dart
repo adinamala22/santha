@@ -263,12 +263,19 @@ void main() {
     await settle(tester, 20);
     expect(find.byKey(const ValueKey('after-delivery')), findsOneWidget);
 
+    expect(find.byKey(const ValueKey('rating-comment')), findsNothing); // the text box appears after the stars
     await tapVisible(tester, find.byKey(const ValueKey('stars-store-5')));
     await settle(tester, 4);
+    await tester.enterText(find.byKey(const ValueKey('rating-comment')), '  Fresh atta, quick delivery  ');
     await tapVisible(tester, find.byKey(const ValueKey('send-rating')));
     await settle(tester, 10);
     expect(h.backend.rating!['storeStars'], 5);
+    expect(h.backend.rating!['comment'], 'Fresh atta, quick delivery');
     expect(h.events, contains('rating_submitted'));
+    // Rated: the stars are gone for good and the rating is shown instead.
+    expect(find.byKey(const ValueKey('stars-store')), findsNothing);
+    expect(find.byKey(const ValueKey('your-rating')), findsOneWidget);
+    expect(find.text('“Fresh atta, quick delivery”'), findsOneWidget);
 
     await tapVisible(tester, find.byKey(const ValueKey('report-problem')));
     await settle(tester, 10);

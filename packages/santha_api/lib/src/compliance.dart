@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 
 import 'api_client.dart';
 import 'api_exception.dart';
+import 'discovery_models.dart';
 import 'models.dart';
 
 DateTime? _date(Object? v) => v == null ? null : DateTime.parse(v as String);
@@ -96,7 +97,14 @@ class ComplianceApi {
   Future<List<Grievance>> grievances() => _call(() async => _items(await _dio.get<Json>('/v1/me/grievances'), Grievance.fromJson));
 
   /// Merchant app: published reviews and replies.
-  Future<List<StoreReview>> storeReviews() => _call(() async => _items(await _dio.get<Json>('/v1/merchants/me/reviews'), StoreReview.fromJson));
+  Future<List<StoreReview>> storeReviews() async => (await merchantReviews()).items;
+
+  /// Merchant app: the store's rating summary (1–5 breakdown) and its published reviews.
+  Future<({RatingSummary summary, List<StoreReview> items})> merchantReviews() => _call(() async {
+        final r = await _dio.get<Json>('/v1/merchants/me/reviews');
+        final s = r.data!['summary'] as Json?;
+        return (summary: s == null ? RatingSummary.empty : RatingSummary.fromJson(s), items: _items(r, StoreReview.fromJson));
+      });
 
   Future<StoreReview> replyToReview(String orderId, String text) =>
       _call(() async => StoreReview.fromJson((await _dio.post<Json>('/v1/merchants/me/reviews/$orderId/reply', data: {'text': text})).data!));

@@ -64,5 +64,20 @@ export function reviewModerationContract(name: string, make: () => Promise<Issue
       expect(await repo.averages({ merchantId })).toEqual({ count: 1, avg: 5 });
       expect((await repo.rating(a))!.reply).toBe('thanks');
     });
+
+    it('store summary: average, count and 1–5 breakdown without hidden reviews; events commit with the change', async () => {
+      const repo = await make();
+      const merchantId = randomUUID();
+      expect(await repo.storeSummary(merchantId)).toEqual({ avg: null, count: 0, distribution: [0, 0, 0, 0, 0] });
+      const ids = [randomUUID(), randomUUID(), randomUUID(), randomUUID()];
+      const event = (id: string) => [{ type: 'rating.submitted', aggregate: { type: 'order', id }, actor: { type: 'user' as const, id: null }, payload: { order_id: id, merchant_id: merchantId } }];
+      for (const [i, stars] of [5, 4, 4, 2].entries())
+        expect(await repo.addRating({ orderId: ids[i]!, userId: randomUUID(), merchantId, riderUserId: null, storeStars: stars, riderStars: null, comment: null }, event(ids[i]!))).toBe(true);
+      expect(await repo.addRating({ orderId: ids[0]!, userId: randomUUID(), merchantId, riderUserId: null, storeStars: 1, riderStars: null, comment: null }, event(ids[0]!))).toBe(false);
+      expect(await repo.storeSummary(merchantId)).toEqual({ avg: 3.75, count: 4, distribution: [0, 1, 0, 2, 1] });
+      await repo.updateRating(ids[3]!, { status: 'hidden' }, event(ids[3]!));
+      expect(await repo.storeSummary(merchantId)).toEqual({ avg: 4.33, count: 3, distribution: [0, 0, 0, 2, 1] });
+      expect(await repo.storeSummary(randomUUID())).toMatchObject({ count: 0 });
+    });
   });
 }

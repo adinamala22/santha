@@ -509,3 +509,20 @@ class Wallet {
   final int balancePaise;
   final List<WalletEntry> entries;
 }
+
+/// The customer's rating of a delivered order (GET/POST /v1/orders/{id}/rating).
+class OrderRating {
+  const OrderRating({required this.orderId, required this.storeStars, required this.createdAt, this.riderStars, this.comment});
+  factory OrderRating.fromJson(Json j) => OrderRating(
+        orderId: j['orderId'] as String,
+        storeStars: j['storeStars'] as int,
+        riderStars: j['riderStars'] as int?,
+        comment: j['comment'] as String?,
+        createdAt: DateTime.parse(j['createdAt'] as String),
+      );
+  final String orderId;
+  final int storeStars;
+  final int? riderStars;
+  final String? comment;
+  final DateTime createdAt;
+}

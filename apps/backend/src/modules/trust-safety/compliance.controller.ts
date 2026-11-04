@@ -72,6 +72,17 @@ const ReviewSchema = z.object({
 });
 class ReviewListDto extends createZodDto(z.object({ items: z.array(ReviewSchema) })) {}
 class ReviewDto extends createZodDto(ReviewSchema) {}
+
+/** Average and count of store stars (hidden reviews excluded), and the counts for 1…5 stars. */
+const RatingSummarySchema = z.object({
+  avg: z.number().nullable(),
+  count: z.number().int(),
+  distribution: z.array(z.number().int()).length(5).describe('Counts for 1, 2, 3, 4 and 5 stars'),
+});
+class MerchantReviewListDto extends createZodDto(z.object({ summary: RatingSummarySchema, items: z.array(ReviewSchema) })) {}
+const PublicReviewSchema = z.object({ storeStars: z.number().int(), comment: z.string().nullable(), reply: z.string().nullable(), replyAt: iso.nullable(), createdAt: iso });
+class StoreReviewsDto extends createZodDto(z.object({ summary: RatingSummarySchema, items: z.array(PublicReviewSchema) })) {}
+const toPublicReview = (r: RatingRecord) => ({ storeStars: r.storeStars, comment: r.comment, reply: r.reply, replyAt: r.replyAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString() });
 class ReplyDto extends createZodDto(z.object({ text: z.string().trim().min(2).max(500) })) {}
 class ModerateDto extends createZodDto(z.object({ decision: z.enum(['publish', 'hide']) })) {}
 
@@ -86,7 +97,7 @@ class PublicStoreDto extends createZodDto(
     area: z.string().nullable(),
     areaTe: z.string().nullable(),
     location: z.object({ lat: z.number(), lng: z.number() }).nullable(),
-    rating: z.object({ count: z.number().int(), avg: z.number().nullable() }),
+    rating: RatingSummarySchema,
     reviews: z.array(z.object({ storeStars: z.number().int(), comment: z.string().nullable(), reply: z.string().nullable(), createdAt: iso })),
   }),
 ) {}
@@ -177,13 +188,15 @@ export class MerchantReviewsController {
   constructor(
     private readonly compliance: ComplianceService,
     private readonly merchants: MerchantsService,
+    private readonly issues: IssuesService,
   ) {}
 
   @Get()
-  @ZodResponse({ type: ReviewListDto, description: 'Published reviews, newest first' })
+  @ZodResponse({ type: MerchantReviewListDto, description: 'Rating summary and published reviews, newest first' })
   async list(@CurrentUser() u: AuthUser) {
     const m = await this.merchants.ownedBy(u.userId);
-    return { items: (await this.compliance.reviewsForMerchant(m.id)).map(toReview) };
+    const [summary, items] = await Promise.all([this.issues.storeSummary(m.id), this.compliance.reviewsForMerchant(m.id)]);
+    return { summary, items: items.map(toReview) };
   }
 
   @Post(':orderId/reply')
@@ -288,8 +301,30 @@ export class PublicStoreController {
       area: market?.market.name ?? null,
       areaTe: market?.market.nameTe ?? null,
       location: m.location,
-      rating: await this.issues.merchantRating(m.id),
+      rating: await this.issues.storeSummary(m.id),
       reviews: reviews.map((r) => ({ storeStars: r.storeStars, comment: r.comment, reply: r.reply, createdAt: r.createdAt.toISOString() })),
     };
+  }
+}
+
+/** Consumer store page (PRD 4.4: rating distribution, verified-purchase reviews with the store's replies). */
+@ApiTags('discovery')
+@Public()
+@Controller('stores')
+export class StoreReviewsController {
+  constructor(
+    private readonly merchants: MerchantsService,
+    private readonly issues: IssuesService,
+    private readonly compliance: ComplianceService,
+  ) {}
+
+  @Get(':id/reviews')
+  @ZodResponse({ type: StoreReviewsDto, description: 'Rating summary (1–5 star breakdown) and the newest published reviews that have a comment' })
+  async reviews(@Param('id', ParseUUIDPipe) id: string, @Query('limit') limit?: string) {
+    const m = await this.merchants.record(id).catch(() => null);
+    if (!m || m.status !== 'live') throw new DomainError('NOT_FOUND', 'Store not found');
+    const n = Math.min(Math.max(Number.parseInt(limit ?? '', 10) || 20, 1), 50);
+    const [summary, published] = await Promise.all([this.issues.storeSummary(id), this.compliance.reviewsForMerchant(id)]);
+    return { summary, items: published.filter((r) => r.comment).slice(0, n).map(toPublicReview) };
   }
 }

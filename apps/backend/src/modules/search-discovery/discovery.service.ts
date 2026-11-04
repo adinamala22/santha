@@ -12,6 +12,7 @@ import { rankStore, STALE_ITEM_FACTOR } from './domain/ranking';
 import { searchHints } from './domain/synonyms';
 import { EtaService } from './eta.service';
 import { SearchIndex } from './search-index';
+import { StoreRatings } from './store-ratings';
 
 export const TABS = { stores: 'retail', fashion: 'fashion', home_kitchens: 'home_kitchen', home_businesses: 'home_business' } as const;
 export type Tab = keyof typeof TABS;
@@ -21,6 +22,8 @@ export interface Filters {
   vegOnly?: boolean | undefined;
   selfDelivered?: boolean | undefined;
   maxEtaMin?: number | undefined;
+  /** Only stores rated at least this (PRD filter "rating 4+"); unrated stores are left out. */
+  minRating?: number | undefined;
 }
 
 export interface StoreCard {
@@ -91,6 +94,7 @@ export class DiscoveryService {
     private readonly markets: MicroMarketsService,
     private readonly eta: EtaService,
     private readonly catalogue: CatalogueService,
+    private readonly ratings: StoreRatings,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
@@ -148,6 +152,7 @@ export class DiscoveryService {
     if (f.openNow && !c.open) return false;
     if (f.selfDelivered && !c.selfDelivers) return false;
     if (f.maxEtaMin != null && (c.eta.mode !== 'asap' || c.eta.maxMin > f.maxEtaMin)) return false;
+    if (f.minRating != null && (c.rating == null || c.rating < f.minRating)) return false;
     return true;
   }
 
@@ -206,7 +211,7 @@ export class DiscoveryService {
    */
   async store(id: string, pt: LatLng) {
     const snap = await this.catalogue.indexSnapshot(id);
-    const docs = snap ? buildDocs(snap) : null;
+    const docs = snap ? buildDocs(snap, await this.ratings.get(id)) : null;
     if (!snap || !docs) throw new DomainError('NOT_FOUND', 'This store is not on Santha right now.');
     const loc = await this.locate(pt);
     const version = loc?.version ?? (await this.markets.effective(docs.merchant.microMarketId, this.clock()));

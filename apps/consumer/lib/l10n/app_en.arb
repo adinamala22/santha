@@ -917,5 +917,45 @@
   "grievanceOpen": "Open",
   "grievanceAcknowledged": "Being looked at",
   "grievanceResolved": "Resolved",
-  "grievanceOfficer": "Grievance Officer, Santha Technologies, Nellore 524001 · grievance@santha.in · Mon–Sat 10:00–18:00"
+  "grievanceOfficer": "Grievance Officer, Santha Technologies, Nellore 524001 · grievance@santha.in · Mon–Sat 10:00–18:00",
+  "filterTopRated": "4★ & above",
+  "topRatedEmpty": "No stores rated 4★ or above here yet.",
+  "reviewsTitle": "Ratings & reviews",
+  "seeReviews": "See reviews",
+  "ratingsCount": "{count, plural, =1{1 rating} other{{count} ratings}}",
+  "@ratingsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "ratedOutOf5": "Rated {rating} out of 5",
+  "@ratedOutOf5": {
+    "placeholders": {
+      "rating": {
+        "type": "String"
+      }
+    }
+  },
+  "starBar": "{stars} stars: {count, plural, =1{1 rating} other{{count} ratings}}",
+  "@starBar": {
+    "placeholders": {
+      "stars": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noRatingsYet": "No ratings yet. Be the first after your order.",
+  "noWrittenReviews": "No written reviews yet.",
+  "storeReply": "Reply from the store",
+  "reviewsLoadFailed": "Could not load reviews.",
+  "rateCommentHint": "Tell others about this order (optional)",
+  "rateCommentNote": "Reviews are public. Please don't add phone numbers or links.",
+  "youRated": "Your rating",
+  "rateFailed": "Could not send your rating. Try again.",
+  "filterTopRatedShort": "4.0+"
 }

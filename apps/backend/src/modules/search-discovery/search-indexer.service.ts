@@ -7,6 +7,7 @@ import { CatalogueService } from '../merchant-catalogue/catalogue.service';
 import { categoryBySlug } from '../merchant-catalogue/domain/taxonomy';
 import type { ItemDoc, MerchantDoc } from './domain/documents';
 import { SearchIndex } from './search-index';
+import { type StoreRating, StoreRatings } from './store-ratings';
 
 /** Events after which a merchant's documents are rebuilt. Every payload carries merchant_id. */
 export const INDEXED_EVENTS = [
@@ -27,12 +28,15 @@ export const INDEXED_EVENTS = [
   'merchant.catalogue_went_stale',
   'media.approved',
   'media.rejected',
+  // A new rating, or a review hidden or published by ops, changes the store's rating.
+  'rating.submitted',
+  'rating.moderated',
 ] as const;
 
 type Snapshot = NonNullable<Awaited<ReturnType<CatalogueService['indexSnapshot']>>>;
 
-/** Builds the search documents for one live merchant from the catalogue's snapshot. */
-export function buildDocs(s: Snapshot): { merchant: MerchantDoc; items: ItemDoc[] } | null {
+/** Builds the search documents for one live merchant from the catalogue's snapshot and its rating. */
+export function buildDocs(s: Snapshot, rating: StoreRating = { avg: null, count: 0 }): { merchant: MerchantDoc; items: ItemDoc[] } | null {
   const m = s.merchant;
   if (m.status !== 'live' || !m.microMarketId || !m.location) return null;
   const items: ItemDoc[] = s.items.map((v) => {
@@ -90,8 +94,8 @@ export function buildDocs(s: Snapshot): { merchant: MerchantDoc; items: ItemDoc[
       hygieneDeclared: !!m.hygieneDeclaredAt,
       fssaiVerified: s.fssaiVerified,
       returnPolicy: m.returnPolicy,
-      rating: null,
-      ratingCount: 0,
+      rating: rating.count > 0 ? rating.avg : null,
+      ratingCount: rating.count,
       acceptanceRate: null,
       prepP50Min: null,
     },
@@ -112,6 +116,7 @@ export class SearchIndexer implements OnModuleInit, OnApplicationBootstrap {
     private readonly bus: EventBus,
     private readonly index: SearchIndex,
     private readonly catalogue: CatalogueService,
+    private readonly ratings: StoreRatings,
     @Inject(ENV) private readonly env: Env,
   ) {}
 
@@ -138,7 +143,7 @@ export class SearchIndexer implements OnModuleInit, OnApplicationBootstrap {
 
   async reindexMerchant(merchantId: string): Promise<void> {
     const snap = await this.catalogue.indexSnapshot(merchantId);
-    const docs = snap ? buildDocs(snap) : null;
+    const docs = snap ? buildDocs(snap, await this.ratings.get(merchantId)) : null;
     if (docs) await this.index.replaceMerchant(docs.merchant, docs.items);
     else await this.index.removeMerchant(merchantId);
   }

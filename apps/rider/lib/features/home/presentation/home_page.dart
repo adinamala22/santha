@@ -149,12 +149,32 @@ class _TodayCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final rating = home.rating;
     return Card(
       key: const ValueKey('today'),
       color: SanthaColors.indigo100,
       child: Padding(
         padding: const EdgeInsets.all(SanthaSpacing.s4),
-        child: Text(l.todayLine(home.deliveriesToday, rupees(home.earningsTodayPaise), l.duration(home.onlineMinToday)), style: Theme.of(context).textTheme.titleSmall),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l.todayLine(home.deliveriesToday, rupees(home.earningsTodayPaise), l.duration(home.onlineMinToday)), style: text.titleSmall),
+          const SizedBox(height: SanthaSpacing.s2),
+          // Customers' delivery rating (it weighs in which rider gets an offer first).
+          if (rating == null)
+            Text(l.noRatingYet, key: const ValueKey('rider-rating'), style: text.bodySmall?.copyWith(color: SanthaColors.slate))
+          else
+            Semantics(
+              label: '${l.ratedOutOf5(rating.toStringAsFixed(1))}. ${l.ratingHelps}',
+              excludeSemantics: true,
+              child: Row(key: const ValueKey('rider-rating'), children: [
+                Text(l.yourRating(rating.toStringAsFixed(1)), style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+                const SizedBox(width: SanthaSpacing.s2),
+                StarRow(value: rating, size: 14),
+                const SizedBox(width: SanthaSpacing.s2),
+                Expanded(child: Text(l.ratingHelps, style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
+              ]),
+            ),
+        ]),
       ),
     );
   }

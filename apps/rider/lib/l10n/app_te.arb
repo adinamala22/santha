@@ -86,5 +86,9 @@
   "payoutsTitle": "చెల్లింపులు",
   "payoutsEmpty": "ఇంకా చెల్లింపులు లేవు. ప్రతి సోమవారం గత వారానికి చెల్లిస్తాం.",
   "payoutPeriod": "{from} – {to} · {amount}",
-  "payoutBreakdown": "సంపాదన {earned} − మీ దగ్గరి నగదు {cash}"
+  "payoutBreakdown": "సంపాదన {earned} − మీ దగ్గరి నగదు {cash}",
+  "yourRating": "మీ రేటింగ్ {rating} ★",
+  "ratedOutOf5": "కస్టమర్ల నుంచి మీ రేటింగ్: 5కి {rating}",
+  "noRatingYet": "ఇంకా రేటింగ్ లేదు. ప్రతి ఆర్డర్ తర్వాత కస్టమర్లు డెలివరీకి రేటింగ్ ఇస్తారు.",
+  "ratingHelps": "మంచి రేటింగ్ ఉంటే ఆర్డర్లు ముందుగా మీకు వస్తాయి."
 }

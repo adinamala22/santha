@@ -1,0 +1,45 @@
+{
+ "summary": {
+  "avg": 4,
+  "count": 3,
+  "distribution": [
+   0,
+   0,
+   1,
+   1,
+   1
+  ]
+ },
+ "items": [
+  {
+   "orderId": "cb08f348-2266-4471-8f40-4a57292040c1",
+   "merchantId": "10000000-0000-4000-8000-000000000201",
+   "storeStars": 3,
+   "comment": null,
+   "status": "visible",
+   "flagReason": null,
+   "reply": null,
+   "createdAt": "2026-11-04T11:27:05.464Z"
+  },
+  {
+   "orderId": "746168fe-8227-4efa-8cbb-18344c82c999",
+   "merchantId": "10000000-0000-4000-8000-000000000201",
+   "storeStars": 4,
+   "comment": "Good, packing could be better",
+   "status": "visible",
+   "flagReason": null,
+   "reply": null,
+   "createdAt": "2026-11-04T11:27:05.166Z"
+  },
+  {
+   "orderId": "b32df32f-4501-4833-beb4-d957becf12d6",
+   "merchantId": "10000000-0000-4000-8000-000000000201",
+   "storeStars": 5,
+   "comment": "Fresh atta and quick delivery, thank you",
+   "status": "visible",
+   "flagReason": null,
+   "reply": "Thank you! See you again.",
+   "createdAt": "2026-11-04T11:27:04.637Z"
+  }
+ ]
+}

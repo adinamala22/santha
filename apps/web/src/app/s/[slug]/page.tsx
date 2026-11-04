@@ -2,6 +2,7 @@ import type { PublicStore } from '@santha/shared-types';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { RatingBars } from '@/components/site/rating-bars';
 import { langOf, SiteFooter, SiteHeader } from '@/components/site/site-chrome';
 import { fill } from '@/i18n/console';
 import { siteCopy } from '@/i18n/site';
@@ -96,6 +97,14 @@ export default async function StorePage({ params, searchParams }: { params: Prom
                 </li>
               ))}
             </ul>
+          </section>
+        ) : null}
+        {st.rating.count > 0 ? (
+          <section className="mx-auto max-w-6xl px-6 pb-10" aria-labelledby="breakdown-title">
+            <h2 id="breakdown-title" className="text-2xl font-bold text-indigo">
+              {s.breakdownTitle}
+            </h2>
+            <RatingBars distribution={st.rating.distribution} label={(stars, count) => fill(s.starBar, { stars, count })} />
           </section>
         ) : null}
         {st.reviews.length ? (

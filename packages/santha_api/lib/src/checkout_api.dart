@@ -93,6 +93,12 @@ class CheckoutApi {
   Future<void> rate(String orderId, {required int storeStars, int? riderStars, String? comment}) =>
       _call(() => _dio.post<void>('/v1/orders/$orderId/rating', data: {'storeStars': storeStars, 'riderStars': ?riderStars, 'comment': ?comment}));
 
+  /// Your rating of this order, or null if you have not rated it yet.
+  Future<OrderRating?> myRating(String orderId) => _call(() async {
+        final r = (await _dio.get<Json>('/v1/orders/$orderId/rating')).data!['rating'] as Json?;
+        return r == null ? null : OrderRating.fromJson(r);
+      });
+
   /// WhatsApp order updates (explicit opt-in, off by default).
   Future<bool> whatsappUpdates() => _call(() async => (await _dio.get<Json>('/v1/me/notification-preferences')).data!['whatsappUpdates'] as bool);
 
