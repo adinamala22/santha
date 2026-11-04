@@ -153,3 +153,42 @@ export function rect(minLng: number, minLat: number, maxLng: number, maxLat: num
     ],
   };
 }
+
+/**
+ * Metres from a point to the nearest edge of a polygon; 0 when the polygon covers it. Uses a local
+ * equirectangular projection around the point (micro-markets are a few km across; the error stays well
+ * under 1% within tens of km). PostGIS uses ST_Distance on geography for the same question.
+ */
+export function distanceToPolygonMeters(p: GeoPolygon, pt: LatLng): number {
+  if (covers(p, pt)) return 0;
+  const R = 6_371_008.8;
+  const kx = ((Math.PI / 180) * R) * Math.cos((pt.lat * Math.PI) / 180);
+  const ky = (Math.PI / 180) * R;
+  const xy = ([lng, lat]: Position): [number, number] => [(lng - pt.lng) * kx, (lat - pt.lat) * ky];
+  const ring = p.coordinates[0];
+  let best = Infinity;
+  for (let i = 0; i + 1 < ring.length; i++) {
+    const [ax, ay] = xy(ring[i]!);
+    const [bx, by] = xy(ring[i + 1]!);
+    const dx = bx - ax;
+    const dy = by - ay;
+    const len2 = dx * dx + dy * dy;
+    const t = len2 === 0 ? 0 : Math.max(0, Math.min(1, -(ax * dx + ay * dy) / len2));
+    best = Math.min(best, Math.hypot(ax + t * dx, ay + t * dy));
+  }
+  return best;
+}
+
+/** A circle as a closed polygon with `sides` vertices (ops can define a micro-market as centre + radius). */
+export function circlePolygon(centre: LatLng, radiusM: number, sides = 48): GeoPolygon {
+  const R = 6_371_008.8;
+  const dLat = (radiusM / R) * (180 / Math.PI);
+  const dLng = dLat / Math.cos((centre.lat * Math.PI) / 180);
+  const ring: Position[] = [];
+  for (let i = 0; i < sides; i++) {
+    const a = (2 * Math.PI * i) / sides;
+    ring.push([centre.lng + dLng * Math.cos(a), centre.lat + dLat * Math.sin(a)]);
+  }
+  ring.push(ring[0]!);
+  return roundPolygon({ type: 'Polygon', coordinates: [ring] });
+}

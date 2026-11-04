@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
+import '../data/providers.dart';
 import '../features/auth/presentation/login_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/home/presentation/shell.dart';
@@ -57,7 +58,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.location,
         builder: (context, state) => const LocationPage(),
-        routes: [GoRoute(path: 'pin', builder: (context, state) => const MapPinPage())],
+        routes: [GoRoute(path: 'pin', builder: (context, state) => MapPinPage(fix: state.extra is Located ? state.extra! as Located : null))],
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
       GoRoute(path: '/checkout', builder: (context, state) => const CheckoutPage()),

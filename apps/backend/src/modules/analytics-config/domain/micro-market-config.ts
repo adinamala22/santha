@@ -131,3 +131,15 @@ export function changedFields(prev: MicroMarketConfig | null, next: MicroMarketC
   if (!prev) return [...CONFIG_FIELDS];
   return CONFIG_FIELDS.filter((f) => JSON.stringify(prev[f]) !== JSON.stringify(next[f]));
 }
+
+/**
+ * City-wide coverage (ADR-019). Off: an address is served only inside a micro-market area. On: an address in
+ * none of them is served by the nearest micro-market of the city when it is within `maxDistanceM` of that
+ * area (the store's own delivery radius still applies).
+ */
+export const CityCoverageSchema = z.object({
+  nearestFallback: z.boolean().default(false),
+  maxDistanceM: z.number().int().min(500).max(50_000).default(5000),
+});
+export type CityCoverage = z.infer<typeof CityCoverageSchema>;
+export const DEFAULT_COVERAGE: CityCoverage = CityCoverageSchema.parse({});

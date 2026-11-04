@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
-import { covers, type GeoPolygon, interiorsOverlap, type LatLng, roundPolygon } from '../../common/geo/polygon';
+import { covers, distanceToPolygonMeters, type GeoPolygon, interiorsOverlap, type LatLng, roundPolygon } from '../../common/geo/polygon';
+import { DEFAULT_COVERAGE } from './domain/micro-market-config';
 import type { FakeSinks } from '../../infra/fake/fake-sinks';
 import { MemoryStore } from '../../infra/fake/memory-tx';
 import {
@@ -42,6 +43,10 @@ export class InMemoryMicroMarketRepository extends MicroMarketRepository {
     return this.store.read((s) => s.cities.find((c) => c.slug === slug) ?? null);
   }
 
+  async getCity(id: string): Promise<CityRecord | null> {
+    return this.store.read((s) => s.cities.find((c) => c.id === id) ?? null);
+  }
+
   async list(cityId?: string): Promise<MicroMarketRecord[]> {
     return this.store.read((s) =>
       s.markets.filter((m) => !cityId || m.cityId === cityId).sort((a, b) => a.name.localeCompare(b.name)),
@@ -79,6 +84,13 @@ export class InMemoryMicroMarketRepository extends MicroMarketRepository {
     return all.find((e) => covers(e.version.polygon, pt)) ?? null;
   }
 
+  async nearest(pt: LatLng, at: Date): Promise<(Effective & { distanceM: number }) | null> {
+    const all = (await this.effectiveAt(at))
+      .map((e) => ({ ...e, distanceM: Math.round(distanceToPolygonMeters(e.version.polygon, pt)) }))
+      .sort((a, b) => a.distanceM - b.distanceM || a.market.slug.localeCompare(b.market.slug));
+    return all[0] ?? null;
+  }
+
   async overlapping(cityId: string, polygon: GeoPolygon, from: Date, excludeMarketId?: string): Promise<OverlapHit[]> {
     polygon = roundPolygon(polygon); // compare at storage precision, like the Prisma store
     return this.store.read((s) =>
@@ -108,9 +120,15 @@ class Store extends MemoryStore<State> {
       fn({
         createCity: async (c) => {
           if (this.state.cities.some((x) => x.slug === c.slug)) throw new Error(`unique: city ${c.slug}`);
-          const city = { ...c, id: randomUUID() };
+          const city: CityRecord = { ...c, coverage: c.coverage ?? DEFAULT_COVERAGE, id: randomUUID() };
           this.state.cities.push(city);
           return this.clone(city);
+        },
+        updateCityCoverage: async (cityId, coverage) => {
+          const c = this.state.cities.find((x) => x.id === cityId);
+          if (!c) return null;
+          c.coverage = this.clone(coverage);
+          return this.clone(c);
         },
         createMarket: async (m) => {
           if (this.state.markets.some((x) => x.slug === m.slug)) throw new Error(`unique: micro-market ${m.slug}`);

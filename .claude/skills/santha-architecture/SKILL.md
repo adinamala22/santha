@@ -20,7 +20,7 @@ Rules:
 ## Invariants
 - **Money:** integer paise; totals recomputed from lines + fee rows; GST per rules; settlement derived from Order + Fulfilment + Payment + Refund and reconciled to the aggregator to the paise.
 - **Orders:** single `transition(orderId, to, actor, reason)` inside a transaction; legal transitions only (see `references/order-state-machine.md`); timers are BullMQ delayed jobs keyed by order id and cancelled on transition.
-- **Geo:** PostGIS geography; serviceability = ST_Within(address, micro_market.polygon); merchant radius enforced server-side; rider positions in Redis GEO sets.
+- **Geo:** PostGIS geography; serviceability = ST_Within(address, micro_market.polygon), or — only when ops turn on the city's coverage switch (ADR-019) — the nearest micro-market of the city within its max distance; merchant radius enforced server-side; rider positions in Redis GEO sets.
 - **Privacy:** phone masking via click-to-call; addresses revealed to merchants after acceptance and riders after assignment; location sharing ends at delivery.
 - **Idempotency:** `Idempotency-Key` on POST /orders, payment confirm, refunds; keys kept 24 h with the first response.
 - **Audit:** every ops mutation writes `audit_events(entity, action, actor, before, after)`.

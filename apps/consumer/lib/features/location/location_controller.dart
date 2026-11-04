@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,12 +81,9 @@ class LocationController extends Notifier<LocationState> {
     }
   }
 
-  /// GPS → serviceability. Returns the failure (service off / denied) for the UI to explain.
-  Future<LocateResult> useDeviceLocation() async {
-    final r = await ref.read(deviceLocatorProvider).locate();
-    if (r is Located) await set(r.point, LocationSource.gps);
-    return r;
-  }
+  /// A GPS fix (or why there is none). It is not used until the customer confirms it on the map pin,
+  /// because phone fixes can be tens to hundreds of metres off.
+  Future<LocateResult> locateDevice() => ref.read(deviceLocatorProvider).locate();
 
   Future<DeliveryLocation> useAddress(Address a) => set(a.location, LocationSource.address, address: a);
 
@@ -117,14 +115,39 @@ final deliveryPointProvider = Provider<DeliveryLocation?>((ref) {
   return s is LocationSet ? s.location : null;
 });
 
+/// GPS with an accuracy check. The first fix a phone reports is often a cached or network position
+/// hundreds of metres off, so we listen for up to [_maxWait], ignore stale fixes and keep the most accurate
+/// one, stopping early once it is within [_goodEnoughM]. The caller still lets the user adjust the pin.
 class GeolocatorLocator implements DeviceLocator {
+  static const _maxWait = Duration(seconds: 12);
+  static const _goodEnoughM = 20.0;
+  static const _maxAge = Duration(minutes: 1);
+
   @override
   Future<LocateResult> locate() async {
     if (!await Geolocator.isLocationServiceEnabled()) return const LocationServiceOff();
     var p = await Geolocator.checkPermission();
     if (p == LocationPermission.denied) p = await Geolocator.requestPermission();
     if (p == LocationPermission.denied || p == LocationPermission.deniedForever) return const LocationDenied();
-    final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.high));
-    return Located(LatLng(pos.latitude, pos.longitude));
+    var precise = true;
+    try {
+      precise = await Geolocator.getLocationAccuracy() == LocationAccuracyStatus.precise;
+    } catch (_) {}
+
+    Position? best;
+    final deadline = DateTime.now().add(_maxWait);
+    try {
+      final fixes = Geolocator.getPositionStream(locationSettings: const LocationSettings(accuracy: LocationAccuracy.best, distanceFilter: 0));
+      await for (final pos in fixes.timeout(_maxWait)) {
+        final fresh = DateTime.now().difference(pos.timestamp) <= _maxAge;
+        if (fresh && (best == null || pos.accuracy < best.accuracy)) best = pos;
+        if ((best != null && best.accuracy <= _goodEnoughM) || DateTime.now().isAfter(deadline)) break;
+      }
+    } on TimeoutException {
+      // keep the best fix so far
+    } catch (_) {}
+    best ??= await Geolocator.getLastKnownPosition().catchError((_) => null);
+    if (best == null) return const LocationUnavailable();
+    return Located(LatLng(best.latitude, best.longitude), accuracyM: best.accuracy, precise: precise);
   }
 }

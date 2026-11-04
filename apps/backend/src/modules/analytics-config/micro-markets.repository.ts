@@ -6,7 +6,7 @@ import type { NewEvent } from '../../infra/outbox/domain-event';
 import { appendToOutbox } from '../../infra/outbox/outbox.writer';
 import { point } from '../../infra/prisma/geo';
 import { PrismaService, type Tx } from '../../infra/prisma/prisma.service';
-import { DiscoverySchema, type MicroMarketConfig } from './domain/micro-market-config';
+import { type CityCoverage, CityCoverageSchema, DiscoverySchema, type MicroMarketConfig } from './domain/micro-market-config';
 
 export interface CityRecord {
   id: string;
@@ -14,7 +14,14 @@ export interface CityRecord {
   name: string;
   nameTe: string;
   state: string;
+  /** City-wide coverage (ADR-019). */
+  coverage: CityCoverage;
 }
+
+export type NewCity = Omit<CityRecord, 'id' | 'coverage'> & { coverage?: CityCoverage };
+
+const CITY_SELECT = { id: true, slug: true, name: true, nameTe: true, state: true, coverage: true } as const;
+const toCity = (c: { id: string; slug: string; name: string; nameTe: string; state: string; coverage: unknown }): CityRecord => ({ ...c, coverage: CityCoverageSchema.parse(c.coverage ?? {}) });
 
 export interface MicroMarketRecord {
   id: string;
@@ -57,7 +64,8 @@ export interface NewVersion extends MicroMarketConfig {
 
 /** Writes that must share one transaction (config change + event + audit). */
 export interface MicroMarketTx {
-  createCity(c: Omit<CityRecord, 'id'>): Promise<CityRecord>;
+  createCity(c: NewCity): Promise<CityRecord>;
+  updateCityCoverage(cityId: string, coverage: CityCoverage): Promise<CityRecord | null>;
   createMarket(m: Omit<MicroMarketRecord, 'id' | 'createdAt'>): Promise<MicroMarketRecord>;
   /** Latest version, locking the market row so concurrent publishes serialise. */
   lockLatestVersion(microMarketId: string): Promise<VersionRecord | null>;
@@ -72,6 +80,7 @@ export abstract class MicroMarketRepository {
   abstract transaction<T>(fn: (tx: MicroMarketTx) => Promise<T>): Promise<T>;
   abstract listCities(): Promise<CityRecord[]>;
   abstract findCityBySlug(slug: string): Promise<CityRecord | null>;
+  abstract getCity(id: string): Promise<CityRecord | null>;
   abstract list(cityId?: string): Promise<MicroMarketRecord[]>;
   abstract get(id: string): Promise<MicroMarketRecord | null>;
   abstract getBySlug(slug: string): Promise<MicroMarketRecord | null>;
@@ -81,6 +90,8 @@ export abstract class MicroMarketRepository {
   abstract effectiveAt(at: Date, cityId?: string): Promise<Effective[]>;
   /** The market whose effective polygon covers the point at `at` (ST_Covers). */
   abstract resolvePoint(pt: LatLng, at: Date): Promise<Effective | null>;
+  /** The effective market whose area is nearest to the point (0 m when inside), any city. */
+  abstract nearest(pt: LatLng, at: Date): Promise<(Effective & { distanceM: number }) | null>;
   /**
    * Versions of *other* markets in the city, effective at any time from `from` onwards, whose
    * interiors intersect `polygon` (shared edges are fine).
@@ -156,8 +167,13 @@ const effectiveWhere = (at: Date) =>
 class PrismaMicroMarketTx implements MicroMarketTx {
   constructor(private readonly tx: Tx) {}
 
-  createCity(c: Omit<CityRecord, 'id'>): Promise<CityRecord> {
-    return this.tx.city.create({ data: c, select: { id: true, slug: true, name: true, nameTe: true, state: true } });
+  async createCity(c: NewCity): Promise<CityRecord> {
+    return toCity(await this.tx.city.create({ data: { ...c, coverage: (c.coverage ?? {}) as Prisma.InputJsonValue }, select: CITY_SELECT }));
+  }
+
+  async updateCityCoverage(cityId: string, coverage: CityCoverage): Promise<CityRecord | null> {
+    const n = await this.tx.city.updateMany({ where: { id: cityId }, data: { coverage: coverage as Prisma.InputJsonValue } });
+    return n.count ? toCity((await this.tx.city.findUnique({ where: { id: cityId }, select: CITY_SELECT }))!) : null;
   }
 
   createMarket(m: Omit<MicroMarketRecord, 'id' | 'createdAt'>): Promise<MicroMarketRecord> {
@@ -207,12 +223,18 @@ export class PrismaMicroMarketRepository extends MicroMarketRepository {
     return this.prisma.$transaction((tx) => fn(new PrismaMicroMarketTx(tx)));
   }
 
-  listCities(): Promise<CityRecord[]> {
-    return this.prisma.city.findMany({ orderBy: { name: 'asc' }, select: { id: true, slug: true, name: true, nameTe: true, state: true } });
+  async listCities(): Promise<CityRecord[]> {
+    return (await this.prisma.city.findMany({ orderBy: { name: 'asc' }, select: CITY_SELECT })).map(toCity);
   }
 
-  findCityBySlug(slug: string): Promise<CityRecord | null> {
-    return this.prisma.city.findUnique({ where: { slug }, select: { id: true, slug: true, name: true, nameTe: true, state: true } });
+  async findCityBySlug(slug: string): Promise<CityRecord | null> {
+    const c = await this.prisma.city.findUnique({ where: { slug }, select: CITY_SELECT });
+    return c && toCity(c);
+  }
+
+  async getCity(id: string): Promise<CityRecord | null> {
+    const c = await this.prisma.city.findUnique({ where: { id }, select: CITY_SELECT });
+    return c && toCity(c);
   }
 
   list(cityId?: string): Promise<MicroMarketRecord[]> {
@@ -250,6 +272,15 @@ export class PrismaMicroMarketRepository extends MicroMarketRepository {
       WHERE ${effectiveWhere(at)} AND ST_Covers(v.polygon, ${point(pt)})
       ORDER BY m.slug LIMIT 1`;
     return rows[0] ? toEffective(rows[0]) : null;
+  }
+
+  async nearest(pt: LatLng, at: Date): Promise<(Effective & { distanceM: number }) | null> {
+    const rows = await this.prisma.$queryRaw<Array<JoinedRow & { distance_m: number }>>`
+      SELECT ${VERSION_COLUMNS}, ${MARKET_COLUMNS}, ST_Distance(v.polygon, ${point(pt)}) AS distance_m
+      FROM micro_market_versions v JOIN micro_markets m ON m.id = v.micro_market_id
+      WHERE ${effectiveWhere(at)}
+      ORDER BY distance_m, m.slug LIMIT 1`;
+    return rows[0] ? { ...toEffective(rows[0]), distanceM: Math.round(Number(rows[0].distance_m)) } : null;
   }
 
   async overlapping(cityId: string, polygon: GeoPolygon, from: Date, excludeMarketId?: string): Promise<OverlapHit[]> {

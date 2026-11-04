@@ -7,7 +7,7 @@ import { PrismaService } from '../../infra/prisma/prisma.service';
 import { DEFAULT_CONFIG } from './domain/micro-market-config';
 import { FlagsService } from './flags.service';
 import { InMemoryMicroMarketRepository } from './in-memory-micro-markets.repository';
-import { ConfigController, OpsMicroMarketsController } from './micro-markets.controller';
+import { ConfigController, OpsCitiesController, OpsMicroMarketsController } from './micro-markets.controller';
 import { MicroMarketRepository, PrismaMicroMarketRepository } from './micro-markets.repository';
 import { MicroMarketsService } from './micro-markets.service';
 
@@ -35,7 +35,7 @@ export async function seedMicroMarkets(repo: MicroMarketRepository): Promise<voi
  * feature flags. Events out: config.micro_market_changed. Exports MicroMarketsService, FlagsService.
  */
 @Module({
-  controllers: [OpsMicroMarketsController, ConfigController],
+  controllers: [OpsMicroMarketsController, OpsCitiesController, ConfigController],
   providers: [
     MicroMarketsService,
     FlagsService,

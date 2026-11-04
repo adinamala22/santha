@@ -59,6 +59,25 @@ export function microMarketRepositoryContract(name: string, make: () => Promise<
       expect((await repo.resolvePoint({ lat: 10.00001, lng: lng0 + 0.005 }, T1))?.market.id).toBe(a.id);
     });
 
+    it('nearest area: 0 m inside, distance to the edge outside (ST_Distance semantics); city coverage round-trips', async () => {
+      const repo = await make();
+      const { city, a, b, lng0 } = await world(repo);
+      const inside = await repo.nearest({ lat: 10.005, lng: lng0 + 0.015 }, T1);
+      expect(inside).toMatchObject({ market: { id: b.id }, distanceM: 0 });
+      // 0.01° south of A's southern edge ≈ 1106 m (latitude 10°)
+      const south = await repo.nearest({ lat: 9.99, lng: lng0 + 0.005 }, T1);
+      expect(south?.market.id).toBe(a.id);
+      expect(south!.distanceM).toBeGreaterThan(1090);
+      expect(south!.distanceM).toBeLessThan(1120);
+      expect(await repo.nearest({ lat: 9.99, lng: lng0 + 0.005 }, new Date('2026-02-01T00:00:00Z'))).toBeNull();
+
+      expect((await repo.getCity(city.id))?.coverage).toEqual({ nearestFallback: false, maxDistanceM: 5000 });
+      const updated = await repo.transaction((tx) => tx.updateCityCoverage(city.id, { nearestFallback: true, maxDistanceM: 8000 }));
+      expect(updated?.coverage).toEqual({ nearestFallback: true, maxDistanceM: 8000 });
+      expect((await repo.findCityBySlug(city.slug))?.coverage).toEqual({ nearestFallback: true, maxDistanceM: 8000 });
+      expect(await repo.transaction((tx) => tx.updateCityCoverage(randomUUID(), { nearestFallback: true, maxDistanceM: 8000 }))).toBeNull();
+    });
+
     it('detects interior overlap with other markets only (shared edges are fine)', async () => {
       const repo = await make();
       const { city, a, b, lng0 } = await world(repo);

@@ -17,6 +17,7 @@ import {
   MerchantListDto,
   MerchantViewDto,
   OpsQueueQueryDto,
+  OpsRadiusDto,
   PanDto,
   RejectDto,
   StaffDto,
@@ -165,6 +166,13 @@ export class OpsMerchantsController {
   @ZodResponse({ status: 200, type: MerchantViewDto })
   async reject(@Param('id', ParseUUIDPipe) id: string, @Body() b: RejectDto, @CurrentUser() u: AuthUser, @RequestId() rid: string | null) {
     return toViewDto(await this.merchants.reject(id, { userId: u.userId, requestId: rid }, b));
+  }
+
+  @Put(':id/radius')
+  @Roles('admin', 'ops')
+  @ZodResponse({ status: 200, type: MerchantViewDto, description: 'How far the store delivers (audited)' })
+  async radius(@Param('id', ParseUUIDPipe) id: string, @Body() b: OpsRadiusDto, @CurrentUser() u: AuthUser, @RequestId() rid: string | null) {
+    return toViewDto(await this.merchants.setRadius(id, b.radiusM, b.reason, { userId: u.userId, requestId: rid }));
   }
 
   @Post(':id/go-live')

@@ -6,7 +6,7 @@ import { PolygonMap, type Shape } from '@/components/admin/polygon-map';
 import { Notice } from '@/components/admin/ui';
 import { type ConsoleCopy, errorText, fill } from '@/i18n/console';
 import { paiseToRupeeInput } from '@/lib/format';
-import { closeRing, openRing, type Position, ringProblems } from '@/lib/polygon-edit';
+import { circleRing, closeRing, openRing, type Position, ringProblems } from '@/lib/polygon-edit';
 import { createMarket, type EditorState, publishVersion } from './actions';
 
 type Config = Pick<MicroMarketVersion, 'polygon' | 'hours' | 'fees' | 'cod' | 'sla' | 'riderPay'>;
@@ -32,6 +32,53 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <fieldset className="rounded-md border border-indigo-100 p-4">
       <legend className="px-2 font-medium text-indigo">{title}</legend>
       {children}
+    </fieldset>
+  );
+}
+
+/** Centre + radius → the area's points (ADR-019). Starts at the middle of the current area. */
+export function CircleTool({ copy, start, onApply }: { copy: ConsoleCopy['markets']['circle']; start: Position[]; onApply: (ring: Position[]) => void }) {
+  const mid = start.length ? start.reduce((a, p) => [a[0] + p[0] / start.length, a[1] + p[1] / start.length] as Position, [0, 0] as Position) : ([79.9865, 14.4426] as Position);
+  const [lat, setLat] = useState(mid[1].toFixed(5));
+  const [lng, setLng] = useState(mid[0].toFixed(5));
+  const [km, setKm] = useState('3');
+  const [error, setError] = useState(false);
+  const apply = () => {
+    const c = { lat: Number(lat), lng: Number(lng) };
+    const r = Number(km);
+    const ok = Number.isFinite(c.lat) && Number.isFinite(c.lng) && Math.abs(c.lat) <= 90 && Math.abs(c.lng) <= 180 && r >= 0.5 && r <= 25;
+    setError(!ok);
+    if (ok) onApply(circleRing(c, r * 1000));
+  };
+  const input = 'mt-1 w-full rounded-md border border-indigo-100 px-3 py-2 s-focus';
+  return (
+    <fieldset className="mt-4 rounded-lg border border-indigo-100 p-4" data-testid="circle-tool">
+      <legend className="px-1 text-sm font-medium text-indigo">{copy.title}</legend>
+      <p className="mb-3 text-sm text-slate">{copy.hint}</p>
+      <div className="grid gap-3 sm:grid-cols-4">
+        <label className="text-sm text-ink">
+          {copy.lat}
+          <input className={input} inputMode="decimal" value={lat} onChange={(e) => setLat(e.target.value)} />
+        </label>
+        <label className="text-sm text-ink">
+          {copy.lng}
+          <input className={input} inputMode="decimal" value={lng} onChange={(e) => setLng(e.target.value)} />
+        </label>
+        <label className="text-sm text-ink">
+          {copy.km}
+          <input className={input} inputMode="decimal" value={km} onChange={(e) => setKm(e.target.value)} />
+        </label>
+        <div className="flex items-end">
+          <button type="button" onClick={apply} className="w-full rounded-md bg-indigo px-4 py-2 font-medium text-white s-focus hover:bg-indigo-700">
+            {copy.apply}
+          </button>
+        </div>
+      </div>
+      {error ? (
+        <p role="alert" className="mt-2 text-sm text-chilli">
+          {copy.invalid}
+        </p>
+      ) : null}
     </fieldset>
   );
 }
@@ -103,6 +150,7 @@ export function VersionEditor({
           ) : null}
         </div>
         <input type="hidden" name="polygon" value={JSON.stringify(closeRing(ring))} />
+        <CircleTool copy={k.circle} start={ring} onApply={change} />
       </Section>
 
       <div className="grid gap-6 xl:grid-cols-2">

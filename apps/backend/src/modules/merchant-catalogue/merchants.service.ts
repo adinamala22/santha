@@ -373,6 +373,33 @@ export class MerchantsService implements OnModuleInit {
   }
 
   /** "No food merchant goes live without a valid FSSAI number" (FR-TRS-1) — re-checked here. */
+  /** Ops: how far the store delivers (ADR-019). Audited; the search index rebuilds the store. */
+  async setRadius(id: string, radiusM: number, reason: string, actor: OpsActor): Promise<MerchantView> {
+    const m = await this.record(id);
+    const merchant = await this.repo.transaction(async (tx) => {
+      const updated = await tx.update(m.id, { radiusM });
+      await tx.appendEvent({
+        type: 'merchant.updated',
+        aggregate: { type: 'merchant', id: m.id },
+        microMarketId: m.microMarketId,
+        actor: { type: 'ops', id: actor.userId },
+        payload: { merchant_id: m.id, fields: ['radiusM'] },
+      });
+      await tx.appendAudit({
+        entity: 'merchant',
+        entityId: m.id,
+        action: 'radius_changed',
+        actorId: actor.userId,
+        microMarketId: m.microMarketId,
+        before: { radiusM: m.radiusM },
+        after: { radiusM, reason },
+        requestId: actor.requestId ?? null,
+      });
+      return updated;
+    });
+    return this.view(merchant);
+  }
+
   async goLive(id: string, actor: OpsActor): Promise<MerchantView> {
     return this.decide(id, actor, ['approved'], async (m) => {
       const kyc = await this.kyc.list({ type: 'merchant', id: m.id });

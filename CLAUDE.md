@@ -34,7 +34,7 @@ docs             PRD, BRD, tech plan, diagrams, wireframes
 
 ## Conventions that apply everywhere
 - Money is integer paise. Totals are recomputed from lines; never stored alone. GST shown as applicable.
-- All geo in PostGIS `geography`. Serviceability = address inside a micro-market polygon. Micro-market config is versioned with effective dates.
+- All geo in PostGIS `geography`. Serviceability = address inside a micro-market polygon (or, when ops enable city-wide coverage, within the city's max distance of the nearest one, ADR-019). Micro-market config is versioned with effective dates.
 - Every order state change goes through one guarded transition function in a DB transaction and emits a domain event via the outbox. Never update `orders.state` directly.
 - Every mutating ops action writes an `AuditEvent`.
 - Idempotency-Key header is required on POST /orders, payment confirmation and refunds.

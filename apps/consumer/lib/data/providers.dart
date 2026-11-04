@@ -31,8 +31,18 @@ sealed class LocateResult {
 }
 
 class Located extends LocateResult {
-  const Located(this.point);
+  const Located(this.point, {this.accuracyM, this.precise = true});
   final LatLng point;
+
+  /// Estimated error radius in metres (null when unknown, e.g. tests).
+  final double? accuracyM;
+
+  /// False when the user allowed only approximate location (Android 12+ / iOS 14+).
+  final bool precise;
+
+  /// Good enough to drop the pin without the user checking it on the map.
+  bool get trustworthy => precise && (accuracyM ?? 0) <= Located.goodAccuracyM;
+  static const goodAccuracyM = 30.0;
 }
 
 class LocationServiceOff extends LocateResult {
@@ -41,6 +51,11 @@ class LocationServiceOff extends LocateResult {
 
 class LocationDenied extends LocateResult {
   const LocationDenied();
+}
+
+/// GPS gave no fix in time.
+class LocationUnavailable extends LocateResult {
+  const LocationUnavailable();
 }
 
 final checkoutApiProvider = Provider<CheckoutApi>((ref) => CheckoutApi(ref.watch(apiClientProvider)));

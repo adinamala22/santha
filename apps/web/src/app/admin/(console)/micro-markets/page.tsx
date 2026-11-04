@@ -6,6 +6,7 @@ import { consoleCopy, fill } from '@/i18n/console';
 import { dateTime } from '@/lib/format';
 import type { Position } from '@/lib/polygon-edit';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
+import { CoverageForm } from './coverage-form';
 
 export const metadata = { title: 'Micro-markets' };
 
@@ -31,6 +32,11 @@ export default async function MicroMarketsPage() {
           ) : null
         }
       />
+      {data.cities.map((c) => (
+        <Card key={c.id} className="mb-6">
+          <CoverageForm cityId={c.id} cityName={locale === 'te' ? c.nameTe : c.name} coverage={c.coverage} canEdit={!!session?.canDecide} copy={copy} />
+        </Card>
+      ))}
       <div className="grid gap-6 xl:grid-cols-[3fr_2fr]">
         <Card>
           <PolygonMap shapes={shapes} height={520} unavailable={k.mapUnavailable} />

@@ -1,8 +1,10 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
 import {
+  CityCoverageDto,
+  CityDto,
   CreateMicroMarketDto,
   FlagsDto,
   FlagsQueryDto,
@@ -20,6 +22,22 @@ import { FlagsService } from './flags.service';
 import { MicroMarketsService } from './micro-markets.service';
 
 const toDate = (iso: string | undefined) => (iso ? new Date(iso) : undefined);
+
+/** Ops: city-wide coverage (ADR-019). */
+@ApiTags('ops')
+@ApiBearerAuth()
+@ApiHeader({ name: 'X-Device-Id', required: true })
+@Controller('ops/cities')
+export class OpsCitiesController {
+  constructor(private readonly markets: MicroMarketsService) {}
+
+  @Put(':id/coverage')
+  @Roles('admin', 'ops')
+  @ZodResponse({ type: CityDto, description: 'Audited; serviceability uses it at once' })
+  async coverage(@Param('id', ParseUUIDPipe) id: string, @Body() body: CityCoverageDto, @CurrentUser() user: AuthUser, @RequestId() requestId: string | null) {
+    return toCityDto(await this.markets.setCoverage(id, body, { userId: user.userId, requestId }));
+  }
+}
 
 @ApiTags('ops')
 @ApiBearerAuth()
@@ -93,12 +111,15 @@ export class ConfigController {
   @Get('serviceability')
   @ZodResponse({ type: ServiceabilityDto })
   async serviceability(@Query() q: ServiceabilityQueryDto) {
-    const hit = await this.markets.resolve(q);
+    const { hit, nearest } = await this.markets.explain(q);
     const flags = await this.flags.evaluate({ distinctId: 'anonymous', microMarketId: hit?.market.id });
     return {
       serviceable: !!hit,
       microMarket: hit ? { id: hit.market.id, slug: hit.market.slug, name: hit.market.name, nameTe: hit.market.nameTe } : null,
       waitlist: !hit && flags.serviceability_waitlist,
+      matchedBy: hit?.matchedBy ?? null,
+      reason: hit ? null : ('outside_service_area' as const),
+      nearest: !hit && nearest ? { name: nearest.market.name, nameTe: nearest.market.nameTe, distanceM: nearest.distanceM } : null,
     };
   }
 

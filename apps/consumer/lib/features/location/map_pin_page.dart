@@ -6,6 +6,7 @@ import 'package:latlong2/latlong.dart' as ll;
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_ui/santha_ui.dart';
 
+import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import 'location_controller.dart';
 import 'location_page.dart';
@@ -15,9 +16,12 @@ import 'location_page.dart';
 const _tiles = String.fromEnvironment('MAP_TILES_URL', defaultValue: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png');
 const _nellore = ll.LatLng(14.4426, 79.9865);
 
-/// Manual pin: drag the map under a fixed pin, then optionally save it as an address.
+/// Manual pin: drag the map under a fixed pin, then optionally save it as an address. Opened from
+/// "Use current location" with the GPS [fix]: the pin starts there, the accuracy circle shows how sure
+/// the phone is, and the customer moves the pin to the door. "Locate me" fetches a fresh fix.
 class MapPinPage extends ConsumerStatefulWidget {
-  const MapPinPage({super.key});
+  const MapPinPage({super.key, this.fix});
+  final Located? fix;
 
   @override
   ConsumerState<MapPinPage> createState() => _MapPinPageState();
@@ -25,6 +29,33 @@ class MapPinPage extends ConsumerStatefulWidget {
 
 class _MapPinPageState extends ConsumerState<MapPinPage> {
   final _map = fm.MapController();
+  late Located? _fix = widget.fix;
+  bool _locating = false;
+  String? _locateError;
+
+  Future<void> _locateMe() async {
+    final l = AppLocalizations.of(context);
+    setState(() {
+      _locating = true;
+      _locateError = null;
+    });
+    final r = await ref.read(locationControllerProvider.notifier).locateDevice();
+    if (!mounted) return;
+    setState(() {
+      _locating = false;
+      switch (r) {
+        case Located():
+          _fix = r;
+          _map.move(ll.LatLng(r.point.lat, r.point.lng), 18);
+        case LocationServiceOff():
+          _locateError = l.locationOff;
+        case LocationDenied():
+          _locateError = l.locationDenied;
+        case LocationUnavailable():
+          _locateError = l.locationUnavailable;
+      }
+    });
+  }
   final _form = GlobalKey<FormState>();
   final _line = TextEditingController();
   final _landmark = TextEditingController();
@@ -56,7 +87,7 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
     try {
       final loc = save
           ? await saveAddressAndUse(ref, AddressInput(label: _label, line: _line.text.trim(), landmark: _landmark.text.trim(), location: _centre))
-          : await ref.read(locationControllerProvider.notifier).set(_centre, LocationSource.pin);
+          : await ref.read(locationControllerProvider.notifier).set(_centre, _fix != null ? LocationSource.gps : LocationSource.pin);
       if (!mounted) return;
       if (loc.serviceable) {
         context.go('/');
@@ -74,8 +105,9 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
-    final current = ref.watch(deliveryPointProvider)?.point;
+    final current = widget.fix?.point ?? ref.watch(deliveryPointProvider)?.point;
     final start = current == null ? _nellore : ll.LatLng(current.lat, current.lng);
+    final fix = _fix;
 
     return Scaffold(
       appBar: AppBar(backgroundColor: SanthaColors.indigo, foregroundColor: SanthaColors.white, title: Text(l.pinTitle)),
@@ -86,17 +118,52 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
               label: l.pinMapLabel,
               child: fm.FlutterMap(
                 mapController: _map,
-                options: fm.MapOptions(initialCenter: start, initialZoom: 17, minZoom: 12, maxZoom: 19),
+                options: fm.MapOptions(initialCenter: start, initialZoom: widget.fix != null ? 18 : 17, minZoom: 12, maxZoom: 19),
                 children: [
                   fm.TileLayer(urlTemplate: _tiles, userAgentPackageName: 'app.santha.consumer'),
-                  const fm.SimpleAttributionWidget(source: Text('OpenStreetMap contributors')),
+                  if (fix?.accuracyM case final acc?)
+                    fm.CircleLayer(circles: [
+                      fm.CircleMarker(
+                        point: ll.LatLng(fix!.point.lat, fix.point.lng),
+                        radius: acc,
+                        useRadiusInMeter: true,
+                        color: SanthaColors.indigo.withValues(alpha: 0.12),
+                        borderColor: SanthaColors.indigo,
+                        borderStrokeWidth: 1,
+                      ),
+                    ]),
+                  // Tile attribution (required by the tile licence); one line that never overflows, even at large text sizes.
+                  const Align(
+                    alignment: Alignment.bottomLeft,
+                    child: ColoredBox(
+                      color: Color(0xCCFFFFFF),
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        child: Text('© OpenStreetMap contributors', maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 11, color: SanthaColors.slate)),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
+            // The pin's tip (y = 22 of the 24-unit glyph) sits exactly on the map centre.
             const IgnorePointer(
               child: Padding(
                 padding: EdgeInsets.only(bottom: 40),
                 child: Icon(Icons.location_on, size: 48, color: SanthaColors.marigold),
+              ),
+            ),
+            Positioned(
+              right: SanthaSpacing.s4,
+              bottom: SanthaSpacing.s4,
+              child: FloatingActionButton.small(
+                key: const ValueKey('locate-me'),
+                heroTag: 'locate-me',
+                tooltip: l.locateMe,
+                backgroundColor: SanthaColors.white,
+                foregroundColor: SanthaColors.indigo,
+                onPressed: _locating ? null : _locateMe,
+                child: _locating ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.my_location),
               ),
             ),
           ]),
@@ -108,7 +175,17 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
             child: Form(
               key: _form,
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
-                Text(l.pinHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+                if (fix != null && !fix.precise)
+                  Text(l.gpsApproximate, key: const ValueKey('gps-approximate'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli))
+                else if (fix?.accuracyM case final acc?)
+                  Text(
+                    l.gpsAccuracy(acc.round()),
+                    key: const ValueKey('gps-accuracy'),
+                    style: text.bodySmall?.copyWith(color: acc > Located.goodAccuracyM ? SanthaColors.chilli : SanthaColors.slate),
+                  )
+                else
+                  Text(l.pinHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+                if (_locateError != null) Text(_locateError!, style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
                 const SizedBox(height: SanthaSpacing.s3),
                 Text(l.saveAddressTitle, style: text.titleSmall),
                 const SizedBox(height: SanthaSpacing.s2),

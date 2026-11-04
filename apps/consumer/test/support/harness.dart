@@ -6,6 +6,7 @@ import 'package:consumer/app.dart';
 import 'package:consumer/data/order_providers.dart';
 import 'package:consumer/features/orders/tracking_view.dart';
 import 'package:consumer/data/providers.dart';
+import 'package:consumer/features/location/location_controller.dart';
 import 'package:consumer/flavors.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -54,6 +55,9 @@ class FakeBackend implements HttpClientAdapter {
 
   // Ratings: the kirana's rating on its card/page (null keeps the captured fixture as is).
   ({double avg, int count})? kiranaRating;
+
+  /// Fields merged into the kirana store page (e.g. deliversHere / notDeliveringReason).
+  Map<String, dynamic> kiranaPagePatch = {};
 
   // M8 state
   final consents = <String, bool>{};
@@ -194,6 +198,9 @@ class FakeBackend implements HttpClientAdapter {
             'serviceable': serviceable,
             'microMarket': serviceable ? fixture('feed_stores')['serviceability']['microMarket'] : null,
             'waitlist': false,
+            'matchedBy': serviceable ? 'area' : null,
+            'reason': serviceable ? null : 'outside_service_area',
+            'nearest': serviceable ? null : {'name': 'Magunta Layout', 'nameTe': 'మాగుంట లేఅవుట్', 'distanceM': 3500},
           }
         ),
       'GET /v1/me/addresses' => (200, fixture('address_list')),
@@ -203,6 +210,7 @@ class FakeBackend implements HttpClientAdapter {
       'GET /v1/stores/$kiranaId' => (200, (() {
           final page = fixture('store_kirana');
           if (kiranaRating case final k?) page['store'] = {...page['store'] as Map<String, dynamic>, 'rating': k.avg, 'ratingCount': k.count};
+          page.addAll(kiranaPagePatch);
           return page;
         })()),
       'GET /v1/stores/$kitchenId' => (200, fixture('store_kitchen')),
@@ -215,6 +223,18 @@ class FakeBackend implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// GPS stand-in: answers with [result] and counts calls.
+class FakeLocator implements DeviceLocator {
+  FakeLocator(this.result);
+  LocateResult result;
+  int calls = 0;
+  @override
+  Future<LocateResult> locate() async {
+    calls++;
+    return result;
+  }
 }
 
 /// Numbers the app tried to call (masked numbers only).
@@ -236,7 +256,7 @@ Future<void> settle(WidgetTester tester, [int frames = 12]) async {
 }
 
 /// Boots the app on a phone-sized screen. With [signIn], walks the OTP flow first.
-Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime}) async {
+Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, DeviceLocator? locator}) async {
   tester.view.physicalSize = const Size(1080, 3000); // 360 × 1000 dp
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
@@ -253,6 +273,7 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
       trackingMapEnabledProvider.overrideWithValue(false),
       dialerProvider.overrideWithValue((n) async => dialled.add(n)),
       analyticsProvider.overrideWithValue(analytics),
+      if (locator != null) deviceLocatorProvider.overrideWithValue(locator),
       jsonCacheProvider.overrideWith((ref) async => JsonCache(MemoryCacheStorage())),
       apiClientProvider.overrideWith(
         (ref) => SanthaApiClient(

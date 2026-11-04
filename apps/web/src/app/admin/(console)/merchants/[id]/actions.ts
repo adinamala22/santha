@@ -22,3 +22,14 @@ export async function decide(id: string, _prev: DecisionState, form: FormData): 
   revalidatePath('/admin/merchants');
   return r.ok ? { ok: true } : { ok: false, code: r.code, message: r.message };
 }
+
+/** Delivery radius (ADR-019): the API audits it with the reason and reindexes the store. */
+export async function setRadius(id: string, _prev: DecisionState, form: FormData): Promise<DecisionState> {
+  const km = Number(String(form.get('km') ?? '').replace(',', '.'));
+  const r = await opsApi(`/v1/ops/merchants/${id}/radius`, {
+    method: 'PUT',
+    body: { radiusM: Math.round(km * 1000), reason: String(form.get('reason') ?? '').trim() },
+  });
+  revalidatePath(`/admin/merchants/${id}`);
+  return r.ok ? { ok: true } : { ok: false, code: r.code, message: r.message };
+}

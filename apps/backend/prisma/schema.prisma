@@ -208,6 +208,8 @@ model City {
   name      String
   nameTe    String   @map("name_te")
   state     String
+  /// City-wide coverage (ADR-019): { nearestFallback, maxDistanceM }; {} = areas only.
+  coverage  Json     @default("{}")
   createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   microMarkets MicroMarket[]

@@ -68,3 +68,20 @@ export async function createMarket(_prev: EditorState, form: FormData): Promise<
   revalidatePath('/admin/micro-markets');
   redirect(`/admin/micro-markets/${r.data.id}`);
 }
+
+export interface CoverageState {
+  ok: boolean;
+  code?: string;
+}
+
+/** City-wide coverage (ADR-019): audited by the API; serviceability uses it at once. */
+export async function saveCoverage(cityId: string, _prev: CoverageState, form: FormData): Promise<CoverageState> {
+  const km = Number(String(form.get('maxKm') ?? '').replace(',', '.'));
+  const r = await opsApi(`/v1/ops/cities/${cityId}/coverage`, {
+    method: 'PUT',
+    body: { nearestFallback: form.get('nearestFallback') === 'on', maxDistanceM: Math.round(km * 1000) },
+  });
+  if (!r.ok) return { ok: false, code: r.code };
+  revalidatePath('/admin/micro-markets');
+  return { ok: true };
+}

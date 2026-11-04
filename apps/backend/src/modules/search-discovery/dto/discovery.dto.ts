@@ -140,6 +140,8 @@ export class StoreDto extends createZodDto(
     description: z.string().nullable(),
     microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable(),
     deliversHere: z.boolean().describe('Inside the store radius and the same micro-market as the customer'),
+    deliveryRadiusM: z.number().int().describe('How far the store delivers'),
+    notDeliveringReason: z.enum(['outside_service_area', 'other_area', 'too_far']).nullable(),
     photos: z.array(z.object({ thumbUrl: z.string().nullable(), mediumUrl: z.string().nullable() })),
     fssaiVerified: z.boolean(),
     hygieneDeclared: z.boolean(),

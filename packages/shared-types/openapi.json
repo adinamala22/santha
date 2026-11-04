@@ -664,6 +664,59 @@
         ]
       }
     },
+    "/v1/ops/cities/{id}/coverage": {
+      "put": {
+        "operationId": "OpsCitiesController_coverage",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CityCoverageDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Audited; serviceability uses it at once",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CityDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/serviceability": {
       "get": {
         "operationId": "ConfigController_serviceability",
@@ -1596,6 +1649,59 @@
         "responses": {
           "200": {
             "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/merchants/{id}/radius": {
+      "put": {
+        "operationId": "OpsMerchantsController_radius",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpsRadiusDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "How far the store delivers (audited)",
             "content": {
               "application/json": {
                 "schema": {
@@ -8234,6 +8340,26 @@
                 },
                 "state": {
                   "type": "string"
+                },
+                "coverage": {
+                  "type": "object",
+                  "properties": {
+                    "nearestFallback": {
+                      "default": false,
+                      "type": "boolean"
+                    },
+                    "maxDistanceM": {
+                      "default": 5000,
+                      "type": "integer",
+                      "minimum": 500,
+                      "maximum": 50000
+                    }
+                  },
+                  "required": [
+                    "nearestFallback",
+                    "maxDistanceM"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -8241,7 +8367,8 @@
                 "slug",
                 "name",
                 "nameTe",
-                "state"
+                "state",
+                "coverage"
               ],
               "additionalProperties": false
             }
@@ -11868,6 +11995,74 @@
         ],
         "additionalProperties": false
       },
+      "CityCoverageDto": {
+        "type": "object",
+        "properties": {
+          "nearestFallback": {
+            "type": "boolean"
+          },
+          "maxDistanceM": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 50000
+          }
+        },
+        "required": [
+          "nearestFallback",
+          "maxDistanceM"
+        ]
+      },
+      "CityDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "nameTe": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "nearestFallback": {
+                "default": false,
+                "type": "boolean"
+              },
+              "maxDistanceM": {
+                "default": 5000,
+                "type": "integer",
+                "minimum": 500,
+                "maximum": 50000
+              }
+            },
+            "required": [
+              "nearestFallback",
+              "maxDistanceM"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "nameTe",
+          "state",
+          "coverage"
+        ],
+        "additionalProperties": false
+      },
       "ServiceabilityDto_Output": {
         "type": "object",
         "properties": {
@@ -11904,12 +12099,58 @@
           "waitlist": {
             "type": "boolean",
             "description": "Show the \"join waitlist\" CTA when not serviceable"
+          },
+          "matchedBy": {
+            "type": "string",
+            "enum": [
+              "area",
+              "nearest",
+              null
+            ],
+            "description": "area: inside a micro-market; nearest: city-wide coverage (ADR-019)",
+            "nullable": true
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "outside_service_area",
+              null
+            ],
+            "description": "Why the point is not served",
+            "nullable": true
+          },
+          "nearest": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "nameTe": {
+                "type": "string"
+              },
+              "distanceM": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "name",
+              "nameTe",
+              "distanceM"
+            ],
+            "additionalProperties": false,
+            "description": "Nearest served area when not serviceable",
+            "nullable": true
           }
         },
         "required": [
           "serviceable",
           "microMarket",
-          "waitlist"
+          "waitlist",
+          "matchedBy",
+          "reason",
+          "nearest"
         ],
         "additionalProperties": false
       },
@@ -13769,6 +14010,25 @@
           }
         },
         "required": [
+          "reason"
+        ]
+      },
+      "OpsRadiusDto": {
+        "type": "object",
+        "properties": {
+          "radiusM": {
+            "type": "integer",
+            "minimum": 500,
+            "maximum": 10000
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "radiusM",
           "reason"
         ]
       },
@@ -17014,6 +17274,22 @@
             "type": "boolean",
             "description": "Inside the store radius and the same micro-market as the customer"
           },
+          "deliveryRadiusM": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "How far the store delivers"
+          },
+          "notDeliveringReason": {
+            "type": "string",
+            "enum": [
+              "outside_service_area",
+              "other_area",
+              "too_far",
+              null
+            ],
+            "nullable": true
+          },
           "photos": {
             "type": "array",
             "items": {
@@ -17427,6 +17703,8 @@
           "description",
           "microMarket",
           "deliversHere",
+          "deliveryRadiusM",
+          "notDeliveringReason",
           "photos",
           "fssaiVerified",
           "hygieneDeclared",

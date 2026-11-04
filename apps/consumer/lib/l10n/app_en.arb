@@ -957,5 +957,37 @@
   "rateCommentNote": "Reviews are public. Please don't add phone numbers or links.",
   "youRated": "Your rating",
   "rateFailed": "Could not send your rating. Try again.",
-  "filterTopRatedShort": "4.0+"
+  "filterTopRatedShort": "4.0+",
+  "notServiceableNearest": "The nearest area we deliver to is {area}, {distance} away.",
+  "@notServiceableNearest": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      },
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "locationUnavailable": "We couldn't find your location. Pick your place on the map.",
+  "gpsAccuracy": "Your location is accurate to about {meters} m. Move the map so the pin is on your door.",
+  "@gpsAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "int"
+      }
+    }
+  },
+  "gpsApproximate": "Precise location is off, so this is only approximate. Turn on precise location for Santha, or move the map to your door.",
+  "locateMe": "Go to my current location",
+  "notDeliveringTooFar": "This store delivers up to {distance} away, and your address is farther.",
+  "@notDeliveringTooFar": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "notDeliveringOtherArea": "This store is in another area and does not deliver to your address.",
+  "notDeliveringOutside": "We don't deliver to your address yet."
 }

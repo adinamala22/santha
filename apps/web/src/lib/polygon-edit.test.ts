@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addVertex, bounds, closeRing, moveVertex, openRing, type Position, removeVertex, ringProblems } from './polygon-edit';
+import { addVertex, bounds, circleRing, closeRing, moveVertex, openRing, type Position, removeVertex, ringProblems } from './polygon-edit';
 
 const square: Position[] = [
   [0, 0],
@@ -44,5 +44,20 @@ describe('polygon editor helpers', () => {
       [2, 1],
     ]);
     expect(bounds([])).toBeNull();
+  });
+});
+
+describe('circleRing (ADR-019)', () => {
+  it('makes a valid open ring of points at the radius around the centre', () => {
+    const centre = { lat: 14.4426, lng: 79.9865 };
+    const ring = circleRing(centre, 3000);
+    expect(ring).toHaveLength(48);
+    expect(ringProblems(ring)).toEqual([]);
+    const R = 6_371_008.8;
+    const rad = (d: number) => (d * Math.PI) / 180;
+    for (const [lng, lat] of ring) {
+      const h = Math.sin(rad(lat - centre.lat) / 2) ** 2 + Math.cos(rad(centre.lat)) * Math.cos(rad(lat)) * Math.sin(rad(lng - centre.lng) / 2) ** 2;
+      expect(2 * R * Math.asin(Math.sqrt(h))).toBeCloseTo(3000, -1);
+    }
   });
 });
