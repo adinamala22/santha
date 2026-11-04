@@ -65,8 +65,15 @@ test.describe.serial('journey: order → delivery → rating', () => {
 
   test('discovery uses the rating: card, store page and the minRating filter agree with the summary', async ({ request }) => {
     const summary = (await call(request, 'get', `/stores/${SEED.kirana.id}/reviews`)).summary;
-    const card = (await call(request, 'get', `/feed?${at}&tab=stores`)).stores.find((x: { id: string }) => x.id === SEED.kirana.id);
-    expect(card.ratingCount).toBe(summary.count);
+    // On test the search index updates from the rating event in a background job: give it a moment.
+    let card: { rating: number; ratingCount: number } | undefined;
+    await expect
+      .poll(async () => {
+        card = (await call(request, 'get', `/feed?${at}&tab=stores`)).stores.find((x: { id: string }) => x.id === SEED.kirana.id);
+        return card?.ratingCount;
+      }, { timeout: 30_000, message: 'the feed card catches up with the rating' })
+      .toBe(summary.count);
+    if (!card) throw new Error('kirana not in feed');
     expect(card.rating).toBeCloseTo(summary.avg, 1);
     const page = await call(request, 'get', `/stores/${SEED.kirana.id}?${at}`);
     expect(page.store.ratingCount).toBe(summary.count);

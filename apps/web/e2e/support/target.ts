@@ -38,15 +38,29 @@ export function freshPhone(): string {
   return `9${String(Date.now()).slice(-6)}${String(Math.floor(Math.random() * 1000)).padStart(3, '0')}`;
 }
 
+/** Sessions are reused within a run: test enforces the real OTP resend cooldown and hourly limits. */
+const sessions = new Map<string, Headers>();
+
 export async function appSignIn(request: APIRequestContext, phone: string, app: App): Promise<Headers> {
+  const key = `${app}:${phone}`;
+  const cached = sessions.get(key);
+  if (cached && (await request.get(`${API}/me`, { headers: cached })).ok()) return cached;
   const deviceId = `e2e-${TARGET}-${app}-${phone}`;
-  const r = await request.post(`${API}/auth/otp/request`, { data: { phone, app, deviceId } });
+  let r = await request.post(`${API}/auth/otp/request`, { data: { phone, app, deviceId } });
+  if (r.status() === 429) {
+    // Resend cooldown: wait it out once.
+    const wait = Number((await r.json()).error?.details?.retryAfterSec ?? 30);
+    await new Promise((res) => setTimeout(res, (wait + 1) * 1000));
+    r = await request.post(`${API}/auth/otp/request`, { data: { phone, app, deviceId } });
+  }
   expect(r.status(), await r.text()).toBe(200);
   const c = await r.json();
   const v = await request.post(`${API}/auth/otp/verify`, { data: { challengeId: c.challengeId, code: OTP, deviceId, app, platform: 'android' } });
   expect(v.status(), await v.text()).toBe(200);
   const s = await v.json();
-  return { Authorization: `Bearer ${s.accessToken}`, 'X-Device-Id': deviceId };
+  const headers = { Authorization: `Bearer ${s.accessToken}`, 'X-Device-Id': deviceId };
+  sessions.set(key, headers);
+  return headers;
 }
 
 /** JSON call that must succeed with `status`; returns the body. */
@@ -112,8 +126,15 @@ export async function deliverBySelf(request: APIRequestContext, owner: Headers, 
   const me = await call(request, 'get', '/merchants/me', { headers: owner });
   await call(request, 'post', `/orders/${order.id}/accept`, { headers: owner, data: { fulfilmentMode: 'self', staffId: me.staff[0].id }, status: 200 });
   await call(request, 'post', `/orders/${order.id}/ready`, { headers: owner, status: 200 });
-  const d = (await call(request, 'get', '/merchants/me/deliveries', { headers: owner })).items.find((x: { orderId: string }) => x.orderId === order.id);
-  const token = d.staffLink.split('/d/')[1];
+  // On test the delivery is set up by a background job (BullMQ) after accept: wait for its staff link.
+  let d: { staffLink: string | null } | undefined;
+  await expect
+    .poll(async () => {
+      d = (await call(request, 'get', '/merchants/me/deliveries', { headers: owner })).items.find((x: { orderId: string }) => x.orderId === order.id);
+      return d?.staffLink ?? null;
+    }, { timeout: 30_000, message: 'staff delivery link' })
+    .not.toBeNull();
+  const token = d!.staffLink!.split('/d/')[1];
   await call(request, 'post', `/staff-jobs/${token}/picked-up`, { status: 200 });
   const otp = (await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer })).deliveryOtp;
   await call(request, 'post', `/staff-jobs/${token}/delivered`, { data: { otp, codCollectedPaise: order.totalPaise }, status: 200 });
