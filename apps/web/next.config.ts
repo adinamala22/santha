@@ -1,39 +1,11 @@
 import { resolve } from 'node:path';
 import type { NextConfig } from 'next';
 
-const origin = (url: string | undefined, fallback: string) => {
-  try {
-    return new URL(url ?? fallback).origin;
-  } catch {
-    return fallback;
-  }
-};
-const api = origin(process.env.NEXT_PUBLIC_API_URL, 'http://localhost:4000');
-const tiles = origin(process.env.NEXT_PUBLIC_MAP_TILES_URL?.replace(/\{[a-z]\}/g, 'a'), 'https://tile.openstreetmap.org');
-// Where product photos and documents are served from (bucket, CDN or the staging media host). Empty locally:
-// fake mode serves media through the API.
-const media = process.env.NEXT_PUBLIC_MEDIA_ORIGIN ? origin(process.env.NEXT_PUBLIC_MEDIA_ORIGIN, '') : '';
 const dev = process.env.NODE_ENV !== 'production';
 
-// The App Router inlines its bootstrap scripts, so script-src needs 'unsafe-inline' unless nonces are added.
-// Maps (Leaflet) set inline styles. Images come from the API's media URLs and the map tile server.
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${dev ? " 'unsafe-eval'" : ''}`,
-  "style-src 'self' 'unsafe-inline'",
-  `img-src 'self' data: blob: ${api} ${tiles} https://*.tile.openstreetmap.org ${media}`.trim(),
-  "font-src 'self' data:",
-  // MapLibre downloads tiles with fetch() (connect-src, not img-src) and runs its workers from blob: URLs.
-  `connect-src 'self' ${api} ${api.replace(/^http/, 'ws')} ${tiles} https://*.tile.openstreetmap.org`,
-  "worker-src 'self' blob:",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "object-src 'none'",
-].join('; ');
-
+// The Content-Security-Policy depends on runtime settings (API and media origins: one image for QA and PROD,
+// ADR-025), so the middleware sends it (src/lib/csp.ts). The rest do not.
 const securityHeaders = [
-  { key: 'Content-Security-Policy', value: csp },
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },

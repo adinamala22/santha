@@ -20,7 +20,8 @@ Values are merged in this order, and the last one wins:
 - **`backend`**: settings for the API, the worker and the tools. Keys are the environment variable names in
   camelCase, so `appEnv` becomes `APP_ENV` and `s3Endpoint` becomes `S3_ENDPOINT`. Read by
   `apps/backend/src/config/values.ts` when `SANTHA_ENV` is set.
-- **`web`**: build settings for the website image (`NEXT_PUBLIC_*`). Read by `.github/workflows/deploy-web.yml`.
+- **`web`**: the website's addresses (`siteUrl`, `apiUrl`, `mediaOrigin`, `mapTilesUrl`). Runtime settings: `santha.sh`
+  passes them to the one website image as `SITE_URL`, `PUBLIC_API_URL`… (ADR-025), so a change needs a deploy, not a rebuild.
 - **`apps`**: flavor and API address for the Flutter builds. Read by `.github/workflows/apps-release.yml`.
 
 ## Rules

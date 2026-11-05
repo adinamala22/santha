@@ -6,7 +6,7 @@ import { RatingBars } from '@/components/site/rating-bars';
 import { langOf, SiteFooter, SiteHeader } from '@/components/site/site-chrome';
 import { fill } from '@/i18n/console';
 import { siteCopy } from '@/i18n/site';
-import { API_URL } from '@/lib/api';
+import { serverApiUrl } from '@/lib/api';
 import { getSiteConfig } from '@/lib/site-config';
 import { rupees } from '@/lib/format';
 
@@ -15,11 +15,11 @@ export const revalidate = 300;
 type StoreItems = { items: Array<{ id: string; name: string; nameTe: string | null; imageUrl: string | null; variants: Array<{ label: string; pricePaise: number }> }> };
 
 async function load(slug: string): Promise<{ store: PublicStore; items: StoreItems['items'] } | null> {
-  const res = await fetch(`${API_URL}/v1/public/stores/${encodeURIComponent(slug)}`, { next: { revalidate: 300 } }).catch(() => null);
+  const res = await fetch(`${serverApiUrl()}/v1/public/stores/${encodeURIComponent(slug)}`, { next: { revalidate: 300 } }).catch(() => null);
   if (!res?.ok) return null;
   const store = (await res.json()) as PublicStore;
   const loc = store.location;
-  const itemsRes = loc ? await fetch(`${API_URL}/v1/stores/${store.id}?lat=${loc.lat}&lng=${loc.lng}`, { next: { revalidate: 300 } }).catch(() => null) : null;
+  const itemsRes = loc ? await fetch(`${serverApiUrl()}/v1/stores/${store.id}?lat=${loc.lat}&lng=${loc.lng}`, { next: { revalidate: 300 } }).catch(() => null) : null;
   const items = itemsRes?.ok ? ((await itemsRes.json()) as StoreItems).items : [];
   return { store, items };
 }

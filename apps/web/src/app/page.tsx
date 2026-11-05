@@ -3,14 +3,15 @@ import { LaunchSignup } from '@/components/site/launch-signup';
 import { CtaBand, langOf, SiteFooter, SiteHeader } from '@/components/site/site-chrome';
 import { t } from '@/i18n/messages';
 import { siteCopy } from '@/i18n/site';
+import { serverConfig } from '@/lib/runtime-config';
 import { getSiteConfig } from '@/lib/site-config';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
 
 /** Landing (design/mockups/landing-page-desktop.png): hero with both apps, how it works, the stores band, legal footer. */
 export default async function LandingPage({ searchParams }: { searchParams?: Promise<{ lang?: string }> }) {
   const lang = langOf((await searchParams)?.lang);
   const site = await getSiteConfig();
+  const SITE = serverConfig().siteUrl;
   const m = t(lang);
   const p = siteCopy(lang).prelaunch;
   const en = t('en');

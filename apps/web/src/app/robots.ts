@@ -1,11 +1,14 @@
 import type { MetadataRoute } from 'next';
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+import { connection } from 'next/server';
+import { serverConfig } from '@/lib/runtime-config';
+
 
 /** The console and staff delivery links are never indexed. */
-export default function robots(): MetadataRoute.Robots {
+export default async function robots(): Promise<MetadataRoute.Robots> {
+  await connection(); // the site address is a runtime setting (one image for QA and PROD, ADR-025)
   return {
     rules: [{ userAgent: '*', allow: '/', disallow: ['/admin', '/d/', '/api/'] }],
-    sitemap: `${SITE}/sitemap.xml`,
+    sitemap: `${serverConfig().siteUrl}/sitemap.xml`,
   };
 }

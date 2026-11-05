@@ -71,12 +71,17 @@ jobs:
         with: { sparse-checkout: infra/deploy }
       - name: Settings from the commit being deployed
         uses: actions/checkout@v4
-        with: { ref: '${{ needs.resolve.outputs.tag }}', path: release, sparse-checkout: config/values }
+        with: { ref: '${{ needs.resolve.outputs.tag }}', path: release, sparse-checkout: "config/values\napps/web/src/lib" }
       - name: Check the commit can be deployed this way
         run: |
           # aws.<env> overlays and the shared edge came with the separate pipelines (ADR-024).
           if [ ! -f "release/config/values/aws.${{ inputs.environment }}.values.yaml" ]; then
             echo "::error::Commit $TAG is older than the separate QA/PROD pipelines (ADR-024). If QA still runs it, wait until QA's deploy of the latest main has finished, then run this again (or give a newer commit SHA)."
+            exit 1
+          fi
+          # One website image for all environments came with ADR-025; older commits only have per-environment images.
+          if [ "${{ inputs.component }}" = web ] && [ ! -f release/apps/web/src/lib/runtime-config.ts ]; then
+            echo "::error::Commit $TAG builds a website image per environment (before ADR-025); deploy a newer commit."
             exit 1
           fi
       - id: v

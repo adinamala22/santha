@@ -21,7 +21,7 @@ set -a; . ./.env; set +a
 : "${SANTHA_ENV:?SANTHA_ENV (test or prod) missing in .env}"
 
 # The deploy section of the values file(s) → API_DOMAIN, WEB_DOMAIN, MEDIA_DOMAIN, ROBOTS_TAG, COMPOSE_PROFILES,
-# INGRESS, WEB_REDIRECTS.
+# INGRESS, WEB_REDIRECTS; and the web section → WEB_SITE_URL, WEB_API_URL, WEB_MEDIA_ORIGIN, WEB_MAP_TILES_URL (ADR-025).
 load_values() {
   local files=("values/${SANTHA_ENV}.values.yaml")
   [ -n "${SANTHA_CLOUD:-}" ] && files+=("values/${SANTHA_CLOUD}.${SANTHA_ENV}.values.yaml")
@@ -32,7 +32,7 @@ load_values() {
     key="$(printf %s "${line%%=*}" | sed -E 's/([a-z0-9])([A-Z])/\1_\2/g' | tr '[:lower:]' '[:upper:]')"
     export "$key=${line#*=}"
   done < <(docker run --rm -v "$PWD/values:/workdir/values:ro" mikefarah/yq:4 eval-all \
-    '. as $i ireduce ({}; . * $i) | .deploy // {} | to_entries | .[] | .key + "=" + (.value // "" | tostring)' "${files[@]}")
+    '. as $i ireduce ({}; . * $i) | ((.deploy // {} | to_entries | .[] | .key + "=" + (.value // "" | tostring)), (.web // {} | to_entries | .[] | "web_" + .key + "=" + (.value // "" | tostring)))' "${files[@]}")
   : "${API_DOMAIN:?deploy.apiDomain missing in the values file}" "${WEB_DOMAIN:?deploy.webDomain missing in the values file}"
 }
 load_values

@@ -1,10 +1,10 @@
 name: Deploy · Web
 
 # Website pipeline (landing, store pages, ops console), separate from the backend and the apps (ADR-024).
-#   QA (test):         every push to main that touches the website: build the QA and PROD images (the API address is
-#                      baked in at build time, from config/values/<env>.values.yaml web section), deploy QA.
+#   QA (test):         every push to main that touches the website: build ONE image (ADR-025: the addresses are
+#                      runtime settings from config/values/<env>.values.yaml web section), deploy it to QA.
 #   PROD (production): run by hand: Actions → "Deploy · Web" → Run workflow → PROD. Leave the tag empty to promote
-#                      exactly what QA runs now (its PROD image was built from the same commit).
+#                      exactly what QA runs now: the very same image.
 # The website needs its environment's backend: deploy the backend to that environment first.
 on:
   push:
@@ -38,51 +38,27 @@ permissions:
 jobs:
   images:
     if: github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
-    name: build web images (QA + PROD)
+    name: build web image (all environments)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - id: v
-        name: Read the values files
-        run: |
-          echo "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
-          for env in test prod; do
-            for k in siteUrl apiUrl mediaOrigin; do
-              echo "${env}_${k}=$(yq ".web.${k} // \"\"" "config/values/${env}.values.yaml")" >> "$GITHUB_OUTPUT"
-            done
-          done
+        run: echo "registry=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
       - uses: docker/setup-qemu-action@v3
         with: { platforms: arm64 }
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with: { registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}' }
-      - name: web (QA)
+      - name: web
         uses: docker/build-push-action@v6
         with:
           context: .
           file: apps/web/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.v.outputs.registry }}/santha-web-test:${{ github.sha }}
-          build-args: |
-            NEXT_PUBLIC_SITE_URL=${{ steps.v.outputs.test_siteUrl }}
-            NEXT_PUBLIC_API_URL=${{ steps.v.outputs.test_apiUrl }}
-            NEXT_PUBLIC_MEDIA_ORIGIN=${{ steps.v.outputs.test_mediaOrigin }}
+          tags: ${{ steps.v.outputs.registry }}/santha-web:${{ github.sha }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
-      - name: web (PROD)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/web/Dockerfile
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.v.outputs.registry }}/santha-web-prod:${{ github.sha }}
-          build-args: |
-            NEXT_PUBLIC_SITE_URL=${{ steps.v.outputs.prod_siteUrl }}
-            NEXT_PUBLIC_API_URL=${{ steps.v.outputs.prod_apiUrl }}
-            NEXT_PUBLIC_MEDIA_ORIGIN=${{ steps.v.outputs.prod_mediaOrigin }}
-          cache-from: type=gha,scope=web
 
   qa:
     name: QA
