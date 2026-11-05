@@ -1572,6 +1572,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/jobs/{id}/failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_failed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/jobs/{id}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_retry"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/staff-jobs/{token}": {
         parameters: {
             query?: never;
@@ -1614,6 +1646,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["StaffJobsController_delivered"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}/failed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffJobsController_failed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/staff-jobs/{token}/retry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["StaffJobsController_retry"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1758,6 +1822,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["OpsDispatchController_forceSelf"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders/{id}/retry-delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_retryDelivery"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/orders/{id}/cancel-failed-delivery": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_cancelFailed"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6088,6 +6184,10 @@ export interface components {
                 /** @description ISO-8601 timestamp */
                 deliveredAt: string | null;
                 pickupCodeRequired: boolean;
+                /** @enum {string|null} */
+                failedReason: "no_answer" | "wrong_address" | "customer_refused" | "unsafe" | "other" | null;
+                /** @description ISO-8601 timestamp */
+                failedAt: string | null;
             }[];
         };
         RiderStatusDto: {
@@ -6158,6 +6258,10 @@ export interface components {
             /** @description ISO-8601 timestamp */
             deliveredAt: string | null;
             pickupCodeRequired: boolean;
+            /** @enum {string|null} */
+            failedReason: "no_answer" | "wrong_address" | "customer_refused" | "unsafe" | "other" | null;
+            /** @description ISO-8601 timestamp */
+            failedAt: string | null;
         };
         PickupDto: {
             /** @description Code shown on the store order card */
@@ -6173,6 +6277,12 @@ export interface components {
             photoMediaId?: string;
             /** @description Cash collected for COD orders */
             codCollectedPaise?: number;
+        };
+        FailedDeliveryDto: {
+            /** @enum {string} */
+            reason: "no_answer" | "wrong_address" | "customer_refused" | "unsafe" | "other";
+            /** @description What happened, in a few words */
+            note?: string;
         };
         StaffDeliveredDto: {
             otp: string;
@@ -6311,7 +6421,7 @@ export interface components {
             };
             attention: {
                 /** @enum {string} */
-                kind: "no_rider" | "eta_breach" | "auto_paused";
+                kind: "no_rider" | "eta_breach" | "auto_paused" | "delivery_failed";
                 /** Format: uuid */
                 orderId: string | null;
                 code: string | null;
@@ -6386,6 +6496,11 @@ export interface components {
                 lat: number;
                 lng: number;
             } | null;
+        };
+        OpsCancelFailedDto: {
+            /** @description Refund what the customer paid (wallet for online payments) */
+            refund: boolean;
+            reason: string;
         };
         PayoutListDto_Output: {
             items: {
@@ -9846,6 +9961,58 @@ export interface operations {
             };
         };
     };
+    RiderController_failed: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FailedDeliveryDto"];
+            };
+        };
+        responses: {
+            /** @description Couldn't deliver (ADR-026): the order waits as FAILED_DELIVERY. 409 INVALID_STATE unless on the way */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_retry: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Back on the way after a failed attempt (the customer called back) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
     StaffJobsController_get: {
         parameters: {
             query?: never;
@@ -9905,6 +10072,54 @@ export interface operations {
         };
         responses: {
             /** @description Customer's OTP; cash collected for COD. 422 WRONG_CODE */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_failed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["FailedDeliveryDto"];
+            };
+        };
+        responses: {
+            /** @description Couldn't deliver (ADR-026) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
+    StaffJobsController_retry: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Back on the way after a failed attempt */
             default: {
                 headers: {
                     [name: string]: unknown;
@@ -10118,6 +10333,54 @@ export interface operations {
             };
         };
         responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_retryDelivery: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description A failed delivery goes out again with the same courier (ADR-026); audited */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_cancelFailed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsCancelFailedDto"];
+            };
+        };
+        responses: {
+            /** @description Cancel a failed delivery, refunding the customer only when `refund` is true (ADR-026); audited */
             default: {
                 headers: {
                     [name: string]: unknown;

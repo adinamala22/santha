@@ -5,6 +5,7 @@ import { fill } from '@/i18n/console';
 import { orderCopy, stateTone } from '@/i18n/orders';
 import { dateTime, rupees } from '@/lib/format';
 import { opsGet, opsLocale } from '@/lib/ops/server';
+import { FailedDeliveryActions } from '../../live/failed-delivery-actions';
 
 export const metadata = { title: 'Order' };
 
@@ -26,6 +27,11 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
       <PageHeader title={`#${x.code}`} sub={`${x.merchantName} · ${rupees(x.totalPaise)} · ${o.payment[x.paymentMethod]}`} actions={<Chip tone={stateTone(x.state)}>{stateLabel(x.state)}</Chip>} />
       {x.refundedPaise > 0 ? <p className="mb-4 text-leaf">{fill(o.detail.refunded, { amount: rupees(x.refundedPaise) })}</p> : null}
       {x.outcomeReason ? <p className="mb-4 text-slate">{fill(o.detail.outcome, { reason: String(x.outcomeReason) })}</p> : null}
+      {x.state === 'FAILED_DELIVERY' ? (
+        <div className="mb-6 max-w-xl">
+          <FailedDeliveryActions orderId={x.id} code={x.code} locale={locale} />
+        </div>
+      ) : null}
 
       <div className="grid gap-6 xl:grid-cols-2">
         <Card title={o.detail.items}>

@@ -2,11 +2,14 @@ import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
+import { DomainError } from '../../common/errors/domain-error';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { DispatchService } from './dispatch.service';
 import { DispatchViews } from './dispatch.views';
 import {
   DeliveredDto,
+  FailedDeliveryDto,
+  OpsCancelFailedDto,
   DeliverMyselfDto,
   JobViewDto,
   LocationDto,
@@ -127,6 +130,20 @@ export class RiderController {
       'rider',
     );
   }
+
+  @Post('jobs/:id/failed')
+  @HttpCode(200)
+  @ZodResponse({ type: JobViewDto, description: "Couldn't deliver (ADR-026): the order waits as FAILED_DELIVERY. 409 INVALID_STATE unless on the way" })
+  async failed(@Param('id', ParseUUIDPipe) id: string, @Body() b: FailedDeliveryDto, @CurrentUser() u: AuthUser) {
+    return this.views.job(await this.dispatch.failed(await this.dispatch.riderJob(u.userId, id), 'rider', u.userId, b.reason, b.note), 'rider');
+  }
+
+  @Post('jobs/:id/retry')
+  @HttpCode(200)
+  @ZodResponse({ type: JobViewDto, description: 'Back on the way after a failed attempt (the customer called back)' })
+  async retry(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
+    return this.views.job(await this.dispatch.retryDelivery(await this.dispatch.riderJob(u.userId, id), 'rider', u.userId), 'rider');
+  }
 }
 
 /** Self-delivery staff link (/d/{token} on the web): no account, the token is the credential. */
@@ -163,6 +180,20 @@ export class StaffJobsController {
       await this.dispatch.delivered(await this.dispatch.staffJob(token), 'staff', null, b),
       'staff',
     );
+  }
+
+  @Post(':token/failed')
+  @HttpCode(200)
+  @ZodResponse({ type: JobViewDto, description: "Couldn't deliver (ADR-026)" })
+  async failed(@Param('token') token: string, @Body() b: FailedDeliveryDto) {
+    return this.views.job(await this.dispatch.failed(await this.dispatch.staffJob(token), 'staff', null, b.reason, b.note), 'staff');
+  }
+
+  @Post(':token/retry')
+  @HttpCode(200)
+  @ZodResponse({ type: JobViewDto, description: 'Back on the way after a failed attempt' })
+  async retry(@Param('token') token: string) {
+    return this.views.job(await this.dispatch.retryDelivery(await this.dispatch.staffJob(token), 'staff', null), 'staff');
   }
 
   @Post(':token/location')
@@ -294,6 +325,24 @@ export class OpsDispatchController {
     @RequestId() requestId: string | null,
   ) {
     await this.dispatch.switchToSelf(id, b.staffId ?? null, { ops: { userId: u.userId, requestId } });
+    return this.views.opsDelivery(id);
+  }
+
+  @Post('orders/:id/retry-delivery')
+  @HttpCode(200)
+  @ZodResponse({ type: OpsDeliveryDto, description: 'A failed delivery goes out again with the same courier (ADR-026); audited' })
+  async retryDelivery(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
+    const f = await this.dispatch.fulfilmentForOrder(id);
+    if (!f) throw new DomainError('NOT_FOUND', 'No delivery for this order');
+    await this.dispatch.retryDelivery(f, 'ops', u.userId, { userId: u.userId, requestId });
+    return this.views.opsDelivery(id);
+  }
+
+  @Post('orders/:id/cancel-failed-delivery')
+  @HttpCode(200)
+  @ZodResponse({ type: OpsDeliveryDto, description: 'Cancel a failed delivery, refunding the customer only when `refund` is true (ADR-026); audited' })
+  async cancelFailed(@Param('id', ParseUUIDPipe) id: string, @Body() b: OpsCancelFailedDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
+    await this.dispatch.cancelFailed(id, b.refund, b.reason, { userId: u.userId, requestId });
     return this.views.opsDelivery(id);
   }
 }

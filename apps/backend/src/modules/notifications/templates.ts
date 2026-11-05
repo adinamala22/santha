@@ -74,6 +74,14 @@ export const TEMPLATES = {
     en: { title: 'Delivered', body: 'Your order {code} from {store} was delivered. Enjoy!' },
     te: { title: 'డెలివరీ అయింది', body: '{store} నుండి మీ ఆర్డర్ {code} డెలివరీ అయింది.' },
   },
+  'customer.delivery_failed': {
+    en: { title: 'We could not deliver {code}', body: 'Your order {code} from {store} could not be handed over. The delivery partner will call you, or Santha support will help shortly.' },
+    te: { title: '{code} డెలివరీ కాలేదు', body: '{store} నుండి మీ ఆర్డర్ {code} అందించలేకపోయాం. డెలివరీ భాగస్వామి మీకు కాల్ చేస్తారు, లేదా సంత సపోర్ట్ త్వరలో సహాయం చేస్తుంది.' },
+  },
+  'merchant.delivery_failed': {
+    en: { title: 'Order {code} not delivered', body: 'The customer could not be reached for order {code}. Santha support will tell you if it comes back to the store.' },
+    te: { title: 'ఆర్డర్ {code} డెలివరీ కాలేదు', body: 'ఆర్డర్ {code} కస్టమర్‌ను చేరుకోలేకపోయాం. అది షాప్‌కు తిరిగి వస్తుందో లేదో సంత సపోర్ట్ చెబుతుంది.' },
+  },
   'customer.delivery_delayed': {
     en: { title: 'Running a little late', body: 'Your order {code} will now arrive by {eta}. Sorry for the wait.' },
     te: { title: 'కొంచెం ఆలస్యం', body: 'మీ ఆర్డర్ {code} ఇప్పుడు {eta}కు వస్తుంది. ఆలస్యానికి క్షమించండి.' },

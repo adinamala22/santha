@@ -32,6 +32,16 @@ void main() {
     expect(j.instructions, 'Call before coming');
   });
 
+  test("couldn't deliver (ADR-026): the job says why and when", () {
+    final j = Job.fromJson(fixture('job_failed'));
+    expect(j.state, DeliveryState.failed);
+    expect(j.orderState, 'FAILED_DELIVERY');
+    expect(j.failedReason, FailedReason.noAnswer);
+    expect(j.failedAt, DateTime.utc(2026, 11, 5, 9, 41));
+    expect(Job.fromJson(fixture('job_assigned')).failedReason, isNull);
+    expect(FailedReason.parse('something_new'), FailedReason.other);
+  });
+
   test('staff job: no pickup code, no pay', () {
     final j = Job.fromJson(fixture('staff_job_picked_up'));
     expect(j.mode, DeliveryMode.self);

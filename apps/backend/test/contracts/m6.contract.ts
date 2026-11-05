@@ -36,6 +36,7 @@ const fulfilment = (over: Partial<FulfilmentRecord> = {}): Omit<FulfilmentRecord
   arrivedAt: null,
   pickedUpAt: null,
   deliveredAt: null,
+  failedAt: null,
   ...over,
 });
 

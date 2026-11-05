@@ -302,5 +302,30 @@
     }
   },
   "noRatingYet": "No rating yet. Customers rate the delivery after each order.",
-  "ratingHelps": "A good rating gets you offers first."
+  "ratingHelps": "A good rating gets you offers first.",
+  "couldntDeliver": "Couldn't deliver",
+  "failTitle": "Why couldn't you deliver?",
+  "failNoAnswer": "Customer not answering",
+  "failWrongAddress": "Wrong or incomplete address",
+  "failRefused": "Customer refused the order",
+  "failUnsafe": "Not safe to deliver",
+  "failOther": "Something else",
+  "failNoteHint": "What happened? (optional)",
+  "failCallFirst": "Call the customer at least once before reporting this.",
+  "failReport": "Report",
+  "failedHeadline": "Delivery not completed",
+  "failedBody": "Keep the order with you. Santha support will call you. If the customer calls back, deliver it now.",
+  "failedReasonLine": "Reason: {reason}",
+  "@failedReasonLine": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "deliverNow": "Customer answered: deliver now",
+  "jobFailedSub": "Couldn't deliver · waiting for support",
+  "liveLocationTitle": "Santha Rider is online",
+  "liveLocationText": "Sharing your location for orders and live tracking. Go offline to stop.",
+  "liveLocationChannel": "Location while online"
 }

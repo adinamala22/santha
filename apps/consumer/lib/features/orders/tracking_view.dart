@@ -103,6 +103,8 @@ class TrackingSection extends ConsumerWidget {
               ],
             ),
           ),
+        ] else if (t.state == DeliveryState.failed) ...[
+          if (t.courier != null) _CourierCard(tracking: t, storeName: storeName),
         ] else ...[
           _EtaCard(tracking: t),
           const SizedBox(height: SanthaSpacing.s3),

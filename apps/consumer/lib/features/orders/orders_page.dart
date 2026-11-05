@@ -215,7 +215,16 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 child: Text('${l.deliverySlot}: ${istClock(value.slotStartsAt!)}${value.slotEnd != null ? '–${clock(value.slotEnd!)}' : ''}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
               ),
             const SizedBox(height: SanthaSpacing.s4),
-            if (const [OrderState.accepted, OrderState.preparing, OrderState.ready, OrderState.pickedUp, OrderState.outForDelivery].contains(value.state)) ...[
+            // Couldn't deliver (ADR-026): explained, and the courier can still be called.
+            if (value.state == OrderState.failedDelivery)
+              Container(
+                key: const ValueKey('delivery-failed'),
+                margin: const EdgeInsets.only(bottom: SanthaSpacing.s4),
+                padding: const EdgeInsets.all(SanthaSpacing.s4),
+                decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.lg)),
+                child: Text(l.outcomeDeliveryFailed, style: text.bodyMedium),
+              ),
+            if (const [OrderState.accepted, OrderState.preparing, OrderState.ready, OrderState.pickedUp, OrderState.outForDelivery, OrderState.failedDelivery].contains(value.state)) ...[
               TrackingSection(orderId: value.id, storeName: l.localeName == 'te' && value.merchantNameTe != null ? value.merchantNameTe! : value.merchantName),
               const SizedBox(height: SanthaSpacing.s4),
             ],

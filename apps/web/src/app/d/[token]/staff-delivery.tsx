@@ -9,6 +9,10 @@ import { rupees } from '@/lib/format';
 
 type Lang = 'en' | 'te';
 
+/** Why a delivery could not be handed over (ADR-026); same list as the rider app. */
+const FAIL_REASONS = ['no_answer', 'wrong_address', 'customer_refused', 'unsafe', 'other'] as const;
+type FailReason = (typeof FAIL_REASONS)[number];
+
 /**
  * Self-delivery link for store staff (no app, no account; the token is the credential): pickup, live
  * location while delivering, and the customer's OTP at the door.
@@ -22,6 +26,9 @@ export function StaffDelivery({ token }: { token: string }) {
   const [busy, setBusy] = useState(false);
   const [otp, setOtp] = useState('');
   const [cash, setCash] = useState('');
+  /** Couldn't deliver (ADR-026): the reason picker is open. */
+  const [failing, setFailing] = useState(false);
+  const [reason, setReason] = useState<FailReason | null>(null);
   const lastSent = useRef(0);
 
   const load = useCallback(async () => {
@@ -46,7 +53,7 @@ export function StaffDelivery({ token }: { token: string }) {
   }, [load]);
 
   // Share location while the order is with the staff member (assigned or on the way); stops at delivery.
-  const sharing = job?.state === 'picked_up' || job?.state === 'assigned';
+  const sharing = job?.state === 'picked_up' || job?.state === 'assigned' || job?.state === 'failed';
   useEffect(() => {
     if (!sharing || typeof navigator === 'undefined' || !navigator.geolocation) return;
     const id = navigator.geolocation.watchPosition(
@@ -121,6 +128,15 @@ export function StaffDelivery({ token }: { token: string }) {
         <p className="text-lg font-semibold text-leaf" data-testid="done">
           {c.done}
         </p>
+      ) : job.state === 'failed' ? (
+        <section className="space-y-3 rounded-lg bg-marigold-100 p-4" data-testid="failed">
+          <p className="font-semibold text-ink">{c.failedTitle}</p>
+          {job.failedReason ? <p className="text-ink">{c.reasons[job.failedReason]}</p> : null}
+          <p className="text-sm text-slate">{c.failedBody}</p>
+          <button type="button" disabled={busy} onClick={() => void act('retry')} className={primary}>
+            {c.deliverNow}
+          </button>
+        </section>
       ) : job.state === 'assigned' ? (
         <>
           {job.orderState !== 'READY' ? <p className="text-marigold-600">{c.waitReady}</p> : null}
@@ -153,6 +169,31 @@ export function StaffDelivery({ token }: { token: string }) {
           <button type="submit" disabled={busy || otp.length !== 4} className={primary}>
             {c.delivered}
           </button>
+          {failing ? (
+            <fieldset className="space-y-2 rounded-md border border-indigo-100 p-3">
+              <legend className="px-1 text-sm font-medium text-ink">{c.failTitle}</legend>
+              {FAIL_REASONS.map((r) => (
+                <label key={r} className="flex items-center gap-2 text-ink">
+                  <input type="radio" name="fail-reason" value={r} checked={reason === r} onChange={() => setReason(r)} className="h-5 w-5 s-focus" />
+                  {c.reasons[r]}
+                </label>
+              ))}
+              <button
+                type="button"
+                disabled={busy || !reason}
+                onClick={() => {
+                  if (reason) void act('failed', { reason }).then(() => setFailing(false));
+                }}
+                className="h-12 w-full rounded-pill bg-chilli font-semibold text-white s-focus disabled:opacity-50"
+              >
+                {c.failReport}
+              </button>
+            </fieldset>
+          ) : (
+            <button type="button" onClick={() => setFailing(true)} className="h-12 w-full rounded-pill border border-indigo font-semibold text-indigo s-focus" data-testid="couldnt-deliver">
+              {c.couldnt}
+            </button>
+          )}
         </form>
       )}
     </main>

@@ -21,6 +21,24 @@ export class RiderStatusDto extends createZodDto(
 export class LocationDto extends createZodDto(
   latLng.extend({ accuracyM: z.number().min(0).max(5000).optional() }),
 ) {}
+/** Why a delivery could not be handed over (ADR-026). */
+export const FAILED_REASONS = ['no_answer', 'wrong_address', 'customer_refused', 'unsafe', 'other'] as const;
+
+export class FailedDeliveryDto extends createZodDto(
+  z.object({
+    reason: z.enum(FAILED_REASONS),
+    note: z.string().trim().max(300).optional().describe('What happened, in a few words'),
+  }),
+) {}
+
+/** Ops ends a failed delivery: the order is cancelled, with or without giving the customer their money back. */
+export class OpsCancelFailedDto extends createZodDto(
+  z.object({
+    refund: z.boolean().describe('Refund what the customer paid (wallet for online payments)'),
+    reason: z.string().trim().min(3).max(300),
+  }),
+) {}
+
 export class PickupDto extends createZodDto(
   z.object({
     pickupCode: z
@@ -98,6 +116,9 @@ export const JobViewSchema = z.object({
   deliveredAt: iso.nullable(),
   /** Riders must enter the store's pickup code; staff do not. */
   pickupCodeRequired: z.boolean(),
+  /** Couldn't deliver (ADR-026): why, while the job waits for a retry or ops. */
+  failedReason: z.enum(FAILED_REASONS).nullable(),
+  failedAt: iso.nullable(),
 });
 export class JobViewDto extends createZodDto(JobViewSchema) {}
 
@@ -235,7 +256,7 @@ export class OpsLiveDto extends createZodDto(
     }),
     attention: z.array(
       z.object({
-        kind: z.enum(['no_rider', 'eta_breach', 'auto_paused']),
+        kind: z.enum(['no_rider', 'eta_breach', 'auto_paused', 'delivery_failed']),
         orderId: z.uuid().nullable(),
         code: z.string().nullable(),
         merchantName: z.string(),

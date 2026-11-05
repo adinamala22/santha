@@ -971,6 +971,8 @@ model Fulfilment {
   arrivedAt         DateTime? @map("arrived_at") @db.Timestamptz(6)
   pickedUpAt        DateTime? @map("picked_up_at") @db.Timestamptz(6)
   deliveredAt       DateTime? @map("delivered_at") @db.Timestamptz(6)
+  /// Couldn't deliver (ADR-026): when the courier reported it.
+  failedAt          DateTime? @map("failed_at") @db.Timestamptz(6)
   updatedAt         DateTime  @default(now()) @map("updated_at") @db.Timestamptz(6)
 
   offers DispatchOffer[]

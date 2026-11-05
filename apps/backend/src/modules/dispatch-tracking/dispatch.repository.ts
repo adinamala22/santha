@@ -60,6 +60,8 @@ export interface FulfilmentRecord {
   arrivedAt: Date | null;
   pickedUpAt: Date | null;
   deliveredAt: Date | null;
+  /** Couldn't deliver (ADR-026). */
+  failedAt: Date | null;
   updatedAt: Date;
 }
 
@@ -79,7 +81,8 @@ export interface OfferRecord {
 export type FulfilmentPatch = Partial<
   Omit<FulfilmentRecord, 'id' | 'orderId' | 'merchantId' | 'microMarketId' | 'requestedAt' | 'updatedAt'>
 >;
-export const ACTIVE_STATES: readonly FulfilmentState[] = ['searching', 'assigned', 'picked_up'];
+/** Still the courier's: 'failed' (couldn't deliver, ADR-026) stays with them until it is retried or ops cancel it. */
+export const ACTIVE_STATES: readonly FulfilmentState[] = ['searching', 'assigned', 'picked_up', 'failed'];
 
 /** Storage port for dispatch-tracking: rider profiles, fulfilments and offers. */
 export abstract class DispatchRepository {
