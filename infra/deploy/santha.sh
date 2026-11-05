@@ -85,6 +85,13 @@ edge_up() {
   # This stack's own Caddy (from before the edge) would hold 80/443.
   dc --profile own-caddy rm -sf caddy >/dev/null 2>&1 || true
   docker compose -f "$EDGE_DIR/compose.yml" --env-file .env up -d --wait
+  # The edge joins every stack's own network (never the other way round: a shared network would let one stack's
+  # "api" resolve to the other's). Every stack, so a recreated edge container gets all of them back.
+  local caddy net
+  caddy="$(docker compose -f "$EDGE_DIR/compose.yml" --env-file .env ps -q caddy)"
+  for net in $(docker network ls --format '{{.Name}}' | grep -E '^santha-[a-z0-9-]+_default$'); do
+    docker network connect "$net" "$caddy" 2>/dev/null || true
+  done
   docker compose -f "$EDGE_DIR/compose.yml" --env-file .env exec -T caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
 }
 ingress_up() {
