@@ -1,12 +1,24 @@
 import { NextResponse, type NextRequest } from 'next/server';
+import { contentSecurityPolicy } from './lib/csp';
 import { BACKEND_URL, COOKIE, cookieOptions, isExpired } from './lib/ops/cookies';
+import { serverConfig } from './lib/runtime-config';
+
+/**
+ * Every page: the Content-Security-Policy, built from the runtime settings (ADR-025).
+ * /admin also: the session guard below.
+ */
+export async function middleware(req: NextRequest) {
+  const res = req.nextUrl.pathname.startsWith('/admin') ? await adminGuard(req) : NextResponse.next();
+  res.headers.set('Content-Security-Policy', contentSecurityPolicy(serverConfig(), process.env.NODE_ENV !== 'production'));
+  return res;
+}
 
 /**
  * Guards /admin: a valid access token passes; an expired one is refreshed with the refresh cookie
  * (rotated tokens are written to the response AND forwarded to this request's server components);
  * otherwise the user is sent to /admin/login. The backend still authorises every call.
  */
-export async function middleware(req: NextRequest) {
+async function adminGuard(req: NextRequest): Promise<NextResponse> {
   const { pathname, search } = req.nextUrl;
   if (pathname.startsWith('/admin/login')) return NextResponse.next();
 
@@ -51,4 +63,5 @@ export async function middleware(req: NextRequest) {
   return res;
 }
 
-export const config = { matcher: ['/admin', '/admin/:path*'] };
+// Pages only: not Next's static assets or image optimiser.
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|icon.svg).*)'] };

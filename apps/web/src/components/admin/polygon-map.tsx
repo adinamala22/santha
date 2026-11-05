@@ -4,6 +4,7 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoJSONSource, Map as MlMap, Marker } from 'maplibre-gl';
 import { useEffect, useRef, useState } from 'react';
 import tokens from '../../../../../design/tokens/tailwind.tokens.js';
+import { publicConfig } from '@/lib/runtime-config';
 import { addVertex, bounds, closeRing, moveVertex, type Position, removeVertex } from '@/lib/polygon-edit';
 
 export interface Shape {
@@ -15,11 +16,12 @@ export interface Shape {
 
 /**
  * Raster tiles for the editor. OpenStreetMap by default (fine for internal ops use at low volume);
- * production can point NEXT_PUBLIC_MAP_TILES_URL at Google/MapTiler tiles (ADR-007).
+ * production can point MAP_TILES_URL at Google/MapTiler tiles (ADR-007; a runtime setting, ADR-025).
  */
 /** Served from public/ by scripts/sync-brand.mjs (MapLibre 6 cannot locate its worker inside a Next bundle). */
 const MAPLIBRE_WORKER = '/maplibre/maplibre-gl-worker.mjs';
-const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+// Runtime setting (ADR-025): read when the map is created, not at build time.
+const tiles = () => publicConfig().tilesUrl;
 const C = tokens.colors;
 
 /**
@@ -59,7 +61,7 @@ export function PolygonMap({
           container: box.current,
           style: {
             version: 8,
-            sources: { tiles: { type: 'raster', tiles: [TILES], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
+            sources: { tiles: { type: 'raster', tiles: [tiles()], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
             layers: [{ id: 'tiles', type: 'raster', source: 'tiles', paint: { 'raster-saturation': -0.6, 'raster-opacity': 0.8 } }],
           },
           center: [79.98, 14.44],

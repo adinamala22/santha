@@ -1,6 +1,12 @@
 import type { ApiError } from '@santha/shared-types';
 
-export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+import { publicConfig, serverConfig } from './runtime-config';
+
+/** The API as browsers reach it (runtime setting, ADR-025). */
+export const apiUrl = (): string => publicConfig().apiUrl;
+
+/** Server-side calls: inside the server's network when API_URL is set (compose: http://api:4000), else the public address. */
+export const serverApiUrl = (): string => (typeof process !== 'undefined' && process.env['API_URL']) || serverConfig().apiUrl;
 
 export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; code: string; message?: string };
 
@@ -8,7 +14,7 @@ export type ApiResult<T> = { ok: true; data: T } | { ok: false; status: number; 
 export async function postJson<T>(path: string, body: unknown, init?: RequestInit): Promise<ApiResult<T>> {
   let res: Response;
   try {
-    res = await fetch(`${API_URL}${path}`, {
+    res = await fetch(`${apiUrl()}${path}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       credentials: 'include',

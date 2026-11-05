@@ -4,7 +4,7 @@ import type { JobView } from '@santha/shared-types';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { fill } from '@/i18n/console';
 import { liveMessages } from '@/i18n/live';
-import { API_URL, postJson } from '@/lib/api';
+import { apiUrl, postJson } from '@/lib/api';
 import { rupees } from '@/lib/format';
 
 type Lang = 'en' | 'te';
@@ -25,7 +25,7 @@ export function StaffDelivery({ token }: { token: string }) {
   const lastSent = useRef(0);
 
   const load = useCallback(async () => {
-    const res = await fetch(`${API_URL}/v1/staff-jobs/${encodeURIComponent(token)}`).catch(() => null);
+    const res = await fetch(`${apiUrl()}/v1/staff-jobs/${encodeURIComponent(token)}`).catch(() => null);
     if (!res) return setError(liveMessages[lang].staff.error);
     if (res.status === 404) return setInvalid(true);
     if (res.ok) {

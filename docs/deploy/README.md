@@ -147,6 +147,8 @@ point the three hostnames at the VM in DNS instead of the tunnel, and delete the
   SHA built by a push to `main`.
 - Deploy the backend to an environment before its website.
 - Backend and web deploy separately: each has its own tag on the server and its own rollback.
+- Each part is **built once** for every environment (ADR-025). PROD runs the very image QA tested. The website's
+  addresses come from the values file's `web` section when it starts.
 
 ## 3a. First deploy
 1. Push to `main`, or merge a PR. **Deploy · Backend** and **Deploy · Web** build the images and deploy **QA**.

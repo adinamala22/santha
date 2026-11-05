@@ -66,10 +66,15 @@ services:
     logging: *logs
 
   web:
-    image: ${REGISTRY:?}/santha-web-${SANTHA_ENV}:${WEB_TAG:?}
+    # One image for every environment (ADR-025); its addresses come from the values file's web section (santha.sh).
+    image: ${REGISTRY:?}/santha-web:${WEB_TAG:?}
     restart: unless-stopped
     environment:
-      API_URL: http://api:4000 # server-side calls from the console stay inside the network
+      API_URL: http://api:4000 # server-side calls stay inside the network
+      SITE_URL: ${WEB_SITE_URL:?web.siteUrl missing in the values file}
+      PUBLIC_API_URL: ${WEB_API_URL:?web.apiUrl missing in the values file}
+      MEDIA_ORIGIN: ${WEB_MEDIA_ORIGIN:-}
+      MAP_TILES_URL: ${WEB_MAP_TILES_URL:-}
     depends_on: [api]
     logging: *logs
 

@@ -91,11 +91,8 @@ deploy() {
   echo "Building images $REGISTRY/santha-*:$tag (the first build takes several minutes) …"
   docker build -q -f "$BUILD/apps/backend/Dockerfile" --target runtime -t "$REGISTRY/santha-backend:$tag" "$BUILD"
   docker build -q -f "$BUILD/apps/backend/Dockerfile" --target tools -t "$REGISTRY/santha-tools:$tag" "$BUILD"
-  docker build -q -f "$BUILD/apps/web/Dockerfile" -t "$REGISTRY/santha-web-test:$tag" \
-    --build-arg NEXT_PUBLIC_SITE_URL="$(values .web.siteUrl)" \
-    --build-arg NEXT_PUBLIC_API_URL="$(values .web.apiUrl)" \
-    --build-arg NEXT_PUBLIC_MEDIA_ORIGIN="$(values .web.mediaOrigin)" \
-    "$BUILD"
+  # One website image for every environment; its addresses come from the values file at run time (ADR-025).
+  docker build -q -f "$BUILD/apps/web/Dockerfile" -t "$REGISTRY/santha-web:$tag" "$BUILD"
 
   echo "Copying the stack to $STACK …"
   cp "$REPO"/infra/deploy/{compose.yml,compose.tunnel.yml,Caddyfile,santha.sh} "$STACK/"

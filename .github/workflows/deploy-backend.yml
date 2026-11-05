@@ -74,7 +74,7 @@ jobs:
     name: QA
     needs: images
     uses: ./.github/workflows/deploy-env.yml
-    with: { environment: test, component: backend, tag: '${{ github.sha }}' }
+    with: { environment: test, component: backend, tag: '${{ github.sha }}', skip_if_older: true }
     secrets: inherit
 
   manual:

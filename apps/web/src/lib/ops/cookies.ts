@@ -9,7 +9,8 @@ export const COOKIE = {
   lang: 'santha_ops_lang',
 } as const;
 
-export const BACKEND_URL = process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+// Runtime settings (ADR-025): dynamic lookups are never inlined at build time.
+export const BACKEND_URL = process.env['API_URL'] || process.env['PUBLIC_API_URL'] || process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:4000';
 
 export const cookieOptions = (maxAgeSec: number) => ({
   httpOnly: true,

@@ -1,4 +1,4 @@
-import { API_URL } from './api';
+import { serverApiUrl } from './api';
 
 /** Public website settings from the API (ADR-023). */
 export interface SiteConfig {
@@ -14,7 +14,7 @@ export const PRE_LAUNCH: SiteConfig = { appDownloads: false, androidUrl: null, i
 /** GET /v1/config/site, cached for a minute so ops can switch downloads on without a redeploy. */
 export async function getSiteConfig(): Promise<SiteConfig> {
   try {
-    const res = await fetch(`${API_URL}/v1/config/site`, { next: { revalidate: 60 } });
+    const res = await fetch(`${serverApiUrl()}/v1/config/site`, { next: { revalidate: 60 } });
     if (!res.ok) return PRE_LAUNCH;
     const c = (await res.json()) as Partial<SiteConfig>;
     return { appDownloads: c.appDownloads === true, androidUrl: c.androidUrl ?? null, iosUrl: c.iosUrl ?? null };

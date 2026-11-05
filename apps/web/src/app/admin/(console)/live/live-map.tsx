@@ -4,11 +4,13 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import type { GeoJSONSource, Map as MlMap } from 'maplibre-gl';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
+import { publicConfig } from '@/lib/runtime-config';
 import tokens from '../../../../../../../design/tokens/tailwind.tokens.js';
 
 /** Served from public/ by scripts/sync-brand.mjs (MapLibre 6 cannot locate its worker inside a Next bundle). */
 const MAPLIBRE_WORKER = '/maplibre/maplibre-gl-worker.mjs';
-const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL ?? 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+// Runtime setting (ADR-025): read when the map is created, not at build time.
+const tiles = () => publicConfig().tilesUrl;
 const C = tokens.colors;
 
 export interface LivePoint {
@@ -36,7 +38,7 @@ export function LiveMap({ points, unavailable, height = 380 }: { points: LivePoi
           container: box.current,
           style: {
             version: 8,
-            sources: { tiles: { type: 'raster', tiles: [TILES], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
+            sources: { tiles: { type: 'raster', tiles: [tiles()], tileSize: 256, attribution: '© OpenStreetMap contributors' } },
             layers: [{ id: 'tiles', type: 'raster', source: 'tiles', paint: { 'raster-saturation': -0.6, 'raster-opacity': 0.8 } }],
           },
           center: [79.99, 14.45],

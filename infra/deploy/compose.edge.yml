@@ -1,21 +1,19 @@
 # Overlay for deploy.ingress: edge (ADR-024): this stack shares the server's one HTTPS front door
 # (/opt/santha-edge) with the other environment, instead of running its own Caddy on 80/443.
-# The API, website and storage join the "santha-edge" network as <env>-api, <env>-web and <env>-storage.
+#
+# Isolation: the stacks never share a network. Docker gives every container its service name as an alias on every
+# network it joins, so a shared network would make "api" resolve to BOTH environments' APIs (seen on the first prod
+# deploy: prod's website reached test's API at random). Instead the edge Caddy joins each stack's own default
+# network (santha.sh), and finds this stack's services by the unique aliases <env>-api, <env>-web, <env>-storage.
 services:
   caddy:
     profiles: [own-caddy] # never started here; the shared edge serves this stack
   api:
     networks:
-      default: {}
-      edge: { aliases: ["${SANTHA_ENV}-api"] }
+      default: { aliases: ["${SANTHA_ENV}-api"] }
   web:
     networks:
-      default: {}
-      edge: { aliases: ["${SANTHA_ENV}-web"] }
+      default: { aliases: ["${SANTHA_ENV}-web"] }
   storage:
     networks:
-      default: {}
-      edge: { aliases: ["${SANTHA_ENV}-storage"] }
-
-networks:
-  edge: { name: santha-edge, external: true }
+      default: { aliases: ["${SANTHA_ENV}-storage"] }
