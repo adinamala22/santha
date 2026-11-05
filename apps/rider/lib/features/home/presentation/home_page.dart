@@ -10,6 +10,7 @@ import 'package:santha_ui/santha_ui.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import '../../../support.dart';
 
 /// Rider home (wireframe rider/01-offer): online toggle with zones, the ringing offer card with its
 /// pay breakdown and 30-s countdown, today's summary and the current delivery.
@@ -28,6 +29,12 @@ class HomePage extends ConsumerWidget {
         title: Text(home.value?.name ?? l.appName),
         actions: [
           IconButton(tooltip: l.earningsTitle, icon: const Icon(Icons.account_balance_wallet), onPressed: () => context.push('/earnings')),
+          IconButton(
+            key: const ValueKey('open-support'),
+            tooltip: l.supportTitle,
+            icon: Badge(isLabelVisible: ref.watch(supportUnreadProvider) > 0, label: Text('${ref.watch(supportUnreadProvider)}'), child: const Icon(Icons.support_agent)),
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SupportInboxPage(strings: supportStrings(l), topics: supportTopics))),
+          ),
           IconButton(tooltip: l.switchLanguage, icon: const Icon(Icons.translate), onPressed: () => ref.read(localeControllerProvider.notifier).toggle()),
           IconButton(tooltip: l.signOut, icon: const Icon(Icons.logout), onPressed: () => ref.read(authControllerProvider.notifier).signOut()),
         ],

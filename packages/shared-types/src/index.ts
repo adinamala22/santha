@@ -107,6 +107,9 @@ export type OpsIssueList = Schemas['OpsIssueListDto_Output'];
 
 // M8 — trust & safety, DPDP, growth
 export type GrievanceList = Schemas['GrievanceListDto_Output'];
+/** Support chat (ADR-028): the ops inbox and one conversation. */
+export type OpsSupportThreadList = Schemas['OpsThreadListDto_Output'];
+export type OpsSupportThread = Schemas['OpsThreadDto_Output'];
 export type DataRequestList = Schemas['DataRequestListDto_Output'];
 export type ReviewList = Schemas['ReviewListDto_Output'];
 export type LeadList = Schemas['LeadListDto_Output'];

@@ -11,7 +11,7 @@ import '../config/app_config.dart';
 class RealtimeEvent {
   const RealtimeEvent(this.name, this.data);
   /// order.new (merchant), order.updated, order.location (courier fix + ETA), store.paused;
-  /// riders: offer.new, offer.withdrawn, job.updated.
+  /// riders: offer.new, offer.withdrawn, job.updated; everyone: support.message (a support chat changed, ADR-028).
   final String name;
   final Map<String, dynamic> data;
   String? get orderId => data['orderId'] as String?;
@@ -60,7 +60,7 @@ class SocketRealtime implements Realtime {
       s.dispose();
       if (identical(_socket, s)) _socket = null;
     });
-    for (final name in const ['order.new', 'order.updated', 'order.location', 'store.paused', 'offer.new', 'offer.withdrawn', 'job.updated']) {
+    for (final name in const ['order.new', 'order.updated', 'order.location', 'store.paused', 'offer.new', 'offer.withdrawn', 'job.updated', 'support.message']) {
       s.on(name, (data) {
         if (data is Map) _events.add(RealtimeEvent(name, Map<String, dynamic>.from(data)));
       });

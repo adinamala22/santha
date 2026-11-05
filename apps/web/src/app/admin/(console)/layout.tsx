@@ -10,6 +10,7 @@ import { launchCopy } from '@/i18n/launch';
 import { moneyCopy } from '@/i18n/money';
 import { orderCopy } from '@/i18n/orders';
 import { promoCopy } from '@/i18n/promos';
+import { supportCopy } from '@/i18n/support';
 import { opsLocale, opsSession } from '@/lib/ops/server';
 
 export const metadata: Metadata = { title: { default: 'Ops console', template: '%s · Santha Ops' }, robots: { index: false, follow: false } };
@@ -28,6 +29,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           </NavLink>
           <NavLink href="/admin/live">{liveCopy(locale).nav}</NavLink>
           <NavLink href="/admin/orders">{orderCopy(locale).nav}</NavLink>
+          <NavLink href="/admin/support">{supportCopy(locale).nav}</NavLink>
           <NavLink href="/admin/refunds">{moneyCopy(locale).nav.refunds}</NavLink>
           <NavLink href="/admin/payouts">{moneyCopy(locale).nav.payouts}</NavLink>
           <NavLink href="/admin/disputes">{moneyCopy(locale).nav.disputes}</NavLink>

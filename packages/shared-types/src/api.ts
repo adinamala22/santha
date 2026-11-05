@@ -2516,6 +2516,134 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/support/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportController_mine"];
+        put?: never;
+        post: operations["SupportController_open"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/support/threads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["SupportController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/support/threads/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["SupportController_write"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/support/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsSupportController_inbox"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/support/threads/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsSupportController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/support/threads/{id}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsSupportController_reply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/support/threads/{id}/assign": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsSupportController_assign"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/support/threads/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsSupportController_resolve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/leads": {
         parameters: {
             query?: never;
@@ -7113,6 +7241,136 @@ export interface components {
                 createdAt: string;
             }[];
         };
+        OpenThreadDto: {
+            /**
+             * @description From the app’s topic list
+             * @enum {string}
+             */
+            topic: "order_late" | "missing_item" | "wrong_item" | "payment" | "refund" | "account" | "other" | "orders" | "payout" | "catalogue" | "delivery" | "app";
+            /**
+             * Format: uuid
+             * @description The order this is about (yours, your store’s, or one you deliver)
+             */
+            orderId?: string;
+            body: string;
+        };
+        ThreadWithMessagesDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            app: "consumer" | "merchant" | "rider";
+            /** Format: uuid */
+            orderId: string | null;
+            orderCode: string | null;
+            topic: string;
+            /** @enum {string} */
+            status: "waiting_support" | "waiting_customer" | "resolved";
+            /** Format: date-time */
+            lastMessageAt: string;
+            lastMessagePreview: string;
+            unreadByUser: number;
+            /** Format: date-time */
+            resolvedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            messages: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                author: "user" | "support";
+                body: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        ThreadListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                app: "consumer" | "merchant" | "rider";
+                /** Format: uuid */
+                orderId: string | null;
+                orderCode: string | null;
+                topic: string;
+                /** @enum {string} */
+                status: "waiting_support" | "waiting_customer" | "resolved";
+                /** Format: date-time */
+                lastMessageAt: string;
+                lastMessagePreview: string;
+                unreadByUser: number;
+                /** Format: date-time */
+                resolvedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+        };
+        WriteDto: {
+            body: string;
+        };
+        OpsThreadListDto_Output: {
+            items: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                app: "consumer" | "merchant" | "rider";
+                /** Format: uuid */
+                orderId: string | null;
+                orderCode: string | null;
+                topic: string;
+                /** @enum {string} */
+                status: "waiting_support" | "waiting_customer" | "resolved";
+                /** Format: date-time */
+                lastMessageAt: string;
+                lastMessagePreview: string;
+                unreadByUser: number;
+                /** Format: date-time */
+                resolvedAt: string | null;
+                /** Format: date-time */
+                createdAt: string;
+                /** Format: uuid */
+                assigneeId: string | null;
+                /** Format: uuid */
+                userId: string;
+            }[];
+        };
+        OpsThreadDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            app: "consumer" | "merchant" | "rider";
+            /** Format: uuid */
+            orderId: string | null;
+            orderCode: string | null;
+            topic: string;
+            /** @enum {string} */
+            status: "waiting_support" | "waiting_customer" | "resolved";
+            /** Format: date-time */
+            lastMessageAt: string;
+            lastMessagePreview: string;
+            unreadByUser: number;
+            /** Format: date-time */
+            resolvedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            assigneeId: string | null;
+            /** Format: uuid */
+            userId: string;
+            messages: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                author: "user" | "support";
+                body: string;
+                /** Format: date-time */
+                createdAt: string;
+            }[];
+            requester: {
+                phoneMasked: string;
+                name: string | null;
+            };
+        };
         LeadInputDto: {
             /**
              * @description customer = launch-list sign-up (ADR-023)
@@ -11470,6 +11728,222 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["StoreReviewsDto_Output"];
+                };
+            };
+        };
+    };
+    SupportController_mine: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My chats, latest first */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadListDto_Output"];
+                };
+            };
+        };
+    };
+    SupportController_open: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpenThreadDto"];
+            };
+        };
+        responses: {
+            /** @description Starts a chat, or adds to the open one about the same order. 429 RATE_LIMITED with 3 open chats */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadWithMessagesDto_Output"];
+                };
+            };
+        };
+    };
+    SupportController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description One chat with its messages; support replies count as read */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadWithMessagesDto_Output"];
+                };
+            };
+        };
+    };
+    SupportController_write: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WriteDto"];
+            };
+        };
+        responses: {
+            /** @description Writes to the chat (reopens a recently resolved one). 429 RATE_LIMITED */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ThreadWithMessagesDto_Output"];
+                };
+            };
+        };
+    };
+    OpsSupportController_inbox: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated: waiting_support, waiting_customer, resolved */
+                status?: string;
+                mine?: "true" | "false";
+                orderId?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Inbox, latest activity first */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsThreadListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsSupportController_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsThreadDto_Output"];
+                };
+            };
+        };
+    };
+    OpsSupportController_reply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WriteDto"];
+            };
+        };
+        responses: {
+            /** @description Reply: the requester gets a push (SMS without the app); audited */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsThreadDto_Output"];
+                };
+            };
+        };
+    };
+    OpsSupportController_assign: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Assign to me; audited */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsThreadDto_Output"];
+                };
+            };
+        };
+    };
+    OpsSupportController_resolve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resolved; the requester can reopen it by writing within 7 days; audited */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsThreadDto_Output"];
                 };
             };
         };

@@ -3,12 +3,14 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:santha_api/santha_api.dart';
+import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import '../../../support.dart';
 
 /// Opens a URL outside the app (maps navigation, phone dialer). Tests override it.
 final launcherProvider = Provider<Future<void> Function(Uri)>((ref) => (uri) async {
@@ -64,6 +66,15 @@ class _JobPageState extends ConsumerState<JobPage> {
         backgroundColor: SanthaColors.indigo,
         foregroundColor: SanthaColors.white,
         title: Text(job.value == null ? '' : l.orderCode(job.value!.code)),
+        actions: [
+          if (job.value case final j?)
+            IconButton(
+              key: const ValueKey('job-support'),
+              tooltip: l.supportTitle,
+              icon: const Icon(Icons.support_agent),
+              onPressed: () => startSupportChat(context, ref, strings: supportStrings(l), topics: supportTopics, orderId: j.orderId, orderCode: j.code, initialTopic: 'delivery'),
+            ),
+        ],
       ),
       body: job.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -90,6 +90,10 @@ export const TEMPLATES = {
     en: { title: 'Finding a delivery partner', body: 'It is taking longer than usual to find someone for order {code}. New estimate {eta}. You can cancel for a full refund.' },
     te: { title: 'డెలివరీ భాగస్వామి కోసం వెతుకుతున్నాం', body: 'ఆర్డర్ {code}కు ఎవరినైనా కనుగొనడం ఆలస్యం అవుతోంది. కొత్త అంచనా {eta}. పూర్తి రీఫండ్‌తో రద్దు చేయవచ్చు.' },
   },
+  'support.reply': {
+    en: { title: 'Santha support replied', body: 'Open the app to read the reply and continue the chat.' },
+    te: { title: 'సంత సపోర్ట్ సమాధానం ఇచ్చింది', body: 'సమాధానం చదవడానికి, చాట్ కొనసాగించడానికి యాప్ తెరవండి.' },
+  },
   // shared refund sentence
   'fragment.refund_wallet': { en: { title: '', body: '{amount} is back in your Santha wallet.' }, te: { title: '', body: '{amount} మీ సంత వాలెట్‌కు తిరిగి వచ్చింది.' } },
   'fragment.refund_cod': { en: { title: '', body: 'You will pay {amount} less on delivery.' }, te: { title: '', body: 'డెలివరీ సమయంలో {amount} తక్కువ చెల్లిస్తారు.' } },

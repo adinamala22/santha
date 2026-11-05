@@ -11,3 +11,4 @@ export 'src/l10n/locale_controller.dart';
 export 'src/push/push.dart';
 export 'src/realtime/realtime.dart';
 export 'src/storage/key_value_store.dart';
+export 'src/support/support_chat.dart';

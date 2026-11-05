@@ -18,4 +18,5 @@ export 'src/money.dart';
 export 'src/compliance.dart';
 export 'src/models.dart';
 export 'src/push_api.dart';
+export 'src/support.dart';
 export 'src/token_store.dart';
