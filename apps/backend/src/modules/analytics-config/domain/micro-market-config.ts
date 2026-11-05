@@ -19,6 +19,11 @@ export const FeeRulesSchema = z.object({
   smallOrderThresholdPaise: paise,
   smallOrderFeePaise: paise,
   platformFeePaise: paise,
+  /**
+   * Extra delivery charge when the customer is beyond the store's radius but in the same city (ADR-022):
+   * the per-km fee keeps counting and this flat amount is added. Never waived by free delivery.
+   */
+  beyondRadiusSurchargePaise: paise.default(3000),
   packagingFeeCapPaise: paise,
   /** GST on the platform's own fees (delivery, platform, small-order). Item prices are GST-inclusive (MRP rules). */
   gstOnFeesPercent: z.number().int().min(0).max(28).default(18),
@@ -111,6 +116,7 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
     smallOrderThresholdPaise: 9900,
     smallOrderFeePaise: 1500,
     platformFeePaise: 500,
+    beyondRadiusSurchargePaise: 3000,
     packagingFeeCapPaise: 2000,
     gstOnFeesPercent: 18,
     gstCookedFoodPercent: 5,

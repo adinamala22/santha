@@ -176,8 +176,8 @@ class _StoreGroup extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final s = group.store;
-    final eta = s.eta.scheduled ? null : '${s.eta.minMin}–${s.eta.maxMin} ${l.minUnit}';
-    final header = [s.displayName(l.localeName), ?eta, if (s.selfDelivers) l.selfDelivers].join(' · ');
+    final eta = s.eta.scheduled || !s.deliverable ? null : '${s.eta.minMin}–${s.eta.maxMin} ${l.minUnit}';
+    final header = [s.displayName(l.localeName), ?eta, if (s.deliversAnywhere) l.deliversAnywhere else if (s.selfDelivers) l.selfDelivers].join(' · ');
     return Container(
       key: ValueKey('group-${s.id}'),
       decoration: BoxDecoration(borderRadius: BorderRadius.circular(SanthaRadius.lg), border: Border.all(color: SanthaColors.indigo100, width: 1.5)),
@@ -190,7 +190,8 @@ class _StoreGroup extends ConsumerWidget {
             const Icon(Icons.chevron_right, color: SanthaColors.indigo),
           ]),
         ),
-        if (!s.open) Text(closedLabelFor(l, s) ?? '', style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
+        if (unavailableLabelFor(l, s) case final why?) Text(why, key: ValueKey('unavailable-${s.id}'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
+        if (s.deliverable && s.beyondRadius) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: NoticePill(key: ValueKey('beyond-${s.id}'), label: l.higherDeliveryCharge)),
         const SizedBox(height: SanthaSpacing.s2),
         SizedBox(
           height: 186,
@@ -228,7 +229,7 @@ class _SearchItem extends ConsumerWidget {
             Positioned(
               top: SanthaSpacing.s1,
               right: SanthaSpacing.s1,
-              child: CartAddButton(add: CartAdd.fromCard(item, store), source: 'search', enabled: store.open),
+              child: CartAddButton(add: CartAdd.fromCard(item, store), source: 'search', enabled: store.open && store.deliverable),
             ),
           ]),
           const SizedBox(height: SanthaSpacing.s1),

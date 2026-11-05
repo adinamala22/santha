@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { NotificationRecord } from '../../notifications/notifications.repository';
 import type { PaymentIntentRecord } from '../../payments-settlement/payments.repository';
 import { BUCKETS, CANCEL_REASONS, type MerchantDaySummary, type MerchantOrderView, REJECT_REASONS } from '../lifecycle.service';
+import { beyondRadius } from '../domain/beyond-radius';
 import type { OrderRecord, TransitionRecord } from '../orders.repository';
 
 const iso = z.iso.datetime();
@@ -53,6 +54,7 @@ const MerchantOrderSchema = z.object({
   state: z.string(),
   paymentMethod: z.enum(['online', 'cod']),
   fulfilmentMode: z.enum(['self', 'rider']).nullable(),
+  beyondRadius: z.boolean().describe("Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022)"),
   itemCount: int,
   itemsPaise: int,
   totalPaise: int,
@@ -107,6 +109,7 @@ export const toMerchantOrderDto = (v: MerchantOrderView) => {
     state: o.state,
     paymentMethod: o.paymentMethod,
     fulfilmentMode: o.fulfilmentMode,
+    beyondRadius: beyondRadius(o),
     itemCount: o.lines.filter((l) => l.status !== 'removed').reduce((s, l) => s + l.quantity, 0),
     itemsPaise: o.itemsPaise,
     totalPaise: o.totalPaise,

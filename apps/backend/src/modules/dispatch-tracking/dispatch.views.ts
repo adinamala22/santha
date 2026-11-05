@@ -207,7 +207,7 @@ export class DispatchViews {
       const commission = Math.round((items * rate) / 100);
       const bill = (o.quote as { bill?: { fees?: Array<{ code: string; amountPaise: number }> } } | null)
         ?.bill;
-      const credit = self ? (bill?.fees?.find((x) => x.code === 'delivery')?.amountPaise ?? 0) : 0;
+      const credit = self ? (bill?.fees ?? []).filter((x) => x.code === 'delivery' || x.code === 'beyond_radius').reduce((s, x) => s + x.amountPaise, 0) : 0;
       const bonus = self ? f.selfBonusPaise : 0;
       lines.push({
         orderId: o.id,

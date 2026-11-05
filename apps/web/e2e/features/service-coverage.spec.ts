@@ -5,7 +5,7 @@ import { stubMapTiles } from '../tiles';
 /**
  * Service coverage (ADR-019), fake + live:
  * - /serviceability says why an address is not served and names the nearest area;
- * - store pages say why a store does not deliver (other area / too far);
+ * - store pages say why a store does not deliver (outside every area / too far; area borders do not limit it, ADR-021);
  * - ops console: city-wide coverage switch, circle areas, store delivery radius.
  * Every setting a test changes is put back.
  */
@@ -27,10 +27,13 @@ test('serviceability explains "not deliverable" and names the nearest area', asy
   }
 });
 
-test('store page says why the store does not deliver to another area', async ({ request }) => {
-  const page = await call(request, 'get', `/stores/${SEED.kirana.id}?${q(SEED.magunta)}`);
-  expect(page).toMatchObject({ deliversHere: false, notDeliveringReason: 'other_area' });
+test('store page: area borders do not limit delivery; beyond the radius it costs more (ADR-021, ADR-022)', async ({ request }) => {
+  const page = await call(request, 'get', `/stores/${SEED.kirana.id}?${q(SEED.magunta)}`); // the next area
   expect(page.deliveryRadiusM).toBeGreaterThanOrEqual(500);
+  const beyond = page.store.distanceM > page.deliveryRadiusM;
+  expect(page).toMatchObject({ deliversHere: true, notDeliveringReason: null, store: { deliverable: true, beyondRadius: beyond } });
+  if (beyond) expect(page.beyondRadiusSurchargePaise).toBeGreaterThan(0);
+  else expect(page.beyondRadiusSurchargePaise).toBeNull();
   const home = await call(request, 'get', `/stores/${SEED.kirana.id}?${q(SEED.dargamitta)}`);
   expect(home).toMatchObject({ deliversHere: true, notDeliveringReason: null });
 });
@@ -79,7 +82,7 @@ test.describe('ops console (ADR-019)', () => {
     await expect(page.getByText('48 points')).toBeVisible();
   });
 
-  test('store delivery radius: ops shrink it → customers beyond see "too far"; put back; audited', async ({ page, request }) => {
+  test('store delivery radius: ops shrink it → customers beyond pay the extra charge; put back; audited', async ({ page, request }) => {
     await stubMapTiles(page);
     await opsSignIn(page, `/admin/merchants/${SEED.kirana.id}`);
     const form = page.getByTestId('radius-form');
@@ -91,7 +94,8 @@ test.describe('ops console (ADR-019)', () => {
       await form.getByRole('button', { name: 'Save radius' }).click();
       await expect(form.getByText('Radius saved')).toBeVisible();
       const p = await call(request, 'get', `/stores/${SEED.kirana.id}?${q(far)}`);
-      expect(p).toMatchObject({ deliversHere: false, notDeliveringReason: 'too_far', deliveryRadiusM: 1000 });
+      expect(p).toMatchObject({ deliversHere: true, notDeliveringReason: null, deliveryRadiusM: 1000, store: { beyondRadius: true } });
+      expect(p.beyondRadiusSurchargePaise).toBeGreaterThan(0);
       await expect(page.getByText('Delivery radius changed').first()).toBeVisible();
     } finally {
       await page.reload();
@@ -101,6 +105,6 @@ test.describe('ops console (ADR-019)', () => {
       await f.getByRole('button', { name: 'Save radius' }).click();
       await expect(f.getByText('Radius saved')).toBeVisible();
     }
-    expect((await call(request, 'get', `/stores/${SEED.kirana.id}?${q(far)}`)).notDeliveringReason).toBeNull();
+    expect((await call(request, 'get', `/stores/${SEED.kirana.id}?${q(far)}`)).beyondRadiusSurchargePaise).toBeNull(); // ~1.4 km, inside 5 km
   });
 });

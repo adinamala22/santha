@@ -83,6 +83,7 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       pincode: '524004',
       location: { lat: market.centre.lat + s.offset.lat, lng: market.centre.lng + s.offset.lng },
       radiusM: s.radiusM,
+      deliversAnywhere: false,
       hours: everyDay(s.hours.open, s.hours.close),
       movPaise: s.movPaise,
       // Kitchens and home businesses pack each order; shops include packing in the price.
@@ -99,6 +100,7 @@ export function buildSeedMerchants(marketIdBySlug: ReadonlyMap<string, string>):
       liveAt: live ? new Date(t0 + (23 + i) * DAY) : null,
       acceptingOrders: true,
       pausedReason: null,
+      openUntil: null,
       slug: live ? merchantSlug(s.name, s.id) : null,
       pausedAt: null,
       missedInARow: 0,

@@ -170,6 +170,53 @@ void main() {
     expect(container.read(storeOpenProvider), isTrue);
   });
 
+  testWidgets('ADR-021: switched on but closed by the hours: a banner says so; Open now opens it until the next close', (tester) async {
+    late FakeMerchantOrdersApi api;
+    final v = _liveView()..['openNow'] = {'open': false, 'closesAt': null, 'nextOpenAt': '2099-01-02T03:30:00.000Z'};
+    await pumpSignedIn(tester, view: v, onOrdersApi: (a) => api = a);
+    expect(find.byKey(const ValueKey('closed-by-hours')), findsOneWidget);
+    expect(find.textContaining('Closed by your hours: customers see your store as closed. Opens'), findsOneWidget);
+    expect(find.byKey(const ValueKey('open-until')), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('open-now')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'open true');
+    expect(find.byKey(const ValueKey('closed-by-hours')), findsNothing);
+    expect(find.byKey(const ValueKey('open-until')), findsOneWidget);
+    expect(find.textContaining('Open outside your hours until'), findsOneWidget);
+  });
+
+  testWidgets('ADR-021: Edit hours opens Store hours; saving sends the new week (Telugu too)', (tester) async {
+    final v = _liveView()..['openNow'] = {'open': false, 'closesAt': null, 'nextOpenAt': null};
+    (v['merchant'] as Map<String, dynamic>)['hours'] = {
+      for (final d in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']) d: [{'open': '09:00', 'close': '21:00'}],
+    };
+    final (container, merchantApi) = await pumpSignedIn(tester, view: v);
+    expect(find.text('Closed by your hours: customers see your store as closed.'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('edit-hours')));
+    await tester.pumpAndSettle();
+    expect(find.text('Store hours'), findsOneWidget);
+    expect(find.text('09:00'), findsOneWidget);
+    expect(find.text('21:00'), findsOneWidget);
+    await tester.tap(find.widgetWithText(FilterChip, 'Sun'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(merchantApi.calls.last, 'update hours');
+    final hours = (merchantApi.view!['merchant'] as Map)['hours'] as Map;
+    expect(hours['sun'], isEmpty);
+    expect(hours['mon'], [{'open': '09:00', 'close': '21:00'}]);
+    expect(find.text('Store hours'), findsNothing); // back on the orders page
+  });
+
+  testWidgets('ADR-021: the More tab links to Store hours, in Telugu', (tester) async {
+    await pumpSignedIn(tester, locale: 'te', view: _liveView());
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('open-hours')), findsOneWidget);
+    expect(find.text('షాప్ సమయాలు'), findsOneWidget);
+  });
+
   testWidgets('an auto-paused store explains why, in Telugu too', (tester) async {
     await pumpSignedIn(tester, locale: 'te', view: _liveView(open: false, pausedReason: 'missed_orders'));
     expect(find.text('ఆపివేయబడింది'), findsOneWidget);
@@ -197,6 +244,50 @@ void main() {
     expect(find.text('Suresh delivers'), findsOneWidget);
     expect(find.byKey(const ValueKey('copy-link-o1')), findsOneWidget);
     expect(find.byKey(const ValueKey('pickup-code-o1')), findsNothing); // staff need no pickup code
+  });
+
+  testWidgets('ADR-022: an order from beyond the radius is flagged; with Deliver anywhere on, only "deliver myself" is offered', (tester) async {
+    late FakeMerchantOrdersApi api;
+    final view = _liveView();
+    (view['merchant'] as Map<String, dynamic>).addAll({'deliversAnywhere': true, 'radiusM': 5000, 'defaultFulfilment': 'rider'});
+    view['staff'] = [
+      {'id': 'st1', 'name': 'Suresh', 'phoneMasked': '+9190******01'},
+    ];
+    await pumpSignedIn(tester, view: view, orders: [merchantOrder('o1', 'SN-7')..['beyondRadius'] = true], onOrdersApi: (a) => api = a);
+    expect(find.text('Beyond your 5 km · extra delivery charge added'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('accept-o1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('own-trip')), findsOneWidget);
+    expect(find.text('Who delivers?'), findsOneWidget); // self is preselected
+    await tester.tap(find.byKey(const ValueKey('mode-rider'))); // disabled
+    await tester.pumpAndSettle();
+    expect(find.text('Who delivers?'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls, ['accept o1 self st1']);
+  });
+
+  testWidgets('ADR-022: the More tab has the Deliver anywhere switch (Telugu too); not for fashion', (tester) async {
+    final (_, merchantApi) = await pumpSignedIn(tester, view: _liveView());
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('delivers-anywhere')));
+    await tester.pumpAndSettle();
+    expect(find.text('Deliver anywhere in the city'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('delivers-anywhere')));
+    await tester.pumpAndSettle();
+    expect(merchantApi.calls.last, 'update deliversAnywhere');
+    expect((merchantApi.view!['merchant'] as Map)['deliversAnywhere'], isTrue);
+  });
+
+  testWidgets('ADR-022: fashion stores have no Deliver anywhere switch', (tester) async {
+    final v = _liveView();
+    (v['merchant'] as Map<String, dynamic>)['type'] = 'fashion';
+    await pumpSignedIn(tester, locale: 'te', view: v);
+    await tester.tap(find.byIcon(Icons.more_horiz));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('delivers-anywhere')), findsNothing);
+    expect(find.text('షాప్ సమయాలు'), findsOneWidget);
   });
 
   testWidgets('M6: rider deliveries show the pickup code; no rider yet → bonus to deliver it yourself', (tester) async {

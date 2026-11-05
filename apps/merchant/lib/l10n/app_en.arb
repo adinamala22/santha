@@ -231,7 +231,7 @@
   "statusApprovedTitle": "Approved",
   "statusApprovedSub": "Your shop will go live shortly.",
   "statusLiveTitle": "You are live on Santha",
-  "statusLiveSub": "Customers in {market} can now find your shop. Your catalogue and orders come next.",
+  "statusLiveSub": "Your shop is in {market}. Customers across the city can now find it and order. Your catalogue and orders come next.",
   "@statusLiveSub": {
     "placeholders": {
       "market": {
@@ -944,5 +944,46 @@
     }
   },
   "storeNoRatings": "No ratings yet. Customers can rate you after each delivered order.",
-  "ratingLowTip": "Stores below 4★ show lower in search and are left out of the \"4★ & above\" filter. Check packing, keep stock up to date and accept orders quickly."
+  "ratingLowTip": "Stores below 4★ show lower in search and are left out of the \"4★ & above\" filter. Check packing, keep stock up to date and accept orders quickly.",
+  "storeHours": "Store hours",
+  "storeHoursHint": "Customers see your store open in these hours. To open early or stay open late, turn on the Open switch.",
+  "storeHoursSaved": "Hours saved",
+  "storeHoursSub": "Opening and closing time, closed days",
+  "storeEditHours": "Edit hours",
+  "storeOpenNow": "Open now",
+  "storeClosedByHours": "Closed by your hours: customers see your store as closed. Opens {when}.",
+  "@storeClosedByHours": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "storeClosedByHoursNoNext": "Closed by your hours: customers see your store as closed.",
+  "storeOpenOutsideHours": "Open outside your hours until {when}",
+  "@storeOpenOutsideHours": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "orderBeyondRadius": "Beyond your {distance} · extra delivery charge added",
+  "@orderBeyondRadius": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  },
+  "ownTripNote": "Deliver anywhere is on: you deliver orders from beyond your radius yourself. The customer tracks it live.",
+  "deliverAnywhereTitle": "Deliver anywhere in the city",
+  "deliverAnywhereSub": "You deliver orders from beyond your {distance} yourself; customers pay an extra delivery charge and track the order live.",
+  "@deliverAnywhereSub": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      }
+    }
+  }
 }

@@ -23,6 +23,18 @@ export async function decide(id: string, _prev: DecisionState, form: FormData): 
   return r.ok ? { ok: true } : { ok: false, code: r.code, message: r.message };
 }
 
+const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+
+/** Opening hours (ADR-021): one range per day, or closed; the API validates, audits and reindexes. */
+export async function setHours(id: string, _prev: DecisionState, form: FormData): Promise<DecisionState> {
+  const hours = Object.fromEntries(
+    DAYS.map((d) => [d, form.get(`${d}-closed`) ? [] : [{ open: String(form.get(`${d}-open`) ?? ''), close: String(form.get(`${d}-close`) ?? '') }]]),
+  );
+  const r = await opsApi(`/v1/ops/merchants/${id}/hours`, { method: 'PUT', body: { hours, reason: String(form.get('reason') ?? '').trim() } });
+  revalidatePath(`/admin/merchants/${id}`);
+  return r.ok ? { ok: true } : { ok: false, code: r.code, message: r.message };
+}
+
 /** Delivery radius (ADR-019): the API audits it with the reason and reindexes the store. */
 export async function setRadius(id: string, _prev: DecisionState, form: FormData): Promise<DecisionState> {
   const km = Number(String(form.get('km') ?? '').replace(',', '.'));

@@ -580,6 +580,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/merchants/{id}/hours": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["OpsMerchantsController_hours"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ops/merchants/{id}/radius": {
         parameters: {
             query?: never;
@@ -2757,6 +2773,11 @@ export interface components {
                         smallOrderFeePaise: number;
                         /** @description integer paise */
                         platformFeePaise: number;
+                        /**
+                         * @description integer paise
+                         * @default 3000
+                         */
+                        beyondRadiusSurchargePaise: number;
                         /** @description integer paise */
                         packagingFeeCapPaise: number;
                         /** @default 18 */
@@ -2913,6 +2934,11 @@ export interface components {
                     smallOrderFeePaise: number;
                     /** @description integer paise */
                     platformFeePaise: number;
+                    /**
+                     * @description integer paise
+                     * @default 3000
+                     */
+                    beyondRadiusSurchargePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
                     /** @default 18 */
@@ -3059,6 +3085,11 @@ export interface components {
                     smallOrderFeePaise: number;
                     /** @description integer paise */
                     platformFeePaise: number;
+                    /**
+                     * @description integer paise
+                     * @default 3000
+                     */
+                    beyondRadiusSurchargePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
                     /** @default 18 */
@@ -3205,6 +3236,11 @@ export interface components {
                     smallOrderFeePaise: number;
                     /** @description integer paise */
                     platformFeePaise: number;
+                    /**
+                     * @description integer paise
+                     * @default 3000
+                     */
+                    beyondRadiusSurchargePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
                     /** @default 18 */
@@ -3368,6 +3404,11 @@ export interface components {
                     smallOrderFeePaise: number;
                     /** @description integer paise */
                     platformFeePaise: number;
+                    /**
+                     * @description integer paise
+                     * @default 3000
+                     */
+                    beyondRadiusSurchargePaise: number;
                     /** @description integer paise */
                     packagingFeeCapPaise: number;
                     /** @default 18 */
@@ -3537,6 +3578,11 @@ export interface components {
                 smallOrderFeePaise: number;
                 /** @description integer paise */
                 platformFeePaise: number;
+                /**
+                 * @description integer paise
+                 * @default 3000
+                 */
+                beyondRadiusSurchargePaise: number;
                 /** @description integer paise */
                 packagingFeeCapPaise: number;
                 /** @default 18 */
@@ -3703,6 +3749,8 @@ export interface components {
                     lng: number;
                 } | null;
                 radiusM: number;
+                /** @description Delivers itself anywhere in its city (ADR-022) */
+                deliversAnywhere: boolean;
                 hours: {
                     mon: {
                         open: string;
@@ -3753,6 +3801,11 @@ export interface components {
                 acceptingOrders: boolean;
                 /** @description missed_orders (auto-pause) | merchant | ops */
                 pausedReason: string | null;
+                /**
+                 * Format: date-time
+                 * @description Opened with the switch outside the hours: open until then (ADR-021)
+                 */
+                openUntil: string | null;
                 /** @description Public store link /s/{slug} (set when live) */
                 slug: string | null;
                 /** Format: date-time */
@@ -3809,6 +3862,14 @@ export interface components {
                 /** Format: date-time */
                 createdAt: string;
             }[];
+            /** @description What customers see now: hours, the Open switch and an open-outside-hours override (ADR-021) */
+            openNow: {
+                open: boolean;
+                /** Format: date-time */
+                closesAt: string | null;
+                /** Format: date-time */
+                nextOpenAt: string | null;
+            };
         };
         UpdateMerchantDto: {
             /** @enum {string} */
@@ -3866,6 +3927,8 @@ export interface components {
             packagingFeePaise?: number;
             /** @enum {string} */
             defaultFulfilment?: "self" | "rider";
+            /** @description Deliver anywhere in the city, the store delivering itself beyond its radius (ADR-022; not for fashion) */
+            deliversAnywhere?: boolean;
         };
         AvailabilityDto: {
             /** @description true = taking orders */
@@ -3945,6 +4008,8 @@ export interface components {
                         lng: number;
                     } | null;
                     radiusM: number;
+                    /** @description Delivers itself anywhere in its city (ADR-022) */
+                    deliversAnywhere: boolean;
                     hours: {
                         mon: {
                             open: string;
@@ -3995,6 +4060,11 @@ export interface components {
                     acceptingOrders: boolean;
                     /** @description missed_orders (auto-pause) | merchant | ops */
                     pausedReason: string | null;
+                    /**
+                     * Format: date-time
+                     * @description Opened with the switch outside the hours: open until then (ADR-021)
+                     */
+                    openUntil: string | null;
                     /** @description Public store link /s/{slug} (set when live) */
                     slug: string | null;
                     /** Format: date-time */
@@ -4051,6 +4121,14 @@ export interface components {
                     /** Format: date-time */
                     createdAt: string;
                 }[];
+                /** @description What customers see now: hours, the Open switch and an open-outside-hours override (ADR-021) */
+                openNow: {
+                    open: boolean;
+                    /** Format: date-time */
+                    closesAt: string | null;
+                    /** Format: date-time */
+                    nextOpenAt: string | null;
+                };
             }[];
         };
         ApproveDto: {
@@ -4059,6 +4137,39 @@ export interface components {
         RejectDto: {
             /** @enum {string} */
             reason: "out_of_stock" | "store_closing" | "too_busy" | "cannot_deliver" | "other";
+        };
+        OpsHoursDto: {
+            hours: {
+                mon: {
+                    open: string;
+                    close: string;
+                }[];
+                tue: {
+                    open: string;
+                    close: string;
+                }[];
+                wed: {
+                    open: string;
+                    close: string;
+                }[];
+                thu: {
+                    open: string;
+                    close: string;
+                }[];
+                fri: {
+                    open: string;
+                    close: string;
+                }[];
+                sat: {
+                    open: string;
+                    close: string;
+                }[];
+                sun: {
+                    open: string;
+                    close: string;
+                }[];
+            };
+            reason: string;
         };
         OpsRadiusDto: {
             radiusM: number;
@@ -4567,6 +4678,12 @@ export interface components {
                 category: string | null;
                 photoUrl: string | null;
                 distanceM: number;
+                /** @description The store delivers to the customer: every store of the customer's city does (ADR-021). */
+                deliverable: boolean;
+                /** @description Beyond the store's radius: delivered with an extra delivery charge (ADR-022) */
+                beyondRadius: boolean;
+                /** @description Delivers itself anywhere in the city, tracked live (ADR-022) */
+                deliversAnywhere: boolean;
                 eta: {
                     /** @enum {string} */
                     mode: "asap";
@@ -4623,6 +4740,12 @@ export interface components {
                     category: string | null;
                     photoUrl: string | null;
                     distanceM: number;
+                    /** @description The store delivers to the customer: every store of the customer's city does (ADR-021). */
+                    deliverable: boolean;
+                    /** @description Beyond the store's radius: delivered with an extra delivery charge (ADR-022) */
+                    beyondRadius: boolean;
+                    /** @description Delivers itself anywhere in the city, tracked live (ADR-022) */
+                    deliversAnywhere: boolean;
                     eta: {
                         /** @enum {string} */
                         mode: "asap";
@@ -4691,6 +4814,12 @@ export interface components {
                 category: string | null;
                 photoUrl: string | null;
                 distanceM: number;
+                /** @description The store delivers to the customer: every store of the customer's city does (ADR-021). */
+                deliverable: boolean;
+                /** @description Beyond the store's radius: delivered with an extra delivery charge (ADR-022) */
+                beyondRadius: boolean;
+                /** @description Delivers itself anywhere in the city, tracked live (ADR-022) */
+                deliversAnywhere: boolean;
                 eta: {
                     /** @enum {string} */
                     mode: "asap";
@@ -4736,6 +4865,12 @@ export interface components {
                 category: string | null;
                 photoUrl: string | null;
                 distanceM: number;
+                /** @description The store delivers to the customer: every store of the customer's city does (ADR-021). */
+                deliverable: boolean;
+                /** @description Beyond the store's radius: delivered with an extra delivery charge (ADR-022) */
+                beyondRadius: boolean;
+                /** @description Delivers itself anywhere in the city, tracked live (ADR-022) */
+                deliversAnywhere: boolean;
                 eta: {
                     /** @enum {string} */
                     mode: "asap";
@@ -4767,6 +4902,7 @@ export interface components {
                 score: number;
             };
             description: string | null;
+            /** @description The store's own area (ADR-021) */
             microMarket: {
                 /** Format: uuid */
                 id: string;
@@ -4779,7 +4915,9 @@ export interface components {
             /** @description How far the store delivers */
             deliveryRadiusM: number;
             /** @enum {string|null} */
-            notDeliveringReason: "outside_service_area" | "other_area" | "too_far" | null;
+            notDeliveringReason: "outside_service_area" | "other_area" | "too_far" | "other_city" | null;
+            /** @description Extra delivery charge for this address when it is beyond the store radius (ADR-022) */
+            beyondRadiusSurchargePaise: number | null;
             photos: {
                 thumbUrl: string | null;
                 mediumUrl: string | null;
@@ -5131,7 +5269,7 @@ export interface components {
                 mrpSavingsPaise: number;
                 fees: {
                     /** @enum {string} */
-                    code: "delivery" | "small_order" | "platform" | "packaging";
+                    code: "delivery" | "beyond_radius" | "small_order" | "platform" | "packaging";
                     amountPaise: number;
                     waivedPaise: number;
                 }[];
@@ -5280,7 +5418,7 @@ export interface components {
                 mrpSavingsPaise: number;
                 fees: {
                     /** @enum {string} */
-                    code: "delivery" | "small_order" | "platform" | "packaging";
+                    code: "delivery" | "beyond_radius" | "small_order" | "platform" | "packaging";
                     amountPaise: number;
                     waivedPaise: number;
                 }[];
@@ -5425,7 +5563,7 @@ export interface components {
                     mrpSavingsPaise: number;
                     fees: {
                         /** @enum {string} */
-                        code: "delivery" | "small_order" | "platform" | "packaging";
+                        code: "delivery" | "beyond_radius" | "small_order" | "platform" | "packaging";
                         amountPaise: number;
                         waivedPaise: number;
                     }[];
@@ -5497,6 +5635,8 @@ export interface components {
                 paymentMethod: "online" | "cod";
                 /** @enum {string|null} */
                 fulfilmentMode: "self" | "rider" | null;
+                /** @description Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022) */
+                beyondRadius: boolean;
                 itemCount: number;
                 itemsPaise: number;
                 totalPaise: number;
@@ -5578,6 +5718,8 @@ export interface components {
             paymentMethod: "online" | "cod";
             /** @enum {string|null} */
             fulfilmentMode: "self" | "rider" | null;
+            /** @description Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022) */
+            beyondRadius: boolean;
             itemCount: number;
             itemsPaise: number;
             totalPaise: number;
@@ -7865,6 +8007,34 @@ export interface operations {
             };
         };
         responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MerchantViewDto_Output"];
+                };
+            };
+        };
+    };
+    OpsMerchantsController_hours: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["OpsHoursDto"];
+            };
+        };
+        responses: {
+            /** @description Opening hours (audited, ADR-021) */
             200: {
                 headers: {
                     [name: string]: unknown;

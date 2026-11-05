@@ -34,6 +34,9 @@ const optional = <T extends object>(o: T) => Object.fromEntries(Object.entries(o
  * fields, multi-way synonyms from SYNONYM_GROUPS, typo tolerance on. Results are post-processed by
  * DiscoveryService exactly like the in-memory engine's.
  */
+/** Typesense filter for documents in any of the areas (ids are UUIDs; an empty list matches nothing). */
+const inMarkets = (ids: string[]) => (ids.length ? `microMarketId:=[${ids.join(',')}]` : 'microMarketId:=__none__');
+
 export class TypesenseSearchIndex extends SearchIndex {
   readonly engine = 'typesense' as const;
   private readonly logger = new Logger('TypesenseSearchIndex');
@@ -127,7 +130,7 @@ export class TypesenseSearchIndex extends SearchIndex {
   }
 
   async searchItems(s: ItemSearch): Promise<Hit<ItemDoc>[]> {
-    const filters = [`microMarketId:=${s.microMarketId}`, s.inStockOnly ? 'inStock:=true' : null, s.vegOnly ? 'foodMark:=veg' : null, s.categorySlug ? `categorySlug:=${s.categorySlug}` : null].filter(Boolean).join(' && ');
+    const filters = [inMarkets(s.microMarketIds), s.inStockOnly ? 'inStock:=true' : null, s.vegOnly ? 'foodMark:=veg' : null, s.categorySlug ? `categorySlug:=${s.categorySlug}` : null].filter(Boolean).join(' && ');
     const r = await this.client.collections<TsItem>(this.itemsName).documents().search({
       q: s.q.trim() || '*',
       query_by: 'name,nameTe,brand,categoryName,categoryNameTe,merchantName',
@@ -145,12 +148,12 @@ export class TypesenseSearchIndex extends SearchIndex {
     return hits.map((h) => ({ doc: this.fromTsItem(h.document), text: Number(h.text_match ?? 0) / max }));
   }
 
-  async searchMerchants(q: string, microMarketId: string, limit: number): Promise<Hit<MerchantDoc>[]> {
+  async searchMerchants(q: string, microMarketIds: string[], limit: number): Promise<Hit<MerchantDoc>[]> {
     const r = await this.client.collections<TsMerchant>(this.merchantsName).documents().search({
       q,
       query_by: 'name,nameTe,category,description',
       query_by_weights: '10,10,4,3',
-      filter_by: `microMarketId:=${microMarketId}`,
+      filter_by: inMarkets(microMarketIds),
       per_page: limit,
       num_typos: 2,
     });
@@ -159,10 +162,10 @@ export class TypesenseSearchIndex extends SearchIndex {
     return hits.map((h) => ({ doc: JSON.parse(h.document.payload) as MerchantDoc, text: Number(h.text_match ?? 0) / max }));
   }
 
-  async merchantsIn(microMarketId: string): Promise<MerchantDoc[]> {
+  async merchantsIn(microMarketIds: string[]): Promise<MerchantDoc[]> {
     const out: MerchantDoc[] = [];
     for (let page = 1; ; page++) {
-      const r = await this.client.collections<TsMerchant>(this.merchantsName).documents().search({ q: '*', filter_by: `microMarketId:=${microMarketId}`, per_page: 250, page });
+      const r = await this.client.collections<TsMerchant>(this.merchantsName).documents().search({ q: '*', filter_by: inMarkets(microMarketIds), per_page: 250, page });
       out.push(...(r.hits ?? []).map((h) => JSON.parse(h.document.payload) as MerchantDoc));
       if (!r.hits || r.hits.length < 250) return out;
     }

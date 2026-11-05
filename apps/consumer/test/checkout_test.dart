@@ -51,6 +51,16 @@ void main() {
     expect(h.events, contains('cart_viewed'));
   });
 
+  testWidgets('ADR-022: beyond the store radius the bill shows the extra delivery charge line', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
+    h.backend.extraFees = [
+      {'code': 'beyond_radius', 'amountPaise': 3000, 'waivedPaise': 0},
+    ];
+    await openCheckout(tester);
+    expect(find.text('Extra delivery charge (far from the store)'), findsOneWidget);
+    expect(find.text('₹30'), findsOneWidget);
+  });
+
   testWidgets('ACCEPTANCE: checkout shows the server bill; COD places the order and empties the cart', (tester) async {
     final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
     await openCheckout(tester);

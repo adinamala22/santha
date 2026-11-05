@@ -184,11 +184,61 @@ void main() {
     expect(find.byKey(const ValueKey('open-reviews')), findsNothing);
   });
 
+  testWidgets('ADR-022: beyond the radius a store still delivers: card note, ETA kept, store page says the extra charge', (tester) async {
+    final h = await pumpApp(tester);
+    h.backend.kiranaCardPatch = {'beyondRadius': true};
+    h.backend.kiranaPagePatch = {'deliveryRadiusM': 5000, 'beyondRadiusSurchargePaise': 3000, 'store': {...fixture('store_kirana')['store'] as Map<String, dynamic>, 'beyondRadius': true}};
+    await tester.tap(find.textContaining('Sai Residency'));
+    await settle(tester, 20);
+    final card = find.byKey(const ValueKey('store-$kiranaId'));
+    expect(find.descendant(of: card, matching: find.text('Higher delivery charge')), findsOneWidget);
+    expect(find.descendant(of: card, matching: find.byType(EtaChip)), findsOneWidget); // still orderable
+    expect(tester.getSemantics(card).label, contains('Higher delivery charge'));
+    await tapVisible(tester, find.text('Ramesh Stores'));
+    expect(find.text('This store usually delivers up to 5.0 km. Your address is farther, so an extra delivery charge of ₹30 applies.'), findsOneWidget);
+    expect(find.text('ADD').first, findsOneWidget);
+  });
+
+  testWidgets('ADR-022: a "Deliver anywhere" store shows its badge, in Telugu too', (tester) async {
+    final h = await pumpApp(tester, locale: 'te');
+    h.backend.kiranaCardPatch = {'deliversAnywhere': true};
+    await tester.tap(find.textContaining('Sai Residency'));
+    await settle(tester, 20);
+    await tester.scrollUntilVisible(find.text('ఎక్కడికైనా డెలివరీ'), 200, scrollable: vertical);
+    expect(find.text('ఎక్కడికైనా డెలివరీ'), findsOneWidget);
+  });
+
   testWidgets('store page says why it does not deliver here', (tester) async {
     final h = await pumpAtHome(tester);
     h.backend.kiranaPagePatch = {'deliversHere': false, 'notDeliveringReason': 'too_far', 'deliveryRadiusM': 3000};
     await tapVisible(tester, find.text('Ramesh Stores'));
     expect(find.text('This store delivers up to 3.0 km away, and your address is farther.'), findsOneWidget);
+    // No delivery promise in the hero for a store that cannot deliver here (ADR-021).
+    expect(find.byType(EtaChip), findsNothing);
+    expect(find.text('Self-delivers'), findsNothing);
+  });
+
+  testWidgets('ADR-021: a store out of range stays listed, greyed with "Delivery not available", no ETA; search ADD is off', (tester) async {
+    final h = await pumpApp(tester);
+    h.backend.kiranaCardPatch = {'deliverable': false};
+    await tester.tap(find.textContaining('Sai Residency'));
+    await settle(tester, 20);
+    final card = find.byKey(const ValueKey('store-$kiranaId'));
+    expect(card, findsOneWidget);
+    expect(find.descendant(of: card, matching: find.text('Delivery not available to your address')), findsOneWidget);
+    expect(find.descendant(of: card, matching: find.byType(EtaChip)), findsNothing);
+    expect(find.descendant(of: card, matching: find.text('Self-delivers')), findsNothing);
+    expect(tester.getSemantics(card).label, contains('Delivery not available to your address'));
+
+    await tester.tap(find.byKey(const ValueKey('home-search')));
+    await settle(tester);
+    await tester.enterText(find.byKey(const ValueKey('search-field')), 'atta');
+    await tester.pump(const Duration(milliseconds: 400));
+    await settle(tester);
+    expect(find.byKey(const ValueKey('unavailable-$kiranaId')), findsOneWidget);
+    await tester.tap(find.text('ADD').first, warnIfMissed: false);
+    await settle(tester);
+    expect(h.events, isNot(contains('add_to_cart')));
   });
 
   testWidgets('home in Telugu', (tester) async {

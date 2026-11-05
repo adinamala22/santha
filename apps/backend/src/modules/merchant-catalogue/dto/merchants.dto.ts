@@ -40,6 +40,7 @@ export const UpdateMerchantSchema = z
     movPaise: z.number().int().min(0).max(100_000).describe('Minimum order value, paise'),
     packagingFeePaise: z.number().int().min(0).max(10_000).describe('Per-order packaging charge, paise (capped by the micro-market fee rule)'),
     defaultFulfilment: fulfilment,
+    deliversAnywhere: z.boolean().describe('Deliver anywhere in the city, the store delivering itself beyond its radius (ADR-022; not for fashion)'),
   })
   .partial();
 export class UpdateMerchantDto extends createZodDto(UpdateMerchantSchema) {}
@@ -94,6 +95,7 @@ export const MerchantSchema = z.object({
   pincode: z.string().nullable(),
   location: latLng.nullable(),
   radiusM: z.number().int(),
+  deliversAnywhere: z.boolean().describe('Delivers itself anywhere in its city (ADR-022)'),
   hours: WeeklyHoursSchema.nullable(),
   movPaise: z.number().int(),
   packagingFeePaise: z.number().int(),
@@ -108,6 +110,7 @@ export const MerchantSchema = z.object({
   liveAt: iso.nullable(),
   acceptingOrders: z.boolean(),
   pausedReason: z.string().nullable().describe('missed_orders (auto-pause) | merchant | ops'),
+  openUntil: iso.nullable().describe('Opened with the switch outside the hours: open until then (ADR-021)'),
   slug: z.string().nullable().describe('Public store link /s/{slug} (set when live)'),
   createdAt: iso,
 });
@@ -131,6 +134,9 @@ export const MerchantViewSchema = z.object({
   checklist: z.array(z.object({ key: z.string(), done: z.boolean() })),
   canSubmit: z.boolean(),
   photos: z.array(MediaSchema),
+  openNow: z
+    .object({ open: z.boolean(), closesAt: iso.nullable(), nextOpenAt: iso.nullable() })
+    .describe('What customers see now: hours, the Open switch and an open-outside-hours override (ADR-021)'),
 });
 export class MerchantViewDto extends createZodDto(MerchantViewSchema) {}
 export class MerchantListDto extends createZodDto(z.object({ items: z.array(MerchantViewSchema) })) {}
@@ -141,6 +147,9 @@ export const OpsQueueQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(200).default(100),
 });
 export class OpsQueueQueryDto extends createZodDto(OpsQueueQuerySchema) {}
+/** Ops: opening hours (ADR-021). */
+export class OpsHoursDto extends createZodDto(z.object({ hours: WeeklyHoursSchema, reason: z.string().trim().min(3).max(200) })) {}
+
 /** Ops: delivery radius (ADR-019). */
 export class OpsRadiusDto extends createZodDto(
   z.object({ radiusM: z.number().int().min(500).max(10_000), reason: z.string().trim().min(3).max(200) }),
@@ -183,6 +192,7 @@ export const toViewDto = (v: MerchantView) => {
       pincode: m.pincode,
       location: m.location,
       radiusM: m.radiusM,
+      deliversAnywhere: m.deliversAnywhere,
       hours: m.hours,
       movPaise: m.movPaise,
       packagingFeePaise: m.packagingFeePaise,
@@ -197,6 +207,7 @@ export const toViewDto = (v: MerchantView) => {
       liveAt: isoOrNull(m.liveAt),
       acceptingOrders: m.acceptingOrders,
       pausedReason: m.pausedReason,
+      openUntil: isoOrNull(m.openUntil),
       slug: m.slug,
       createdAt: m.createdAt.toISOString(),
     },
@@ -206,5 +217,6 @@ export const toViewDto = (v: MerchantView) => {
     checklist: v.checklist,
     canSubmit: (m.status === 'draft' || m.status === 'rejected') && v.checklist.every((i) => i.done),
     photos: v.photos.map(toMediaDto),
+    openNow: { open: v.openNow.open, closesAt: isoOrNull(v.openNow.closesAt), nextOpenAt: isoOrNull(v.openNow.nextOpenAt) },
   };
 };

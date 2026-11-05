@@ -163,6 +163,8 @@ class Merchant {
     this.rejectionNote,
     this.acceptingOrders = true,
     this.pausedReason,
+    this.openUntil,
+    this.deliversAnywhere = false,
   });
 
   factory Merchant.fromJson(Json j) => Merchant(
@@ -188,6 +190,8 @@ class Merchant {
         rejectionNote: j['rejectionNote'] as String?,
         acceptingOrders: j['acceptingOrders'] as bool? ?? true,
         pausedReason: j['pausedReason'] as String?,
+        openUntil: j['openUntil'] == null ? null : DateTime.parse(j['openUntil'] as String),
+        deliversAnywhere: j['deliversAnywhere'] as bool? ?? false,
       );
 
   final String id;
@@ -215,6 +219,12 @@ class Merchant {
   final bool acceptingOrders;
   final String? pausedReason;
 
+  /// Opened with the switch outside the hours: open until then (ADR-021).
+  final DateTime? openUntil;
+
+  /// "Deliver anywhere" (ADR-022): delivers itself to any address in its city.
+  final bool deliversAnywhere;
+
   /// Food sellers need FSSAI (every home kitchen, and retail/home businesses that sell food).
   bool get needsFssai => type == MerchantType.homeKitchen || sellsFood;
   bool get editable => status == MerchantStatus.draft || status == MerchantStatus.rejected;
@@ -237,6 +247,7 @@ class MerchantView {
     required this.canSubmit,
     this.microMarket,
     this.photos = const [],
+    this.openNow,
   });
 
   factory MerchantView.fromJson(Json j) => MerchantView(
@@ -247,6 +258,7 @@ class MerchantView {
         checklist: (j['checklist'] as List).map((c) => ChecklistItem.fromJson(c as Json)).toList(),
         canSubmit: j['canSubmit'] as bool,
         photos: ((j['photos'] as List?) ?? const []).map((m) => Media.fromJson(m as Json)).toList(),
+        openNow: j['openNow'] == null ? null : StoreOpenNow.fromJson(j['openNow'] as Json),
       );
 
   final Merchant merchant;
@@ -257,6 +269,9 @@ class MerchantView {
   final bool canSubmit;
   /// Store photos in display order (customers see the approved ones).
   final List<Media> photos;
+
+  /// What customers see now (hours, the Open switch, an open-outside-hours override); null from older servers.
+  final StoreOpenNow? openNow;
 
   KycCheck? check(KycKind kind) => kyc.where((k) => k.kind == kind).firstOrNull;
   bool done(ChecklistKey key) => checklist.any((c) => c.key == key && c.done);
@@ -269,5 +284,19 @@ class MerchantView {
         checklist: checklist,
         canSubmit: canSubmit,
         photos: photos,
+        openNow: openNow,
       );
+}
+
+/// Is the store open for customers right now, and until / from when (ADR-021).
+class StoreOpenNow {
+  const StoreOpenNow({required this.open, this.closesAt, this.nextOpenAt});
+  factory StoreOpenNow.fromJson(Json j) => StoreOpenNow(
+        open: j['open'] as bool,
+        closesAt: j['closesAt'] == null ? null : DateTime.parse(j['closesAt'] as String),
+        nextOpenAt: j['nextOpenAt'] == null ? null : DateTime.parse(j['nextOpenAt'] as String),
+      );
+  final bool open;
+  final DateTime? closesAt;
+  final DateTime? nextOpenAt;
 }

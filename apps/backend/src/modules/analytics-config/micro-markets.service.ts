@@ -58,6 +58,11 @@ export class MicroMarketsService {
     return this.repo.listCities();
   }
 
+  /** Ids of every micro-market in a city: customers see all of the city's stores (ADR-021). */
+  async cityMarketIds(cityId: string): Promise<string[]> {
+    return (await this.repo.list(cityId)).map((m) => m.id);
+  }
+
   async list(at = this.clock()): Promise<Array<{ market: MicroMarketRecord; current: VersionRecord | null; versionCount: number }>> {
     const [markets, effective] = await Promise.all([this.repo.list(), this.repo.effectiveAt(at)]);
     return Promise.all(

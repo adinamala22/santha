@@ -91,6 +91,11 @@ class FakeMerchantApi extends MerchantApi {
       view!['microMarket'] = {'id': 'mm1', 'slug': 'dargamitta', 'name': 'Dargamitta', 'nameTe': 'దర్గామిట్ట'};
     }
     if (patch.containsKey('addressLine')) _mark('location');
+    if (patch.containsKey('deliversAnywhere')) m['deliversAnywhere'] = patch['deliversAnywhere'];
+    if (patch['hours'] != null) {
+      m['hours'] = patch['hours'];
+      m['openUntil'] = null;
+    }
     return (await mine())!;
   }
 

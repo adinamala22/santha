@@ -62,7 +62,8 @@ class Serviceability {
 enum NotDeliveringReason implements Wire {
   outsideServiceArea('outside_service_area'),
   otherArea('other_area'),
-  tooFar('too_far');
+  tooFar('too_far'),
+  otherCity('other_city');
 
   const NotDeliveringReason(this.wire);
   @override
@@ -115,6 +116,9 @@ class StoreSummary {
     this.nextOpenAt,
     this.closesAt,
     this.rating,
+    this.deliverable = true,
+    this.beyondRadius = false,
+    this.deliversAnywhere = false,
   });
 
   factory StoreSummary.fromJson(Json j) => StoreSummary(
@@ -125,6 +129,9 @@ class StoreSummary {
         category: j['category'] as String?,
         photoUrl: j['photoUrl'] as String?,
         distanceM: j['distanceM'] as int,
+        deliverable: j['deliverable'] as bool? ?? true,
+        beyondRadius: j['beyondRadius'] as bool? ?? false,
+        deliversAnywhere: j['deliversAnywhere'] as bool? ?? false,
         eta: Eta.fromJson(j['eta'] as Json),
         open: j['open'] as bool,
         nextOpenAt: _date(j['nextOpenAt']),
@@ -144,6 +151,16 @@ class StoreSummary {
   final String? category;
   final String? photoUrl;
   final int distanceM;
+
+  /// The customer is within the store's delivery radius. Every store of the city is listed; the rest
+  /// show "Delivery not available" (ADR-021).
+  final bool deliverable;
+
+  /// Beyond the store's radius: it still delivers, with an extra delivery charge (ADR-022).
+  final bool beyondRadius;
+
+  /// "Deliver anywhere": the store delivers itself anywhere in the city, tracked live (ADR-022).
+  final bool deliversAnywhere;
   final Eta eta;
   final bool open;
   final DateTime? nextOpenAt;
@@ -165,6 +182,9 @@ class StoreSummary {
         'category': category,
         'photoUrl': photoUrl,
         'distanceM': distanceM,
+        'deliverable': deliverable,
+        'beyondRadius': beyondRadius,
+        'deliversAnywhere': deliversAnywhere,
         'eta': eta.toJson(),
         'open': open,
         'nextOpenAt': nextOpenAt?.toIso8601String(),
@@ -451,6 +471,7 @@ class StorePage {
     required this.deliversHere,
     this.deliveryRadiusM = 0,
     this.notDeliveringReason,
+    this.beyondRadiusSurchargePaise,
     required this.photos,
     required this.fssaiVerified,
     required this.hygieneDeclared,
@@ -471,6 +492,7 @@ class StorePage {
         deliversHere: j['deliversHere'] as bool,
         deliveryRadiusM: j['deliveryRadiusM'] as int? ?? 0,
         notDeliveringReason: NotDeliveringReason.parse(j['notDeliveringReason']),
+        beyondRadiusSurchargePaise: j['beyondRadiusSurchargePaise'] as int?,
         photos: _list(j['photos'], (p) => (p['mediumUrl'] ?? p['thumbUrl']) as String?).whereType<String>().toList(),
         fssaiVerified: j['fssaiVerified'] as bool,
         hygieneDeclared: j['hygieneDeclared'] as bool,
@@ -490,6 +512,9 @@ class StorePage {
   /// How far the store delivers (m); 0 in pages cached before ADR-019.
   final int deliveryRadiusM;
   final NotDeliveringReason? notDeliveringReason;
+
+  /// Extra delivery charge for this address, beyond the store's radius (ADR-022); null when none.
+  final int? beyondRadiusSurchargePaise;
 
   /// Medium-size photo URLs.
   final List<String> photos;
@@ -513,6 +538,7 @@ class StorePage {
         'deliversHere': deliversHere,
         'deliveryRadiusM': deliveryRadiusM,
         'notDeliveringReason': notDeliveringReason?.wire,
+        'beyondRadiusSurchargePaise': beyondRadiusSurchargePaise,
         'photos': photos.map((u) => {'thumbUrl': null, 'mediumUrl': u}).toList(),
         'fssaiVerified': fssaiVerified,
         'hygieneDeclared': hygieneDeclared,

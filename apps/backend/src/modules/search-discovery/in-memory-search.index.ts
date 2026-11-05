@@ -174,7 +174,7 @@ export class InMemorySearchIndex extends SearchIndex {
 
   async searchItems(s: ItemSearch): Promise<Hit<ItemDoc>[]> {
     const filter = (d: ItemDoc) =>
-      d.microMarketId === s.microMarketId && (!s.inStockOnly || d.inStock) && (!s.vegOnly || d.foodMark === 'veg') && (!s.categorySlug || d.categorySlug === s.categorySlug);
+      s.microMarketIds.includes(d.microMarketId) && (!s.inStockOnly || d.inStock) && (!s.vegOnly || d.foodMark === 'veg') && (!s.categorySlug || d.categorySlug === s.categorySlug);
     if (!s.q.trim())
       return [...this.items.values()].map((e) => e.doc).filter(filter).sort((a, b) => a.name.localeCompare(b.name)).slice(0, s.limit).map((doc) => ({ doc, text: 1 }));
     const hits = this.items.search(s.q, filter, s.limit);
@@ -182,14 +182,14 @@ export class InMemorySearchIndex extends SearchIndex {
     return hits.map((h) => ({ doc: h.doc, text: h.text / max }));
   }
 
-  async searchMerchants(q: string, microMarketId: string, limit: number): Promise<Hit<MerchantDoc>[]> {
-    const hits = this.merchants.search(q, (d) => d.microMarketId === microMarketId, limit);
+  async searchMerchants(q: string, microMarketIds: string[], limit: number): Promise<Hit<MerchantDoc>[]> {
+    const hits = this.merchants.search(q, (d) => microMarketIds.includes(d.microMarketId), limit);
     const max = hits[0]?.text ?? 1;
     return hits.map((h) => ({ doc: h.doc, text: h.text / max }));
   }
 
-  async merchantsIn(microMarketId: string): Promise<MerchantDoc[]> {
-    return [...this.merchants.values()].map((e) => e.doc).filter((d) => d.microMarketId === microMarketId);
+  async merchantsIn(microMarketIds: string[]): Promise<MerchantDoc[]> {
+    return [...this.merchants.values()].map((e) => e.doc).filter((d) => microMarketIds.includes(d.microMarketId));
   }
 
   async counts(): Promise<{ items: number; merchants: number }> {

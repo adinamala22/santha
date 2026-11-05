@@ -132,3 +132,22 @@ describe('deliveryFee', () => {
     expect(deliveryFee(10_00_000, 1000, { ...fees, freeDeliveryAbovePaise: 0 }).amountPaise).toBe(3300);
   });
 });
+
+describe('beyond the store radius (ADR-022)', () => {
+  it('adds the extra delivery charge as its own line; the per-km fee keeps counting; GST applies', () => {
+    const near = computeQuote(input({ distanceM: 4000 }));
+    const far = computeQuote(input({ distanceM: 7000, beyondRadius: true }));
+    expect(near.fees.map((f) => f.code)).not.toContain('beyond_radius');
+    expect(far.fees.find((f) => f.code === 'beyond_radius')).toEqual({ code: 'beyond_radius', amountPaise: 3000, waivedPaise: 0 });
+    const gst = far.taxes.find((t) => t.code === 'gst_fees')!;
+    expect(gst.basePaise).toBe(far.fees.filter((f) => f.code !== 'packaging').reduce((s, f) => s + f.amountPaise, 0));
+  });
+  it('free delivery never waives it; a zero surcharge (or an old fee card) adds nothing', () => {
+    const big = computeQuote(input({ distanceM: 7000, beyondRadius: true, lines: [line({ unitPricePaise: 50_000 })] }));
+    expect(big.fees.find((f) => f.code === 'delivery')).toMatchObject({ amountPaise: 0 });
+    expect(big.fees.find((f) => f.code === 'beyond_radius')).toMatchObject({ amountPaise: 3000, waivedPaise: 0 });
+    expect(computeQuote(input({ beyondRadius: true, fees: { ...fees, beyondRadiusSurchargePaise: 0 } })).fees.map((f) => f.code)).not.toContain('beyond_radius');
+    const { beyondRadiusSurchargePaise: _, ...old } = fees;
+    expect(computeQuote(input({ beyondRadius: true, fees: old })).fees.map((f) => f.code)).not.toContain('beyond_radius');
+  });
+});

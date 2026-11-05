@@ -44,6 +44,10 @@ export interface MerchantDoc {
   hours: WeeklyHours | null;
   /** Store toggle / auto-pause (M5); a paused store shows as closed. Absent in docs indexed before M5. */
   acceptingOrders?: boolean;
+  /** Delivers itself anywhere in its city (ADR-022). */
+  deliversAnywhere?: boolean;
+  /** Opened with the switch outside the hours: open until this instant, epoch ms (ADR-021). */
+  openUntil?: number | null;
   selfDelivers: boolean;
   photoUrl: string | null;
   hasSlots: boolean;

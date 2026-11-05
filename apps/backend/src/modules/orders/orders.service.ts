@@ -3,7 +3,6 @@ import { Prisma } from '@prisma/client';
 import { randomInt, randomUUID } from 'node:crypto';
 import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
-import { haversineMeters } from '../../common/geo/polygon';
 import { istParts, openStatus } from '../../common/hours';
 import { IdempotencyService } from '../../common/idempotency/idempotency.service';
 import { ENV } from '../../config/config.module';
@@ -122,9 +121,11 @@ export class OrdersService implements OnModuleInit {
     const now = this.clock();
     const problems: CheckoutProblem[] = [...priced.quote.problems];
 
-    // Delivery: the address must be in the store's micro-market and within its radius.
+    // Delivery: the address must be in a served area of the store's city (ADR-021). Beyond the store's
+    // radius it still delivers, with the extra delivery charge on the bill (ADR-022).
     const hit = await this.markets.resolve(a.location, now);
-    if (hit?.market.id !== m.microMarketId || haversineMeters(m.location!, a.location) > m.radiusM) problems.push({ code: 'NOT_DELIVERABLE' });
+    const storeCity = m.microMarketId ? (await this.markets.get(m.microMarketId).catch(() => null))?.market.cityId : null;
+    if (!hit || hit.market.cityId !== storeCity) problems.push({ code: 'NOT_DELIVERABLE' });
 
     // A paused store (toggle or auto-pause after missed orders) takes no orders.
     if (!m.acceptingOrders) problems.push({ code: 'STORE_CLOSED' });
@@ -136,7 +137,7 @@ export class OrdersService implements OnModuleInit {
       else problems.push(...(await this.slotProblems(m, input.when, priced, when)));
     } else if (input.when.mode === 'slot') problems.push({ code: 'SLOT_NOT_ALLOWED' });
     else {
-      const s = openStatus(m.hours, now);
+      const s = openStatus(m.hours, now, m.openUntil);
       if (!s.open) problems.push({ code: 'STORE_CLOSED', at: s.nextOpenAt?.toISOString() });
     }
 

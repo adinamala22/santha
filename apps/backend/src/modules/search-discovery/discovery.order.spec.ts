@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { orderStores, type StoreCard } from './discovery.service';
 
 const card = (id: string, over: Partial<StoreCard>): StoreCard => ({
-  id, name: id, nameTe: null, type: 'home_kitchen', category: null, photoUrl: null, distanceM: 100,
+  id, name: id, nameTe: null, type: 'home_kitchen', category: null, photoUrl: null, distanceM: 100, deliverable: true, beyondRadius: false, deliversAnywhere: false,
   eta: { mode: 'asap', minMin: 20, maxMin: 30 }, open: true, nextOpenAt: null, closesAt: null, selfDelivers: false,
   hygieneDeclared: true, rating: null, ratingCount: 0, movPaise: 0, itemCount: 1, score: 0.5, ...over,
 });
@@ -20,5 +20,12 @@ describe('feed order', () => {
     const b = card('b', { score: 0.8 });
     const c = card('c', { open: false, nextOpenAt: new Date('2026-11-03T02:00:00Z'), score: 0.99 });
     expect([c, a, b].sort(orderStores).map((x) => x.id)).toEqual(['b', 'a', 'c']);
+  });
+  it('stores that cannot deliver here come after every store that can, open or not (ADR-021)', () => {
+    const far = card('far', { deliverable: false, score: 0.99 });
+    const farClosed = card('far-closed', { deliverable: false, open: false, nextOpenAt: new Date('2026-11-03T02:00:00Z') });
+    const closed = card('closed', { open: false, nextOpenAt: new Date('2026-11-03T02:00:00Z') });
+    const near = card('near', { score: 0.1 });
+    expect([far, farClosed, closed, near].sort(orderStores).map((x) => x.id)).toEqual(['near', 'closed', 'far', 'far-closed']);
   });
 });

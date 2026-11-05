@@ -63,6 +63,27 @@ class OnboardingController extends AsyncNotifier<MerchantView?> {
     return v;
   }
 
+  /// Store hours of a live store (ADR-021); new hours end an open-outside-hours override.
+  Future<MerchantView> saveHours(WeeklyHours hours) async {
+    final v = await _api.update({
+      'hours': {for (final e in hours.entries) e.key: [for (final r in e.value) r.toJson()]},
+    });
+    _analytics.track('store_hours_updated', {'closed_days': hours.values.where((r) => r.isEmpty).length});
+    state = AsyncData(v);
+    return v;
+  }
+
+  /// "Deliver anywhere" (ADR-022): the store delivers its orders from beyond its radius itself.
+  Future<MerchantView> setDeliversAnywhere(bool on) async {
+    final v = await _api.update({'deliversAnywhere': on});
+    _analytics.track('delivers_anywhere_changed', {'on': on});
+    state = AsyncData(v);
+    return v;
+  }
+
+  /// The store as the server returned it after another call (e.g. the Open switch).
+  void replace(MerchantView v) => state = AsyncData(v);
+
   Future<MerchantView> submit() async {
     final v = await _api.submit();
     _analytics.track('onboarding_step_completed', {'step': 'submitted'});

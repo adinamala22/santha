@@ -211,6 +211,34 @@ class StatusPage extends ConsumerWidget {
                 onTap: () => context.push('/catalogue'),
               ),
             ),
+            if (view.merchant.status == MerchantStatus.live)
+              Card(
+                child: ListTile(
+                  key: const ValueKey('open-hours'),
+                  leading: const Icon(Icons.schedule, color: SanthaColors.indigo),
+                  title: Text(l.storeHours),
+                  subtitle: Text(l.storeHoursSub),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => context.push('/hours'),
+                ),
+              ),
+            if (view.merchant.status == MerchantStatus.live && view.merchant.type != MerchantType.fashion)
+              Card(
+                child: SwitchListTile(
+                  key: const ValueKey('delivers-anywhere'),
+                  secondary: const Icon(Icons.two_wheeler, color: SanthaColors.indigo),
+                  title: Text(l.deliverAnywhereTitle),
+                  subtitle: Text(l.deliverAnywhereSub(l.distanceKm((view.merchant.radiusM / 1000).toStringAsFixed(view.merchant.radiusM % 1000 == 0 ? 0 : 1)))),
+                  value: view.merchant.deliversAnywhere,
+                  onChanged: (on) async {
+                    try {
+                      await ref.read(onboardingProvider.notifier).setDeliversAnywhere(on);
+                    } catch (e) {
+                      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.apiError(e))));
+                    }
+                  },
+                ),
+              ),
             const SizedBox(height: SanthaSpacing.s6),
             SanthaButton(label: l.refresh, variant: SanthaButtonVariant.outline, onPressed: () => ref.read(onboardingProvider.notifier).reload()),
             const SizedBox(height: SanthaSpacing.s3),

@@ -117,7 +117,7 @@ export class SettlementService implements OnModuleInit {
       // Lines the store could not supply were refunded at packing time (M5): charged to the store.
       merchantRefundsPaise: o.lines.reduce((s, l) => s + (l.refundPaise ?? 0), 0),
       packagingPaise: fee('packaging'),
-      deliveryFeePaise: fee('delivery'),
+      deliveryFeePaise: fee('delivery') + fee('beyond_radius'), // both pay for the trip (ADR-022)
       selfBonusPaise: f.selfBonusPaise,
       codCollectedByStorePaise: f.mode === 'self' ? (f.codCollectedPaise ?? 0) : 0,
     };

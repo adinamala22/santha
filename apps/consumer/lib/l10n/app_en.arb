@@ -989,5 +989,22 @@
     }
   },
   "notDeliveringOtherArea": "This store is in another area and does not deliver to your address.",
-  "notDeliveringOutside": "We don't deliver to your address yet."
+  "notDeliveringOutside": "We don't deliver to your address yet.",
+  "deliveryNotAvailable": "Delivery not available to your address",
+  "higherDeliveryCharge": "Higher delivery charge",
+  "beyondRadiusNote": "This store usually delivers up to {distance}. Your address is farther, so an extra delivery charge of {amount} applies.",
+  "@beyondRadiusNote": {
+    "placeholders": {
+      "distance": {
+        "type": "String"
+      },
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "billBeyondRadius": "Extra delivery charge (far from the store)",
+  "deliversAnywhere": "Delivers anywhere",
+  "deliversAnywhereNote": "The store delivers this order itself. You can track it live in the app.",
+  "notDeliveringOtherCity": "This store delivers only within its own city."
 }

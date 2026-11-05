@@ -119,10 +119,31 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
               switch (p.notDeliveringReason) {
                 NotDeliveringReason.tooFar when p.deliveryRadiusM > 0 => l.notDeliveringTooFar(distance(l, p.deliveryRadiusM)),
                 NotDeliveringReason.otherArea => l.notDeliveringOtherArea,
+                NotDeliveringReason.otherCity => l.notDeliveringOtherCity,
                 NotDeliveringReason.outsideServiceArea => l.notDeliveringOutside,
                 _ => l.notDeliveringHere,
               },
               key: const ValueKey('not-delivering'), style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
+          ),
+        ),
+      // Beyond the store's radius (same city): it delivers, at an extra charge (ADR-022).
+      if (p.deliversHere && p.beyondRadiusSurchargePaise != null)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s3, SanthaSpacing.s5, 0),
+            child: Container(
+              key: const ValueKey('beyond-radius'),
+              padding: const EdgeInsets.all(SanthaSpacing.s3),
+              decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.md)),
+              child: Text(l.beyondRadiusNote(distance(l, p.deliveryRadiusM), rupees(p.beyondRadiusSurchargePaise!)), style: text.bodySmall?.copyWith(color: SanthaColors.ink)),
+            ),
+          ),
+        ),
+      if (p.deliversHere && p.store.deliversAnywhere && p.beyondRadiusSurchargePaise != null)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s2, SanthaSpacing.s5, 0),
+            child: Text(l.deliversAnywhereNote, key: const ValueKey('delivers-anywhere-note'), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
           ),
         ),
       if (p.isKitchen) ..._kitchen(context, p, items) else ...[
@@ -356,8 +377,10 @@ class _Hero extends ConsumerWidget {
                 TrustBadge(label: l.newOnSantha, positive: false),
               if (page.fssaiVerified) TrustBadge(label: l.fssaiOk, icon: Icons.verified_outlined),
               if (page.hygieneDeclared) TrustBadge(label: l.hygieneOk, icon: Icons.clean_hands_outlined),
-              if (!page.isKitchen) etaChipFor(context, s),
-              if (s.selfDelivers) SelfDeliversBadge(label: l.selfDelivers),
+              // No ETA or self-delivery promise for a store that cannot deliver here (ADR-021).
+              if (!page.isKitchen && page.deliversHere) etaChipFor(context, s),
+              if (page.deliversHere && s.deliversAnywhere) SelfDeliversBadge(label: l.deliversAnywhere)
+              else if (s.selfDelivers && page.deliversHere) SelfDeliversBadge(label: l.selfDelivers),
             ]),
             if (closedLabelFor(l, s) case final closed?) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text(closed, style: text.bodySmall?.copyWith(color: SanthaColors.chilli))),
             const SizedBox(height: SanthaSpacing.s2),

@@ -41,6 +41,9 @@ class FakeBackend implements HttpClientAdapter {
   /// Applied to every order response (e.g. {'state': 'PREPARING'} to simulate the store moving it on).
   Map<String, dynamic> orderPatch = {};
 
+  /// Fee rows added to the priced bill (e.g. the beyond-radius charge, ADR-022).
+  List<Map<String, dynamic>> extraFees = [];
+
   // M6 state: the tracking response (null → 404 until the store accepts).
   Map<String, dynamic>? tracking;
   bool cancelledNoCourier = false;
@@ -55,6 +58,9 @@ class FakeBackend implements HttpClientAdapter {
 
   // Ratings: the kirana's rating on its card/page (null keeps the captured fixture as is).
   ({double avg, int count})? kiranaRating;
+
+  /// Fields merged into the kirana's card in the feed and search (e.g. deliverable: false, ADR-021).
+  Map<String, dynamic> kiranaCardPatch = {};
 
   /// Fields merged into the kirana store page (e.g. deliversHere / notDeliveringReason).
   Map<String, dynamic> kiranaPagePatch = {};
@@ -90,6 +96,7 @@ class FakeBackend implements HttpClientAdapter {
     final feed = fixture(q['tab'] == 'home_kitchens' ? 'feed_kitchens' : 'feed_stores');
     var stores = (feed['stores'] as List).cast<Map<String, dynamic>>();
     if (kiranaRating case final k?) stores = [for (final s in stores) s['id'] == kiranaId ? {...s, 'rating': k.avg, 'ratingCount': k.count} : s];
+    stores = [for (final s in stores) s['id'] == kiranaId ? {...s, ...kiranaCardPatch} : s];
     final min = q['minRating'] as num?;
     if (min != null) stores = stores.where((s) => s['rating'] != null && (s['rating'] as num) >= min).toList();
     return {...feed, 'stores': stores};
@@ -108,7 +115,11 @@ class FakeBackend implements HttpClientAdapter {
     if (o.method == 'POST' && path.startsWith('/v1/dev/payments/') && path.endsWith('/succeed')) paid = true;
     final (status, body) = switch ('${o.method} $path') {
       'PUT /v1/cart' => (200, fixture('cart')),
-      'POST /v1/cart/price' => (200, fixture(cartMerchantId == kitchenId ? 'checkout_kitchen' : 'checkout_retail')),
+      'POST /v1/cart/price' => (200, (() {
+          final q = fixture(cartMerchantId == kitchenId ? 'checkout_kitchen' : 'checkout_retail');
+          if (extraFees.isNotEmpty) (q['bill']['fees'] as List).insertAll(1, extraFees);
+          return q;
+        })()),
       'POST /v1/orders' => (201, _order()),
       'GET /v1/orders' => (200, {'items': [_order()]}),
       'GET /v1/wallet' => (200, fixture('wallet')),
@@ -205,7 +216,13 @@ class FakeBackend implements HttpClientAdapter {
         ),
       'GET /v1/me/addresses' => (200, fixture('address_list')),
       'GET /v1/feed' => (200, _feed(o.queryParameters)),
-      'GET /v1/search' => (200, fixture('search_atta')),
+      'GET /v1/search' => (200, (() {
+          final r = fixture('search_atta');
+          for (final g in (r['groups'] as List).cast<Map<String, dynamic>>()) {
+            if ((g['store'] as Map)['id'] == kiranaId) g['store'] = {...(g['store'] as Map<String, dynamic>), ...kiranaCardPatch};
+          }
+          return r;
+        })()),
       'GET /v1/stores/$kiranaId/reviews' => (200, fixture('store_reviews_public')),
       'GET /v1/stores/$kiranaId' => (200, (() {
           final page = fixture('store_kirana');

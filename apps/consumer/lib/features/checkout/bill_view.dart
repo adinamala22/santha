@@ -16,6 +16,7 @@ class BillView extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     String feeLabel(FeeCode c) => switch (c) {
           FeeCode.delivery => l.billDelivery,
+          FeeCode.beyondRadius => l.billBeyondRadius,
           FeeCode.smallOrder => l.billSmallOrder,
           FeeCode.platform => l.billPlatform,
           FeeCode.packaging => l.billPackaging,

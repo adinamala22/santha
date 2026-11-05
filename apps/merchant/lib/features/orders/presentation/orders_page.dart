@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_ui/santha_ui.dart';
 
@@ -39,6 +40,13 @@ class OrdersPage extends ConsumerWidget {
             padding: const EdgeInsets.all(SanthaSpacing.s4),
             children: [
               if (!open) _PausedBanner(missed: view.merchant.pausedReason == 'missed_orders'),
+              if (open && view.openNow?.open == false) _ClosedByHoursBanner(nextOpenAt: view.openNow!.nextOpenAt),
+              if (open && view.openNow?.open == true && (view.merchant.openUntil?.isAfter(DateTime.now()) ?? false))
+                Padding(
+                  padding: const EdgeInsets.only(bottom: SanthaSpacing.s3),
+                  child: Text(l.storeOpenOutsideHours(_when(context, view.merchant.openUntil!)),
+                      key: const ValueKey('open-until'), style: const TextStyle(color: SanthaColors.leaf, fontWeight: FontWeight.w600)),
+                ),
               for (final o in b.newOrders) _NewOrderCard(order: o, view: view),
               if (b.newOrders.isEmpty && open)
                 Padding(
@@ -114,6 +122,44 @@ class _PausedBanner extends ConsumerWidget {
   }
 }
 
+/// The store is switched on, but its hours say closed: customers see it closed (ADR-021).
+class _ClosedByHoursBanner extends ConsumerWidget {
+  const _ClosedByHoursBanner({required this.nextOpenAt});
+  final DateTime? nextOpenAt;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    return Container(
+      key: const ValueKey('closed-by-hours'),
+      margin: const EdgeInsets.only(bottom: SanthaSpacing.s4),
+      padding: const EdgeInsets.all(SanthaSpacing.s4),
+      decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.md)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(nextOpenAt == null ? l.storeClosedByHoursNoNext : l.storeClosedByHours(_when(context, nextOpenAt!)), style: const TextStyle(color: SanthaColors.ink)),
+        const SizedBox(height: SanthaSpacing.s3),
+        Wrap(spacing: SanthaSpacing.s3, runSpacing: SanthaSpacing.s2, children: [
+          SanthaButton(
+            key: const ValueKey('open-now'),
+            label: l.storeOpenNow,
+            onPressed: () => _run(context, ref, () => ref.read(storeOpenProvider.notifier).set(true)),
+          ),
+          SanthaButton(key: const ValueKey('edit-hours'), label: l.storeEditHours, variant: SanthaButtonVariant.outline, onPressed: () => context.push('/hours')),
+        ]),
+      ]),
+    );
+  }
+}
+
+/// IST clock time, with the weekday when it is not today ("Fri 9:00 PM").
+String _when(BuildContext context, DateTime t) {
+  final l = AppLocalizations.of(context);
+  final ist = t.toUtc().add(const Duration(hours: 5, minutes: 30));
+  final today = DateTime.now().toUtc().add(const Duration(hours: 5, minutes: 30));
+  final sameDay = ist.year == today.year && ist.month == today.month && ist.day == today.day;
+  return sameDay ? _time(context, t) : '${l.dayLabel(weekDays[ist.weekday - 1])} ${_time(context, t)}';
+}
+
 String _countdown(Duration d) {
   if (d.isNegative) return '0:00';
   final s = d.inSeconds;
@@ -160,6 +206,11 @@ class _NewOrderCard extends ConsumerWidget {
           style: text.bodyLarge,
         ),
         const SizedBox(height: SanthaSpacing.s1),
+        if (order.beyondRadius)
+          Padding(
+            padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
+            child: NoticePill(key: ValueKey('beyond-${order.id}'), background: SanthaColors.white, label: l.orderBeyondRadius(l.distanceKm((view.merchant.radiusM / 1000).toStringAsFixed(view.merchant.radiusM % 1000 == 0 ? 0 : 1)))),
+          ),
         for (final line in order.lines) Text('${line.quantity} × ${line.name} (${line.variantLabel})', style: text.bodyMedium),
         if (order.substitutesAllowed > 0) ...[
           const SizedBox(height: SanthaSpacing.s1),
@@ -176,7 +227,7 @@ class _NewOrderCard extends ConsumerWidget {
               onPressed: timeUp
                   ? null
                   : () async {
-                      final choice = await chooseFulfilment(context, view);
+                      final choice = await chooseFulfilment(context, view, ownTrip: view.merchant.deliversAnywhere && order.beyondRadius);
                       if (choice == null || !context.mounted) return;
                       await _run(context, ref, () => ref.read(ordersBoardProvider.notifier).accept(order, mode: choice.mode, staffId: choice.staffId));
                     },

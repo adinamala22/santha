@@ -1,5 +1,7 @@
 # ADR-020 (PROPOSED): Long-distance shipping by merchants ("Ships across India")
 
+> 2026-11-05: the in-city part ("Deliver anywhere" inside the city, seller-delivered with live tracking) shipped as ADR-022. This ADR now covers only other cities and states, and is still awaiting approval.
+
 - Status: **proposed — needs founder approval before any code**
 - Date: 2026-11-04
 

@@ -300,7 +300,9 @@ model Merchant {
   landmark          String?
   pincode           String?
   location          Unsupported("geography(Point, 4326)")?
-  radiusM           Int                                    @default(3000) @map("radius_m")
+  radiusM           Int                                    @default(5000) @map("radius_m")
+  /// "Deliver anywhere" (ADR-022): delivers itself to any address in its city, beyond its radius too.
+  deliversAnywhere  Boolean                                @default(false) @map("delivers_anywhere")
   hours             Json?
   movPaise          Int                                    @default(0) @map("mov_paise")
   /// Per-order packaging charge set by the merchant; cart-pricing caps it at the fee rule.
@@ -318,6 +320,8 @@ model Merchant {
   /// Store toggle (merchant app) and auto-pause after two missed orders in a row (M5).
   acceptingOrders   Boolean                                @default(true) @map("accepting_orders")
   pausedReason      String?                                @map("paused_reason")
+  /// Open outside the hours until this instant: the partner turned Open on after closing time (ADR-021).
+  openUntil         DateTime?                              @map("open_until") @db.Timestamptz(6)
   pausedAt          DateTime?                              @map("paused_at") @db.Timestamptz(6)
   missedInARow      Int                                    @default(0) @map("missed_in_a_row")
   createdAt         DateTime                               @default(now()) @map("created_at") @db.Timestamptz(6)

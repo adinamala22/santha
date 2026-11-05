@@ -159,12 +159,14 @@ export class CartPricingService implements OnModuleInit {
 
     const promo = input.promoCode ? await this.evaluateCode(input.promoCode, { userId, merchant, itemsPaise, placedOrders: input.placedOrders }) : null;
     const applied: PromoApplied | null = promo?.applied ? { code: promo.code, discountPaise: promo.discountPaise, merchantSharePaise: promo.merchantSharePaise } : null;
+    const distanceM = haversineMeters(merchant.location!, input.location);
     const quote = computeQuote({
       merchant: { id: merchant.id, type: merchant.type, movPaise: merchant.movPaise, packagingFeePaise: merchant.packagingFeePaise },
       lines,
-      distanceM: haversineMeters(merchant.location!, input.location),
+      distanceM,
       fees,
       promo: applied,
+      beyondRadius: distanceM > merchant.radiusM, // ADR-022: farther than the store's radius costs more
     });
     if (promo?.applied) promo.discountPaise = quote.discountPaise;
     return { cart, merchant, microMarketId: merchant.microMarketId!, fees, quote, promo, meta };
