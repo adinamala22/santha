@@ -21,6 +21,20 @@ describe('LoginForm', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it('ADR-024: password-only sign-in before launch goes straight to the console (no OTP step)', async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ signedIn: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const assign = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign });
+    render(<LoginForm copy={copy} next="/admin/leads" />);
+    await userEvent.type(screen.getByLabelText(copy.email), 'ops@santhaapp.com');
+    await userEvent.type(screen.getByLabelText(copy.password), 'a-long-prod-password');
+    await userEvent.click(screen.getByRole('button', { name: copy.continue }));
+    await vi.waitFor(() => expect(assign).toHaveBeenCalledWith('/admin/leads'));
+    expect(screen.queryByRole('heading', { name: copy.otpTitle })).toBeNull();
+    vi.unstubAllGlobals();
+  });
+
   it('moves to the OTP step on success and says where the code went', async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ challengeId: 'c1', phoneMasked: '+9190******00' }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);

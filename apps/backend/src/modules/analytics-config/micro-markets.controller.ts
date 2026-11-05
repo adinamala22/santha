@@ -1,6 +1,9 @@
-import { Body, Controller, Get, HttpCode, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Param, ParseUUIDPipe, Post, Put, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
-import { ZodResponse } from 'nestjs-zod';
+import { createZodDto, ZodResponse } from 'nestjs-zod';
+import { z } from 'zod';
+import { ENV } from '../../config/config.module';
+import type { Env } from '../../config/env';
 import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
 import {
   CityCoverageDto,
@@ -22,6 +25,15 @@ import { FlagsService } from './flags.service';
 import { MicroMarketsService } from './micro-markets.service';
 
 const toDate = (iso: string | undefined) => (iso ? new Date(iso) : undefined);
+
+/** What the public website needs to know (ADR-023). */
+class SiteConfigDto extends createZodDto(
+  z.object({
+    appDownloads: z.boolean().describe('Show the Android / iPhone download buttons (flag app_downloads); false = "Launching soon"'),
+    androidUrl: z.string().nullable().describe('Play Store listing, when downloads are on'),
+    iosUrl: z.string().nullable().describe('App Store listing, when downloads are on'),
+  }),
+) {}
 
 /** Ops: city-wide coverage (ADR-019). */
 @ApiTags('ops')
@@ -104,7 +116,20 @@ export class ConfigController {
   constructor(
     private readonly markets: MicroMarketsService,
     private readonly flags: FlagsService,
+    @Inject(ENV) private readonly env: Env,
   ) {}
+
+  /**
+   * Public website settings (ADR-023): download buttons only once ops turn on app_downloads (PostHog, no
+   * redeploy); until then the site says "Launching soon on Android and iPhone". Cached by the site for a minute.
+   */
+  @Public()
+  @Get('config/site')
+  @ZodResponse({ type: SiteConfigDto })
+  async site() {
+    const on = await this.flags.isEnabled('app_downloads', { distinctId: 'website' });
+    return { appDownloads: on, androidUrl: on ? (this.env.ANDROID_APP_URL ?? null) : null, iosUrl: on ? (this.env.IOS_APP_URL ?? null) : null };
+  }
 
   /** Is this point inside a live micro-market right now? Public: the consumer app asks before login. */
   @Public()

@@ -96,14 +96,14 @@ export class GrowthService implements OnModuleInit {
 
   // ───────────── leads ─────────────
 
-  async createLead(input: { kind: LeadRecord['kind']; name: string; phone: string; area?: string | undefined; message?: string | undefined; locale?: string | undefined; website?: string | undefined }, ip: string): Promise<{ ok: true }> {
+  async createLead(input: { kind: LeadRecord['kind']; name: string; phone: string; business?: string | undefined; category?: string | undefined; area?: string | undefined; message?: string | undefined; locale?: string | undefined; website?: string | undefined }, ip: string): Promise<{ ok: true }> {
     // Honeypot: bots fill the hidden "website" field; answer as if accepted.
     if (input.website) return { ok: true };
     const rl = await this.limiter.hit(`lead:ip:${createHash('sha256').update(ip).digest('hex').slice(0, 16)}`, 5, 3600);
     if (!rl.allowed) throw new DomainError('RATE_LIMITED', 'Too many requests. Please try again later.', { retryAfterSec: rl.retryAfterSec });
     const phone = `+91${input.phone.replace(/\D/g, '').slice(-10)}`;
     if (await this.leads.recent(phone, input.kind, new Date(this.clock().getTime() - 86_400_000))) return { ok: true };
-    await this.leads.create({ id: randomUUID(), kind: input.kind, name: input.name, phone, area: input.area ?? null, message: input.message ?? null, locale: input.locale === 'te' ? 'te' : 'en' });
+    await this.leads.create({ id: randomUUID(), kind: input.kind, name: input.name, phone, business: input.business ?? null, category: input.category ?? null, area: input.area ?? null, message: input.message ?? null, locale: input.locale === 'te' ? 'te' : 'en' });
     return { ok: true };
   }
 

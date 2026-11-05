@@ -26,6 +26,8 @@ export const ERROR_STATUS = {
   NOT_FOUND: 404,
   BARCODE_UNKNOWN: 404,
   PROVIDER_UNAVAILABLE: 503,
+  /** Pre-launch production: the apps' endpoints are closed until launch (ADR-024). */
+  PRELAUNCH: 503,
   // M4 — cart, checkout, orders, payments
   IDEMPOTENCY_KEY_REQUIRED: 400,
   IDEMPOTENCY_MISMATCH: 422,

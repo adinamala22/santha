@@ -77,6 +77,13 @@ export const OpsChallengeSchema = OtpChallengeSchema.extend({
 });
 export class OpsChallengeDto extends createZodDto(OpsChallengeSchema) {}
 
+/** Ops sign-in step 1: the OTP challenge, or (OPS_LOGIN_OTP=off, pre-launch only, ADR-024) the session itself. */
+export class OpsLoginResultDto extends createZodDto(
+  OpsChallengeSchema.partial()
+    .merge(AuthSessionSchema.partial())
+    .extend({ signedIn: z.boolean().optional().describe('true: signed in on password only (pre-launch, OPS_LOGIN_OTP=off); the session fields are set') }),
+) {}
+
 export const OpsVerifySchema = z.object({ challengeId: z.uuid(), code: z.string().regex(/^\d{6}$/), deviceId });
 export class OpsVerifyDto extends createZodDto(OpsVerifySchema) {}
 

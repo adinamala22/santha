@@ -1,27 +1,35 @@
-name: deploy
+name: Deploy · Web
 
-# Every push to main: build the images (tagged with the commit) and deploy them to TEST.
-# Prod: run this workflow by hand (Run workflow → environment: prod, tag: a commit already checked on test).
-# The same images are used, with no rebuild.
-# Settings come from config/values/<env>.values.yaml. Setup: docs/deploy/README.md.
+# Website pipeline (landing, store pages, ops console), separate from the backend and the apps (ADR-024).
+#   QA (test):         every push to main that touches the website: build the QA and PROD images (the API address is
+#                      baked in at build time, from config/values/<env>.values.yaml web section), deploy QA.
+#   PROD (production): run by hand: Actions → "Deploy · Web" → Run workflow → PROD. Leave the tag empty to promote
+#                      exactly what QA runs now (its PROD image was built from the same commit).
+# The website needs its environment's backend: deploy the backend to that environment first.
 on:
   push:
     branches: [main]
-    paths: [apps/backend/**, apps/web/**, packages/shared-types/**, design/**, config/values/**, infra/deploy/**, pnpm-lock.yaml, .github/workflows/deploy.yml, .github/workflows/deploy-env.yml]
+    paths:
+      - apps/web/**
+      - packages/shared-types/**
+      - packages/santha_ui/fonts/**
+      - design/**
+      - config/values/**
+      - pnpm-lock.yaml
+      - package.json
+      - .github/workflows/deploy-web.yml
+      - .github/workflows/deploy-env.yml
   workflow_dispatch:
     inputs:
       environment:
         description: Where to deploy
         type: choice
-        options: [prod, test]
-        default: prod
+        options: ['PROD (production)', 'QA (test)']
+        default: 'PROD (production)'
       tag:
-        description: Commit SHA to deploy (all 40 characters; it must have been built by a push to main)
-        required: true
-
-concurrency:
-  group: deploy-${{ github.event_name == 'workflow_dispatch' && inputs.environment || 'test' }}
-  cancel-in-progress: false
+        description: Commit SHA to deploy (40 characters, built by a push to main). Empty = what QA runs now.
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -29,9 +37,8 @@ permissions:
 
 jobs:
   images:
-    # Skipped until the servers are set up (repository variable DEPLOY_ENABLED=true), so main stays green meanwhile.
     if: github.event_name == 'push' && vars.DEPLOY_ENABLED == 'true'
-    name: build images
+    name: build web images (QA + PROD)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,34 +51,12 @@ jobs:
               echo "${env}_${k}=$(yq ".web.${k} // \"\"" "config/values/${env}.values.yaml")" >> "$GITHUB_OUTPUT"
             done
           done
-      # Images for x86 (e.g. a Hostinger VPS) and ARM (e.g. Oracle Cloud Always Free) servers.
       - uses: docker/setup-qemu-action@v3
         with: { platforms: arm64 }
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with: { registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}' }
-      - name: backend (API + worker)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/backend/Dockerfile
-          target: runtime
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.v.outputs.registry }}/santha-backend:${{ github.sha }}
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,scope=backend,mode=max
-      - name: tools (migrations, scripts)
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: apps/backend/Dockerfile
-          target: tools
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.v.outputs.registry }}/santha-tools:${{ github.sha }}
-          cache-from: type=gha,scope=backend
-      - name: web (test)
+      - name: web (QA)
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -85,7 +70,7 @@ jobs:
             NEXT_PUBLIC_MEDIA_ORIGIN=${{ steps.v.outputs.test_mediaOrigin }}
           cache-from: type=gha,scope=web
           cache-to: type=gha,scope=web,mode=max
-      - name: web (prod)
+      - name: web (PROD)
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -99,14 +84,19 @@ jobs:
             NEXT_PUBLIC_MEDIA_ORIGIN=${{ steps.v.outputs.prod_mediaOrigin }}
           cache-from: type=gha,scope=web
 
-  test:
+  qa:
+    name: QA
     needs: images
     uses: ./.github/workflows/deploy-env.yml
-    with: { environment: test, tag: '${{ github.sha }}' }
+    with: { environment: test, component: web, tag: '${{ github.sha }}' }
     secrets: inherit
 
   manual:
+    name: ${{ startsWith(inputs.environment, 'PROD') && 'PROD' || 'QA' }}
     if: github.event_name == 'workflow_dispatch'
     uses: ./.github/workflows/deploy-env.yml
-    with: { environment: '${{ inputs.environment }}', tag: '${{ inputs.tag }}' }
+    with:
+      environment: ${{ startsWith(inputs.environment, 'PROD') && 'prod' || 'test' }}
+      component: web
+      tag: ${{ inputs.tag }}
     secrets: inherit

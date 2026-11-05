@@ -83,5 +83,13 @@ describe('values files (SANTHA_ENV / SANTHA_CLOUD)', () => {
       expect(parseEnv({ SANTHA_ENV: 'prod', SANTHA_CLOUD: 'gcp', SANTHA_VALUES_DIR: real, ...prodSecrets }).S3_ENDPOINT).toBe('https://storage.googleapis.com');
       expect(() => parseEnv({ SANTHA_ENV: 'prod', SANTHA_VALUES_DIR: real, ...SECRETS })).toThrow(/MSG91_AUTH_KEY|RAZORPAY_KEY_ID/);
     });
+    it('ADR-024: prod on the shared AWS server before launch starts with only its own secrets', () => {
+      const env = parseEnv({ SANTHA_ENV: 'prod', SANTHA_CLOUD: 'aws', SANTHA_VALUES_DIR: real, ...SECRETS });
+      expect(env).toMatchObject({ APP_ENV: 'production', LAUNCH_STAGE: 'prelaunch', OPS_LOGIN_OTP: 'off', OTP_PROVIDER: 'mock', PAYMENTS_PROVIDER: 'mock', CORS_ORIGINS: 'https://santhaapp.com' });
+    });
+    it('ADR-024: test on the shared AWS server: test as before', () => {
+      const env = parseEnv({ SANTHA_ENV: 'test', SANTHA_CLOUD: 'aws', SANTHA_VALUES_DIR: real, ...SECRETS, PAYMENTS_PROVIDER: 'mock' });
+      expect(env).toMatchObject({ APP_ENV: 'staging', LAUNCH_STAGE: 'live', OPS_LOGIN_OTP: 'required', TRUST_PROXY: 1 });
+    });
   });
 });

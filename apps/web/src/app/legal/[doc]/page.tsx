@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { langOf, SiteFooter, SiteHeader } from '@/components/site/site-chrome';
 import { fill } from '@/i18n/console';
+import { getSiteConfig } from '@/lib/site-config';
 import { LEGAL_DOCS, type LegalDoc, siteCopy } from '@/i18n/site';
 
 const UPDATED = '2026-11-03';
@@ -25,7 +26,7 @@ export default async function LegalPage({ params, searchParams }: { params: Prom
   const page = l[doc as LegalDoc];
   return (
     <div lang={lang} className={lang === 'te' ? 'font-telugu' : undefined}>
-      <SiteHeader lang={lang} path={`/legal/${doc}`} />
+      <SiteHeader lang={lang} path={`/legal/${doc}`} downloads={(await getSiteConfig()).appDownloads} />
       <main className="mx-auto max-w-3xl px-6 py-16">
         <h1 className="text-4xl font-bold text-indigo">{page.title}</h1>
         <p className="mt-2 text-sm text-slate">{fill(l.updated, { date: UPDATED })}</p>

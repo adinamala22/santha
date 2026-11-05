@@ -1189,6 +1189,10 @@ model Lead {
   kind      String
   name      String
   phone     String
+  /// Shop or kitchen name (ADR-023)
+  business  String?
+  /// Shop type picked on the /stores form (ADR-023)
+  category  String?
   area      String?
   message   String?
   locale    String   @default("en")

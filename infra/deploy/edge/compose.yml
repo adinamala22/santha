@@ -1,0 +1,27 @@
+# Shared HTTPS front door (ADR-024): one Caddy on ports 80/443 for every Santha stack on this server (test and
+# prod side by side on one VM). Each stack joins the external network "santha-edge"; santha.sh writes that
+# stack's sites to ./sites/<env>.caddy (domains → <env>-api, <env>-web, <env>-storage) and reloads Caddy.
+# Lives in /opt/santha-edge; started and reloaded by santha.sh, never by hand.
+name: santha-edge
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL:?}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./sites:/etc/caddy/sites:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks: [edge]
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+networks:
+  edge: { name: santha-edge, external: true }
+
+volumes: { caddy_data: {}, caddy_config: {} }

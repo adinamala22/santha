@@ -7,6 +7,7 @@ import { langOf, SiteFooter, SiteHeader } from '@/components/site/site-chrome';
 import { fill } from '@/i18n/console';
 import { siteCopy } from '@/i18n/site';
 import { API_URL } from '@/lib/api';
+import { getSiteConfig } from '@/lib/site-config';
 import { rupees } from '@/lib/format';
 
 export const revalidate = 300;
@@ -40,9 +41,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function StorePage({ params, searchParams }: { params: Promise<{ slug: string }>; searchParams: Promise<{ lang?: string }> }) {
   const { slug } = await params;
   const lang = langOf((await searchParams).lang);
-  const d = await load(slug);
+  const [d, site] = await Promise.all([load(slug), getSiteConfig()]);
   if (!d) notFound();
   const s = siteCopy(lang).store;
+  const pre = siteCopy(lang).prelaunch;
   const st = d.store;
   const name = String(lang === 'te' && st.nameTe ? st.nameTe : st.name);
   const area = String((lang === 'te' && st.areaTe ? st.areaTe : st.area) ?? 'Nellore');
@@ -57,7 +59,7 @@ export default async function StorePage({ params, searchParams }: { params: Prom
   return (
     <div lang={lang} className={lang === 'te' ? 'font-telugu' : undefined}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <SiteHeader lang={lang} path={`/s/${slug}`} />
+      <SiteHeader lang={lang} path={`/s/${slug}`} downloads={site.appDownloads} />
       <main>
         <section className="bg-indigo text-white">
           <div className="mx-auto max-w-6xl px-6 py-14">
@@ -70,14 +72,24 @@ export default async function StorePage({ params, searchParams }: { params: Prom
             <p className="mt-2 text-marigold" data-testid="store-rating">
               {st.rating.avg != null && st.rating.count > 0 ? fill(s.rating, { avg: st.rating.avg.toFixed(1), count: st.rating.count }) : s.noRating}
             </p>
-            <div className="mt-8 flex flex-wrap gap-4">
-              <a href={deepLink} className="s-focus rounded-lg bg-marigold px-8 py-4 text-lg font-medium text-indigo hover:bg-marigold-600">
-                {s.openInApp}
-              </a>
-              <Link href="/#download" className="s-focus rounded-lg bg-white px-6 py-4 text-lg font-medium text-indigo hover:bg-indigo-100">
-                {s.order}
-              </Link>
-            </div>
+            {site.appDownloads ? (
+              <div className="mt-8 flex flex-wrap gap-4">
+                <a href={deepLink} className="s-focus rounded-lg bg-marigold px-8 py-4 text-lg font-medium text-indigo hover:bg-marigold-600">
+                  {s.openInApp}
+                </a>
+                <Link href="/#download" className="s-focus rounded-lg bg-white px-6 py-4 text-lg font-medium text-indigo hover:bg-indigo-100">
+                  {s.order}
+                </Link>
+              </div>
+            ) : (
+              // Before launch (ADR-023): no dead app links; send people to the launch list instead.
+              <div className="mt-8" data-testid="store-coming-soon">
+                <p className="text-lg font-medium">{pre.title}</p>
+                <Link href={lang === 'te' ? '/?lang=te#download' : '/#download'} className="s-focus mt-4 inline-block rounded-lg bg-marigold px-8 py-4 text-lg font-medium text-indigo hover:bg-marigold-600">
+                  {pre.formTitle}
+                </Link>
+              </div>
+            )}
           </div>
         </section>
         {d.items.length ? (

@@ -34,6 +34,8 @@ Emitted as of M8 (server): the analytics export forwards the domain events in `E
 Client (consumer app, M8): consent_changed(purpose, granted) · data_export_requested · account_deletion_requested · grievance_raised(category).
 Client (merchant app, M8): review_replied(order_id).
 
+Launch landing (ADR-023): no new analytics events. Website leads gain kind `customer` ("Tell me when it launches") and `business` / `category` on store leads; feature flag `app_downloads` (off until the apps are in the stores) is read by the site via `GET /v1/config/site`.
+
 Auth, WhatsApp OTP (ADR-017): no new analytics events. `POST /v1/auth/otp/request` and `/v1/auth/ops/login` responses carry `channel` (whatsapp|sms); API logs "OTP sent" (channel, fallback) and "OTP channel failed" (channel, metaCode). Feature flag: `whatsapp_otp`.
 
 Ratings & reviews (ADR-018), server: **rating.submitted**(order_id, merchant_id, rider_user_id, store_stars, rider_stars, has_comment, flagged) when a customer rates a delivered order, and **rating.moderated**(order_id, merchant_id, from, to) when ops hides or publishes a review. Both are written in the same transaction as the rating (outbox; in-process in fake mode). The search indexer consumes both and rebuilds the store, so store cards, ranking and `minRating` use the current rating (hidden reviews excluded).

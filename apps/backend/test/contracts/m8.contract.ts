@@ -38,8 +38,8 @@ export function leadsRepositoryContract(name: string, make: () => Promise<LeadsR
     it('creates, finds recent by phone and kind, updates status', async () => {
       const repo = await make();
       const phone = `+9198${String(Math.floor(Math.random() * 1e8)).padStart(8, '0')}`;
-      const l = await repo.create({ id: randomUUID(), kind: 'store', name: 'Kirana', phone, area: null, message: null, locale: 'te' });
-      expect(l.status).toBe('new');
+      const l = await repo.create({ id: randomUUID(), kind: 'store', name: 'Kirana', phone, business: 'Sri Sai Kirana', category: 'kirana', area: null, message: null, locale: 'te' });
+      expect(l).toMatchObject({ status: 'new', business: 'Sri Sai Kirana', category: 'kirana' }); // ADR-023
       expect((await repo.recent(phone, 'store', new Date(Date.now() - 60_000)))?.id).toBe(l.id);
       expect(await repo.recent(phone, 'rider', new Date(Date.now() - 60_000))).toBeNull();
       const audit = { action: 'lead.updated', actorId: null };

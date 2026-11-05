@@ -1,38 +1,74 @@
 name: deploy-env
 
-# Deploys one tag to one environment (test or prod) over SSH. Called by deploy.yml.
-# Uses that GitHub environment's secrets:
-#   SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS (output of `ssh-keyscan <host>`)
-# The server keeps its own /opt/santha/.env with the secrets; this job never sees them.
+# Deploys one part (backend or web) at one tag to one environment over SSH (ADR-024). Called by
+# deploy-backend.yml and deploy-web.yml. Environments: test = QA, prod = PROD.
+# Uses that GitHub environment's secrets and variables:
+#   secrets SSH_HOST, SSH_USER, SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS (output of `ssh-keyscan <host>`)
+#   variable DEPLOY_DIR: the stack's folder on the server (default /opt/santha; prod on the shared server: /opt/santha-prod)
+# The server keeps its own .env with the secrets; this job never sees them.
+# No tag (PROD only) = promote exactly what QA runs now for that part.
 on:
   workflow_call:
     inputs:
-      environment: { type: string, required: true }
-      tag: { type: string, required: true }
+      environment: { type: string, required: true, description: test or prod }
+      component: { type: string, required: true, description: backend or web }
+      tag: { type: string, required: false, default: '' }
 
 permissions:
   contents: read
   packages: read
 
 jobs:
-  deploy:
-    name: deploy ${{ inputs.environment }}
+  # PROD without a tag: read the tag QA is running (promote test → prod).
+  resolve:
+    name: tag to deploy
     runs-on: ubuntu-latest
+    environment: ${{ inputs.tag == '' && 'test' || inputs.environment }}
+    outputs:
+      tag: ${{ steps.t.outputs.tag }}
+    steps:
+      - id: t
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+          HOST: ${{ secrets.SSH_HOST }}
+          USER: ${{ secrets.SSH_USER }}
+          DIR: ${{ vars.DEPLOY_DIR || '/opt/santha' }}
+        run: |
+          tag="${{ inputs.tag }}"
+          if [ -z "$tag" ]; then
+            install -m 700 -d ~/.ssh
+            printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            tag="$(ssh -i ~/.ssh/id_deploy "$USER@$HOST" "cat $DIR/.tag-${{ inputs.component }} 2>/dev/null || cat $DIR/.tag 2>/dev/null" | tr -d '[:space:]')"
+            echo "QA runs ${{ inputs.component }} $tag; promoting it."
+          fi
+          [[ "$tag" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::No valid tag (got '$tag'): give a full 40-character commit SHA built by a push to main."; exit 1; }
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    name: ${{ inputs.component }} → ${{ inputs.environment == 'prod' && 'PROD' || 'QA' }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    # One deploy at a time per environment, whichever part (backend and web share the server's stack).
+    concurrency:
+      group: santha-deploy-${{ inputs.environment }}
+      cancel-in-progress: false
     environment:
       name: ${{ inputs.environment }}
-      url: ${{ steps.v.outputs.site }}
+      url: ${{ steps.v.outputs.url }}
+    env:
+      DIR: ${{ vars.DEPLOY_DIR || '/opt/santha' }}
+      TAG: ${{ needs.resolve.outputs.tag }}
     steps:
-      - name: Check the tag
-        run: |
-          [[ "${{ inputs.tag }}" =~ ^[0-9a-f]{40}$ ]] || { echo "tag must be a full commit SHA"; exit 1; }
       - uses: actions/checkout@v4
-        with: { ref: '${{ inputs.tag }}', sparse-checkout: "infra/deploy\nconfig/values" }
+        with: { ref: '${{ needs.resolve.outputs.tag }}', sparse-checkout: "infra/deploy\nconfig/values" }
       - id: v
         name: Read the values file
         run: |
           f="config/values/${{ inputs.environment }}.values.yaml"
-          echo "site=$(yq '.web.siteUrl' "$f")" >> "$GITHUB_OUTPUT"
-          echo "api=$(yq '.web.apiUrl' "$f")" >> "$GITHUB_OUTPUT"
+          site="$(yq '.web.siteUrl' "$f")"; api="$(yq '.web.apiUrl' "$f")"
+          if [ "${{ inputs.component }}" = web ]; then echo "url=$site" >> "$GITHUB_OUTPUT"; else echo "url=$api/v1/health/ready" >> "$GITHUB_OUTPUT"; fi
       - name: SSH setup
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -44,16 +80,24 @@ jobs:
       - name: Copy the stack files and values (never the server's .env)
         env: { HOST: '${{ secrets.SSH_HOST }}', USER: '${{ secrets.SSH_USER }}' }
         run: |
-          scp -i ~/.ssh/id_deploy -r infra/deploy/compose.yml infra/deploy/compose.tunnel.yml infra/deploy/Caddyfile infra/deploy/santha.sh infra/deploy/server.env.example "$USER@$HOST:/opt/santha/"
-          ssh -i ~/.ssh/id_deploy "$USER@$HOST" 'rm -rf /opt/santha/values && mkdir -p /opt/santha/values'
-          scp -i ~/.ssh/id_deploy config/values/*.values.yaml "$USER@$HOST:/opt/santha/values/"
-      - name: Deploy
+          s() { ssh -i ~/.ssh/id_deploy "$USER@$HOST" "$@"; }
+          s "test -f '$DIR/.env'" || { echo "::error::$DIR/.env is missing on the server (docs/deploy/README.md)."; exit 1; }
+          scp -i ~/.ssh/id_deploy infra/deploy/compose.yml infra/deploy/compose.tunnel.yml infra/deploy/compose.edge.yml infra/deploy/Caddyfile infra/deploy/santha.sh infra/deploy/server.env.example "$USER@$HOST:$DIR/"
+          s "rm -rf '$DIR/values' && mkdir -p '$DIR/values'"
+          scp -i ~/.ssh/id_deploy config/values/*.values.yaml "$USER@$HOST:$DIR/values/"
+          # The shared HTTPS front door, when this server has one (ADR-024).
+          if s "test -d /opt/santha-edge"; then scp -i ~/.ssh/id_deploy infra/deploy/edge/compose.yml infra/deploy/edge/Caddyfile "$USER@$HOST:/opt/santha-edge/"; fi
+      - name: Deploy ${{ inputs.component }} ${{ needs.resolve.outputs.tag }}
         env:
           HOST: ${{ secrets.SSH_HOST }}
           USER: ${{ secrets.SSH_USER }}
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           ssh -i ~/.ssh/id_deploy "$USER@$HOST" \
-            "echo '$TOKEN' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin >/dev/null && chmod +x /opt/santha/santha.sh && /opt/santha/santha.sh deploy ${{ inputs.tag }}; rc=\$?; docker logout ghcr.io >/dev/null; exit \$rc"
-      - name: Smoke test
-        run: curl -fsS "${{ steps.v.outputs.api }}/v1/health/ready" && echo
+            "echo '$TOKEN' | docker login ghcr.io -u '${{ github.actor }}' --password-stdin >/dev/null && chmod +x '$DIR/santha.sh' && '$DIR/santha.sh' deploy '$TAG' '${{ inputs.component }}'; rc=\$?; docker logout ghcr.io >/dev/null; exit \$rc"
+      - name: Smoke test (public URL)
+        run: |
+          url="${{ steps.v.outputs.url }}"
+          for i in $(seq 1 12); do curl -fsS -o /dev/null "$url" && { echo "OK $url"; exit 0; }; sleep 10; done
+          echo "::error::$url is not answering. If this is a new domain, check its DNS points to the server (docs/deploy/README.md)."
+          exit 1

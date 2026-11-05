@@ -185,11 +185,11 @@
         },
         "responses": {
           "200": {
-            "description": "Password accepted; second-factor code sent",
+            "description": "Password accepted; second-factor code sent (or, with OPS_LOGIN_OTP=off before launch, signed in)",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/OpsChallengeDto_Output"
+                  "$ref": "#/components/schemas/OpsLoginResultDto_Output"
                 }
               }
             }
@@ -714,6 +714,27 @@
         ],
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/v1/config/site": {
+      "get": {
+        "operationId": "ConfigController_site",
+        "parameters": [],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SiteConfigDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "config"
         ]
       }
     },
@@ -7821,7 +7842,7 @@
           "deviceId"
         ]
       },
-      "OpsChallengeDto_Output": {
+      "OpsLoginResultDto_Output": {
         "type": "object",
         "properties": {
           "challengeId": {
@@ -7849,15 +7870,79 @@
           "phoneMasked": {
             "type": "string",
             "description": "Where the second-factor code was sent"
+          },
+          "accessToken": {
+            "type": "string"
+          },
+          "refreshToken": {
+            "type": "string"
+          },
+          "accessExpiresIn": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "seconds"
+          },
+          "refreshExpiresIn": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "seconds"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "phoneMasked": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "locale": {
+                "type": "string"
+              },
+              "roles": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "consumer",
+                    "merchant",
+                    "merchant_staff",
+                    "rider",
+                    "admin",
+                    "ops",
+                    "finance",
+                    "support"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "id",
+              "phoneMasked",
+              "name",
+              "locale",
+              "roles"
+            ],
+            "additionalProperties": false
+          },
+          "isNewUser": {
+            "type": "boolean"
+          },
+          "signedIn": {
+            "type": "boolean",
+            "description": "true: signed in on password only (pre-launch, OPS_LOGIN_OTP=off); the session fields are set"
           }
         },
-        "required": [
-          "challengeId",
-          "expiresInSec",
-          "resendAfterSec",
-          "channel",
-          "phoneMasked"
-        ],
         "additionalProperties": false
       },
       "OpsVerifyDto": {
@@ -12060,6 +12145,35 @@
           "nameTe",
           "state",
           "coverage"
+        ],
+        "additionalProperties": false
+      },
+      "SiteConfigDto_Output": {
+        "type": "object",
+        "properties": {
+          "appDownloads": {
+            "type": "boolean",
+            "description": "Show the Android / iPhone download buttons (flag app_downloads); false = \"Launching soon\""
+          },
+          "androidUrl": {
+            "description": "Play Store listing, when downloads are on",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "iosUrl": {
+            "description": "App Store listing, when downloads are on",
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "appDownloads",
+          "androidUrl",
+          "iosUrl"
         ],
         "additionalProperties": false
       },
@@ -26236,8 +26350,10 @@
             "enum": [
               "store",
               "home_kitchen",
-              "rider"
-            ]
+              "rider",
+              "customer"
+            ],
+            "description": "customer = launch-list sign-up (ADR-023)"
           },
           "name": {
             "type": "string",
@@ -26247,6 +26363,27 @@
           "phone": {
             "type": "string",
             "pattern": "^(\\+?91)?[6-9]\\d{9}$"
+          },
+          "business": {
+            "description": "Shop or kitchen name",
+            "type": "string",
+            "maxLength": 80
+          },
+          "category": {
+            "description": "Shop type picked on the form",
+            "type": "string",
+            "enum": [
+              "kirana",
+              "supermarket",
+              "fruits_vegetables",
+              "pharmacy",
+              "bakery",
+              "dairy",
+              "meat_fish",
+              "fashion",
+              "electronics",
+              "other"
+            ]
           },
           "area": {
             "type": "string",
@@ -26307,7 +26444,8 @@
                   "enum": [
                     "store",
                     "home_kitchen",
-                    "rider"
+                    "rider",
+                    "customer"
                   ]
                 },
                 "name": {
@@ -26315,6 +26453,18 @@
                 },
                 "phone": {
                   "type": "string"
+                },
+                "business": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "category": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
                 },
                 "area": {
                   "type": [
@@ -26355,6 +26505,8 @@
                 "kind",
                 "name",
                 "phone",
+                "business",
+                "category",
                 "area",
                 "message",
                 "locale",
@@ -26405,7 +26557,8 @@
             "enum": [
               "store",
               "home_kitchen",
-              "rider"
+              "rider",
+              "customer"
             ]
           },
           "name": {
@@ -26413,6 +26566,14 @@
           },
           "phone": {
             "type": "string"
+          },
+          "business": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
           },
           "area": {
             "type": "string",
@@ -26447,6 +26608,8 @@
           "kind",
           "name",
           "phone",
+          "business",
+          "category",
           "area",
           "message",
           "locale",

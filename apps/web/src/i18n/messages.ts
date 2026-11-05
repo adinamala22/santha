@@ -9,7 +9,7 @@ export const messages = {
     hero: {
       body: 'Groceries, medicines, sarees, home-cooked meals — from the Nellore shops and home kitchens you already trust, delivered to your door in 30–45 minutes.',
       android: 'Get it on Android',
-      iphone: 'iPhone — join waitlist',
+      iphone: 'Get it on iPhone',
       facts: 'Local sellers · 4 micro-markets · UPI, cards or cash',
     },
     how: {
@@ -60,7 +60,7 @@ export const messages = {
     hero: {
       body: 'కిరాణా, మందులు, చీరలు, ఇంటి వంటలు — మీకు నమ్మకమైన నెల్లూరు షాపులు, ఇంటి వంటశాలల నుండి 30–45 నిమిషాల్లో మీ ఇంటికి.',
       android: 'Android లో పొందండి',
-      iphone: 'iPhone — వెయిట్‌లిస్ట్‌లో చేరండి',
+      iphone: 'iPhone లో పొందండి',
       facts: 'స్థానిక విక్రేతలు · 4 మైక్రో-మార్కెట్లు · UPI, కార్డులు లేదా నగదు',
     },
     how: {

@@ -10,12 +10,12 @@ description: Local development, environments, CI/CD, infrastructure as code, sec
 No Docker: `pnpm dev:fake` runs the backend with `DATA_STORE=memory` (in-memory stores + demo seed, mock providers, OTP `123456`) plus web; refused outside `APP_ENV=dev` (ADR-005).
 `.env.example` documents every variable; copy to `.env` (git-ignored). Providers default to `mock` locally.
 
-## Environments (current: ADR-015)
-Two environments, `test` and `prod`. Each is one VM in India running `infra/deploy/compose.yml` through `infra/deploy/santha.sh`.
+## Environments (current: ADR-015, ADR-024)
+Two environments, `test` (shown as **QA** in GitHub Actions) and `prod` (**PROD**). Each runs `infra/deploy/compose.yml` through `infra/deploy/santha.sh`. Today both share one AWS VM: `/opt/santha` (test) and `/opt/santha-prod` (prod, pre-launch mode), behind one shared Caddy in `/opt/santha-edge` (`deploy.ingress: edge`, overlay `aws.<env>`).
 - Non-secret settings: `config/values/<env>.values.yaml` (+ `<cloud>.<env>` overlay), loaded by the backend via `SANTHA_ENV`/`SANTHA_CLOUD`; never put secrets there.
 - Secrets: the server `.env` (`infra/deploy/server.env.example`).
-- Deploy: `.github/workflows/deploy.yml` (test on push to main, prod by hand).
-- Apps: `apps-release.yml`.
+- Pipelines, one per part (ADR-024): `deploy-backend.yml` ("Deploy · Backend"), `deploy-web.yml` ("Deploy · Web"), `apps-release.yml` ("Release · Mobile apps"). Backend and web deploy QA on push to main (when their files change) and PROD by hand (empty tag = promote what QA runs). Shared job: `deploy-env.yml` (`santha.sh deploy <tag> backend|web`).
+- Prod before launch: `LAUNCH_STAGE=prelaunch` serves only the website and ops console; `OPS_LOGIN_OTP=off` (password-only console) is refused once live.
 - Guide: `docs/deploy/README.md`.
 
 The AWS layout below is the scale-up target.
