@@ -1390,7 +1390,7 @@ export interface paths {
         get?: never;
         put: operations["NotificationsController_pushToken"];
         post?: never;
-        delete?: never;
+        delete: operations["NotificationsController_removePushToken"];
         options?: never;
         head?: never;
         patch?: never;
@@ -9665,6 +9665,25 @@ export interface operations {
                 "application/json": components["schemas"]["PushTokenDto"];
             };
         };
+        responses: {
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    NotificationsController_removePushToken: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             204: {
                 headers: {

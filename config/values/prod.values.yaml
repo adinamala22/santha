@@ -40,3 +40,13 @@ apps:
   apiBaseUrl: https://api.santhaapp.com
   # Raster map tiles for the apps ({z}/{x}/{y}); empty = OpenStreetMap's public server (testing only, ADR-007).
   mapTilesUrl: ""
+  # Push (FCM, ADR-027): the Firebase project's Android apps (Firebase console → Project settings → Your apps).
+  # Not secret (they ship inside the app). Empty = the apps build without push.
+  firebase:
+    projectId: ""
+    senderId: ""
+    apiKey: ""
+    appIds:
+      consumer: ""
+      merchant: ""
+      rider: ""

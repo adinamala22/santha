@@ -32,6 +32,15 @@ class _SanthaConsumerAppState extends ConsumerState<SanthaConsumerApp> {
         ref.read(locationControllerProvider.notifier).forget();
       }
     });
+    // Push (review G1): keep this phone registered while signed in; a tapped notification opens its order.
+    ref.watch(pushSyncProvider);
+    ref.listen(pushTapsProvider, (_, next) {
+      final tap = next.value;
+      if (tap == null) return;
+      ref.read(analyticsProvider).track('push_opened', {'kind': tap.kind});
+      final id = tap.orderId;
+      if (id != null) ref.read(routerProvider).push('/orders/$id');
+    });
     final locale = ref.watch(localeControllerProvider);
     final config = ref.watch(appConfigProvider);
     return MaterialApp.router(

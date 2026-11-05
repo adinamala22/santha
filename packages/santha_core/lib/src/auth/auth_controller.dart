@@ -6,6 +6,7 @@ import 'package:santha_api/santha_api.dart';
 
 import '../config/app_config.dart';
 import '../storage/key_value_store.dart';
+import '../push/push.dart';
 import 'session_storage.dart';
 
 sealed class AuthState {
@@ -95,6 +96,7 @@ class AuthController extends Notifier<AuthState> {
   }
 
   Future<void> signOut() async {
+    await ref.read(pushRegistrationProvider).unregister(); // while still signed in (needs the session)
     await _api.logout();
     state = const AuthSignedOut();
   }

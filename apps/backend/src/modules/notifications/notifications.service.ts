@@ -76,6 +76,11 @@ export class NotificationsService implements OnModuleInit {
     return this.repo.upsertToken({ userId, deviceId, token, platform });
   }
 
+  /** The app signs out on this phone: no more push to it for this person. */
+  unregisterToken(userId: string, deviceId: string): Promise<void> {
+    return this.repo.removeTokenForDevice(userId, deviceId);
+  }
+
   whatsappOptIn(userId: string): Promise<boolean> {
     return this.repo.whatsappOptIn(userId);
   }

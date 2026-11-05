@@ -66,6 +66,14 @@ jobs:
           tiles="$(yq '.apps.mapTilesUrl // ""' "$f")"
           echo "MAP_TILES_URL=$tiles" >> "$GITHUB_ENV"
           if [ -z "$tiles" ] && [ "$(yq '.apps.flavor' "$f")" = prod ]; then echo "::warning::apps.mapTilesUrl is not set in $f: the PROD apps will use OpenStreetMap's public tile server, which does not allow app traffic at scale."; fi
+          # Push (ADR-027): Firebase settings for this app; empty = built without push.
+          {
+            echo "FIREBASE_PROJECT_ID=$(yq '.apps.firebase.projectId // ""' "$f")"
+            echo "FIREBASE_SENDER_ID=$(yq '.apps.firebase.senderId // ""' "$f")"
+            echo "FIREBASE_API_KEY=$(yq '.apps.firebase.apiKey // ""' "$f")"
+            echo "FIREBASE_APP_ID=$(yq ".apps.firebase.appIds.${{ matrix.app }} // \"\"" "$f")"
+          } >> "$GITHUB_ENV"
+          if [ -z "$(yq ".apps.firebase.appIds.${{ matrix.app }} // \"\"" "$f")" ]; then echo "::warning::apps.firebase is not set for ${{ matrix.app }} in $f: this build has no push notifications (ADR-027)."; fi
       - run: dart pub global activate melos && melos bootstrap
       - name: Platform files (Gradle wrapper etc. are not committed)
         working-directory: apps/${{ matrix.app }}
@@ -86,6 +94,9 @@ jobs:
         run: |
           args=(--flavor "$FLAVOR" -t "lib/main_$FLAVOR.dart" --release --build-number "$BUILD_NUMBER" --dart-define=API_BASE_URL="$API_BASE_URL")
           [ -n "$MAP_TILES_URL" ] && args+=(--dart-define=MAP_TILES_URL="$MAP_TILES_URL")
+          if [ -n "$FIREBASE_APP_ID" ]; then
+            args+=(--dart-define=FIREBASE_PROJECT_ID="$FIREBASE_PROJECT_ID" --dart-define=FIREBASE_SENDER_ID="$FIREBASE_SENDER_ID" --dart-define=FIREBASE_API_KEY="$FIREBASE_API_KEY" --dart-define=FIREBASE_APP_ID="$FIREBASE_APP_ID")
+          fi
           flutter build appbundle "${args[@]}"
           [ "$FLAVOR" = stg ] && flutter build apk "${args[@]}"
           true

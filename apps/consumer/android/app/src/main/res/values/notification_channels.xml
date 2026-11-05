@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android notification channels (Settings → Apps → Notifications). -->
+    <string name="channel_updates">Order updates</string>
+    <string name="channel_orders_alarm">Order alerts</string>
+</resources>
