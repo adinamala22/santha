@@ -1,0 +1,15 @@
+# Shared HTTPS front door (ADR-024). Automatic HTTPS (Let's Encrypt) for every stack's domains.
+# Sites come from ./sites/<env>.caddy, written by each stack's santha.sh at deploy.
+{
+	email {$ACME_EMAIL}
+}
+
+(common) {
+	encode zstd gzip
+	log {
+		output stdout
+		format json
+	}
+}
+
+import /etc/caddy/sites/*.caddy

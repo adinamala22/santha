@@ -1,11 +1,12 @@
 name: live e2e
 
-# The Playwright suite against the TEST server, after every successful deploy to test (and by hand).
+# The Playwright suite against the TEST (QA) server, after every successful deploy to QA by either pipeline
+# (Deploy · Backend, Deploy · Web), and by hand.
 # Specs: apps/web/e2e/{smoke,journeys,features} (docs/testing/e2e.md). Ops console specs use the QA ops user
 # (secrets E2E_OPS_EMAIL / E2E_OPS_PASSWORD, environment "test"); without them those specs are skipped.
 on:
   workflow_run:
-    workflows: [deploy]
+    workflows: ['Deploy · Backend', 'Deploy · Web']
     types: [completed]
   workflow_dispatch:
     inputs:

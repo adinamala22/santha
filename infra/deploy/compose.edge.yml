@@ -1,0 +1,21 @@
+# Overlay for deploy.ingress: edge (ADR-024): this stack shares the server's one HTTPS front door
+# (/opt/santha-edge) with the other environment, instead of running its own Caddy on 80/443.
+# The API, website and storage join the "santha-edge" network as <env>-api, <env>-web and <env>-storage.
+services:
+  caddy:
+    profiles: [own-caddy] # never started here; the shared edge serves this stack
+  api:
+    networks:
+      default: {}
+      edge: { aliases: ["${SANTHA_ENV}-api"] }
+  web:
+    networks:
+      default: {}
+      edge: { aliases: ["${SANTHA_ENV}-web"] }
+  storage:
+    networks:
+      default: {}
+      edge: { aliases: ["${SANTHA_ENV}-storage"] }
+
+networks:
+  edge: { name: santha-edge, external: true }

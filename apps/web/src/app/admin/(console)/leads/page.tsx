@@ -5,6 +5,7 @@ import { consoleCopy } from '@/i18n/console';
 import { launchCopy } from '@/i18n/launch';
 import { dateTime } from '@/lib/format';
 import { opsGet, opsLocale } from '@/lib/ops/server';
+import { siteCopy } from '@/i18n/site';
 import { leadAction } from '../reports/actions';
 
 export const metadata = { title: 'Leads' };
@@ -13,6 +14,7 @@ export const metadata = { title: 'Leads' };
 export default async function LeadsPage() {
   const locale = await opsLocale();
   const l = launchCopy(locale).leads;
+  const shopTypes = siteCopy(locale).storeLaunch.categories;
   const copy = consoleCopy(locale);
   const { items } = await opsGet<LeadList>('/v1/ops/leads');
   return (
@@ -38,6 +40,9 @@ export default async function LeadsPage() {
                   <td className={`${tableCls.td} text-sm text-slate`}>{dateTime(x.createdAt, locale)}</td>
                   <td className={tableCls.td}>{l.kinds[x.kind]}</td>
                   <td className={tableCls.td}>{x.name}</td>
+                  <td className={tableCls.td} data-testid={`lead-business-${x.name}`}>
+                    {[x.business, x.category ? (shopTypes[x.category as keyof typeof shopTypes] ?? x.category) : null].filter(Boolean).join(' · ') || '—'}
+                  </td>
                   <td className={`${tableCls.td} font-mono text-sm`}>{x.phone}</td>
                   <td className={tableCls.td}>{String(x.area ?? '—')}</td>
                   <td className={tableCls.td}>

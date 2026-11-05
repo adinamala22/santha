@@ -7,8 +7,11 @@ type Lang = 'en' | 'te';
 export const langOf = (v: string | string[] | undefined): Lang => (v === 'te' ? 'te' : 'en');
 const withLang = (href: string, lang: Lang) => (lang === 'te' ? `${href}${href.includes('?') ? '&' : '?'}lang=te` : href);
 
-/** Public site header (landing mockup): logo, section links, language switch, download CTA. */
-export function SiteHeader({ lang = 'en', path = '/' }: { lang?: Lang; path?: string }) {
+/**
+ * Public site header (landing mockup): logo, section links, language switch, and the download CTA, which reads
+ * "Launching soon" until the apps are in the stores (flag app_downloads, ADR-023).
+ */
+export function SiteHeader({ lang = 'en', path = '/', downloads = false }: { lang?: Lang; path?: string; downloads?: boolean }) {
   const m = t(lang);
   return (
     <header className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-6">
@@ -34,7 +37,7 @@ export function SiteHeader({ lang = 'en', path = '/' }: { lang?: Lang; path?: st
           {lang === 'te' ? 'English' : 'తెలుగు'}
         </Link>
         <a href={withLang('/#download', lang)} className="s-focus rounded-pill bg-marigold px-6 py-3 font-medium text-indigo hover:bg-marigold-600">
-          {m.nav.download}
+          {downloads ? m.nav.download : siteCopy(lang).prelaunch.navCta}
         </a>
       </div>
     </header>

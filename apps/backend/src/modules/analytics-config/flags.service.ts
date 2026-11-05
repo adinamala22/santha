@@ -22,6 +22,11 @@ export const FLAG_DEFAULTS = {
    * Evaluated per device before sign-in, so PostHog % rollouts and an instant kill switch work.
    */
   whatsapp_otp: true,
+  /**
+   * Website download buttons (Android / iPhone). Off until the apps are in the stores: the site says
+   * "Launching soon" instead (ADR-023). Turn on in PostHog at launch; no redeploy needed.
+   */
+  app_downloads: false,
 } as const satisfies Record<string, boolean>;
 
 export type FlagName = keyof typeof FLAG_DEFAULTS;

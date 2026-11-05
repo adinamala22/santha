@@ -105,6 +105,8 @@ Each row: what it's for, the **free / cheapest** choice, the paid upgrade, and t
 **Code still to do:** the MSG91 provider is a stub (`apps/backend/src/infra/providers/sms/sms.provider.ts`).
 WhatsApp OTP is built (flag `whatsapp_otp`, SMS fallback): see docs/integrations/whatsapp-otp.md and ADR-017.
 
+App launch day (ADR-023): set `ANDROID_APP_URL` and `IOS_APP_URL`, then turn on the flag `app_downloads` in PostHog. Within a minute the website swaps "Launching soon" for the download buttons. No redeploy.
+
 ### M1 — Micro-markets, merchants, KYC
 
 | Need | Free / cheapest choice | Upgrade later | Beta-scale cost |

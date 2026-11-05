@@ -8,14 +8,19 @@ import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../../c
 import { GrowthService } from './growth.service';
 import type { LeadRecord } from './leads.repository';
 
+/** Shop types offered on the /stores form (ADR-023). */
+export const LEAD_CATEGORIES = ['kirana', 'supermarket', 'fruits_vegetables', 'pharmacy', 'bakery', 'dairy', 'meat_fish', 'fashion', 'electronics', 'other'] as const;
+
 const int = z.number().int();
 const pctN = z.number().nullable();
 
 class LeadInputDto extends createZodDto(
   z.object({
-    kind: z.enum(['store', 'home_kitchen', 'rider']),
+    kind: z.enum(['store', 'home_kitchen', 'rider', 'customer']).describe('customer = launch-list sign-up (ADR-023)'),
     name: z.string().trim().min(2).max(80),
     phone: z.string().regex(/^(\+?91)?[6-9]\d{9}$/, 'Enter a 10-digit Indian mobile number'),
+    business: z.string().trim().max(80).optional().describe('Shop or kitchen name'),
+    category: z.enum(LEAD_CATEGORIES).optional().describe('Shop type picked on the form'),
     area: z.string().trim().max(80).optional(),
     message: z.string().trim().max(500).optional(),
     locale: z.enum(['en', 'te']).optional(),
@@ -26,9 +31,11 @@ class LeadInputDto extends createZodDto(
 class LeadAckDto extends createZodDto(z.object({ ok: z.literal(true) })) {}
 const LeadSchema = z.object({
   id: z.uuid(),
-  kind: z.enum(['store', 'home_kitchen', 'rider']),
+  kind: z.enum(['store', 'home_kitchen', 'rider', 'customer']),
   name: z.string(),
   phone: z.string(),
+  business: z.string().nullable(),
+  category: z.string().nullable(),
   area: z.string().nullable(),
   message: z.string().nullable(),
   locale: z.string(),

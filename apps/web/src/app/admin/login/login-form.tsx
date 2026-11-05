@@ -55,12 +55,14 @@ export function LoginForm({ copy, next }: { copy: Copy; next?: string }) {
     if (!password) return setError(copy.errors.passwordRequired);
     setError(null);
     setBusy(true);
-    const r = await post<{ challengeId: string; phoneMasked?: string; channel?: 'whatsapp' | 'sms' }>('/api/ops/login', {
+    const r = await post<{ challengeId: string; phoneMasked?: string; channel?: 'whatsapp' | 'sms'; signedIn?: boolean }>('/api/ops/login', {
       email: email.trim(),
       password,
     });
     setBusy(false);
     if (!r.ok) return setError(errorFor(r.code, r.status, copy));
+    // Password-only sign-in before launch (ADR-024): already signed in.
+    if (r.data.signedIn) return window.location.assign(safeNext(next));
     setChallengeId(r.data.challengeId);
     setSentTo(r.data.phoneMasked ?? null);
     setChannel(r.data.channel ?? 'sms');

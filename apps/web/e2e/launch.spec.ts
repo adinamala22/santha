@@ -29,20 +29,25 @@ test('landing → For stores → lead form; the lead reaches the ops console', a
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toContainText('The whole town,');
   await page.getByRole('link', { name: 'Register your store' }).click();
-  await expect(page.getByRole('heading', { name: 'Sell to your whole neighbourhood' })).toBeVisible();
-  const form = page.getByRole('form', { name: 'Leave your details — our Nellore team will call you' });
-  await form.getByRole('button', { name: 'Request a call' }).click();
+  // Before launch (ADR-023) /stores is the launch sign-up with the shop-card preview.
+  await expect(page.getByRole('heading', { name: 'Your customers are about to find you on Santha' })).toBeVisible();
+  const form = page.getByRole('form', { name: 'Get your shop ready for launch' });
+  await form.getByRole('button', { name: 'Get my shop ready for launch' }).click();
+  await expect(form.getByRole('alert')).toHaveText('Enter your shop name.');
+  await form.getByLabel('Shop name').fill('Venkata Kirana Stores');
+  await form.getByRole('button', { name: 'Get my shop ready for launch' }).click();
   await expect(form.getByRole('alert')).toHaveText('Enter your name.');
   await form.getByLabel('Your name').fill('Venkata Kirana');
   await form.getByLabel('Mobile number').fill('98765 03001');
   await form.getByLabel('Area (e.g. Magunta Layout)').fill('Vedayapalem');
-  await form.getByRole('button', { name: 'Request a call' }).click();
+  await form.getByRole('button', { name: 'Get my shop ready for launch' }).click();
   await expect(page.getByTestId('lead-thanks')).toBeVisible();
 
   await signIn(page);
   await page.getByRole('link', { name: 'Leads' }).click();
   const row = page.getByTestId('lead-Venkata Kirana');
   await expect(row).toContainText('+919876503001');
+  await expect(row).toContainText('Venkata Kirana Stores · Kirana / general store');
   await row.getByRole('button', { name: 'Mark contacted' }).click();
   await row.getByRole('button', { name: 'Confirm' }).click();
   await expect(row.getByText('Updated.')).toBeVisible();
@@ -72,7 +77,10 @@ test('store link page: name, area, rating; unknown slugs 404', async ({ page, re
   await page.goto(`/s/${ramesh.slug}`);
   await expect(page.getByTestId('store-name')).toHaveText('Ramesh Stores');
   await expect(page.getByText(/Dargamitta, Nellore/)).toBeVisible();
-  await expect(page.getByRole('link', { name: 'Open in the Santha app' })).toHaveAttribute('href', /^santha:\/\/store\//);
+  // Before launch (flag app_downloads off, ADR-023): no app deep link yet; the launch-list sign-up instead.
+  await expect(page.getByRole('link', { name: 'Open in the Santha app' })).toHaveCount(0);
+  await expect(page.getByTestId('store-coming-soon')).toContainText('Coming soon on Android and iPhone');
+  await expect(page.getByRole('link', { name: 'Tell me when it launches' })).toHaveAttribute('href', '/#download');
   const res = await page.goto('/s/not-a-store');
   expect(res?.status()).toBe(404);
 });

@@ -6,6 +6,7 @@ import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { Logger } from 'nestjs-pino';
 import { cleanupOpenApiDoc } from 'nestjs-zod';
 import { AppModule } from './app.module';
+import { prelaunchMiddleware } from './common/prelaunch';
 import { parseEnv } from './config/env';
 
 export const API_PREFIX = 'v1';
@@ -35,6 +36,8 @@ export function configureApp(app: INestApplication): void {
     if (env.APP_ENV !== 'dev') res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
     next();
   });
+  // Pre-launch production (ADR-024): only the website and the ops console are served.
+  if (env.LAUNCH_STAGE === 'prelaunch') http.use(prelaunchMiddleware);
   // Fake mode receives image uploads itself (MemoryObjectStorage presigned URLs → PUT /v1/dev/uploads).
   if (env.DATA_STORE === 'memory')
     (app as NestExpressApplication).useBodyParser('raw', { type: ['image/*', 'application/octet-stream'], limit: env.MAX_UPLOAD_BYTES });

@@ -31,6 +31,18 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...base, APP_ENV: 'production' })).toThrow(/mock OTP is not allowed[\s\S]*JWT_ACCESS_SECRET/);
   });
 
+  it('ADR-024: pre-launch production runs without live payments, KYC or SMS, and only then on password-only ops login', () => {
+    const strong = { ...base, APP_ENV: 'production', JWT_ACCESS_SECRET: 'x'.repeat(40), JWT_REFRESH_SECRET: 'y'.repeat(40) };
+    const prelaunch = { ...strong, LAUNCH_STAGE: 'prelaunch', OPS_LOGIN_OTP: 'off' };
+    expect(parseEnv(prelaunch)).toMatchObject({ LAUNCH_STAGE: 'prelaunch', OPS_LOGIN_OTP: 'off', PAYMENTS_PROVIDER: 'mock', KYC_PROVIDER: 'mock' });
+    // The mock (fixed) OTP never guards the prod console: with the second factor on, a real provider is required.
+    expect(() => parseEnv({ ...prelaunch, OPS_LOGIN_OTP: 'required' })).toThrow(/mock OTP is not allowed/);
+    // Going live re-enables every check, and the console needs its OTP again.
+    for (const why of [/OPS_LOGIN_OTP/, /mock OTP is not allowed/, /mock KYC is not allowed/, /live payments only/])
+      expect(() => parseEnv({ ...prelaunch, LAUNCH_STAGE: 'live' })).toThrow(why);
+    expect(parseEnv(base)).toMatchObject({ LAUNCH_STAGE: 'live', OPS_LOGIN_OTP: 'required' });
+  });
+
   it('requires MSG91 credentials when the provider is msg91', () => {
     expect(() => parseEnv({ ...base, OTP_PROVIDER: 'msg91' })).toThrow(/MSG91_AUTH_KEY/);
   });

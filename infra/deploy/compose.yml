@@ -10,8 +10,9 @@
 # Profiles, domains and robots tag come from the values file (deploy section) via santha.sh.
 name: santha-${SANTHA_ENV:?set SANTHA_ENV to test or prod}
 
+# Backend and website are deployed separately (ADR-024), each with its own tag: BACKEND_TAG, WEB_TAG (santha.sh).
 x-backend: &backend
-  image: ${REGISTRY:?}/santha-backend:${TAG:?}
+  image: ${REGISTRY:?}/santha-backend:${BACKEND_TAG:?}
   restart: unless-stopped
   env_file: .env
   # One source of settings on the server: the values/ folder the deploy copies (same commit as the images).
@@ -50,7 +51,7 @@ services:
 
   # One-off jobs (migrations, bootstrap, reindex, catalogue import). Run by santha.sh, never left running.
   tools:
-    image: ${REGISTRY:?}/santha-tools:${TAG:?}
+    image: ${REGISTRY:?}/santha-tools:${BACKEND_TAG:?}
     env_file: .env
     volumes: [./values:/repo/config/values:ro]
     environment:
@@ -65,7 +66,7 @@ services:
     logging: *logs
 
   web:
-    image: ${REGISTRY:?}/santha-web-${SANTHA_ENV}:${TAG:?}
+    image: ${REGISTRY:?}/santha-web-${SANTHA_ENV}:${WEB_TAG:?}
     restart: unless-stopped
     environment:
       API_URL: http://api:4000 # server-side calls from the console stay inside the network

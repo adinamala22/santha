@@ -156,8 +156,40 @@ export class AuthService {
     if (!user || !account.passwordHash || !passwordOk || !isOps(user.roles))
       throw new DomainError('INVALID_CREDENTIALS', 'Email or password is not right.');
     if (user.status !== 'active') throw new DomainError('ACCOUNT_BLOCKED', 'This account is not active.');
+    // Pre-launch production may run the console on password only (OPS_LOGIN_OTP=off, ADR-024; refused once live).
+    if (this.env.OPS_LOGIN_OTP === 'off') return { signedIn: true as const, ...(await this.passwordSession(user, input.deviceId)) };
     const challenge = await this.issueChallenge(user.phone, input.deviceId, 'web_admin', 'en', this.clock());
     return { ...challenge, phoneMasked: maskPhone(user.phone) };
+  }
+
+  /** Ops session without the second factor (OPS_LOGIN_OTP=off only). Same tokens and audit trail as after an OTP. */
+  private async passwordSession(user: { phone: string }, deviceId: string): Promise<AuthResult> {
+    const now = this.clock();
+    const sessionId = randomUUID();
+    const refreshSecret = newRefreshSecret();
+    const refreshTtlSec = this.tokens.refreshTtlFor('web_admin');
+    const fresh = await this.repo.transaction(async (tx) => {
+      const u = await tx.findUserByPhone(user.phone);
+      if (!u || !isOps(u.roles) || u.status !== 'active') throw new DomainError('INVALID_CREDENTIALS', 'Email or password is not right.');
+      const device = await tx.upsertDevice({ userId: u.id, deviceId, app: 'web_admin', platform: 'web', appVersion: undefined }, now);
+      await tx.createSession({
+        id: sessionId,
+        userId: u.id,
+        deviceRowId: device.id,
+        refreshHash: hashRefreshSecret(this.tokens.pepper, refreshSecret),
+        expiresAt: new Date(now.getTime() + refreshTtlSec * 1000),
+      });
+      return u;
+    });
+    const accessToken = await this.tokens.signAccess({ sub: fresh.id, roles: fresh.roles, did: deviceId, sid: sessionId, app: 'web_admin' });
+    return {
+      accessToken,
+      refreshToken: formatRefreshToken(sessionId, refreshSecret),
+      accessExpiresIn: this.tokens.accessTtlSec,
+      refreshExpiresIn: refreshTtlSec,
+      user: fresh,
+      isNewUser: false,
+    };
   }
 
   /** Ops console step 2: the OTP. Issues a web_admin session (short refresh TTL). */

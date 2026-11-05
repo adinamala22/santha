@@ -1,0 +1,21 @@
+# Overlay: PRODUCTION on the AWS server it shares with test, before launch (SANTHA_ENV=prod SANTHA_CLOUD=aws).
+# ADR-024. Only what differs from prod.values.yaml; delete this overlay (or move to a cloud's own overlay) when
+# prod gets its own server and the live provider accounts.
+deploy:
+  ingress: edge                 # the server's shared HTTPS front door (/opt/santha-edge), test sits behind it too
+  composeProfiles: localdb      # Postgres in a container on this server, its own volume (not test's)
+  mediaDomain: ""
+  webRedirects: www.santhaapp.com   # → https://santhaapp.com
+
+backend:
+  # Pre-launch: only the website (leads, downloads flag, store pages) and the ops console are served; the apps'
+  # endpoints answer "launching soon". So no live payment, KYC, SMS, push or maps accounts are needed yet.
+  launchStage: prelaunch
+  # The ops console signs in on email + password only until a live OTP provider is set up (product decision
+  # 2026-11-05). The backend refuses this once launchStage is live.
+  opsLoginOtp: "off"
+  otpProvider: mock
+  kycProvider: mock
+  paymentsProvider: mock
+  pushProvider: mock
+  mapsProvider: mock

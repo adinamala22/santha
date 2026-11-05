@@ -12,6 +12,13 @@ const bool = z
 const EnvObject = z.object({
     NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
     APP_ENV: z.enum(['dev', 'staging', 'production']).default('dev'),
+    /**
+     * prelaunch: only the website and the ops console are served; the apps' endpoints answer 503 PRELAUNCH, so
+     * production can run before live payment / KYC / SMS accounts exist (ADR-024). live: everything.
+     */
+    LAUNCH_STAGE: z.enum(['prelaunch', 'live']).default('live'),
+    /** Ops console second factor. off (password only) is allowed only before launch (ADR-024). */
+    OPS_LOGIN_OTP: z.enum(['required', 'off']).default('required'),
     PORT: z.coerce.number().int().positive().default(4000),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),
@@ -70,6 +77,9 @@ const EnvObject = z.object({
     /** PostHog (self-hosted, India region) project key for feature flags; unset = code defaults + FLAG_OVERRIDES. */
     POSTHOG_KEY: z.string().optional(),
     POSTHOG_HOST: z.string().url().optional(),
+    /** Store listings for the website download buttons (shown only with the app_downloads flag, ADR-023). */
+    ANDROID_APP_URL: z.string().url().optional(),
+    IOS_APP_URL: z.string().url().optional(),
     /** Local flag overrides, JSON object of flag → boolean, e.g. {"cod_payments":false}. */
     FLAG_OVERRIDES: z
       .string()
@@ -149,12 +159,17 @@ export const ENV_KEYS: ReadonlySet<string> = new Set(Object.keys(EnvObject.shape
 
 export const EnvSchema = EnvObject
   .superRefine((env, ctx) => {
+    if (env.OPS_LOGIN_OTP === 'off' && env.APP_ENV === 'production' && env.LAUNCH_STAGE !== 'prelaunch')
+      ctx.addIssue({ code: 'custom', path: ['OPS_LOGIN_OTP'], message: 'the ops console needs its OTP once live (OPS_LOGIN_OTP=off is for pre-launch only)' });
+    // Pre-launch production serves no app endpoints, so payments, KYC and app OTPs are not reachable yet (ADR-024).
+    // The ops console still may not use the fixed mock code: mock OTP only with OPS_LOGIN_OTP=off.
+    const prelaunch = env.LAUNCH_STAGE === 'prelaunch';
     if (env.APP_ENV === 'production') {
-      if (env.OTP_PROVIDER === 'mock')
+      if (env.OTP_PROVIDER === 'mock' && !(prelaunch && env.OPS_LOGIN_OTP === 'off'))
         ctx.addIssue({ code: 'custom', path: ['OTP_PROVIDER'], message: 'mock OTP is not allowed in production' });
-      if (env.KYC_PROVIDER === 'mock')
+      if (env.KYC_PROVIDER === 'mock' && !prelaunch)
         ctx.addIssue({ code: 'custom', path: ['KYC_PROVIDER'], message: 'mock KYC is not allowed in production' });
-      if (env.PAYMENTS_PROVIDER !== 'razorpay')
+      if (env.PAYMENTS_PROVIDER !== 'razorpay' && !prelaunch)
         ctx.addIssue({ code: 'custom', path: ['PAYMENTS_PROVIDER'], message: 'production takes live payments only (razorpay)' });
       for (const k of ['JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET'] as const)
         if (env[k].length < 32 || env[k].startsWith('change-me'))

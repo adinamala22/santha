@@ -130,20 +130,63 @@ point the three hostnames at the VM in DNS instead of the tunnel, and delete the
    - `SSH_USER` (`deploy`)
    - `SSH_PRIVATE_KEY`: a new key pair; put the public key in `~deploy/.ssh/authorized_keys` on that VM.
    - `SSH_KNOWN_HOSTS`: the output of `ssh-keyscan <host>`.
-2. **Settings → Variables:** set `DEPLOY_ENABLED=true`. Until then the deploy workflow skips itself.
+   - Variable `DEPLOY_DIR`: the stack's folder on the server. Default `/opt/santha`; prod on the shared AWS server
+     uses `/opt/santha-prod` (ADR-024).
+2. **Settings → Variables:** set `DEPLOY_ENABLED=true`. Until then the deploy pipelines skip themselves.
 3. Images go to GitHub Packages (`ghcr.io/<owner>/santha-*`). Each deploy logs the server in with the job's own
    token, so no extra credentials are needed.
 
-## 3. First deploy
-1. Push to `main`, or merge a PR. The **deploy** workflow builds the images and deploys **test**.
-   - To redeploy by hand: Actions → deploy → Run workflow → `test` and the full commit SHA.
+## 3. Pipelines: QA and PROD (ADR-024)
+| Pipeline (Actions) | QA (test) | PROD (production) |
+|---|---|---|
+| **Deploy · Backend** | automatic on a push to `main` that touches the backend | Run workflow → PROD |
+| **Deploy · Web** | automatic on a push to `main` that touches the website | Run workflow → PROD |
+| **Release · Mobile apps** | Run workflow → QA (test APKs, "Santha Test") | Run workflow → PROD (Play bundles) |
+
+- For a PROD run, leave **tag** empty to promote exactly what QA runs now for that part. Or paste a full commit
+  SHA built by a push to `main`.
+- Deploy the backend to an environment before its website.
+- Backend and web deploy separately: each has its own tag on the server and its own rollback.
+
+## 3a. First deploy
+1. Push to `main`, or merge a PR. **Deploy · Backend** and **Deploy · Web** build the images and deploy **QA**.
+   - To redeploy by hand: Actions → the pipeline → Run workflow → QA and the full commit SHA.
 2. On the test VM, once: `cd /opt/santha && ./santha.sh bootstrap`. It creates the city and the first ops admin,
    and asks for the email, mobile and password.
 3. Sign in at `https://test.santhaapp.com/admin`.
 4. Create the micro-markets (Console → Micro-markets).
 5. Import products: `./santha.sh import products.csv`.
-6. When test looks good, deploy **prod**: Actions → deploy → Run workflow → `prod`, with the same commit SHA.
-   Then run `./santha.sh bootstrap` once on the prod VM.
+6. When QA looks good, deploy **PROD**: **Deploy · Backend** → Run workflow → PROD, then **Deploy · Web** → PROD.
+   Leave the tag empty to promote QA's build. Then run `./santha.sh bootstrap` once in the prod folder.
+
+### Prod on the shared AWS server, before launch (ADR-024)
+Today prod runs on the same AWS server as test.
+
+| Part | Where |
+|---|---|
+| Test | `/opt/santha` (`SANTHA_CLOUD=aws`) |
+| Prod | `/opt/santha-prod` (`SANTHA_ENV=prod`, `SANTHA_CLOUD=aws`, `LOCALDB_PORT=5434`) |
+| Shared HTTPS front door for both | `/opt/santha-edge` |
+
+The `aws.prod` overlay runs prod in **pre-launch mode**. Only the website and the ops console are served, and the
+console signs in on password only. No live payment, KYC or SMS keys are needed yet.
+
+**DNS (GoDaddy → santhaapp.com → DNS):**
+
+| Type | Name | Value |
+|---|---|---|
+| A | `@` | the server's IP |
+| A | `api` | the server's IP |
+| CNAME | `www` | `santhaapp.com` |
+
+Remove GoDaddy's parking or forwarding on `@`.
+
+**Going live:**
+1. Put the live keys (MSG91 or WhatsApp, Razorpay, Digio, FCM, Maps) in `/opt/santha-prod/.env`.
+2. In `aws.prod.values.yaml`, set `launchStage: live` and remove `opsLoginOtp` and the mock providers.
+3. Deploy the backend to PROD.
+
+The backend refuses to start live with mock providers or a password-only console.
 
 Every deploy:
 - pulls the images for that commit;
@@ -156,8 +199,9 @@ Every deploy:
 | Command | What it does |
 |---|---|
 | `./santha.sh status` / `logs api` | Containers and logs |
-| `./santha.sh rollback` | Go back to the previous commit (migrations are backward compatible) |
-| `./santha.sh backup` | `pg_dump` to the backup bucket; prunes dumps older than `BACKUP_KEEP_DAYS`. Schedule it: `crontab -e` → `30 21 * * * /opt/santha/santha.sh backup` (03:00 IST) |
+| `./santha.sh rollback [backend|web]` | Go back to that part's previous commit (migrations are backward compatible) |
+| `./santha.sh tag backend` / `tag web` | The commit deployed for that part |
+| `./santha.sh backup` | `pg_dump` to the backup bucket (or `./backups` on the server when no bucket is set); prunes dumps older than `BACKUP_KEEP_DAYS`. Schedule it: `crontab -e` → `30 21 * * * /opt/santha/santha.sh backup` (03:00 IST) |
 | `./santha.sh restore prod/santha-prod-….sql.gz` | Restore a dump (asks you to type the environment name) |
 | `./santha.sh reindex` | Rebuild search |
 | `./santha.sh migrate` | Run migrations only |

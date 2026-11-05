@@ -1,6 +1,7 @@
-name: apps-release
+name: Release · Mobile apps
 
-# Builds the three Flutter apps for one environment (run by hand: Actions → apps-release → Run workflow).
+# Mobile pipeline (ADR-024), separate from the backend and the website. Builds the three Flutter apps for one
+# environment (run by hand: Actions → "Release · Mobile apps" → Run workflow → QA (test) or PROD (production)).
 # Flavor and API address come from config/values/<env>.values.yaml (the apps section).
 #   test  → flavor stg: "Santha Test", "Santha Partner Test" and "Santha Rider Test" (app ids *.stg).
 #           Signed APKs for testers, plus optional Firebase App Distribution.
@@ -13,8 +14,8 @@ on:
     inputs:
       environment:
         type: choice
-        options: [test, prod]
-        default: test
+        options: ['QA (test)', 'PROD (production)']
+        default: 'QA (test)'
       apps:
         description: Which apps
         type: choice
@@ -37,7 +38,7 @@ jobs:
 
   build:
     needs: plan
-    name: ${{ matrix.app }} (${{ inputs.environment }})
+    name: ${{ matrix.app }} (${{ startsWith(inputs.environment, 'PROD') && 'PROD' || 'QA' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -46,6 +47,8 @@ jobs:
     env:
       # Build number: grows with every run, so each upload is newer than the last.
       BUILD_NUMBER: ${{ github.run_number }}
+      # The menu shows QA / PROD; the values files and the server call them test / prod.
+      SANTHA_ENV: ${{ startsWith(inputs.environment, 'PROD') && 'prod' || 'test' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -54,7 +57,7 @@ jobs:
         with: { channel: stable, cache: true }
       - name: Read the values file
         run: |
-          f="config/values/${{ inputs.environment }}.values.yaml"
+          f="config/values/${SANTHA_ENV}.values.yaml"
           echo "FLAVOR=$(yq '.apps.flavor' "$f")" >> "$GITHUB_ENV"
           api="$(yq '.apps.apiBaseUrl' "$f")"
           [[ "$api" == https://* ]] || { echo "apps.apiBaseUrl in $f must be https://…"; exit 1; }
@@ -83,7 +86,7 @@ jobs:
           true
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.app }}-${{ inputs.environment }}-${{ github.run_number }}
+          name: ${{ matrix.app }}-${{ startsWith(inputs.environment, 'PROD') && 'prod' || 'test' }}-${{ github.run_number }}
           path: |
             apps/${{ matrix.app }}/build/app/outputs/bundle/${{ env.FLAVOR }}Release/*.aab
             apps/${{ matrix.app }}/build/app/outputs/flutter-apk/*-${{ env.FLAVOR }}-release.apk
@@ -91,7 +94,7 @@ jobs:
 
       # Test: send the APK to testers through Firebase App Distribution (no store listing needed).
       - name: Firebase App Distribution (test)
-        if: inputs.environment == 'test' && vars[format('FIREBASE_APP_ID_{0}_STG', matrix.app)] != ''
+        if: startsWith(inputs.environment, 'QA') && vars[format('FIREBASE_APP_ID_{0}_STG', matrix.app)] != ''
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ vars[format('FIREBASE_APP_ID_{0}_STG', matrix.app)] }}
@@ -101,7 +104,7 @@ jobs:
 
       # Prod: upload to the Play internal track; promote to closed/production in the Play Console.
       - name: Google Play internal track (prod)
-        if: inputs.environment == 'prod' && vars.PLAY_UPLOAD == 'true'
+        if: startsWith(inputs.environment, 'PROD') && vars.PLAY_UPLOAD == 'true'
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

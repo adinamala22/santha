@@ -6,9 +6,14 @@ import { PrismaService } from '../../../infra/prisma/prisma.service';
 
 export interface LeadRecord {
   id: string;
-  kind: 'store' | 'home_kitchen' | 'rider';
+  /** customer = "tell me when Santha launches" sign-up from the landing page (ADR-023). */
+  kind: 'store' | 'home_kitchen' | 'rider' | 'customer';
   name: string;
   phone: string;
+  /** Shop or kitchen name (store / home-kitchen leads). */
+  business: string | null;
+  /** Shop type picked on the form, e.g. kirana, pharmacy, bakery. */
+  category: string | null;
   area: string | null;
   message: string | null;
   locale: string;

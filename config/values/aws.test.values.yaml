@@ -1,0 +1,4 @@
+# Overlay: TEST on the AWS server it shares with prod (SANTHA_ENV=test SANTHA_CLOUD=aws). ADR-024.
+# Only what differs from test.values.yaml.
+deploy:
+  ingress: edge                 # the server's shared HTTPS front door (/opt/santha-edge) serves test and prod

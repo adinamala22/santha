@@ -13,7 +13,7 @@ import {
   OtpChallengeDto,
   OtpRequestDto,
   OtpVerifyDto,
-  OpsChallengeDto,
+  OpsLoginResultDto,
   OpsLoginDto,
   OpsVerifyDto,
   RefreshDto,
@@ -51,9 +51,10 @@ export class AuthController {
   /** Ops console step 1: email + password → OTP to the account phone. */
   @Public()
   @Post('ops/login')
-  @ZodResponse({ status: 200, type: OpsChallengeDto, description: 'Password accepted; second-factor code sent' })
-  opsLogin(@Body() body: OpsLoginDto, @Req() req: Request) {
-    return this.auth.opsLogin({ ...body, ip: req.ip ?? 'unknown' });
+  @ZodResponse({ status: 200, type: OpsLoginResultDto, description: 'Password accepted; second-factor code sent (or, with OPS_LOGIN_OTP=off before launch, signed in)' })
+  async opsLogin(@Body() body: OpsLoginDto, @Req() req: Request) {
+    const r = await this.auth.opsLogin({ ...body, ip: req.ip ?? 'unknown' });
+    return 'signedIn' in r ? { ...r, user: toMe(r.user) } : r;
   }
 
   /** Ops console step 2: the OTP → web_admin session. */
