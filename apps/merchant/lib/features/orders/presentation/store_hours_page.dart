@@ -9,8 +9,10 @@ import '../../onboarding/data/onboarding_controller.dart';
 import '../../onboarding/presentation/copy.dart';
 import '../../onboarding/presentation/widgets.dart';
 
-/// Store hours for a live store (ADR-021): opening and closing time and closed days. Customers see the
-/// store open in these hours; the Open switch opens it outside them until the next close.
+/// Store hours for a live store (ADR-021), one row per day: open or closed, opening and closing time.
+/// A closing time before the opening time runs past midnight (18:00–01:00). Customers see the store open
+/// in these hours; the Open switch opens it outside them until the next close.
+/// Extra periods of a day (split shifts set by ops) are kept as they are.
 class StoreHoursPage extends ConsumerStatefulWidget {
   const StoreHoursPage({super.key});
   @override
@@ -18,42 +20,61 @@ class StoreHoursPage extends ConsumerStatefulWidget {
 }
 
 class _StoreHoursPageState extends ConsumerState<StoreHoursPage> with StepActions {
-  String _open = '09:00';
-  String _close = '21:00';
-  Set<String> _closed = {};
+  /// The first period of each day; null = closed that day.
+  final _days = <String, TimeRange?>{};
+
+  /// Further periods of a day, saved unchanged.
+  final _extra = <String, List<TimeRange>>{};
 
   @override
   void initState() {
     super.initState();
     final h = ref.read(onboardingProvider).value?.merchant.hours;
-    final first = h?.values.expand((r) => r).firstOrNull;
-    if (first != null) {
-      _open = first.open;
-      _close = first.close;
+    for (final d in weekDays) {
+      final ranges = h == null ? [const TimeRange('09:00', '21:00')] : [...(h[d] ?? const <TimeRange>[])]..sort((a, b) => a.open.compareTo(b.open));
+      _days[d] = ranges.firstOrNull;
+      _extra[d] = ranges.skip(1).toList();
     }
-    _closed = {for (final d in weekDays) if (h != null && (h[d] ?? const []).isEmpty) d};
   }
 
-  Future<void> _pick(bool open) async {
-    final cur = (open ? _open : _close).split(':');
+  Future<void> _pick(String day, bool open) async {
+    final r = _days[day]!;
+    final cur = (open ? r.open : r.close).split(':');
     final t = await showTimePicker(context: context, initialTime: TimeOfDay(hour: int.parse(cur[0]), minute: int.parse(cur[1])));
     if (t == null) return;
     final v = '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
-    setState(() => open ? _open = v : _close = v);
+    setState(() => _days[day] = open ? TimeRange(v, r.close) : TimeRange(r.open, v));
   }
+
+  /// Copies [day]'s hours to every other open day.
+  void _copyToAll(String day) {
+    final r = _days[day];
+    if (r == null) return;
+    setState(() {
+      for (final d in weekDays) {
+        if (_days[d] != null) _days[d] = r;
+      }
+    });
+  }
+
+  bool get _valid => _days.values.any((r) => r != null) && _days.values.every((r) => r == null || r.open != r.close);
 
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final firstOpen = weekDays.where((d) => _days[d] != null).firstOrNull;
     return StepScaffold(
       title: l.storeHours,
       busy: busy,
       error: error,
       actionLabel: l.save,
       onAction: () {
-        if (_open.compareTo(_close) >= 0 || _closed.length == 7) return setState(() => error = l.errHours);
+        if (!_valid) return setState(() => error = l.errHours);
         run(() async {
-          await ref.read(onboardingProvider.notifier).saveHours({for (final d in weekDays) d: _closed.contains(d) ? <TimeRange>[] : [TimeRange(_open, _close)]});
+          await ref.read(onboardingProvider.notifier).saveHours({
+            for (final d in weekDays) d: [?_days[d], if (_days[d] != null) ..._extra[d]!],
+          });
           if (!context.mounted) return;
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.storeHoursSaved)));
           context.pop();
@@ -61,23 +82,60 @@ class _StoreHoursPageState extends ConsumerState<StoreHoursPage> with StepAction
       },
       children: [
         Text(l.storeHoursHint, style: const TextStyle(color: SanthaColors.slate)),
-        const SizedBox(height: SanthaSpacing.s4),
-        Row(children: [
-          Expanded(child: _TimeField(key: const ValueKey('hours-open'), label: l.hoursOpen, value: _open, onTap: () => _pick(true))),
-          const SizedBox(width: SanthaSpacing.s3),
-          Expanded(child: _TimeField(key: const ValueKey('hours-close'), label: l.hoursClose, value: _close, onTap: () => _pick(false))),
-        ]),
-        const SizedBox(height: SanthaSpacing.s4),
-        Text(l.hoursClosedOn),
-        Wrap(spacing: SanthaSpacing.s2, children: [
-          for (final d in weekDays)
-            FilterChip(
-              label: Text(l.dayLabel(d)),
-              selected: _closed.contains(d),
-              onSelected: (s) => setState(() => s ? _closed.add(d) : _closed.remove(d)),
+        const SizedBox(height: SanthaSpacing.s3),
+        for (final d in weekDays) _dayRow(l, text, d),
+        if (firstOpen != null)
+          Align(
+            alignment: Alignment.centerLeft,
+            child: TextButton.icon(
+              key: const ValueKey('hours-copy-all'),
+              icon: const Icon(Icons.copy_all_outlined, size: 18),
+              label: Text(l.hoursCopyToAll(l.dayLabel(firstOpen))),
+              onPressed: () => _copyToAll(firstOpen),
             ),
-        ]),
+          ),
       ],
+    );
+  }
+
+  Widget _dayRow(AppLocalizations l, TextTheme text, String d) {
+    final r = _days[d];
+    final extra = _extra[d]!;
+    return Padding(
+      key: ValueKey('hours-$d'),
+      padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s1),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(children: [
+          SizedBox(width: 56, child: Text(l.dayLabel(d), style: text.titleSmall)),
+          Semantics(
+            label: '${l.dayLabel(d)} ${r == null ? l.hoursClosedDay : l.storeOpen}',
+            child: Switch(
+              key: ValueKey('hours-$d-open'),
+              value: r != null,
+              activeTrackColor: SanthaColors.leaf,
+              onChanged: (on) => setState(() => _days[d] = on ? (_days[weekDays.firstWhere((x) => _days[x] != null, orElse: () => d)] ?? const TimeRange('09:00', '21:00')) : null),
+            ),
+          ),
+          const SizedBox(width: SanthaSpacing.s2),
+          if (r == null)
+            Expanded(child: Text(l.hoursClosedDay, style: text.bodyMedium?.copyWith(color: SanthaColors.slate)))
+          else ...[
+            Expanded(child: _TimeField(key: ValueKey('hours-$d-from'), label: l.hoursOpen, value: r.open, onTap: () => _pick(d, true))),
+            const SizedBox(width: SanthaSpacing.s2),
+            Expanded(child: _TimeField(key: ValueKey('hours-$d-to'), label: l.hoursClose, value: r.close, onTap: () => _pick(d, false))),
+          ],
+        ]),
+        if (r != null && r.close.compareTo(r.open) < 0)
+          Padding(
+            padding: const EdgeInsets.only(left: 56),
+            child: Text(l.hoursNextDay(r.close), key: ValueKey('hours-$d-overnight'), style: text.bodySmall?.copyWith(color: SanthaColors.indigo)),
+          ),
+        if (r != null && extra.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 56),
+            child: Text(l.hoursAlsoOpen(extra.map((x) => '${x.open}–${x.close}').join(', ')), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+          ),
+      ]),
     );
   }
 }
@@ -91,9 +149,10 @@ class _TimeField extends StatelessWidget {
   Widget build(BuildContext context) => Semantics(
         button: true,
         label: '$label $value',
+        excludeSemantics: true,
         child: InkWell(
           onTap: onTap,
-          child: InputDecorator(decoration: InputDecoration(labelText: label, suffixIcon: const Icon(Icons.schedule)), child: Text(value)),
+          child: InputDecorator(decoration: InputDecoration(labelText: label, isDense: true, suffixIcon: const Icon(Icons.schedule, size: 18)), child: Text(value)),
         ),
       );
 }

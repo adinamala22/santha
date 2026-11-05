@@ -10,10 +10,25 @@ import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
 import 'tracking_view.dart';
 
-final issuesProvider = FutureProvider.autoDispose.family<List<Issue>, String>((ref, orderId) => ref.watch(checkoutApiProvider).issues(orderId));
+Duration? _noRetry(int retryCount, Object error) => null;
+
+/// Same windows as the server (issues.service, money.ts issueWindowMin): home kitchens 2 h, fashion 48 h,
+/// everything else 24 h after delivery. The server still decides; this only hides a button that would fail.
+bool canReportIssue(Order o, {DateTime? now}) {
+  final delivered = o.history.where((h) => h.state == OrderState.delivered).firstOrNull?.at;
+  if (delivered == null) return true;
+  final window = switch (o.merchantType) {
+    'home_kitchen' => const Duration(hours: 2),
+    'fashion' => const Duration(hours: 48),
+    _ => const Duration(hours: 24),
+  };
+  return (now ?? DateTime.now()).difference(delivered) <= window;
+}
+
+final issuesProvider = FutureProvider.autoDispose.family<List<Issue>, String>(retry: _noRetry, (ref, orderId) => ref.watch(checkoutApiProvider).issues(orderId));
 
 /// The customer's rating of this order (null until rated), so a rated order is not offered the stars again.
-final myRatingProvider = FutureProvider.autoDispose.family<OrderRating?, String>((ref, orderId) => ref.watch(checkoutApiProvider).myRating(orderId));
+final myRatingProvider = FutureProvider.autoDispose.family<OrderRating?, String>(retry: _noRetry, (ref, orderId) => ref.watch(checkoutApiProvider).myRating(orderId));
 
 /// After delivery (M7): rate the store (and rider) once, and report a problem within the window.
 class AfterDelivery extends ConsumerStatefulWidget {
@@ -102,12 +117,15 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
         const SizedBox(height: SanthaSpacing.s4),
       ],
       for (final i in issues) _IssueOutcome(issue: i),
-      SanthaButton(
-        key: const ValueKey('report-problem'),
-        label: l.reportProblem,
-        variant: SanthaButtonVariant.outline,
-        onPressed: () => _report(context),
-      ),
+      if (canReportIssue(widget.order))
+        SanthaButton(
+          key: const ValueKey('report-problem'),
+          label: l.reportProblem,
+          variant: SanthaButtonVariant.outline,
+          onPressed: () => _report(context),
+        )
+      else
+        Text(l.issueWindowClosed, key: const ValueKey('report-window-closed'), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
     ]);
   }
 

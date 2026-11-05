@@ -36,6 +36,15 @@ final offerAlertProvider = Provider<void Function()>((ref) => () {
       HapticFeedback.heavyImpact();
     });
 
+/// True when the last attempt to read the position failed (the home shows a hint).
+final riderLocationOffProvider = NotifierProvider<RiderLocationOff, bool>(RiderLocationOff.new);
+
+class RiderLocationOff extends Notifier<bool> {
+  @override
+  bool build() => false;
+  void set(bool off) => state = off;
+}
+
 /// The rider's home: profile, today, the open offer and active jobs. While online it polls and sends the
 /// position every 10 s; realtime `offer.new` / `job.updated` refresh at once.
 final riderHomeProvider = AsyncNotifierProvider<RiderHomeController, RiderHome>(RiderHomeController.new);
@@ -45,10 +54,6 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
   Analytics get _analytics => ref.read(analyticsProvider);
   Timer? _tick;
   String? _rungFor;
-  bool _locationOff = false;
-
-  /// True when the last attempt to read the position failed (show a hint).
-  bool get locationOff => _locationOff;
 
   @override
   Future<RiderHome> build() async {
@@ -82,7 +87,7 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
 
   Future<void> sendLocation() async {
     final p = await ref.read(locationSourceProvider)();
-    _locationOff = p == null;
+    ref.read(riderLocationOffProvider.notifier).set(p == null);
     if (p != null) await _api.sendLocation(p.lat, p.lng).catchError((_) {});
   }
 

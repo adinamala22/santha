@@ -1,24 +1,47 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
 import '../../catalogue/presentation/catalogue_page.dart';
 import '../../onboarding/presentation/onboarding_gate.dart';
+import '../../onboarding/data/onboarding_controller.dart';
+import '../data/orders_controller.dart';
 import 'fulfilment.dart';
 import 'orders_page.dart';
 
 /// Home for a live store (M5): bottom navigation Orders / Catalogue / Earnings / More.
-class MerchantHome extends StatefulWidget {
+class MerchantHome extends ConsumerStatefulWidget {
   const MerchantHome({super.key, required this.view});
   final MerchantView view;
 
   @override
-  State<MerchantHome> createState() => _MerchantHomeState();
+  ConsumerState<MerchantHome> createState() => _MerchantHomeState();
 }
 
-class _MerchantHomeState extends State<MerchantHome> {
+class _MerchantHomeState extends ConsumerState<MerchantHome> {
   int _tab = 0;
+
+  /// The store's open/closed-by-hours state changes with the clock: re-read it every minute so the
+  /// "Closed by your hours" banner appears at closing time without a restart (off in tests).
+  Timer? _refresh;
+
+  @override
+  void initState() {
+    super.initState();
+    if (ref.read(ordersPollEveryProvider) != null) {
+      _refresh = Timer.periodic(const Duration(minutes: 1), (_) => ref.read(onboardingProvider.notifier).refreshQuietly());
+    }
+  }
+
+  @override
+  void dispose() {
+    _refresh?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

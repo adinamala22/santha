@@ -231,7 +231,7 @@ class _HoursStepState extends ConsumerState<HoursStep> with StepActions {
       error: error,
       actionLabel: l.save,
       onAction: () {
-        if (_open.compareTo(_close) >= 0 || _closed.length == 7) return setState(() => error = l.errHours);
+        if (_open == _close || _closed.length == 7) return setState(() => error = l.errHours);
         run(() async {
           await _ctrl(ref).save({
             'hours': {for (final d in weekDays) d: _closed.contains(d) ? [] : [TimeRange(_open, _close).toJson()]},

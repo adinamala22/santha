@@ -159,7 +159,7 @@
   "dayFri": "Fri",
   "daySat": "Sat",
   "daySun": "Sun",
-  "errHours": "Closing time must be after opening time, and the shop must open at least one day.",
+  "errHours": "Opening and closing time can't be the same, and the shop must open at least one day.",
   "radius": "Deliver up to {km} km",
   "@radius": {
     "placeholders": {
@@ -985,5 +985,31 @@
         "type": "String"
       }
     }
-  }
+  },
+  "hoursCopyToAll": "Use {day}'s hours for every open day",
+  "@hoursCopyToAll": {
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursClosedDay": "Closed",
+  "hoursNextDay": "Closes after midnight, at {time}",
+  "@hoursNextDay": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "hoursAlsoOpen": "Also open {ranges}",
+  "@hoursAlsoOpen": {
+    "placeholders": {
+      "ranges": {
+        "type": "String"
+      }
+    }
+  },
+  "startDelivery": "Start delivery"
 }

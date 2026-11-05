@@ -52,7 +52,7 @@ class _CartPageState extends ConsumerState<CartPage> {
           : ListView(
               padding: const EdgeInsets.all(SanthaSpacing.s5),
               children: [
-                Text(l.cartFrom(cart.merchantName ?? ''), style: text.titleMedium),
+                Text(l.cartFrom(cart.storeName(l.localeName)), style: text.titleMedium),
                 const SizedBox(height: SanthaSpacing.s3),
                 for (final line in cart.lines) _CartLineTile(cart: cart, line: line),
                 const Divider(height: SanthaSpacing.s6),
@@ -98,7 +98,7 @@ class _CartLineTile extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(line.name, style: text.bodyMedium),
+                    Text(line.displayName(l.localeName), style: text.bodyMedium),
                     Text('${line.variantLabel} · ${rupees(line.pricePaise)}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
                   ],
                 ),
@@ -108,9 +108,11 @@ class _CartLineTile extends ConsumerWidget {
                 add: CartAdd(
                   merchantId: cart.merchantId!,
                   merchantName: cart.merchantName ?? '',
+                  merchantNameTe: cart.merchantNameTe,
                   itemId: line.itemId,
                   variantId: line.variantId,
                   name: line.name,
+                  nameTe: line.nameTe,
                   variantLabel: line.variantLabel,
                   pricePaise: line.pricePaise,
                   maxPerOrder: line.maxPerOrder,

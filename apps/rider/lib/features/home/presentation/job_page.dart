@@ -30,6 +30,7 @@ class _JobPageState extends ConsumerState<JobPage> {
   final _cash = TextEditingController();
   bool _busy = false;
   String? _error;
+  String? _cashFor;
 
   @override
   void dispose() {
@@ -110,7 +111,11 @@ class _JobPageState extends ConsumerState<JobPage> {
   List<Widget> _toCustomer(AppLocalizations l, Job j) {
     final text = Theme.of(context).textTheme;
     final ctl = ref.read(jobProvider(widget.id).notifier);
-    if (j.codDuePaise > 0 && _cash.text.isEmpty) _cash.text = (j.codDuePaise / 100).toStringAsFixed(j.codDuePaise % 100 == 0 ? 0 : 2);
+    // Fill in the amount due once per job; after that the field is the rider's (they may clear it to retype).
+    if (j.codDuePaise > 0 && _cashFor != j.id) {
+      _cashFor = j.id;
+      _cash.text = (j.codDuePaise / 100).toStringAsFixed(j.codDuePaise % 100 == 0 ? 0 : 2);
+    }
     return [
       Text(l.stepToCustomer, style: text.titleMedium?.copyWith(color: SanthaColors.slate)),
       const SizedBox(height: SanthaSpacing.s2),

@@ -62,6 +62,10 @@ jobs:
           api="$(yq '.apps.apiBaseUrl' "$f")"
           [[ "$api" == https://* ]] || { echo "apps.apiBaseUrl in $f must be https://…"; exit 1; }
           echo "API_BASE_URL=$api" >> "$GITHUB_ENV"
+          # Map tiles for the apps (ADR-007). Empty = OpenStreetMap's public server, which is only for testing.
+          tiles="$(yq '.apps.mapTilesUrl // ""' "$f")"
+          echo "MAP_TILES_URL=$tiles" >> "$GITHUB_ENV"
+          if [ -z "$tiles" ] && [ "$(yq '.apps.flavor' "$f")" = prod ]; then echo "::warning::apps.mapTilesUrl is not set in $f: the PROD apps will use OpenStreetMap's public tile server, which does not allow app traffic at scale."; fi
       - run: dart pub global activate melos && melos bootstrap
       - name: Platform files (Gradle wrapper etc. are not committed)
         working-directory: apps/${{ matrix.app }}
@@ -81,6 +85,7 @@ jobs:
           SANTHA_KEY_PASSWORD: ${{ secrets[format('{0}_KEY_PASSWORD', matrix.app)] }}
         run: |
           args=(--flavor "$FLAVOR" -t "lib/main_$FLAVOR.dart" --release --build-number "$BUILD_NUMBER" --dart-define=API_BASE_URL="$API_BASE_URL")
+          [ -n "$MAP_TILES_URL" ] && args+=(--dart-define=MAP_TILES_URL="$MAP_TILES_URL")
           flutter build appbundle "${args[@]}"
           [ "$FLAVOR" = stg ] && flutter build apk "${args[@]}"
           true

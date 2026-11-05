@@ -215,6 +215,14 @@ class FakeBackend implements HttpClientAdapter {
           }
         ),
       'GET /v1/me/addresses' => (200, fixture('address_list')),
+      final r when r.startsWith('DELETE /v1/me/addresses/') => (204, <String, Object?>{}),
+      'POST /v1/me/addresses' => (201, {
+          ...(fixture('address_list')['items'] as List).first as Map<String, dynamic>,
+          'id': '80000000-0000-4000-8000-000000000099',
+          'line': (o.data as Map)['line'],
+          'location': (o.data as Map)['location'],
+          'isDefault': false,
+        }),
       'GET /v1/feed' => (200, _feed(o.queryParameters)),
       'GET /v1/search' => (200, (() {
           final r = fixture('search_atta');

@@ -62,6 +62,9 @@ final locationControllerProvider = NotifierProvider<LocationController, Location
 class LocationController extends Notifier<LocationState> {
   static const _key = 'santha.location';
 
+  /// Bumped by [forget]: a restore still reading from storage must not bring the old location back.
+  int _epoch = 0;
+
   @override
   LocationState build() {
     _restore();
@@ -69,7 +72,9 @@ class LocationController extends Notifier<LocationState> {
   }
 
   Future<void> _restore() async {
+    final epoch = _epoch;
     final raw = await ref.read(keyValueStoreProvider).read(_key);
+    if (epoch != _epoch) return;
     if (raw == null) {
       state = const LocationUnset();
       return;
@@ -84,6 +89,22 @@ class LocationController extends Notifier<LocationState> {
   /// A GPS fix (or why there is none). It is not used until the customer confirms it on the map pin,
   /// because phone fixes can be tens to hundreds of metres off.
   Future<LocateResult> locateDevice() => ref.read(deviceLocatorProvider).locate();
+
+  /// Signed out: the next person on this phone chooses their own delivery location.
+  Future<void> forget() async {
+    _epoch++;
+    state = const LocationUnset();
+    await ref.read(keyValueStoreProvider).delete(_key);
+  }
+
+  /// The saved address behind the delivery location was deleted: keep the point, drop the address.
+  Future<void> detachAddress(String addressId) async {
+    final s = state;
+    if (s is! LocationSet || s.location.address?.id != addressId) return;
+    final loc = DeliveryLocation(point: s.location.point, source: LocationSource.pin, serviceability: s.location.serviceability);
+    state = LocationSet(loc);
+    await ref.read(keyValueStoreProvider).write(_key, jsonEncode(loc.toJson()));
+  }
 
   Future<DeliveryLocation> useAddress(Address a) => set(a.location, LocationSource.address, address: a);
 

@@ -23,6 +23,13 @@ class OnboardingController extends AsyncNotifier<MerchantView?> {
     state = await AsyncValue.guard(_api.mine);
   }
 
+  /// Background refresh: keeps the current store when the network fails (no error page).
+  Future<void> refreshQuietly() async {
+    try {
+      state = AsyncData(await _api.mine());
+    } catch (_) {}
+  }
+
   Future<MerchantView> create({required MerchantType type, required String name, bool? sellsFood, String? category}) async {
     final v = await _api.create(type: type, name: name, sellsFood: sellsFood, category: category);
     _analytics.track('onboarding_step_completed', {'step': 'business_type', 'type': type.wire});

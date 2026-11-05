@@ -57,6 +57,9 @@ class FakeRiderApi extends RiderApi {
   String otp = '2468';
   bool ready = false;
 
+  /// Status changes fail as if the phone had no network.
+  bool offline = false;
+
   @override
   Future<RiderHome> home() async => RiderHome(
         name: 'Kiran',
@@ -74,6 +77,7 @@ class FakeRiderApi extends RiderApi {
 
   @override
   Future<RiderHome> setStatus({required bool online, List<String>? zones}) async {
+    if (offline) throw const ApiException(code: ApiException.network, status: 0);
     calls.add('status $online ${zones?.join(',') ?? ''}');
     this.online = online;
     if (zones != null) zoneIds = zones;

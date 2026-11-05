@@ -109,9 +109,11 @@ class _ProductSheetState extends ConsumerState<ProductSheet> {
                     final add = CartAdd(
                       merchantId: page.store.id,
                       merchantName: page.store.name,
+                      merchantNameTe: page.store.nameTe,
                       itemId: item.id,
                       variantId: _variant.id,
                       name: item.card.name,
+                      nameTe: item.card.nameTe,
                       variantLabel: _variant.label,
                       pricePaise: _variant.pricePaise,
                       maxPerOrder: item.maxPerOrder,

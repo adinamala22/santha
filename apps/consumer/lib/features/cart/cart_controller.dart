@@ -13,6 +13,7 @@ class CartLine {
     required this.variantLabel,
     required this.pricePaise,
     required this.quantity,
+    this.nameTe,
     this.maxPerOrder,
     this.substitution = Substitution.callMe,
   });
@@ -24,6 +25,7 @@ class CartLine {
         variantLabel: j['variantLabel'] as String,
         pricePaise: j['pricePaise'] as int,
         quantity: j['quantity'] as int,
+        nameTe: j['nameTe'] as String?,
         maxPerOrder: j['maxPerOrder'] as int?,
         substitution: Substitution.parse(j['substitution'] as String?),
       );
@@ -31,10 +33,13 @@ class CartLine {
   final String itemId;
   final String variantId;
   final String name;
+  final String? nameTe;
   final String variantLabel;
   final int pricePaise;
   final int quantity;
   final int? maxPerOrder;
+
+  String displayName(String lang) => lang == 'te' && nameTe != null ? nameTe! : name;
 
   /// What the store should do if this item is unavailable when packing.
   final Substitution substitution;
@@ -45,6 +50,7 @@ class CartLine {
         itemId: itemId,
         variantId: variantId,
         name: name,
+        nameTe: nameTe,
         variantLabel: variantLabel,
         pricePaise: pricePaise,
         quantity: q,
@@ -56,6 +62,7 @@ class CartLine {
         itemId: itemId,
         variantId: variantId,
         name: name,
+        nameTe: nameTe,
         variantLabel: variantLabel,
         pricePaise: pricePaise,
         quantity: quantity,
@@ -69,6 +76,7 @@ class CartLine {
         'itemId': itemId,
         'variantId': variantId,
         'name': name,
+        'nameTe': nameTe,
         'variantLabel': variantLabel,
         'pricePaise': pricePaise,
         'quantity': quantity,
@@ -93,11 +101,12 @@ class CartSlot {
 
 /// A single-store cart (multi-store carts are Phase 2). Totals are always recomputed from lines.
 class Cart {
-  const Cart({this.merchantId, this.merchantName, this.lines = const [], this.slot});
+  const Cart({this.merchantId, this.merchantName, this.merchantNameTe, this.lines = const [], this.slot});
 
   factory Cart.fromJson(Json j) => Cart(
         merchantId: j['merchantId'] as String?,
         merchantName: j['merchantName'] as String?,
+        merchantNameTe: j['merchantNameTe'] as String?,
         lines: ((j['lines'] as List?) ?? const []).map((l) => CartLine.fromJson(l as Json)).toList(),
         slot: j['slot'] == null ? null : CartSlot.fromJson(j['slot'] as Json),
       );
@@ -106,7 +115,11 @@ class Cart {
 
   final String? merchantId;
   final String? merchantName;
+  final String? merchantNameTe;
   final List<CartLine> lines;
+
+  /// The store's name in the app language ('' when the cart is empty).
+  String storeName(String lang) => (lang == 'te' ? merchantNameTe : null) ?? merchantName ?? '';
   final CartSlot? slot;
 
   bool get isEmpty => lines.isEmpty;
@@ -115,7 +128,7 @@ class Cart {
   int quantityOf(String variantId) => lines.where((l) => l.variantId == variantId).fold(0, (n, l) => n + l.quantity);
   int quantityOfItem(String itemId) => lines.where((l) => l.itemId == itemId).fold(0, (n, l) => n + l.quantity);
 
-  Json toJson() => {'merchantId': merchantId, 'merchantName': merchantName, 'lines': lines.map((l) => l.toJson()).toList(), 'slot': slot?.toJson()};
+  Json toJson() => {'merchantId': merchantId, 'merchantName': merchantName, 'merchantNameTe': merchantNameTe, 'lines': lines.map((l) => l.toJson()).toList(), 'slot': slot?.toJson()};
 }
 
 enum AddOutcome { added, otherStore, maxReached }
@@ -130,15 +143,19 @@ class CartAdd {
     required this.name,
     required this.variantLabel,
     required this.pricePaise,
+    this.merchantNameTe,
+    this.nameTe,
     this.maxPerOrder,
   });
 
   factory CartAdd.fromCard(ItemCard i, StoreSummary store, {int? maxPerOrder}) => CartAdd(
         merchantId: store.id,
         merchantName: store.name,
+        merchantNameTe: store.nameTe,
         itemId: i.id,
         variantId: i.variantId,
         name: i.name,
+        nameTe: i.nameTe,
         variantLabel: i.variantLabel,
         pricePaise: i.pricePaise,
         maxPerOrder: maxPerOrder,
@@ -146,9 +163,11 @@ class CartAdd {
 
   final String merchantId;
   final String merchantName;
+  final String? merchantNameTe;
   final String itemId;
   final String variantId;
   final String name;
+  final String? nameTe;
   final String variantLabel;
   final int pricePaise;
   final int? maxPerOrder;
@@ -160,6 +179,9 @@ final cartControllerProvider = NotifierProvider<CartController, Cart>(CartContro
 class CartController extends Notifier<Cart> {
   static const _key = 'santha.cart';
 
+  /// Bumped by [clear]: a restore still reading from storage must not bring the old cart back.
+  int _epoch = 0;
+
   @override
   Cart build() {
     _restore();
@@ -167,8 +189,9 @@ class CartController extends Notifier<Cart> {
   }
 
   Future<void> _restore() async {
+    final epoch = _epoch;
     final raw = await ref.read(keyValueStoreProvider).read(_key);
-    if (raw == null) return;
+    if (raw == null || epoch != _epoch) return;
     try {
       final saved = Cart.fromJson(jsonDecode(raw) as Json);
       if (state.isEmpty) state = saved;
@@ -192,13 +215,14 @@ class CartController extends Notifier<Cart> {
         itemId: a.itemId,
         variantId: a.variantId,
         name: a.name,
+        nameTe: a.nameTe,
         variantLabel: a.variantLabel,
         pricePaise: a.pricePaise,
         quantity: 1,
         maxPerOrder: a.maxPerOrder,
       ));
     }
-    _save(Cart(merchantId: a.merchantId, merchantName: a.merchantName, lines: lines, slot: cart.merchantId == a.merchantId ? cart.slot : null));
+    _save(Cart(merchantId: a.merchantId, merchantName: a.merchantName, merchantNameTe: a.merchantNameTe, lines: lines, slot: cart.merchantId == a.merchantId ? cart.slot : null));
     ref.read(analyticsProvider).track('add_to_cart', {
       'merchant_id': a.merchantId,
       'item_id': a.itemId,
@@ -215,24 +239,27 @@ class CartController extends Notifier<Cart> {
       for (final l in state.lines)
         if (l.variantId != variantId) l else if (l.quantity > 1) l.withQuantity(l.quantity - 1),
     ];
-    _save(lines.isEmpty ? Cart.empty : Cart(merchantId: state.merchantId, merchantName: state.merchantName, lines: lines, slot: state.slot));
+    _save(lines.isEmpty ? Cart.empty : Cart(merchantId: state.merchantId, merchantName: state.merchantName, merchantNameTe: state.merchantNameTe, lines: lines, slot: state.slot));
   }
 
   void setSlot(String merchantId, CartSlot slot) {
     if (!state.isEmpty && state.merchantId != merchantId) return;
-    _save(Cart(merchantId: state.merchantId ?? merchantId, merchantName: state.merchantName, lines: state.lines, slot: slot));
+    _save(Cart(merchantId: state.merchantId ?? merchantId, merchantName: state.merchantName, merchantNameTe: state.merchantNameTe, lines: state.lines, slot: slot));
   }
 
   void setSubstitution(String variantId, Substitution s) {
     _save(Cart(
       merchantId: state.merchantId,
-      merchantName: state.merchantName,
+      merchantName: state.merchantName, merchantNameTe: state.merchantNameTe,
       lines: [for (final l in state.lines) l.variantId == variantId ? l.withSubstitution(s) : l],
       slot: state.slot,
     ));
   }
 
-  void clear() => _save(Cart.empty);
+  void clear() {
+    _epoch++;
+    _save(Cart.empty);
+  }
 
   void _save(Cart c) {
     state = c;

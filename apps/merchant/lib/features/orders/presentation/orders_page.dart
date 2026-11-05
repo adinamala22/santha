@@ -303,7 +303,7 @@ class _Tabs extends ConsumerWidget {
               selectedColor: SanthaColors.indigo,
               labelStyle: TextStyle(color: board.tab == b ? SanthaColors.white : SanthaColors.ink),
               showCheckmark: false,
-              onSelected: (_) => ref.read(ordersBoardProvider.notifier).selectTab(b),
+              onSelected: (_) => _run(context, ref, () => ref.read(ordersBoardProvider.notifier).selectTab(b)),
             ),
           ),
       ]),

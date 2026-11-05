@@ -196,9 +196,10 @@ void main() {
     await tester.tap(find.byKey(const ValueKey('edit-hours')));
     await tester.pumpAndSettle();
     expect(find.text('Store hours'), findsOneWidget);
-    expect(find.text('09:00'), findsOneWidget);
-    expect(find.text('21:00'), findsOneWidget);
-    await tester.tap(find.widgetWithText(FilterChip, 'Sun'));
+    expect(find.text('09:00'), findsNWidgets(7)); // one row per day
+    expect(find.text('21:00'), findsNWidgets(7));
+    await tester.ensureVisible(find.byKey(const ValueKey('hours-sun-open')));
+    await tester.tap(find.byKey(const ValueKey('hours-sun-open')));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
@@ -207,6 +208,53 @@ void main() {
     expect(hours['sun'], isEmpty);
     expect(hours['mon'], [{'open': '09:00', 'close': '21:00'}]);
     expect(find.text('Store hours'), findsNothing); // back on the orders page
+  });
+
+  testWidgets('Store hours keep each day’s own hours, and late hours run past midnight', (tester) async {
+    final v = _liveView()..['openNow'] = {'open': false, 'closesAt': null, 'nextOpenAt': null};
+    (v['merchant'] as Map<String, dynamic>)['hours'] = {
+      for (final d in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat']) d: [{'open': '18:00', 'close': '01:00'}],
+      'sun': [{'open': '10:00', 'close': '14:00'}, {'open': '17:00', 'close': '20:00'}],
+    };
+    final (container, merchantApi) = await pumpSignedIn(tester, view: v);
+    await tester.tap(find.byKey(const ValueKey('edit-hours')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('hours-mon-overnight')), findsOneWidget);
+    expect(find.text('Closes after midnight, at 01:00'), findsNWidgets(6));
+    await tester.ensureVisible(find.text('Also open 17:00–20:00'));
+    expect(find.text('Also open 17:00–20:00'), findsOneWidget); // Sunday's split shift is kept
+    await tester.scrollUntilVisible(find.text('Save'), 200);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    final hours = (merchantApi.view!['merchant'] as Map)['hours'] as Map;
+    expect(hours['mon'], [{'open': '18:00', 'close': '01:00'}]);
+    expect(hours['sun'], [{'open': '10:00', 'close': '14:00'}, {'open': '17:00', 'close': '20:00'}]);
+  });
+
+  testWidgets('Store hours: one day’s hours copied to every open day; all days closed is refused', (tester) async {
+    final v = _liveView()..['openNow'] = {'open': false, 'closesAt': null, 'nextOpenAt': null};
+    (v['merchant'] as Map<String, dynamic>)['hours'] = {
+      'mon': [{'open': '08:00', 'close': '22:00'}],
+      for (final d in ['tue', 'wed', 'thu', 'fri', 'sat']) d: [{'open': '09:00', 'close': '21:00'}],
+      'sun': <Object>[],
+    };
+    final (container, merchantApi) = await pumpSignedIn(tester, view: v);
+    await tester.tap(find.byKey(const ValueKey('edit-hours')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('hours-copy-all')));
+    await tester.tap(find.byKey(const ValueKey('hours-copy-all')));
+    await tester.pumpAndSettle();
+    expect(find.text('08:00'), findsNWidgets(6)); // Sunday stays closed
+    for (final d in ['mon', 'tue', 'wed', 'thu', 'fri', 'sat']) {
+      await tester.ensureVisible(find.byKey(ValueKey('hours-$d-open')));
+      await tester.tap(find.byKey(ValueKey('hours-$d-open')));
+      await tester.pumpAndSettle();
+    }
+    await tester.scrollUntilVisible(find.text('Save'), 200);
+    await tester.tap(find.text('Save'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('the shop must open at least one day'), findsOneWidget);
+    expect(merchantApi.calls.where((c) => c == 'update hours'), isEmpty);
   });
 
   testWidgets('ADR-021: the More tab links to Store hours, in Telugu', (tester) async {
@@ -314,6 +362,51 @@ void main() {
     await tester.drag(find.byKey(const ValueKey('orders-list')), const Offset(0, 300));
     await tester.pumpAndSettle();
     expect(find.text('Kiran is coming to pick up'), findsOneWidget);
+  });
+
+  testWidgets('no rider yet: a store with delivery staff picks who goes; a failure shows a message; the owner gets Start delivery', (tester) async {
+    late FakeMerchantOrdersApi api;
+    final view = _liveView();
+    view['staff'] = [
+      {'id': 'st1', 'name': 'Suresh', 'phoneMasked': '+9190******01'},
+    ];
+    await pumpSignedIn(tester, view: view, orders: [merchantOrder('o1', 'SN-8')], onOrdersApi: (a) => api = a);
+    await tester.tap(find.byKey(const ValueKey('accept-o1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('mode-rider')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    api.deliveryRows['o1']!.addAll({'fallbackStage': 'self_bonus', 'selfBonusPaise': 2000});
+    await tester.drag(find.byKey(const ValueKey('orders-list')), const Offset(0, 300));
+    await tester.pumpAndSettle();
+
+    // Offline: the tap fails with a message, not a crash.
+    api.failNext = const ApiException(code: ApiException.network, status: 0);
+    await tester.tap(find.byKey(const ValueKey('deliver-myself-o1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('staff-owner')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(api.calls.where((c) => c.startsWith('deliver-myself')), isEmpty);
+
+    // Only "deliver myself" can be chosen here; the staff member goes.
+    await tester.tap(find.byKey(const ValueKey('deliver-myself-o1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('mode-rider'))); // disabled: stays on self
+    await tester.pumpAndSettle();
+    expect(find.text('Who delivers?'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('staff-st1')));
+    await tester.tap(find.byKey(const ValueKey('confirm-accept')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'deliver-myself o1 st1');
+    expect(find.byKey(const ValueKey('start-delivery-o1')), findsNothing); // staff get the link by SMS
+
+    // The owner delivering gets "Start delivery" on this phone.
+    api.deliveryRows['o1']!['courier'] = {'kind': 'owner', 'name': 'Owner', 'callNumber': '+918047100002'};
+    await tester.drag(find.byKey(const ValueKey('orders-list')), const Offset(0, 300));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('start-delivery-o1')), findsOneWidget);
   });
 
   testWidgets('M6: Earnings shows the statement preview with the commission ladder', (tester) async {

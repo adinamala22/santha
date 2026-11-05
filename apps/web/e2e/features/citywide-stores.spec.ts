@@ -88,6 +88,24 @@ test.describe.serial('feature: city-wide stores, the Open switch and hours (ADR-
     await expect.poll(async () => (await kirana()).open, { timeout: 30_000, message: 'feed: paused' }).toBe(false);
   });
 
+  test('late hours run past midnight: a closing time before the opening time ends the next day', async ({ request }) => {
+    // Closed only for the hour starting an hour from now, open the rest of the day; whatever the time of day,
+    // one of the two times is before the other, so this also covers the period running past midnight.
+    const ist = new Date(Date.now() + 330 * 60_000);
+    const nowMin = ist.getUTCHours() * 60 + ist.getUTCMinutes();
+    const hhmm = (x: number) => {
+      const v = ((x % 1440) + 1440) % 1440;
+      return `${String(Math.floor(v / 60)).padStart(2, '0')}:${String(v % 60).padStart(2, '0')}`;
+    };
+    const hours = Object.fromEntries(DAYS.map((d) => [d, [{ open: hhmm(nowMin + 120), close: hhmm(nowMin + 60) }]]));
+    const saved = await call(request, 'patch', '/merchants/me', { headers: owner, data: { hours } });
+    expect(saved.merchant.hours.mon).toEqual(hours.mon);
+    const on = await call(request, 'put', '/merchants/me/availability', { headers: owner, data: { open: true } }); // the previous test paused it
+    expect(on.openNow.open).toBe(true);
+    expect(Math.abs(new Date(on.openNow.closesAt).getTime() - (Date.now() + 60 * 60_000))).toBeLessThan(2 * 60_000);
+    await call(request, 'patch', '/merchants/me', { headers: owner, data: { hours: Object.fromEntries(DAYS.map((d) => [d, [{ open: '09:00', close: '09:00' }]])) }, status: 400 });
+  });
+
   test('ops edit the hours in the console (audited)', async ({ page, request }) => {
     test.skip(!HAS_OPS, 'needs E2E_OPS_EMAIL / E2E_OPS_PASSWORD on live');
     await opsSignIn(page, `/admin/merchants/${SEED.kirana.id}`);

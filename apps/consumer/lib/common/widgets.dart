@@ -103,7 +103,7 @@ class CartAddButton extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final qty = ref.watch(cartControllerProvider.select((c) => c.merchantId == add.merchantId ? c.quantityOf(add.variantId) : 0));
     return Semantics(
-      label: qty == 0 ? '${l.add} ${add.name}' : '${add.name}: $qty',
+      label: qty == 0 ? '${l.add} ${l.localeName == 'te' ? add.nameTe ?? add.name : add.name}' : '${l.localeName == 'te' ? add.nameTe ?? add.name : add.name}: $qty',
       child: AddButton(
         quantity: qty,
         addLabel: l.add,
@@ -125,7 +125,7 @@ Future<void> addToCart(BuildContext context, WidgetRef ref, CartAdd add, {requir
     case AddOutcome.maxReached:
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l.maxReached(add.maxPerOrder ?? 0))));
     case AddOutcome.otherStore:
-      final current = ref.read(cartControllerProvider).merchantName ?? '';
+      final current = ref.read(cartControllerProvider).storeName(l.localeName);
       final replace = await showDialog<bool>(
         context: context,
         builder: (context) => AlertDialog(

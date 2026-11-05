@@ -38,3 +38,5 @@ web:
 apps:
   flavor: prod
   apiBaseUrl: https://api.santhaapp.com
+  # Raster map tiles for the apps ({z}/{x}/{y}); empty = OpenStreetMap's public server (testing only, ADR-007).
+  mapTilesUrl: ""

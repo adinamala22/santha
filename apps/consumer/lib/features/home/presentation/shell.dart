@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
@@ -10,6 +11,7 @@ import '../../../data/order_providers.dart';
 import '../../../data/providers.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../../account/privacy_page.dart';
+import '../../location/location_controller.dart';
 import '../../location/location_page.dart';
 import '../../orders/orders_page.dart';
 
@@ -93,8 +95,17 @@ class AccountPage extends ConsumerWidget {
                   trailing: PopupMenuButton<String>(
                     onSelected: (v) async {
                       final api = ref.read(addressApiProvider);
-                      if (v == 'default') await api.makeDefault(a.id);
-                      if (v == 'delete') await api.remove(a.id);
+                      final messenger = ScaffoldMessenger.of(context);
+                      try {
+                        if (v == 'default') await api.makeDefault(a.id);
+                        if (v == 'delete') {
+                          await api.remove(a.id);
+                          // Delivering to this address: keep the spot on the map, without the deleted address.
+                          await ref.read(locationControllerProvider.notifier).detachAddress(a.id);
+                        }
+                      } on ApiException catch (e) {
+                        messenger.showSnackBar(SnackBar(content: Text(e.code == ApiException.network ? l.errorNetwork : l.errorGeneric)));
+                      }
                       ref.invalidate(addressesProvider);
                     },
                     itemBuilder: (_) => [
@@ -107,7 +118,10 @@ class AccountPage extends ConsumerWidget {
           AsyncError() => ErrorView(onRetry: () => ref.invalidate(addressesProvider)),
           _ => const LoadingView(),
         },
-        TextButton.icon(onPressed: () => context.push('/location/pin'), icon: const Icon(Icons.add_location_alt_outlined), label: Text(l.addAddress)),
+        TextButton.icon(onPressed: () async {
+            await context.push('/location/pin?return=1');
+            ref.invalidate(addressesProvider);
+          }, icon: const Icon(Icons.add_location_alt_outlined), label: Text(l.addAddress)),
         const SizedBox(height: SanthaSpacing.s6),
         SanthaButton(label: l.signOut, variant: SanthaButtonVariant.outline, onPressed: () => ref.read(authControllerProvider.notifier).signOut()),
       ]),

@@ -122,6 +122,9 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
     return _parse(o);
   }
 
+  /// The next deliverMyself call throws this (then succeeds again).
+  Object? failNext;
+
   /// Deliveries by order id (raw JSON so tests can change them).
   final deliveryRows = <String, Map<String, dynamic>>{};
   List<Map<String, dynamic>> statementLines = [];
@@ -131,8 +134,18 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
 
   @override
   Future<MerchantDelivery> deliverMyself(String orderId, {String? staffId}) async {
-    calls.add('deliver-myself $orderId');
-    deliveryRows[orderId]!.addAll({'mode': 'self', 'state': 'assigned', 'courier': {'kind': 'owner', 'name': 'Owner', 'callNumber': '+918047100002'}, 'staffLink': 'http://localhost:3000/d/tok999'});
+    if (failNext != null) {
+      final e = failNext!;
+      failNext = null;
+      throw e;
+    }
+    calls.add(staffId == null ? 'deliver-myself $orderId' : 'deliver-myself $orderId $staffId');
+    deliveryRows[orderId]!.addAll({
+      'mode': 'self',
+      'state': 'assigned',
+      'courier': staffId == null ? {'kind': 'owner', 'name': 'Owner', 'callNumber': '+918047100002'} : {'kind': 'staff', 'name': 'Suresh', 'callNumber': '+918047100002'},
+      'staffLink': 'http://localhost:3000/d/tok999',
+    });
     return MerchantDelivery.fromJson(jsonDecode(jsonEncode(deliveryRows[orderId])) as Map<String, dynamic>);
   }
 
