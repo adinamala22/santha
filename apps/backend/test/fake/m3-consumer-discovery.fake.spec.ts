@@ -92,9 +92,9 @@ describe('M3 · consumer discovery backend (fake mode)', () => {
     for (const v of atta.variants) expect(v.pricePaise).toBeLessThanOrEqual(v.mrpPaise);
   });
 
-  it('store page from far away: still readable, but says it does not deliver here', async () => {
+  it('store page from far away in the city: delivers, beyond the radius at an extra charge (ADR-022)', async () => {
     const r = await http().get(`/v1/stores/${kirana.id}?${q(centre('vedayapalem'))}`).expect(200);
-    expect(r.body.deliversHere).toBe(false);
+    expect(r.body).toMatchObject({ deliversHere: true, notDeliveringReason: null, beyondRadiusSurchargePaise: 3000, store: { beyondRadius: true } });
   });
 
   it('home-kitchen page: FSSAI + hygiene badges, slots with cut-offs, menu flags, portions and allergens', async () => {

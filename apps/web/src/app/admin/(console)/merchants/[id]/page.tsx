@@ -7,6 +7,7 @@ import { mediaSrc } from '@/lib/media';
 import { dateOnly, dateTime, km, rupees } from '@/lib/format';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 import { DecisionPanel } from './decision-panel';
+import { HoursForm } from './hours-form';
 import { RadiusForm } from './radius-form';
 
 export const metadata = { title: 'Merchant' };
@@ -35,6 +36,7 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
     [c.mov, rupees(m.movPaise)],
     [c.hours, firstDay ? firstDay.map((r) => `${r.open}–${r.close}`).join(', ') : copy.common.none],
     [c.fulfilment, m.defaultFulfilment === 'self' ? c.fulfilmentSelf : c.fulfilmentRider],
+    [c.deliversAnywhere, m.deliversAnywhere ? copy.common.yes : copy.common.no],
   ];
   if (m.type === 'fashion') rows.push([c.returnPolicy, m.returnPolicy ?? copy.common.none]);
   if (m.type === 'home_kitchen') rows.push([c.hygiene, m.hygieneDeclaredAt ? fill(c.declaredOn, { date: dateOnly(m.hygieneDeclaredAt, locale) }) : copy.common.none]);
@@ -171,6 +173,10 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
 
           <Card title={c.decision}>
             <DecisionPanel id={m.id} name={m.name} market={marketName} status={m.status} canDecide={!!session?.canDecide} copy={copy} />
+          </Card>
+
+          <Card title={c.hoursEdit.title}>
+            <HoursForm id={m.id} hours={m.hours} openNow={m.status === 'live' ? view.openNow.open : null} canEdit={!!session?.canDecide} copy={copy} />
           </Card>
 
           <Card title={c.radiusEdit.title}>

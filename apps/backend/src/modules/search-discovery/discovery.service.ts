@@ -5,6 +5,7 @@ import { istParts, openStatus } from '../../common/hours';
 import { DomainError } from '../../common/errors/domain-error';
 import { categoryBySlug, categoryRank } from '../merchant-catalogue/domain/taxonomy';
 import { buildDocs } from './search-indexer.service';
+import { FeeRulesSchema } from '../analytics-config/domain/micro-market-config';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { CatalogueService } from '../merchant-catalogue/catalogue.service';
 import type { ItemDoc, MerchantDoc } from './domain/documents';
@@ -34,6 +35,12 @@ export interface StoreCard {
   category: string | null;
   photoUrl: string | null;
   distanceM: number;
+  /** The store delivers to the customer: every store of the customer's city does (ADR-021, ADR-022). */
+  deliverable: boolean;
+  /** The customer is beyond the store's radius: it still delivers, with an extra delivery charge (ADR-022). */
+  beyondRadius: boolean;
+  /** "Deliver anywhere": the store delivers itself anywhere in the city, tracked live in the app (ADR-022). */
+  deliversAnywhere: boolean;
   /** ASAP stores: ETA range; scheduled-only kitchens: mode "scheduled" with the next open slot. */
   eta: { mode: 'asap'; minMin: number; maxMin: number } | { mode: 'scheduled'; nextSlot: { date: string; start: string; end: string; cutoffAt: Date } | null };
   open: boolean;
@@ -98,20 +105,25 @@ export class DiscoveryService {
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
-  private async locate(pt: LatLng): Promise<{ market: Market; version: VersionRecord } | null> {
+  /** The customer's micro-market and every area of its city (the feed and search span the whole city, ADR-021). */
+  private async locate(pt: LatLng): Promise<{ market: Market; version: VersionRecord; cityMarketIds: string[] } | null> {
     const hit = await this.markets.resolve(pt, this.clock());
-    return hit ? { market: { id: hit.market.id, slug: hit.market.slug, name: hit.market.name, nameTe: hit.market.nameTe }, version: hit.version } : null;
+    if (!hit) return null;
+    return {
+      market: { id: hit.market.id, slug: hit.market.slug, name: hit.market.name, nameTe: hit.market.nameTe },
+      version: hit.version,
+      cityMarketIds: await this.markets.cityMarketIds(hit.market.cityId),
+    };
   }
 
-  /** Store cards for the docs that deliver to `pt` (inside their radius). */
+  /** Store cards for the docs (all in the customer's city), marked when `pt` is beyond the store's radius. */
   private async cards(docs: MerchantDoc[], pt: LatLng, version: VersionRecord): Promise<StoreCard[]> {
     const now = this.clock();
     const d = version.discovery;
     const out = await Promise.all(
       docs.map(async (doc): Promise<StoreCard | null> => {
         const straight = haversineMeters(doc.location, pt);
-        if (straight > doc.radiusM) return null;
-        const hours = doc.acceptingOrders === false ? { open: false, nextOpenAt: null, closesAt: null } : openStatus(doc.hours, now);
+        const hours = doc.acceptingOrders === false ? { open: false, nextOpenAt: null, closesAt: null } : openStatus(doc.hours, now, doc.openUntil);
         let eta: StoreCard['eta'];
         let etaMin: number | null = null;
         if (doc.type === 'home_kitchen' && doc.hasSlots) {
@@ -131,6 +143,9 @@ export class DiscoveryService {
           category: doc.category,
           photoUrl: doc.photoUrl,
           distanceM: Math.round(straight),
+          deliverable: true,
+          beyondRadius: straight > doc.radiusM,
+          deliversAnywhere: !!doc.deliversAnywhere,
           eta,
           open: hours.open,
           nextOpenAt: hours.nextOpenAt,
@@ -163,7 +178,7 @@ export class DiscoveryService {
   async feed(pt: LatLng, tab: Tab, f: Filters) {
     const loc = await this.locate(pt);
     if (!loc) return { serviceability: { serviceable: false, microMarket: null } as Serviceability, tab, tabs: [], stores: [] as StoreCard[] };
-    const all = await this.cards(await this.index.merchantsIn(loc.market.id), pt, loc.version);
+    const all = await this.cards(await this.index.merchantsIn(loc.cityMarketIds), pt, loc.version);
     const tabs = (Object.keys(TABS) as Tab[]).map((key) => ({ key, count: all.filter((c) => c.type === TABS[key] && this.passes(c, f)).length }));
     const stores = all.filter((c) => c.type === TABS[tab] && this.passes(c, f)).sort(DiscoveryService.order);
     return { serviceability: { serviceable: true, microMarket: loc.market } as Serviceability, tab, tabs, stores };
@@ -174,16 +189,16 @@ export class DiscoveryService {
     const loc = await this.locate(pt);
     if (!loc) return { serviceability: { serviceable: false, microMarket: null } as Serviceability, query: q, hints: [], groups: [], stores: [], totalItems: 0, zeroResult: true, tookMs: 0 };
     const [itemHits, storeHits, docs] = await Promise.all([
-      this.index.searchItems({ q, microMarketId: loc.market.id, inStockOnly: true, vegOnly: f.vegOnly, categorySlug, limit: 250 }),
-      q.trim() ? this.index.searchMerchants(q, loc.market.id, 10) : Promise.resolve([]),
-      this.index.merchantsIn(loc.market.id),
+      this.index.searchItems({ q, microMarketIds: loc.cityMarketIds, inStockOnly: true, vegOnly: f.vegOnly, categorySlug, limit: 250 }),
+      q.trim() ? this.index.searchMerchants(q, loc.cityMarketIds, 10) : Promise.resolve([]),
+      this.index.merchantsIn(loc.cityMarketIds),
     ]);
     const cards = new Map((await this.cards(docs, pt, loc.version)).filter((c) => this.passes(c, f)).map((c) => [c.id, c]));
     const tw = loc.version.discovery.textWeight;
 
     const byStore = new Map<string, Array<{ doc: ItemDoc; text: number }>>();
     for (const h of itemHits) {
-      if (!cards.has(h.doc.merchantId)) continue; // outside radius or filtered
+      if (!cards.has(h.doc.merchantId)) continue; // filtered out
       const text = h.doc.stale ? h.text * STALE_ITEM_FACTOR : h.text;
       const list = byStore.get(h.doc.merchantId) ?? [];
       list.push({ doc: h.doc, text });
@@ -195,7 +210,7 @@ export class DiscoveryService {
         const store = cards.get(id)!;
         return { store, score: tw * hits[0]!.text + (1 - tw) * store.score, items: hits.slice(0, ITEMS_PER_GROUP).map((h) => this.itemCard(h.doc)), more: Math.max(0, hits.length - ITEMS_PER_GROUP) };
       })
-      .sort((a, b) => (a.store.open !== b.store.open ? (a.store.open ? -1 : 1) : b.score - a.score))
+      .sort((a, b) => reach(a.store) - reach(b.store) || (a.store.open !== b.store.open ? (a.store.open ? -1 : 1) : b.score - a.score))
       .slice(0, MAX_GROUPS);
     const stores = storeHits.map((h) => cards.get(h.doc.id)).filter((c): c is StoreCard => !!c);
     const totalItems = [...byStore.values()].reduce((n, l) => n + l.length, 0);
@@ -218,10 +233,15 @@ export class DiscoveryService {
     if (!version) throw new DomainError('NOT_FOUND', 'This store is not on Santha right now.');
     const [card] = await this.cards([docs.merchant], docs.merchant.location, version); // ETA etc. from the store itself…
     const straight = haversineMeters(docs.merchant.location, pt);
+    // Same city as the store: it delivers (ADR-021), beyond its radius at an extra charge (ADR-022).
+    const sameCity = !!loc && loc.cityMarketIds.includes(docs.merchant.microMarketId);
+    const ownVersion = loc?.market.id === docs.merchant.microMarketId ? version : ((await this.markets.effective(docs.merchant.microMarketId, this.clock())) ?? version);
     const eta = await this.eta.estimate(docs.merchant, pt, version.discovery, version.sla.etaBufferMin); // …then for this customer
     const store: StoreCard = {
       ...card!,
       distanceM: Math.round(straight),
+      deliverable: sameCity,
+      beyondRadius: sameCity && straight > docs.merchant.radiusM,
       eta: card!.eta.mode === 'scheduled' ? card!.eta : { mode: 'asap', minMin: eta.minMin, maxMin: eta.maxMin },
     };
     const today = istParts(this.clock());
@@ -248,20 +268,20 @@ export class DiscoveryService {
       return { slug, name: c?.name ?? slug, nameTe: c?.nameTe ?? slug, count };
     });
     const slots = docs.merchant.hasSlots ? await this.catalogue.slotAvailability(id, 2) : null;
+    // The store's own area (the hero says where the store is; customers from other areas see it too, ADR-021).
+    const own = loc?.market.id === docs.merchant.microMarketId ? null : await this.markets.get(docs.merchant.microMarketId).catch(() => null);
+    const storeMarket = own ? { id: own.market.id, slug: own.market.slug, name: own.market.name, nameTe: own.market.nameTe } : (loc?.market ?? null);
     return {
       store,
       description: docs.merchant.description,
-      microMarket: loc?.market ?? null,
-      deliversHere: straight <= docs.merchant.radiusM && loc?.market.id === docs.merchant.microMarketId,
+      microMarket: storeMarket,
+      deliversHere: sameCity,
+      // Beyond the radius (same city): still delivered, with this extra charge on the bill (ADR-022).
+      beyondRadiusSurchargePaise: sameCity && straight > docs.merchant.radiusM ? FeeRulesSchema.parse(ownVersion.fees).beyondRadiusSurchargePaise : null,
       deliveryRadiusM: docs.merchant.radiusM,
-      // Why not (ADR-019): the customer is in no served area, in another area, or beyond the store's radius.
-      notDeliveringReason: !loc
-        ? ('outside_service_area' as const)
-        : loc.market.id !== docs.merchant.microMarketId
-          ? ('other_area' as const)
-          : straight > docs.merchant.radiusM
-            ? ('too_far' as const)
-            : null,
+      // Why not (ADR-019, ADR-021): the customer is in no served area, or beyond the store's radius.
+      // Area borders no longer limit delivery; 'other_area' stays in the contract for older apps but is not sent.
+      notDeliveringReason: !loc ? ('outside_service_area' as const) : !sameCity ? ('other_city' as const) : null,
       photos: snap.photos.map((p) => ({ thumbUrl: p.thumbUrl, mediumUrl: p.mediumUrl })),
       fssaiVerified: docs.merchant.fssaiVerified,
       hygieneDeclared: docs.merchant.hygieneDeclared,
@@ -295,15 +315,20 @@ export class DiscoveryService {
   }
 }
 
+/** Stores that can deliver here come first. Beyond-radius ones are not pushed down: the score already weighs distance (ADR-022). */
+const reach = (c: StoreCard) => (c.deliverable ? 0 : 1);
+
 /** Next slot as a sortable local key ("2026-11-03T12:30"); null = no open slot; undefined = not scheduled. */
 const slotKey = (c: StoreCard): string | null | undefined =>
   c.eta.mode === 'scheduled' ? (c.eta.nextSlot ? `${c.eta.nextSlot.date}T${c.eta.nextSlot.start}` : null) : undefined;
 
 /**
  * Feed order (FR-DIS-1). Kitchens that sell by slot: soonest open slot first, those with no open
- * slot last. Otherwise open stores by score, closed ones after, soonest to open first.
+ * slot last. Otherwise open stores by score, closed ones after, soonest to open first. Stores that
+ * cannot deliver to the customer (out of range, ADR-021) come after all that can.
  */
 export function orderStores(a: StoreCard, b: StoreCard): number {
+  if (reach(a) !== reach(b)) return reach(a) - reach(b);
   const sa = slotKey(a);
   const sb = slotKey(b);
   if (sa !== undefined && sb !== undefined) {

@@ -148,7 +148,7 @@ export class GrowthService implements OnModuleInit {
           mode: f.mode,
           onTime: f.deliveredAt <= f.promisedAt,
           riderPayPaise: f.riderPayPaise,
-          storeCreditPaise: f.mode === 'self' ? f.selfBonusPaise + (((recent.find((o) => o.id === f.orderId)?.quote as { bill?: { fees?: Array<{ code: string; amountPaise: number }> } } | null)?.bill?.fees ?? []).find((x) => x.code === 'delivery')?.amountPaise ?? 0) : 0,
+          storeCreditPaise: f.mode === 'self' ? f.selfBonusPaise + (((recent.find((o) => o.id === f.orderId)?.quote as { bill?: { fees?: Array<{ code: string; amountPaise: number }> } } | null)?.bill?.fees ?? []).filter((x) => x.code === 'delivery' || x.code === 'beyond_radius').reduce((s, x) => s + x.amountPaise, 0)) : 0,
         });
       }
     }

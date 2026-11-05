@@ -157,7 +157,7 @@ export function VersionEditor({
         <Section title={k.fees}>
           <div className="grid grid-cols-2 gap-3">
             {(Object.keys(k.feeFields) as Array<keyof typeof k.feeFields>).map((f) => (
-              <Field key={f} label={k.feeFields[f]} name={`fees.${f}`} step="0.01" defaultValue={paiseToRupeeInput(template.fees[f])} />
+              <Field key={f} label={k.feeFields[f]} name={`fees.${f}`} step="0.01" defaultValue={paiseToRupeeInput(template.fees[f] ?? (f === 'beyondRadiusSurchargePaise' ? 3000 : 0))} />
             ))}
           </div>
         </Section>

@@ -2,7 +2,8 @@ import type { ItemDoc, MerchantDoc } from './domain/documents';
 
 export interface ItemSearch {
   q: string;
-  microMarketId: string;
+  /** The areas to search: every micro-market of the customer's city (ADR-021). */
+  microMarketIds: string[];
   /** Only available items (any size in stock or low). */
   inStockOnly: boolean;
   vegOnly?: boolean | undefined;
@@ -30,7 +31,7 @@ export abstract class SearchIndex {
   abstract replaceMerchant(merchant: MerchantDoc, items: ItemDoc[]): Promise<void>;
   abstract removeMerchant(merchantId: string): Promise<void>;
   abstract searchItems(s: ItemSearch): Promise<Hit<ItemDoc>[]>;
-  abstract searchMerchants(q: string, microMarketId: string, limit: number): Promise<Hit<MerchantDoc>[]>;
-  abstract merchantsIn(microMarketId: string): Promise<MerchantDoc[]>;
+  abstract searchMerchants(q: string, microMarketIds: string[], limit: number): Promise<Hit<MerchantDoc>[]>;
+  abstract merchantsIn(microMarketIds: string[]): Promise<MerchantDoc[]>;
   abstract counts(): Promise<{ items: number; merchants: number }>;
 }

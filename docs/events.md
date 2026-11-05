@@ -41,5 +41,9 @@ Auth, WhatsApp OTP (ADR-017): no new analytics events. `POST /v1/auth/otp/reques
 Ratings & reviews (ADR-018), server: **rating.submitted**(order_id, merchant_id, rider_user_id, store_stars, rider_stars, has_comment, flagged) when a customer rates a delivered order, and **rating.moderated**(order_id, merchant_id, from, to) when ops hides or publishes a review. Both are written in the same transaction as the rating (outbox; in-process in fake mode). The search indexer consumes both and rebuilds the store, so store cards, ranking and `minRating` use the current rating (hidden reviews excluded).
 Client (consumer app, ratings): rating_submitted gains has_comment · feed_viewed gains top_rated (the "4★ & above" chip).
 
+Beyond the radius and Deliver anywhere (ADR-022), server: merchant.updated with fields [deliversAnywhere]; order bills can carry a beyond_radius fee line. Client (merchant app): delivers_anywhere_changed(on).
+
+City-wide stores and the Open switch (ADR-021), server: merchant.availability_changed now carries open_until (ISO time or null) · merchant.updated with fields [hours] when ops set a store's hours. Audit action: merchant.hours_changed. Client (merchant app): store_hours_updated(closed_days). Client (consumer app): merchant_viewed.delivers_here already reports stores opened out of range.
+
 Service coverage (ADR-019), server: **config.city_coverage_changed**(city_id, before, after) · merchant.updated with fields [radiusM] when ops change a store's radius. Audit actions: city.coverage_changed, merchant.radius_changed.
 Client (consumer app, ADR-019): gps_fix(accuracy_m, precise) when "Use current location" gets a fix; location_set(source: gps) once the customer confirms it on the pin.

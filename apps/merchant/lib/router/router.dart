@@ -12,6 +12,7 @@ import '../features/catalogue/presentation/scan_page.dart';
 import '../features/catalogue/presentation/slots_page.dart';
 import '../features/onboarding/presentation/onboarding_gate.dart';
 import '../features/onboarding/presentation/steps.dart';
+import '../features/orders/presentation/store_hours_page.dart';
 
 abstract final class Routes {
   static const splash = '/splash';
@@ -41,6 +42,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.login, builder: (context, state) => const LoginPage()),
       GoRoute(path: Routes.home, builder: (context, state) => const OnboardingGate()),
       GoRoute(path: '/onboarding/:step', builder: (context, state) => StepRouter(step: state.pathParameters['step']!)),
+      GoRoute(path: '/hours', builder: (context, state) => const StoreHoursPage()),
       GoRoute(path: '/catalogue', builder: (context, state) => const CataloguePage(), routes: [
         GoRoute(path: 'scan', builder: (context, state) => const ScanPage()),
         GoRoute(path: 'import', builder: (context, state) => const ImportPage()),

@@ -14,7 +14,7 @@ export interface EditorState {
 }
 
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
-const FEES = ['deliveryBasePaise', 'deliveryPerKmPaise', 'freeDeliveryAbovePaise', 'smallOrderThresholdPaise', 'smallOrderFeePaise', 'platformFeePaise', 'packagingFeeCapPaise'] as const;
+const FEES = ['deliveryBasePaise', 'deliveryPerKmPaise', 'freeDeliveryAbovePaise', 'smallOrderThresholdPaise', 'smallOrderFeePaise', 'platformFeePaise', 'beyondRadiusSurchargePaise', 'packagingFeeCapPaise'] as const;
 const RIDER = ['basePaise', 'perKmPaise', 'waitPerMinPaise', 'batchBonusPaise'] as const;
 const SLA = ['merchantAcceptSec', 'etaBufferMin', 'riderFallbackMin', 'staleCatalogueHours'] as const;
 

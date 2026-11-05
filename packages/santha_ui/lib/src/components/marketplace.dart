@@ -138,6 +138,7 @@ class StoreCard extends StatelessWidget {
     this.eta,
     this.selfDeliversLabel,
     this.closedLabel,
+    this.noticeLabel,
     this.onTap,
     this.semanticsLabel,
   });
@@ -152,6 +153,9 @@ class StoreCard extends StatelessWidget {
 
   /// e.g. "Opens 7:00 am" — greys the card.
   final String? closedLabel;
+
+  /// A note that does not grey the card, e.g. "Higher delivery charge" beyond the store's radius.
+  final String? noticeLabel;
   final VoidCallback? onTap;
   final String? semanticsLabel;
 
@@ -183,6 +187,7 @@ class StoreCard extends StatelessWidget {
                     Wrap(spacing: SanthaSpacing.s2, runSpacing: SanthaSpacing.s1, children: [
                       ?eta,
                       if (selfDeliversLabel != null) SelfDeliversBadge(label: selfDeliversLabel!),
+                      if (noticeLabel != null) NoticePill(label: noticeLabel!),
                       if (closedLabel != null) Text(closedLabel!, style: text.bodySmall?.copyWith(color: SanthaColors.chilli)),
                     ]),
                   ]),
@@ -424,3 +429,19 @@ class ScheduledChip extends StatelessWidget {
   Widget build(BuildContext context) => TrustBadge(label: label, positive: false, icon: Icons.schedule);
 }
 
+
+/// A small amber pill for a heads-up that is not an error (e.g. "Higher delivery charge").
+class NoticePill extends StatelessWidget {
+  const NoticePill({super.key, required this.label, this.background = SanthaColors.marigold100});
+  final String label;
+
+  /// White on an amber surface (e.g. the new-order card), so the pill stays visible.
+  final Color background;
+
+  @override
+  Widget build(BuildContext context) => Container(
+        padding: const EdgeInsets.symmetric(horizontal: SanthaSpacing.s2, vertical: 2),
+        decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(SanthaRadius.pill)),
+        child: Text(label, style: Theme.of(context).textTheme.labelSmall?.copyWith(color: SanthaColors.ink, fontWeight: FontWeight.w600)),
+      );
+}

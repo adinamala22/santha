@@ -22,6 +22,8 @@ export interface FeeCard {
   smallOrderFeePaise: number;
   platformFeePaise: number;
   packagingFeeCapPaise: number;
+  /** Extra delivery charge beyond the store radius (ADR-022); absent in old fee cards = 0. */
+  beyondRadiusSurchargePaise?: number;
   gstOnFeesPercent: number;
   gstCookedFoodPercent: number;
 }
@@ -56,9 +58,11 @@ export interface QuoteInput {
   distanceM: number;
   fees: FeeCard;
   promo: PromoApplied | null;
+  /** The address is beyond the store's delivery radius (same city): the extra delivery charge applies (ADR-022). */
+  beyondRadius?: boolean;
 }
 
-export type FeeCode = 'delivery' | 'small_order' | 'platform' | 'packaging';
+export type FeeCode = 'delivery' | 'beyond_radius' | 'small_order' | 'platform' | 'packaging';
 export type TaxCode = 'gst_fees' | 'gst_food';
 
 export interface QuoteLine extends PricedLineInput {
@@ -158,6 +162,7 @@ export function computeQuote(input: QuoteInput): Quote {
   const fees: FeeRow[] = [];
   if (itemCount > 0) {
     fees.push(deliveryFee(itemsPaise, input.distanceM, f));
+    if (input.beyondRadius && (f.beyondRadiusSurchargePaise ?? 0) > 0) fees.push({ code: 'beyond_radius', amountPaise: f.beyondRadiusSurchargePaise!, waivedPaise: 0 });
     if (itemsPaise < f.smallOrderThresholdPaise) fees.push({ code: 'small_order', amountPaise: f.smallOrderFeePaise, waivedPaise: 0 });
     if (f.platformFeePaise > 0) fees.push({ code: 'platform', amountPaise: f.platformFeePaise, waivedPaise: 0 });
     const packaging = Math.min(merchant.packagingFeePaise, f.packagingFeeCapPaise);

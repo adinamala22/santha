@@ -4,7 +4,7 @@ import { EventBus } from '../../infra/outbox/event-bus';
 import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
 import type { LatLng } from '../../common/geo/polygon';
-import type { WeeklyHours } from '../../common/hours';
+import { manualOpenUntil, openStatus, type WeeklyHours } from '../../common/hours';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { normalizeIndianMobile } from '../identity-kyc/domain/phone';
 import { type KycCheckRecord, KycService } from '../identity-kyc/kyc.service';
@@ -33,6 +33,8 @@ export interface MerchantView {
   checklist: ChecklistItem[];
   microMarket: { id: string; slug: string; name: string; nameTe: string } | null;
   photos: MediaView[];
+  /** What customers see right now: the hours, the Open switch and an open-outside-hours override (ADR-021). */
+  openNow: { open: boolean; closesAt: Date | null; nextOpenAt: Date | null };
 }
 
 export interface CreateMerchantInput {
@@ -60,6 +62,7 @@ export interface UpdateMerchantInput {
   movPaise?: number | undefined;
   packagingFeePaise?: number | undefined;
   defaultFulfilment?: FulfilmentMode | undefined;
+  deliversAnywhere?: boolean | undefined;
 }
 
 export interface OpsActor {
@@ -93,19 +96,29 @@ export class MerchantsService implements OnModuleInit {
 
   // ───────── availability (M5) ─────────
 
-  /** Store toggle in the merchant app ("Open" pill). Re-opening clears the missed-order count. */
+  /**
+   * Store toggle in the merchant app ("Open" pill). Re-opening clears the missed-order count.
+   * Turning it on outside the hours opens the store now, until the next scheduled close (ADR-021);
+   * turning it off pauses orders whatever the hours say.
+   */
   async setAvailability(ownerUserId: string, open: boolean): Promise<MerchantView> {
     const m = await this.owned(ownerUserId);
     if (m.status !== 'live') throw new DomainError('INVALID_STATE', 'Your store is not live yet.');
-    if (m.acceptingOrders === open) return this.view(m);
+    const now = this.clock();
+    const byHours = openStatus(m.hours, now, m.openUntil).open;
+    if (m.acceptingOrders === open && (!open || byHours)) return this.view(m);
+    const openUntil = open && !byHours ? manualOpenUntil(m.hours, now) : null;
     const merchant = await this.repo.transaction(async (tx) => {
-      const updated = await tx.update(m.id, open ? { acceptingOrders: true, pausedReason: null, pausedAt: null, missedInARow: 0 } : { acceptingOrders: false, pausedReason: 'merchant', pausedAt: this.clock() });
+      const updated = await tx.update(
+        m.id,
+        open ? { acceptingOrders: true, pausedReason: null, pausedAt: null, missedInARow: 0, openUntil } : { acceptingOrders: false, pausedReason: 'merchant', pausedAt: now, openUntil: null },
+      );
       await tx.appendEvent({
         type: 'merchant.availability_changed',
         aggregate: { type: 'merchant', id: m.id },
         microMarketId: m.microMarketId,
         actor: { type: 'user', id: ownerUserId },
-        payload: { merchant_id: m.id, accepting_orders: open, reason: open ? null : 'merchant' },
+        payload: { merchant_id: m.id, accepting_orders: open, reason: open ? null : 'merchant', open_until: openUntil?.toISOString() ?? null },
       });
       return updated;
     });
@@ -198,6 +211,13 @@ export class MerchantsService implements OnModuleInit {
       patch.microMarketId = hit?.market.id ?? null;
     }
     for (const k of ['hours', 'radiusM', 'movPaise', 'packagingFeePaise', 'defaultFulfilment'] as const) if (input[k] !== undefined) (patch as Record<string, unknown>)[k] = input[k];
+    if (input.hours !== undefined) patch.openUntil = null; // new hours decide again (ADR-021)
+    if (input.deliversAnywhere !== undefined) {
+      // Fashion goes with a Santha rider (try-on and returns), so it cannot promise its own delivery (ADR-022).
+      if (input.deliversAnywhere && type === 'fashion')
+        throw new DomainError('VALIDATION_FAILED', 'Fashion stores deliver with Santha riders, so "Deliver anywhere" is not available.', { field: 'deliversAnywhere' });
+      patch.deliversAnywhere = input.deliversAnywhere;
+    }
 
     const merchant = await this.repo.transaction(async (tx) => {
       const updated = await tx.update(current.id, patch);
@@ -374,6 +394,33 @@ export class MerchantsService implements OnModuleInit {
 
   /** "No food merchant goes live without a valid FSSAI number" (FR-TRS-1) — re-checked here. */
   /** Ops: how far the store delivers (ADR-019). Audited; the search index rebuilds the store. */
+  /** Ops set a store's opening hours (ADR-021), audited; any open-outside-hours override ends. */
+  async setHours(id: string, hours: WeeklyHours, reason: string, actor: OpsActor): Promise<MerchantView> {
+    const m = await this.record(id);
+    const merchant = await this.repo.transaction(async (tx) => {
+      const updated = await tx.update(m.id, { hours, openUntil: null });
+      await tx.appendEvent({
+        type: 'merchant.updated',
+        aggregate: { type: 'merchant', id: m.id },
+        microMarketId: m.microMarketId,
+        actor: { type: 'ops', id: actor.userId },
+        payload: { merchant_id: m.id, fields: ['hours'] },
+      });
+      await tx.appendAudit({
+        entity: 'merchant',
+        entityId: m.id,
+        action: 'hours_changed',
+        actorId: actor.userId,
+        microMarketId: m.microMarketId,
+        before: { hours: m.hours },
+        after: { hours, reason },
+        requestId: actor.requestId ?? null,
+      });
+      return updated;
+    });
+    return this.view(merchant);
+  }
+
   async setRadius(id: string, radiusM: number, reason: string, actor: OpsActor): Promise<MerchantView> {
     const m = await this.record(id);
     const merchant = await this.repo.transaction(async (tx) => {
@@ -483,6 +530,7 @@ export class MerchantsService implements OnModuleInit {
       checklist: checklist(m, kyc),
       microMarket: mm ? { id: mm.market.id, slug: mm.market.slug, name: mm.market.name, nameTe: mm.market.nameTe } : null,
       photos,
+      openNow: m.acceptingOrders ? openStatus(m.hours, this.clock(), m.openUntil) : { open: false, closesAt: null, nextOpenAt: null },
     };
   }
 }

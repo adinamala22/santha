@@ -19,6 +19,8 @@ export interface MerchantRecord {
   pincode: string | null;
   location: LatLng | null;
   radiusM: number;
+  /** "Deliver anywhere" (ADR-022): the store delivers itself to any address in its city, beyond its radius too. */
+  deliversAnywhere: boolean;
   hours: WeeklyHours | null;
   movPaise: number;
   /** Per-order packaging charge (paise); cart-pricing caps it at the micro-market fee rule. */
@@ -36,6 +38,8 @@ export interface MerchantRecord {
   /** Store toggle; false also when auto-paused after two missed orders in a row. */
   acceptingOrders: boolean;
   pausedReason: string | null;
+  /** The partner turned Open on outside the hours (ADR-021): open until this instant (the next scheduled close). */
+  openUntil: Date | null;
   /** Public store link /s/{slug} (M8); set at go-live. */
   slug: string | null;
   pausedAt: Date | null;

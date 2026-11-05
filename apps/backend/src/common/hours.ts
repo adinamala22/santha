@@ -51,7 +51,13 @@ export const istInstant = (date: string, hhmm: string) => new Date(`${date}T${hh
  * Is a store open at `at`, and if not, when does it next open (within a week)? Closed stores are
  * listed greyed with their next-open time (FR-DIS-1).
  */
-export function openStatus(hours: WeeklyHours | null, at: Date): { open: boolean; nextOpenAt: Date | null; closesAt: Date | null } {
+export function openStatus(
+  hours: WeeklyHours | null,
+  at: Date,
+  /** The partner's Open switch outside the hours (ADR-021): open until this instant. */
+  openUntil?: Date | number | null,
+): { open: boolean; nextOpenAt: Date | null; closesAt: Date | null } {
+  if (openUntil != null && at.getTime() < new Date(openUntil).getTime()) return { open: true, nextOpenAt: null, closesAt: new Date(openUntil) };
   if (!hours) return { open: false, nextOpenAt: null, closesAt: null };
   const now = istParts(at);
   const today = [...hours[now.day]].sort((a, b) => a.open.localeCompare(b.open));
@@ -63,4 +69,20 @@ export function openStatus(hours: WeeklyHours | null, at: Date): { open: boolean
     if (next) return { open: false, nextOpenAt: istInstant(p.date, next.open), closesAt: null };
   }
   return { open: false, nextOpenAt: null, closesAt: null };
+}
+
+/**
+ * When a store the partner opens now, outside its hours, closes again (ADR-021): the next scheduled
+ * close (the end of its next opening period, so it stays open straight through), or local midnight
+ * when it has no hours in the coming week.
+ */
+export function manualOpenUntil(hours: WeeklyHours | null, at: Date): Date {
+  const now = istParts(at);
+  if (hours)
+    for (let d = 0; d < 8; d++) {
+      const p = istParts(new Date(at.getTime() + d * 86_400_000));
+      const next = [...hours[p.day]].sort((a, b) => a.close.localeCompare(b.close)).find((r) => d > 0 || r.close > now.hhmm);
+      if (next) return istInstant(p.date, next.close);
+    }
+  return new Date(istInstant(now.date, '00:00').getTime() + 86_400_000);
 }

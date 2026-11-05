@@ -31,7 +31,7 @@ class SelfDeliversBadge extends StatelessWidget {
                 const Icon(Icons.storefront_outlined, size: 12, color: SanthaColors.indigo),
                 const SizedBox(width: SanthaSpacing.s1),
               ],
-              Text(label, style: style, maxLines: 1),
+              Flexible(child: Text(label, style: style, maxLines: 1, overflow: TextOverflow.ellipsis)),
             ],
           ),
         ),

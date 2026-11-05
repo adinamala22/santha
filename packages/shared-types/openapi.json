@@ -1689,6 +1689,59 @@
         ]
       }
     },
+    "/v1/ops/merchants/{id}/hours": {
+      "put": {
+        "operationId": "OpsMerchantsController_hours",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpsHoursDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Opening hours (audited, ADR-021)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MerchantViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/ops/merchants/{id}/radius": {
       "put": {
         "operationId": "OpsMerchantsController_radius",
@@ -8769,6 +8822,13 @@
                           "maximum": 9007199254740991,
                           "description": "integer paise"
                         },
+                        "beyondRadiusSurchargePaise": {
+                          "default": 3000,
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "integer paise"
+                        },
                         "packagingFeeCapPaise": {
                           "type": "integer",
                           "minimum": 0,
@@ -8825,6 +8885,7 @@
                         "smallOrderThresholdPaise",
                         "smallOrderFeePaise",
                         "platformFeePaise",
+                        "beyondRadiusSurchargePaise",
                         "packagingFeeCapPaise",
                         "gstOnFeesPercent",
                         "gstCookedFoodPercent",
@@ -9411,6 +9472,13 @@
                     "maximum": 9007199254740991,
                     "description": "integer paise"
                   },
+                  "beyondRadiusSurchargePaise": {
+                    "default": 3000,
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise"
+                  },
                   "packagingFeeCapPaise": {
                     "type": "integer",
                     "minimum": 0,
@@ -9467,6 +9535,7 @@
                   "smallOrderThresholdPaise",
                   "smallOrderFeePaise",
                   "platformFeePaise",
+                  "beyondRadiusSurchargePaise",
                   "packagingFeeCapPaise",
                   "gstOnFeesPercent",
                   "gstCookedFoodPercent",
@@ -10012,6 +10081,13 @@
                       "maximum": 9007199254740991,
                       "description": "integer paise"
                     },
+                    "beyondRadiusSurchargePaise": {
+                      "default": 3000,
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "integer paise"
+                    },
                     "packagingFeeCapPaise": {
                       "type": "integer",
                       "minimum": 0,
@@ -10068,6 +10144,7 @@
                     "smallOrderThresholdPaise",
                     "smallOrderFeePaise",
                     "platformFeePaise",
+                    "beyondRadiusSurchargePaise",
                     "packagingFeeCapPaise",
                     "gstOnFeesPercent",
                     "gstCookedFoodPercent",
@@ -10614,6 +10691,13 @@
                     "description": "integer paise"
                   },
                   "platformFeePaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise"
+                  },
+                  "beyondRadiusSurchargePaise": {
+                    "default": 3000,
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991,
@@ -11174,6 +11258,13 @@
                     "description": "integer paise"
                   },
                   "platformFeePaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise"
+                  },
+                  "beyondRadiusSurchargePaise": {
+                    "default": 3000,
                     "type": "integer",
                     "minimum": 0,
                     "maximum": 9007199254740991,
@@ -11762,6 +11853,13 @@
                 "maximum": 9007199254740991,
                 "description": "integer paise"
               },
+              "beyondRadiusSurchargePaise": {
+                "default": 3000,
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "integer paise"
+              },
               "packagingFeeCapPaise": {
                 "type": "integer",
                 "minimum": 0,
@@ -11818,6 +11916,7 @@
               "smallOrderThresholdPaise",
               "smallOrderFeePaise",
               "platformFeePaise",
+              "beyondRadiusSurchargePaise",
               "packagingFeeCapPaise",
               "gstOnFeesPercent",
               "gstCookedFoodPercent",
@@ -12415,6 +12514,10 @@
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
               },
+              "deliversAnywhere": {
+                "type": "boolean",
+                "description": "Delivers itself anywhere in its city (ADR-022)"
+              },
               "hours": {
                 "type": "object",
                 "properties": {
@@ -12664,6 +12767,13 @@
                   "null"
                 ]
               },
+              "openUntil": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "description": "Opened with the switch outside the hours: open until then (ADR-021)",
+                "nullable": true
+              },
               "slug": {
                 "description": "Public store link /s/{slug} (set when live)",
                 "type": [
@@ -12690,6 +12800,7 @@
               "pincode",
               "location",
               "radiusM",
+              "deliversAnywhere",
               "hours",
               "movPaise",
               "packagingFeePaise",
@@ -12704,6 +12815,7 @@
               "liveAt",
               "acceptingOrders",
               "pausedReason",
+              "openUntil",
               "slug",
               "createdAt"
             ],
@@ -12936,6 +13048,33 @@
               ],
               "additionalProperties": false
             }
+          },
+          "openNow": {
+            "type": "object",
+            "properties": {
+              "open": {
+                "type": "boolean"
+              },
+              "closesAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "nullable": true
+              },
+              "nextOpenAt": {
+                "type": "string",
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "nullable": true
+              }
+            },
+            "required": [
+              "open",
+              "closesAt",
+              "nextOpenAt"
+            ],
+            "additionalProperties": false,
+            "description": "What customers see now: hours, the Open switch and an open-outside-hours override (ADR-021)"
           }
         },
         "required": [
@@ -12945,7 +13084,8 @@
           "kyc",
           "checklist",
           "canSubmit",
-          "photos"
+          "photos",
+          "openNow"
         ],
         "additionalProperties": false
       },
@@ -13221,6 +13361,10 @@
               "self",
               "rider"
             ]
+          },
+          "deliversAnywhere": {
+            "type": "boolean",
+            "description": "Deliver anywhere in the city, the store delivering itself beyond its radius (ADR-022; not for fashion)"
           }
         }
       },
@@ -13559,6 +13703,10 @@
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
                     },
+                    "deliversAnywhere": {
+                      "type": "boolean",
+                      "description": "Delivers itself anywhere in its city (ADR-022)"
+                    },
                     "hours": {
                       "type": "object",
                       "properties": {
@@ -13808,6 +13956,13 @@
                         "null"
                       ]
                     },
+                    "openUntil": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "description": "Opened with the switch outside the hours: open until then (ADR-021)",
+                      "nullable": true
+                    },
                     "slug": {
                       "description": "Public store link /s/{slug} (set when live)",
                       "type": [
@@ -13834,6 +13989,7 @@
                     "pincode",
                     "location",
                     "radiusM",
+                    "deliversAnywhere",
                     "hours",
                     "movPaise",
                     "packagingFeePaise",
@@ -13848,6 +14004,7 @@
                     "liveAt",
                     "acceptingOrders",
                     "pausedReason",
+                    "openUntil",
                     "slug",
                     "createdAt"
                   ],
@@ -14080,6 +14237,33 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "openNow": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "boolean"
+                    },
+                    "closesAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "nullable": true
+                    },
+                    "nextOpenAt": {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "closesAt",
+                    "nextOpenAt"
+                  ],
+                  "additionalProperties": false,
+                  "description": "What customers see now: hours, the Open switch and an open-outside-hours override (ADR-021)"
                 }
               },
               "required": [
@@ -14089,7 +14273,8 @@
                 "kyc",
                 "checklist",
                 "canSubmit",
-                "photos"
+                "photos",
+                "openNow"
               ],
               "additionalProperties": false
             }
@@ -14124,6 +14309,181 @@
           }
         },
         "required": [
+          "reason"
+        ]
+      },
+      "OpsHoursDto": {
+        "type": "object",
+        "properties": {
+          "hours": {
+            "type": "object",
+            "properties": {
+              "mon": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "tue": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "wed": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "thu": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "fri": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "sat": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              },
+              "sun": {
+                "maxItems": 4,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "open": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    },
+                    "close": {
+                      "type": "string",
+                      "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                    }
+                  },
+                  "required": [
+                    "open",
+                    "close"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "mon",
+              "tue",
+              "wed",
+              "thu",
+              "fri",
+              "sat",
+              "sun"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 200
+          }
+        },
+        "required": [
+          "hours",
           "reason"
         ]
       },
@@ -16432,6 +16792,18 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "deliverable": {
+                  "type": "boolean",
+                  "description": "The store delivers to the customer: every store of the customer's city does (ADR-021)."
+                },
+                "beyondRadius": {
+                  "type": "boolean",
+                  "description": "Beyond the store's radius: delivered with an extra delivery charge (ADR-022)"
+                },
+                "deliversAnywhere": {
+                  "type": "boolean",
+                  "description": "Delivers itself anywhere in the city, tracked live (ADR-022)"
+                },
                 "eta": {
                   "oneOf": [
                     {
@@ -16561,6 +16933,9 @@
                 "category",
                 "photoUrl",
                 "distanceM",
+                "deliverable",
+                "beyondRadius",
+                "deliversAnywhere",
                 "eta",
                 "open",
                 "nextOpenAt",
@@ -16685,6 +17060,18 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
+                    },
+                    "deliverable": {
+                      "type": "boolean",
+                      "description": "The store delivers to the customer: every store of the customer's city does (ADR-021)."
+                    },
+                    "beyondRadius": {
+                      "type": "boolean",
+                      "description": "Beyond the store's radius: delivered with an extra delivery charge (ADR-022)"
+                    },
+                    "deliversAnywhere": {
+                      "type": "boolean",
+                      "description": "Delivers itself anywhere in the city, tracked live (ADR-022)"
                     },
                     "eta": {
                       "oneOf": [
@@ -16815,6 +17202,9 @@
                     "category",
                     "photoUrl",
                     "distanceM",
+                    "deliverable",
+                    "beyondRadius",
+                    "deliversAnywhere",
                     "eta",
                     "open",
                     "nextOpenAt",
@@ -16993,6 +17383,18 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "deliverable": {
+                  "type": "boolean",
+                  "description": "The store delivers to the customer: every store of the customer's city does (ADR-021)."
+                },
+                "beyondRadius": {
+                  "type": "boolean",
+                  "description": "Beyond the store's radius: delivered with an extra delivery charge (ADR-022)"
+                },
+                "deliversAnywhere": {
+                  "type": "boolean",
+                  "description": "Delivers itself anywhere in the city, tracked live (ADR-022)"
+                },
                 "eta": {
                   "oneOf": [
                     {
@@ -17122,6 +17524,9 @@
                 "category",
                 "photoUrl",
                 "distanceM",
+                "deliverable",
+                "beyondRadius",
+                "deliversAnywhere",
                 "eta",
                 "open",
                 "nextOpenAt",
@@ -17209,6 +17614,18 @@
                 "type": "integer",
                 "minimum": -9007199254740991,
                 "maximum": 9007199254740991
+              },
+              "deliverable": {
+                "type": "boolean",
+                "description": "The store delivers to the customer: every store of the customer's city does (ADR-021)."
+              },
+              "beyondRadius": {
+                "type": "boolean",
+                "description": "Beyond the store's radius: delivered with an extra delivery charge (ADR-022)"
+              },
+              "deliversAnywhere": {
+                "type": "boolean",
+                "description": "Delivers itself anywhere in the city, tracked live (ADR-022)"
               },
               "eta": {
                 "oneOf": [
@@ -17339,6 +17756,9 @@
               "category",
               "photoUrl",
               "distanceM",
+              "deliverable",
+              "beyondRadius",
+              "deliversAnywhere",
               "eta",
               "open",
               "nextOpenAt",
@@ -17382,6 +17802,7 @@
               "nameTe"
             ],
             "additionalProperties": false,
+            "description": "The store's own area (ADR-021)",
             "nullable": true
           },
           "deliversHere": {
@@ -17400,8 +17821,16 @@
               "outside_service_area",
               "other_area",
               "too_far",
+              "other_city",
               null
             ],
+            "nullable": true
+          },
+          "beyondRadiusSurchargePaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Extra delivery charge for this address when it is beyond the store radius (ADR-022)",
             "nullable": true
           },
           "photos": {
@@ -17819,6 +18248,7 @@
           "deliversHere",
           "deliveryRadiusM",
           "notDeliveringReason",
+          "beyondRadiusSurchargePaise",
           "photos",
           "fssaiVerified",
           "hygieneDeclared",
@@ -18920,6 +19350,7 @@
                       "type": "string",
                       "enum": [
                         "delivery",
+                        "beyond_radius",
                         "small_order",
                         "platform",
                         "packaging"
@@ -19600,6 +20031,7 @@
                       "type": "string",
                       "enum": [
                         "delivery",
+                        "beyond_radius",
                         "small_order",
                         "platform",
                         "packaging"
@@ -20301,6 +20733,7 @@
                             "type": "string",
                             "enum": [
                               "delivery",
+                              "beyond_radius",
                               "small_order",
                               "platform",
                               "packaging"
@@ -20668,6 +21101,10 @@
                   ],
                   "nullable": true
                 },
+                "beyondRadius": {
+                  "type": "boolean",
+                  "description": "Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022)"
+                },
                 "itemCount": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -20896,6 +21333,7 @@
                 "state",
                 "paymentMethod",
                 "fulfilmentMode",
+                "beyondRadius",
                 "itemCount",
                 "itemsPaise",
                 "totalPaise",
@@ -21026,6 +21464,10 @@
               null
             ],
             "nullable": true
+          },
+          "beyondRadius": {
+            "type": "boolean",
+            "description": "Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022)"
           },
           "itemCount": {
             "type": "integer",
@@ -21251,6 +21693,7 @@
           "state",
           "paymentMethod",
           "fulfilmentMode",
+          "beyondRadius",
           "itemCount",
           "itemsPaise",
           "totalPaise",

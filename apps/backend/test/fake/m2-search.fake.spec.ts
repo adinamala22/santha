@@ -22,6 +22,8 @@ interface Card {
   open: boolean;
   nextOpenAt: string | null;
   distanceM: number;
+  deliverable: boolean;
+  beyondRadius: boolean;
   score: number;
   eta: { mode: 'asap'; minMin: number; maxMin: number } | { mode: 'scheduled'; nextSlot: unknown };
 }
@@ -70,13 +72,15 @@ describe('M2 · feed and search (fake mode)', () => {
 
   it('tabs carry counts; a kitchen shows its next open slot', async () => {
     const r = await http().get(`/v1/feed?${q(centre('dargamitta'))}&tab=home_kitchens`).expect(200);
+    // Every live store of the city is listed, whatever its area (ADR-021).
+    const count = (type: string) => live.filter((m) => m.type === type).length;
     expect(r.body.tabs).toEqual([
-      { key: 'stores', count: 1 },
-      { key: 'fashion', count: 0 },
-      { key: 'home_kitchens', count: 1 },
-      { key: 'home_businesses', count: 0 },
+      { key: 'stores', count: count('retail') },
+      { key: 'fashion', count: count('fashion') },
+      { key: 'home_kitchens', count: count('home_kitchen') },
+      { key: 'home_businesses', count: count('home_business') },
     ]);
-    const k = r.body.stores[0];
+    const k = (r.body.stores as Card[]).find((s) => s.name === "Saraswathi's Kitchen");
     expect(k).toMatchObject({ name: "Saraswathi's Kitchen", eta: { mode: 'scheduled', nextSlot: { start: expect.stringMatching(/^\d\d:\d\d$/) } } });
   });
 
@@ -87,23 +91,34 @@ describe('M2 · feed and search (fake mode)', () => {
     expect(s.body).toMatchObject({ zeroResult: true, groups: [] });
   });
 
-  it('stores beyond their delivery radius are hidden (FR-LOC-4)', async () => {
+  it('beyond its radius a store still delivers, marked for the extra delivery charge (FR-LOC-4, ADR-022)', async () => {
     const kirana = SEED_MERCHANTS.find((m) => m.name === 'Ramesh Stores')!;
     const owner = await fake.signIn(kirana.ownerPhone, 'merchant');
     const far = { lat: centre('dargamitta').lat - 0.006, lng: centre('dargamitta').lng + 0.006 };
-    const names = async () => ((await http().get(`/v1/feed?${q(far)}`).expect(200)).body.stores as Card[]).map((s) => s.name);
-    expect(await names()).toContain('Ramesh Stores');
+    const cards = async () => (await http().get(`/v1/feed?${q(far)}`).expect(200)).body.stores as Card[];
+    const ramesh = async () => (await cards()).find((s) => s.name === 'Ramesh Stores')!;
+    expect(await ramesh()).toMatchObject({ deliverable: true, beyondRadius: false });
     await http().patch('/v1/merchants/me').set(owner.headers).send({ radiusM: 500 }).expect(200);
-    expect(await names()).not.toContain('Ramesh Stores'); // reindexed from merchant.updated
-    await http().patch('/v1/merchants/me').set(owner.headers).send({ radiusM: 3000 }).expect(200);
-    expect(await names()).toContain('Ramesh Stores');
+    expect(await ramesh()).toMatchObject({ deliverable: true, beyondRadius: true }); // reindexed from merchant.updated
+    expect((await cards()).every((s) => s.deliverable)).toBe(true); // every store of the city delivers
+    await http().patch('/v1/merchants/me').set(owner.headers).send({ radiusM: 5000 }).expect(200);
+    expect(await ramesh()).toMatchObject({ beyondRadius: false });
+  });
+
+  it('a store from the next area delivers across the border when its radius covers the customer (ADR-021)', async () => {
+    // Sri Lakshmi Supermarket is in Magunta Layout; Dargamitta's centre is inside its radius.
+    const sriLakshmi = SEED_MERCHANTS.find((m) => m.name === 'Sri Lakshmi Supermarket')!;
+    const card = ((await http().get(`/v1/feed?${q(centre('dargamitta'))}&tab=stores`).expect(200)).body.stores as Card[]).find((s) => s.id === sriLakshmi.id);
+    expect(card).toMatchObject({ deliverable: true });
   });
 
   // ───── search ─────
 
-  it('results are grouped by store with prices; only stores in this micro-market', async () => {
+  it('results are grouped by store with prices, across the city; stores that cannot deliver come last', async () => {
     const r = await search('balaji-nagar', 'tomato');
-    expect(storesOf(r).sort()).toEqual(["Amma's Pickles", 'Balaji Fruits & Vegetables']);
+    expect(storesOf(r)).toEqual(expect.arrayContaining(["Amma's Pickles", 'Balaji Fruits & Vegetables']));
+    const flags = r.groups.map((g) => g.store.deliverable);
+    expect(flags).toEqual([...flags].sort((a, b) => Number(b) - Number(a)));
     const fv = r.groups.find((g) => g.store.name === 'Balaji Fruits & Vegetables')!;
     expect(fv.items[0]).toMatchObject({ name: 'Tomato', nameTe: 'టమాటా', pricePaise: 1800 });
     expect(fv.store.eta.mode).toBe('asap');
@@ -112,7 +127,7 @@ describe('M2 · feed and search (fake mode)', () => {
   it('Telugu transliteration and synonyms: biyyam → rice, pappu → dal, atta ↔ wheat flour', async () => {
     expect(itemsOf(await search('dargamitta', 'biyyam'))).toContain('Annapoorna Sona Masoori Rice');
     expect(itemsOf(await search('dargamitta', 'pappu'))).toEqual(expect.arrayContaining(['Annapoorna Toor Dal', 'Annapoorna Moong Dal']));
-    expect(itemsOf(await search('dargamitta', 'wheat flour'))[0]).toBe('Annapoorna Chakki Atta');
+    expect(itemsOf(await search('dargamitta', 'wheat flour'))).toContain('Annapoorna Chakki Atta');
     expect(itemsOf(await search('balaji-nagar', 'ullipayalu'))).toContain('Onion');
   });
 

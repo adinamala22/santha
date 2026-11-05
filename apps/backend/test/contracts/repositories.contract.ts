@@ -136,7 +136,7 @@ export function merchantRepositoryContract(name: string, make: () => Promise<Mer
     it('creates drafts with defaults and finds them by id and owner', async () => {
       const repo = await make();
       const m = await create(repo);
-      expect(m).toMatchObject({ status: 'draft', radiusM: 3000, movPaise: 0, defaultFulfilment: 'rider', location: null, hours: null });
+      expect(m).toMatchObject({ status: 'draft', radiusM: 5000, deliversAnywhere: false, movPaise: 0, defaultFulfilment: 'rider', location: null, hours: null });
       expect((await repo.get(m.id))?.name).toBe(m.name);
       expect((await repo.findByOwner(m.ownerUserId))?.id).toBe(m.id);
       await expect(repo.transaction((tx) => tx.create({ ownerUserId: m.ownerUserId, type: 'fashion', sellsFood: false, category: null, name: 'Dup' }))).rejects.toThrow();

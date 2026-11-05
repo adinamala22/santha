@@ -59,7 +59,7 @@ export const BillSchema = z.object({
   itemCount: int,
   itemsPaise: int,
   mrpSavingsPaise: int,
-  fees: z.array(z.object({ code: z.enum(['delivery', 'small_order', 'platform', 'packaging']), amountPaise: int, waivedPaise: int })),
+  fees: z.array(z.object({ code: z.enum(['delivery', 'beyond_radius', 'small_order', 'platform', 'packaging']), amountPaise: int, waivedPaise: int })),
   feesPaise: int,
   taxes: z.array(z.object({ code: z.enum(['gst_fees', 'gst_food']), ratePercent: int, basePaise: int, amountPaise: int })),
   taxPaise: int,

@@ -109,27 +109,27 @@ export const SEED_MERCHANTS: readonly SeedMerchant[] = [
   {
     id: mid(201), ownerPhone: '+919000000201', microMarketSlug: 'dargamitta', type: 'retail', sellsFood: true, category: 'kirana',
     name: 'Ramesh Stores', nameTe: 'రమేష్ స్టోర్స్', description: 'Groceries, staples and daily needs since 1998.',
-    addressLine: '14-2-31, Dargamitta Main Road', offset: { lat: 0.002, lng: -0.003 }, defaultFulfilment: 'self', radiusM: 3000,
+    addressLine: '14-2-31, Dargamitta Main Road', offset: { lat: 0.002, lng: -0.003 }, defaultFulfilment: 'self', radiusM: 5000,
     movPaise: 9900, hours: { open: '07:00', close: '22:00' }, status: 'live', kyc: ['pan', 'aadhaar', 'gstin', 'fssai', 'bank'],
     staff: [{ name: 'Suresh', phone: '+919000001201' }],
   },
   {
     id: mid(202), ownerPhone: '+919000000202', microMarketSlug: 'magunta-layout', type: 'retail', sellsFood: true, category: 'supermarket',
     name: 'Sri Lakshmi Supermarket', nameTe: 'శ్రీ లక్ష్మి సూపర్ మార్కెట్', description: 'Everything for the home under one roof.',
-    addressLine: '3-110, Magunta Layout Cross Road', offset: { lat: -0.002, lng: 0.002 }, defaultFulfilment: 'rider', radiusM: 4000,
+    addressLine: '3-110, Magunta Layout Cross Road', offset: { lat: -0.002, lng: 0.002 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 14900, hours: { open: '08:00', close: '22:30' }, status: 'live', kyc: ['pan', 'aadhaar', 'gstin', 'fssai', 'bank'],
   },
   {
     id: mid(203), ownerPhone: '+919000000203', microMarketSlug: 'balaji-nagar', type: 'retail', sellsFood: true, category: 'fruits_vegetables',
     name: 'Balaji Fruits & Vegetables', nameTe: 'బాలాజీ ఫ్రూట్స్ & వెజిటబుల్స్', description: 'Fresh from the Nellore market every morning.',
-    addressLine: '7-45, Balaji Nagar 2nd Street', offset: { lat: 0.003, lng: 0.001 }, defaultFulfilment: 'self', radiusM: 2500,
+    addressLine: '7-45, Balaji Nagar 2nd Street', offset: { lat: 0.003, lng: 0.001 }, defaultFulfilment: 'self', radiusM: 5000,
     movPaise: 4900, hours: { open: '06:00', close: '21:00' }, status: 'live', kyc: [...FULL, 'fssai'],
     staff: [{ name: 'Venkat', phone: '+919000001203' }],
   },
   {
     id: mid(204), ownerPhone: '+919000000204', microMarketSlug: 'vedayapalem', type: 'retail', sellsFood: false, category: 'pharmacy',
     name: 'Vedayapalem Medicals', nameTe: 'వేదాయపాలెం మెడికల్స్', description: 'Medicines and wellness essentials (no Schedule H/X on Santha).',
-    addressLine: '2-18, Vedayapalem Centre', offset: { lat: -0.001, lng: -0.002 }, defaultFulfilment: 'rider', radiusM: 3000,
+    addressLine: '2-18, Vedayapalem Centre', offset: { lat: -0.001, lng: -0.002 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 0, hours: { open: '08:00', close: '23:00' }, status: 'live', kyc: ['pan', 'aadhaar', 'gstin', 'bank', 'drug_licence'],
   },
   {
@@ -142,20 +142,20 @@ export const SEED_MERCHANTS: readonly SeedMerchant[] = [
   {
     id: mid(206), ownerPhone: '+919000000206', microMarketSlug: 'dargamitta', type: 'fashion', sellsFood: false, category: null,
     name: 'Nellore Footwear', nameTe: 'నెల్లూరు ఫుట్‌వేర్', description: 'Chappals, school shoes and sandals for the whole family.',
-    addressLine: '16-9, Dargamitta Bazaar', offset: { lat: -0.003, lng: 0.004 }, defaultFulfilment: 'self', radiusM: 4000,
+    addressLine: '16-9, Dargamitta Bazaar', offset: { lat: -0.003, lng: 0.004 }, defaultFulfilment: 'self', radiusM: 5000,
     movPaise: 0, hours: { open: '10:00', close: '21:30' }, status: 'submitted', kyc: FULL,
     returnPolicy: 'Size exchange within 48 hours if unused, original box required.',
   },
   {
     id: mid(207), ownerPhone: '+919000000207', microMarketSlug: 'balaji-nagar', type: 'home_business', sellsFood: true, category: null,
     name: "Amma's Pickles", nameTe: 'అమ్మ పచ్చళ్ళు', description: 'Avakaya, gongura and lemon pickles made at home in small batches.',
-    addressLine: '9-12, Balaji Nagar 4th Cross', offset: { lat: -0.004, lng: -0.003 }, defaultFulfilment: 'rider', radiusM: 6000,
+    addressLine: '9-12, Balaji Nagar 4th Cross', offset: { lat: -0.004, lng: -0.003 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 19900, hours: { open: '09:00', close: '19:00' }, status: 'live', kyc: [...FULL, 'fssai'],
   },
   {
     id: mid(208), ownerPhone: '+919000000208', microMarketSlug: 'vedayapalem', type: 'home_business', sellsFood: false, category: null,
     name: 'Crafts by Divya', nameTe: 'దివ్య క్రాఫ్ట్స్', description: 'Hand-painted diyas, torans and return gifts.',
-    addressLine: '4-80, Vedayapalem Colony', offset: { lat: 0.004, lng: 0.003 }, defaultFulfilment: 'rider', radiusM: 6000,
+    addressLine: '4-80, Vedayapalem Colony', offset: { lat: 0.004, lng: 0.003 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 0, hours: { open: '10:00', close: '20:00' }, status: 'live', kyc: FULL,
   },
   {
@@ -167,19 +167,19 @@ export const SEED_MERCHANTS: readonly SeedMerchant[] = [
   {
     id: mid(210), ownerPhone: '+919000000210', microMarketSlug: 'dargamitta', type: 'home_kitchen', sellsFood: true, category: null,
     name: "Saraswathi's Kitchen", nameTe: 'సరస్వతి కిచెన్', description: 'Nellore chepala pulusu, pappu and daily meals.',
-    addressLine: '12-4, Dargamitta Temple Street', offset: { lat: 0.005, lng: 0.006 }, defaultFulfilment: 'rider', radiusM: 4000,
+    addressLine: '12-4, Dargamitta Temple Street', offset: { lat: 0.005, lng: 0.006 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 14900, hours: { open: '11:00', close: '21:00' }, status: 'live', kyc: [...FULL, 'fssai'],
   },
   {
     id: mid(211), ownerPhone: '+919000000211', microMarketSlug: 'balaji-nagar', type: 'home_kitchen', sellsFood: true, category: null,
     name: 'Annapurna Tiffins', nameTe: 'అన్నపూర్ణ టిఫిన్స్', description: 'Idli, dosa and pesarattu from 6 am.',
-    addressLine: '8-30, Balaji Nagar 1st Street', offset: { lat: 0.001, lng: -0.006 }, defaultFulfilment: 'rider', radiusM: 3000,
+    addressLine: '8-30, Balaji Nagar 1st Street', offset: { lat: 0.001, lng: -0.006 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 9900, hours: { open: '06:00', close: '11:00' }, status: 'submitted', kyc: [...FULL, 'fssai'],
   },
   {
     id: mid(212), ownerPhone: '+919000000212', microMarketSlug: 'vedayapalem', type: 'home_kitchen', sellsFood: true, category: null,
     name: 'Ruchi Home Meals', nameTe: 'రుచి హోమ్ మీల్స్', description: 'Andhra meals with a weekly menu.',
-    addressLine: '3-55, Vedayapalem Main Road', offset: { lat: -0.005, lng: 0.005 }, defaultFulfilment: 'rider', radiusM: 4000,
+    addressLine: '3-55, Vedayapalem Main Road', offset: { lat: -0.005, lng: 0.005 }, defaultFulfilment: 'rider', radiusM: 5000,
     movPaise: 14900, hours: { open: '11:00', close: '15:00' }, status: 'draft', kyc: ['pan'],
   },
 ];

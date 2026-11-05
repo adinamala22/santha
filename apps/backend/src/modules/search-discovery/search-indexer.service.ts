@@ -84,6 +84,8 @@ export function buildDocs(s: Snapshot, rating: StoreRating = { avg: null, count:
       radiusM: m.radiusM,
       hours: m.hours,
       acceptingOrders: m.acceptingOrders,
+      deliversAnywhere: m.deliversAnywhere,
+      openUntil: m.openUntil?.getTime() ?? null,
       selfDelivers: m.defaultFulfilment === 'self',
       photoUrl: s.photos[0]?.mediumUrl ?? null,
       hasSlots: s.hasSlots,

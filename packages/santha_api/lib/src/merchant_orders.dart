@@ -78,6 +78,7 @@ class MerchantOrder {
     required this.distanceM,
     required this.lines,
     this.fulfilmentMode,
+    this.beyondRadius = false,
     this.slotStartsAt,
     this.addressLine,
     this.landmark,
@@ -99,6 +100,7 @@ class MerchantOrder {
       state: OrderState.parse(j['state'] as String),
       paymentMethod: j['paymentMethod'] == 'cod' ? PaymentMethodChoice.cod : PaymentMethodChoice.online,
       fulfilmentMode: j['fulfilmentMode'] == null ? null : FulfilmentMode.values.byName(j['fulfilmentMode'] as String),
+      beyondRadius: j['beyondRadius'] as bool? ?? false,
       itemCount: j['itemCount'] as int,
       itemsPaise: j['itemsPaise'] as int,
       totalPaise: j['totalPaise'] as int,
@@ -125,6 +127,9 @@ class MerchantOrder {
   final OrderState state;
   final PaymentMethodChoice paymentMethod;
   final FulfilmentMode? fulfilmentMode;
+
+  /// Placed from beyond the store's radius: extra delivery charge on the bill (ADR-022).
+  final bool beyondRadius;
   final int itemCount;
   final int itemsPaise;
   final int totalPaise;

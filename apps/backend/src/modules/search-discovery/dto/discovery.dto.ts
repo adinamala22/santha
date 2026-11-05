@@ -45,6 +45,9 @@ export const StoreCardSchema = z.object({
   category: z.string().nullable(),
   photoUrl: z.string().nullable(),
   distanceM: z.number().int(),
+  deliverable: z.boolean().describe("The store delivers to the customer: every store of the customer's city does (ADR-021)."),
+  beyondRadius: z.boolean().describe("Beyond the store's radius: delivered with an extra delivery charge (ADR-022)"),
+  deliversAnywhere: z.boolean().describe('Delivers itself anywhere in the city, tracked live (ADR-022)'),
   eta: z.discriminatedUnion('mode', [
     z.object({ mode: z.literal('asap'), minMin: z.number().int(), maxMin: z.number().int() }),
     z.object({
@@ -138,10 +141,11 @@ export class StoreDto extends createZodDto(
   z.object({
     store: StoreCardSchema,
     description: z.string().nullable(),
-    microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable(),
+    microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable().describe("The store's own area (ADR-021)"),
     deliversHere: z.boolean().describe('Inside the store radius and the same micro-market as the customer'),
     deliveryRadiusM: z.number().int().describe('How far the store delivers'),
-    notDeliveringReason: z.enum(['outside_service_area', 'other_area', 'too_far']).nullable(),
+    notDeliveringReason: z.enum(['outside_service_area', 'other_area', 'too_far', 'other_city']).nullable(),
+    beyondRadiusSurchargePaise: z.number().int().nullable().describe('Extra delivery charge for this address when it is beyond the store radius (ADR-022)'),
     photos: z.array(z.object({ thumbUrl: z.string().nullable(), mediumUrl: z.string().nullable() })),
     fssaiVerified: z.boolean(),
     hygieneDeclared: z.boolean(),

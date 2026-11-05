@@ -174,6 +174,12 @@ class FakeMerchantOrdersApi extends MerchantOrdersApi {
     final m = merchantView['merchant'] as Map<String, dynamic>;
     m['acceptingOrders'] = open;
     m['pausedReason'] = open ? null : 'owner';
+    // Outside the hours, Open opens the store until the next close (ADR-021).
+    final now = merchantView['openNow'] as Map<String, dynamic>?;
+    if (open && now != null && now['open'] == false) {
+      m['openUntil'] = '2099-01-01T15:30:00.000Z';
+      merchantView['openNow'] = {'open': true, 'closesAt': m['openUntil'], 'nextOpenAt': null};
+    }
     return MerchantView.fromJson(jsonDecode(jsonEncode(merchantView)) as Map<String, dynamic>);
   }
 }

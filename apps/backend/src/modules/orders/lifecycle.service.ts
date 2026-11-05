@@ -15,6 +15,7 @@ import { NotificationsService } from '../notifications/notifications.service';
 import { PaymentsService } from '../payments-settlement/payments.service';
 import { isTerminal } from './domain/state-machine';
 import { type OrderRecord, OrderRepository, type OrderState } from './orders.repository';
+import { beyondRadius } from './domain/beyond-radius';
 import { OrdersService } from './orders.service';
 
 export const ACCEPT_TIMEOUT = 'order.accept_timeout';
@@ -132,8 +133,12 @@ export class OrderLifecycleService implements OnModuleInit {
     if (order.state !== 'PLACED') throw new DomainError('INVALID_STATE', 'This order is no longer waiting for you.', { state: order.state });
     const { discovery } = await this.sla(order);
     const now = this.clock();
-    // Fashion always goes with a Santha rider (try-on and returns); otherwise the merchant chooses.
-    const mode = merchant.type === 'fashion' ? 'rider' : (opts.fulfilmentMode ?? merchant.defaultFulfilment);
+    // Fashion always goes with a Santha rider (try-on and returns). A "Deliver anywhere" store delivers its
+    // orders from beyond its radius itself (ADR-022). Otherwise the merchant chooses.
+    const ownTrip = merchant.deliversAnywhere && beyondRadius(order);
+    if (ownTrip && opts.fulfilmentMode === 'rider')
+      throw new DomainError('VALIDATION_FAILED', 'Deliver anywhere is on: you deliver orders from beyond your radius yourself.', { field: 'fulfilmentMode' });
+    const mode = merchant.type === 'fashion' ? 'rider' : ownTrip ? 'self' : (opts.fulfilmentMode ?? merchant.defaultFulfilment);
     let staffId: string | null = null;
     if (mode === 'self' && opts.staffId) {
       const staff = (await this.merchants.staffOf(merchant.id)).find((s) => s.id === opts.staffId && s.active);

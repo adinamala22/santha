@@ -47,9 +47,9 @@ export abstract class MerchantRepository {
 type Row = Merchant & { lat: number | null; lng: number | null };
 
 const SELECT = Prisma.sql`m.id::text, m.owner_user_id::text, m.micro_market_id::text, m.type::text, m.sells_food, m.category,
-  m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.hours, m.mov_paise, m.packaging_fee_paise,
+  m.name, m.name_te, m.description, m.address_line, m.landmark, m.pincode, m.radius_m, m.delivers_anywhere, m.hours, m.mov_paise, m.packaging_fee_paise,
   m.default_fulfilment::text, m.return_policy, m.hygiene_declared_at, m.status::text, m.submitted_at, m.decided_at,
-  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.accepting_orders, m.paused_reason, m.slug, m.paused_at, m.missed_in_a_row, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
+  m.decided_by::text, m.rejection_code, m.rejection_note, m.live_at, m.accepting_orders, m.paused_reason, m.open_until, m.slug, m.paused_at, m.missed_in_a_row, m.photo_ids::text[] AS photo_ids, m.created_at, m.updated_at,
   ST_Y(m.location::geometry) AS lat, ST_X(m.location::geometry) AS lng`;
 
 const toRecord = (r: Row): MerchantRecord => ({
@@ -67,6 +67,7 @@ const toRecord = (r: Row): MerchantRecord => ({
   pincode: r.pincode,
   location: r.lat == null || r.lng == null ? null : { lat: r.lat, lng: r.lng },
   radiusM: r.radiusM,
+  deliversAnywhere: r.deliversAnywhere,
   hours: (r.hours as WeeklyHours | null) ?? null,
   movPaise: r.movPaise,
   packagingFeePaise: r.packagingFeePaise,
@@ -82,6 +83,7 @@ const toRecord = (r: Row): MerchantRecord => ({
   liveAt: r.liveAt,
   acceptingOrders: r.acceptingOrders,
   pausedReason: r.pausedReason,
+  openUntil: r.openUntil,
   slug: r.slug,
   pausedAt: r.pausedAt,
   missedInARow: r.missedInARow,
@@ -105,6 +107,7 @@ interface RawRow {
   landmark: string | null;
   pincode: string | null;
   radius_m: number;
+  delivers_anywhere: boolean;
   hours: Prisma.JsonValue;
   mov_paise: number;
   packaging_fee_paise: number;
@@ -120,6 +123,7 @@ interface RawRow {
   live_at: Date | null;
   accepting_orders: boolean;
   paused_reason: string | null;
+  open_until: Date | null;
   slug: string | null;
   paused_at: Date | null;
   missed_in_a_row: number;
@@ -145,6 +149,7 @@ const fromRaw = (r: RawRow): MerchantRecord =>
     landmark: r.landmark,
     pincode: r.pincode,
     radiusM: r.radius_m,
+    deliversAnywhere: r.delivers_anywhere,
     hours: r.hours,
     movPaise: r.mov_paise,
     packagingFeePaise: r.packaging_fee_paise,
@@ -160,6 +165,7 @@ const fromRaw = (r: RawRow): MerchantRecord =>
     liveAt: r.live_at,
     acceptingOrders: r.accepting_orders,
     pausedReason: r.paused_reason,
+    openUntil: r.open_until,
     slug: r.slug ?? null,
     pausedAt: r.paused_at,
     missedInARow: r.missed_in_a_row,
@@ -330,7 +336,8 @@ class MerchantStore extends MemoryStore<MemState> {
             landmark: null,
             pincode: null,
             location: null,
-            radiusM: 3000,
+            radiusM: 5000,
+            deliversAnywhere: false,
             hours: null,
             movPaise: 0,
             packagingFeePaise: 0,
@@ -346,6 +353,7 @@ class MerchantStore extends MemoryStore<MemState> {
             liveAt: null,
             acceptingOrders: true,
             pausedReason: null,
+            openUntil: null,
             slug: null,
             pausedAt: null,
             missedInARow: 0,

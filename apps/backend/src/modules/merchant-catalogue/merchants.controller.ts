@@ -17,6 +17,7 @@ import {
   MerchantListDto,
   MerchantViewDto,
   OpsQueueQueryDto,
+  OpsHoursDto,
   OpsRadiusDto,
   PanDto,
   RejectDto,
@@ -166,6 +167,13 @@ export class OpsMerchantsController {
   @ZodResponse({ status: 200, type: MerchantViewDto })
   async reject(@Param('id', ParseUUIDPipe) id: string, @Body() b: RejectDto, @CurrentUser() u: AuthUser, @RequestId() rid: string | null) {
     return toViewDto(await this.merchants.reject(id, { userId: u.userId, requestId: rid }, b));
+  }
+
+  @Put(':id/hours')
+  @Roles('admin', 'ops')
+  @ZodResponse({ status: 200, type: MerchantViewDto, description: 'Opening hours (audited, ADR-021)' })
+  async hours(@Param('id', ParseUUIDPipe) id: string, @Body() b: OpsHoursDto, @CurrentUser() u: AuthUser, @RequestId() rid: string | null) {
+    return toViewDto(await this.merchants.setHours(id, b.hours, b.reason, { userId: u.userId, requestId: rid }));
   }
 
   @Put(':id/radius')

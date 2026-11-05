@@ -119,10 +119,11 @@ class SlotWhen extends DeliveryWhen {
   Json toJson() => {'mode': 'slot', 'slotId': slotId, 'date': date};
 }
 
-enum FeeCode { delivery, smallOrder, platform, packaging }
+enum FeeCode { delivery, beyondRadius, smallOrder, platform, packaging }
 
 FeeCode _fee(String s) => switch (s) {
       'delivery' => FeeCode.delivery,
+      'beyond_radius' => FeeCode.beyondRadius,
       'small_order' => FeeCode.smallOrder,
       'platform' => FeeCode.platform,
       _ => FeeCode.packaging,

@@ -18,6 +18,11 @@ Widget etaChipFor(BuildContext context, StoreSummary s, {DateTime? now}) {
   return ScheduledChip(label: l.nextSlot('${dayWord(l, slot.date, now ?? DateTime.now())} ${clock(slot.start)}'));
 }
 
+/// The greyed line on a store card: out of delivery range first (every store of the city is listed,
+/// ADR-021), then closed with the next opening.
+String? unavailableLabelFor(AppLocalizations l, StoreSummary s, {DateTime? now}) =>
+    s.deliverable ? closedLabelFor(l, s, now: now) : l.deliveryNotAvailable;
+
 String? closedLabelFor(AppLocalizations l, StoreSummary s, {DateTime? now}) {
   if (s.open) return null;
   final at = s.nextOpenAt;
@@ -39,15 +44,18 @@ class StoreTile extends ConsumerWidget {
     final media = ref.watch(mediaUrlProvider);
     final meta = storeMeta(l, store);
     final name = store.displayName(l.localeName);
+    final why = unavailableLabelFor(l, store);
     return StoreCard(
       key: ValueKey('store-${store.id}'),
       name: name,
       meta: meta,
       imageUrl: media(store.photoUrl),
-      eta: etaChipFor(context, store),
-      selfDeliversLabel: store.selfDelivers ? l.selfDelivers : null,
-      closedLabel: closedLabelFor(l, store),
-      semanticsLabel: l.storeCardLabel(name, meta),
+      eta: store.deliverable ? etaChipFor(context, store) : null,
+      selfDeliversLabel: !store.deliverable ? null : store.deliversAnywhere ? l.deliversAnywhere : (store.selfDelivers ? l.selfDelivers : null),
+      closedLabel: why,
+      // Beyond the store's radius it still delivers, at an extra charge (ADR-022).
+      noticeLabel: store.deliverable && store.beyondRadius ? l.higherDeliveryCharge : null,
+      semanticsLabel: [l.storeCardLabel(name, meta), ?why, if (store.deliverable && store.beyondRadius) l.higherDeliveryCharge].join('. '),
       onTap: () => context.push('/store/${store.id}'),
     );
   }

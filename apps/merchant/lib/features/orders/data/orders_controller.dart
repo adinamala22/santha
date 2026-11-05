@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
+import '../../onboarding/data/onboarding_controller.dart';
+
 final merchantOrdersApiProvider = Provider<MerchantOrdersApi>((ref) => MerchantOrdersApi(ref.watch(apiClientProvider)));
 
 /// How often the board refreshes when no realtime event arrives (sockets drop on poor networks).
@@ -146,6 +148,7 @@ class StoreOpenController extends Notifier<bool?> {
     try {
       final v = await ref.read(merchantOrdersApiProvider).setAvailability(open);
       state = v.merchant.acceptingOrders;
+      ref.read(onboardingProvider.notifier).replace(v); // hours banner, open-until line (ADR-021)
       ref.read(analyticsProvider).track('store_availability_changed', {'open': open});
     } catch (_) {
       state = before;
