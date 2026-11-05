@@ -76,7 +76,7 @@ edge_sites() {
     fi
     # e.g. www.santhaapp.com → santhaapp.com
     local r
-    for r in ${WEB_REDIRECTS//,/ }; do printf 'https://%s {\n\tredir https://%s{uri} permanent\n}\n\n' "$r" "$WEB_DOMAIN"; done
+    for r in ${WEB_REDIRECTS:+${WEB_REDIRECTS//,/ }}; do printf 'https://%s {\n\tredir https://%s{uri} permanent\n}\n\n' "$r" "$WEB_DOMAIN"; done
   } > "$f.new"
   mv "$f.new" "$f"
 }
@@ -153,6 +153,8 @@ record_tag() { # part tag
 
 deploy_backend() {
   [[ ",${COMPOSE_PROFILES:-}," == *",localdb,"* ]] && dc up -d --wait postgres
+  # Storage too, so it (re)joins the edge network when the ingress changes (media.<domain>).
+  [[ ",${COMPOSE_PROFILES:-}," == *",storage,"* ]] && dc up -d --no-deps storage
   [ "$SANTHA_ENV" = prod ] && [ "$(tag_of backend)" != "" ] && backup
   dc up -d --wait redis typesense
   echo "Running migrations …"
