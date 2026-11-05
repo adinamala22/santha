@@ -378,7 +378,7 @@ class _Hero extends ConsumerWidget {
               if (page.fssaiVerified) TrustBadge(label: l.fssaiOk, icon: Icons.verified_outlined),
               if (page.hygieneDeclared) TrustBadge(label: l.hygieneOk, icon: Icons.clean_hands_outlined),
               // No ETA or self-delivery promise for a store that cannot deliver here (ADR-021).
-              if (!page.isKitchen && page.deliversHere) etaChipFor(context, s),
+              if (!page.isKitchen && page.deliversHere && s.open) etaChipFor(context, s),
               if (page.deliversHere && s.deliversAnywhere) SelfDeliversBadge(label: l.deliversAnywhere)
               else if (s.selfDelivers && page.deliversHere) SelfDeliversBadge(label: l.selfDelivers),
             ]),

@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -108,7 +110,9 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       _error = null;
     });
     try {
-      _addressId ??= (await ref.read(addressesProvider.future)).where((a) => a.isDefault).firstOrNull?.id;
+      // Browsing at a GPS/map point: use a saved address only if it is that same place; otherwise the
+      // customer picks one, so the bill is never for a different place than the one they browsed.
+      _addressId ??= nearestSavedAddress(await ref.read(addressesProvider.future), ref.read(deliveryPointProvider)?.point)?.id;
       if (_addressId == null) {
         setState(() => _loading = false);
         return;
@@ -180,7 +184,21 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
         default:
           _snack(e.code == ApiException.network ? l.errorNetwork : (e.message ?? l.errorGeneric));
       }
+    } catch (_) {
+      // Anything else (e.g. the payment sheet failing): never leave the button spinning.
+      if (!mounted) return;
+      setState(() => _placing = false);
+      _snack(l.errorGeneric);
     }
+  }
+
+  /// Adds an address on the map and, once saved, delivers this order there.
+  Future<void> _addAddress() async {
+    final loc = await context.push<DeliveryLocation>('/location/pin?return=1');
+    ref.invalidate(addressesProvider);
+    if (!mounted || loc?.address == null) return;
+    setState(() => _addressId = loc!.address!.id);
+    await _reprice();
   }
 
   @override
@@ -202,12 +220,20 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       body: _error != null && q == null
           ? ErrorView(onRetry: _reprice)
           : ListView(padding: const EdgeInsets.all(SanthaSpacing.s5), children: [
-              Text(cart.merchantName ?? '', style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+              Text(cart.storeName(l.localeName), style: text.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(height: SanthaSpacing.s4),
               _Section(
                 title: l.deliverToAddress,
                 child: address == null
-                    ? SanthaButton(label: l.addAddressFirst, variant: SanthaButtonVariant.outline, icon: Icons.add_location_alt_outlined, onPressed: () => context.push('/location/pin'))
+                    ? Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+                        if (addresses.isNotEmpty) ...[
+                          Text(l.checkoutPickAddress, key: const ValueKey('pick-address-hint'), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+                          const SizedBox(height: SanthaSpacing.s2),
+                          SanthaButton(key: const ValueKey('choose-address'), label: l.chooseAddress, icon: Icons.list_alt_outlined, onPressed: () => _pickAddress(addresses)),
+                          const SizedBox(height: SanthaSpacing.s2),
+                        ],
+                        SanthaButton(key: const ValueKey('add-address'), label: l.addAddressFirst, variant: SanthaButtonVariant.outline, icon: Icons.add_location_alt_outlined, onPressed: _addAddress),
+                      ])
                     : AddressTile(
                         address: address,
                         trailing: TextButton(key: const ValueKey('change-address'), onPressed: () => _pickAddress(addresses), child: Text(l.changeAddress)),
@@ -321,11 +347,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
       ),
     );
     if (!mounted || id == null) return;
-    if (id == '__new') {
-      await context.push('/location/pin');
-      ref.invalidate(addressesProvider);
-      return;
-    }
+    if (id == '__new') return _addAddress();
     setState(() => _addressId = id);
     await _reprice();
   }
@@ -438,4 +460,28 @@ class _SlotPicker extends ConsumerWidget {
         ),
     ]);
   }
+}
+
+/// The saved address at the point the customer is browsing from (within [withinM] metres), if any.
+Address? nearestSavedAddress(List<Address> addresses, LatLng? at, {double withinM = 200}) {
+  if (at == null) return null;
+  Address? best;
+  var bestM = withinM;
+  for (final a in addresses) {
+    final m = metresBetween(at, a.location);
+    if (m <= bestM) {
+      best = a;
+      bestM = m;
+    }
+  }
+  return best;
+}
+
+/// Great-circle distance in metres.
+double metresBetween(LatLng a, LatLng b) {
+  const r = 6371000.0;
+  double rad(double d) => d * math.pi / 180;
+  final dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  final h = math.pow(math.sin(dLat / 2), 2) + math.cos(rad(a.lat)) * math.cos(rad(b.lat)) * math.pow(math.sin(dLng / 2), 2);
+  return 2 * r * math.asin(math.sqrt(h));
 }

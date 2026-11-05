@@ -48,7 +48,7 @@ class HomePage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s6),
                   child: Text(h.online ? l.waitingOffers : l.offlineHint, key: const ValueKey('idle'), textAlign: TextAlign.center, style: const TextStyle(color: SanthaColors.slate)),
                 ),
-              if (h.online && ref.read(riderHomeProvider.notifier).locationOff)
+              if (h.online && ref.watch(riderLocationOffProvider))
                 Padding(padding: const EdgeInsets.only(bottom: SanthaSpacing.s3), child: Text(l.locationOff, style: const TextStyle(color: SanthaColors.chilli))),
               _TodayCard(home: h),
               const SizedBox(height: SanthaSpacing.s4),
@@ -111,7 +111,7 @@ class _OfferCard extends ConsumerWidget {
                 key: const ValueKey('decline-offer'),
                 label: l.decline,
                 variant: SanthaButtonVariant.outline,
-                onPressed: () => ref.read(riderHomeProvider.notifier).decline(offer),
+                onPressed: () => _guard(context, () => ref.read(riderHomeProvider.notifier).decline(offer)),
               ),
             ),
           ]),
@@ -200,9 +200,9 @@ class _StatusCard extends ConsumerWidget {
         activeTrackColor: SanthaColors.leaf,
         onChanged: (on) async {
           final ctl = ref.read(riderHomeProvider.notifier);
-          if (!on) return ctl.goOffline();
+          if (!on) return _guard(context, ctl.goOffline);
           final zones = await _pickZones(context, home);
-          if (zones != null) await ctl.goOnline(zones);
+          if (zones != null && context.mounted) await _guard(context, () => ctl.goOnline(zones));
         },
       ),
     );
@@ -252,4 +252,17 @@ class _Retry extends StatelessWidget {
           ]),
         ),
       );
+}
+
+/// Runs a home action; a failure shows a message instead of an uncaught error.
+Future<void> _guard(BuildContext context, Future<void> Function() fn) async {
+  final l = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    await fn();
+  } on ApiException catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(e.code == 'OFFER_EXPIRED' || e.code == 'INVALID_STATE' ? l.offerGone : l.apiError(e))));
+  } catch (e) {
+    messenger.showSnackBar(SnackBar(content: Text(l.apiError(e))));
+  }
 }

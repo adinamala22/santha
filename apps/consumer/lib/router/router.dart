@@ -30,7 +30,11 @@ final routerProvider = Provider<GoRouter>((ref) {
   final auth = ValueNotifier<AuthState>(ref.read(authControllerProvider));
   final location = ValueNotifier<LocationState>(ref.read(locationControllerProvider));
   ref.listen(authControllerProvider, (_, next) => auth.value = next);
-  ref.listen(locationControllerProvider, (_, next) => location.value = next);
+  // Redirects only care whether a location is set, not which one: refreshing the router on every change
+  // (e.g. saving an address on the map pin) would undo a pop that happens in the same frame.
+  ref.listen(locationControllerProvider, (_, next) {
+    if (next.runtimeType != location.value.runtimeType) location.value = next;
+  });
   ref.onDispose(auth.dispose);
   ref.onDispose(location.dispose);
 
@@ -58,7 +62,13 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: Routes.location,
         builder: (context, state) => const LocationPage(),
-        routes: [GoRoute(path: 'pin', builder: (context, state) => MapPinPage(fix: state.extra is Located ? state.extra! as Located : null))],
+        routes: [
+          // ?return=1: opened from checkout or Account; after saving it goes back there with the new location.
+          GoRoute(
+            path: 'pin',
+            builder: (context, state) => MapPinPage(fix: state.extra is Located ? state.extra! as Located : null, returnOnDone: state.uri.queryParameters['return'] == '1'),
+          ),
+        ],
       ),
       GoRoute(path: '/cart', builder: (context, state) => const CartPage()),
       GoRoute(path: '/checkout', builder: (context, state) => const CheckoutPage()),

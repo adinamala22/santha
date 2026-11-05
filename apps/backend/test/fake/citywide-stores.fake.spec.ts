@@ -144,7 +144,9 @@ describe('City-wide stores and the Open switch (fake mode)', () => {
   it('ops set the hours (reason required, admin/ops only, audited); the feed follows', async () => {
     const put = (body: object, s: Session = ops) => http().put(`/v1/ops/merchants/${kirana.id}/hours`).set(s.headers).send(body);
     await put({ hours: closedAllWeek }).expect(400); // reason required
-    await put({ hours: hoursOf([{ open: '21:00', close: '09:00' }]), reason: 'night shift' }).expect(400); // close before open
+    await put({ hours: hoursOf([{ open: '09:00', close: '09:00' }]), reason: 'no hours' }).expect(400); // open and close the same
+    const late = (await put({ hours: hoursOf([{ open: '18:00', close: '01:00' }]), reason: 'night shift' }).expect(200)).body; // past midnight
+    expect(late.merchant.hours.mon).toEqual([{ open: '18:00', close: '01:00' }]);
     await put({ hours: closedAllWeek, reason: 'test' }, owner).expect(403);
 
     const v = (await put({ hours: closedAllWeek, reason: 'Owner away this week' }).expect(200)).body;

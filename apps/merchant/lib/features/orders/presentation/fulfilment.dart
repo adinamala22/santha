@@ -3,9 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_ui/santha_ui.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
 import '../../catalogue/presentation/catalogue_copy.dart' show rupees;
+import '../../onboarding/data/onboarding_controller.dart';
+import '../../onboarding/presentation/copy.dart';
 import '../data/orders_controller.dart';
 import 'money_view.dart';
 import 'reviews_view.dart';
@@ -20,12 +23,13 @@ class FulfilmentChoice {
 /// Fulfilment choice at accept (wireframe merchant/02-fulfilment-choice): deliver myself (pick a staff
 /// member, or the owner) or request a Santha rider. Defaults to the store setting; fashion is rider-only.
 /// [ownTrip]: "Deliver anywhere" is on and the order is from beyond the radius, so the store delivers it (ADR-022).
-Future<FulfilmentChoice?> chooseFulfilment(BuildContext context, MerchantView view, {bool ownTrip = false}) {
+/// [selfOnly]: no rider was found and the store delivers after all; only who delivers is asked.
+Future<FulfilmentChoice?> chooseFulfilment(BuildContext context, MerchantView view, {bool ownTrip = false, bool selfOnly = false}) {
   final l = AppLocalizations.of(context);
   final fashion = view.merchant.type == MerchantType.fashion;
   var mode = fashion
       ? FulfilmentMode.rider
-      : ownTrip
+      : ownTrip || selfOnly
       ? FulfilmentMode.self
       : view.merchant.defaultFulfilment;
   String? staffId = view.staff.isEmpty ? null : view.staff.first.id;
@@ -37,7 +41,7 @@ Future<FulfilmentChoice?> chooseFulfilment(BuildContext context, MerchantView vi
         final text = Theme.of(ctx).textTheme;
         Widget option(FulfilmentMode m, String title, String sub) {
           final selected = mode == m;
-          final disabled = (fashion && m == FulfilmentMode.self) || (ownTrip && m == FulfilmentMode.rider);
+          final disabled = (fashion && m == FulfilmentMode.self) || ((ownTrip || selfOnly) && m == FulfilmentMode.rider);
           return Expanded(
             child: Opacity(
               opacity: disabled ? 0.4 : 1, // not available for this order (fashion; Deliver anywhere beyond the radius)
@@ -172,9 +176,16 @@ class DeliveryInfo extends ConsumerWidget {
             ],
           ),
           if (d.staffLink != null && d.state != DeliveryState.delivered)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
+            Wrap(spacing: SanthaSpacing.s2, children: [
+              // The owner delivers: the delivery page (pickup, live location, OTP) opens on this phone.
+              if (d.courier?.kind == CourierKind.owner)
+                TextButton.icon(
+                  key: ValueKey('start-delivery-$orderId'),
+                  icon: const Icon(Icons.navigation_outlined, size: 18),
+                  label: Text(l.startDelivery),
+                  onPressed: () => ref.read(linkOpenerProvider)(Uri.parse(d.staffLink!)),
+                ),
+              TextButton.icon(
                 key: ValueKey('copy-link-$orderId'),
                 icon: const Icon(Icons.link, size: 18),
                 label: Text(l.copyLink),
@@ -184,7 +195,7 @@ class DeliveryInfo extends ConsumerWidget {
                   messenger.showSnackBar(SnackBar(content: Text(l.linkCopied)));
                 },
               ),
-            ),
+            ]),
           if (d.state == DeliveryState.searching && d.selfBonusPaise > 0) ...[
             const SizedBox(height: SanthaSpacing.s2),
             Text(
@@ -197,14 +208,37 @@ class DeliveryInfo extends ConsumerWidget {
               key: ValueKey('deliver-myself-$orderId'),
               label: l.deliverMyselfNow,
               variant: SanthaButtonVariant.outline,
-              onPressed: () => ref.read(ordersBoardProvider.notifier).deliverMyself(orderId),
+              onPressed: () => _deliverMyself(context, ref),
             ),
           ],
         ],
       ),
     );
   }
+
+  /// No rider found: the store delivers. With delivery staff, ask who goes; errors show as a message.
+  Future<void> _deliverMyself(BuildContext context, WidgetRef ref) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final view = ref.read(onboardingProvider).value;
+    String? staffId;
+    if (view != null && view.staff.isNotEmpty) {
+      final choice = await chooseFulfilment(context, view, selfOnly: true);
+      if (choice == null) return;
+      staffId = choice.staffId;
+    }
+    try {
+      await ref.read(ordersBoardProvider.notifier).deliverMyself(orderId, staffId: staffId);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(e is ApiException && e.code == 'INVALID_STATE' ? l.orderChanged : l.apiError(e))));
+    }
+  }
 }
+
+/// Opens a link in the browser (the staff delivery page). Tests override it.
+final linkOpenerProvider = Provider<Future<void> Function(Uri)>((ref) => (uri) async {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    });
 
 /// Earnings tab (M6): today's statement preview with the commission ladder.
 class StatementPreviewView extends ConsumerWidget {

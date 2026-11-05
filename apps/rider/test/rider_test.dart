@@ -125,6 +125,12 @@ void main() {
     expect(find.text('Flat 3B, Magunta Layout, near Apollo Pharmacy'), findsOneWidget);
     expect(find.text('Note: Leave at door if no answer; call first'), findsOneWidget);
     expect(find.text('COD: collect ₹156'), findsOneWidget);
+    // The amount is filled in once; a rider who clears it to retype is not overruled.
+    expect(find.widgetWithText(TextField, '156'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('cash-collected')), '');
+    await tester.pumpAndSettle();
+    expect(find.widgetWithText(TextField, '156'), findsNothing);
+    await tester.enterText(find.byKey(const ValueKey('cash-collected')), '156');
     await tester.tap(find.byKey(const ValueKey('call-customer')));
     await tester.tap(find.byKey(const ValueKey('navigate-drop')));
     expect(launched.map((u) => u.scheme), ['tel', 'https']);
@@ -139,6 +145,15 @@ void main() {
     await tester.pumpAndSettle();
     expect(api.calls.last, 'delivered 2468 15600');
     expect(find.text('Delivered. Well done!'), findsOneWidget);
+  });
+
+  testWidgets('going offline without network shows a message instead of failing silently', (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true));
+    api.offline = true;
+    await tester.tap(find.byKey(const ValueKey('online-toggle')));
+    await tester.pumpAndSettle();
+    expect(find.byType(SnackBar), findsOneWidget);
+    expect(api.online, isTrue);
   });
 
   testWidgets('earnings list today’s deliveries with their pay', (tester) async {

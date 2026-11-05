@@ -1006,5 +1006,6 @@
   "billBeyondRadius": "Extra delivery charge (far from the store)",
   "deliversAnywhere": "Delivers anywhere",
   "deliversAnywhereNote": "The store delivers this order itself. You can track it live in the app.",
-  "notDeliveringOtherCity": "This store delivers only within its own city."
+  "notDeliveringOtherCity": "This store delivers only within its own city.",
+  "checkoutPickAddress": "You were browsing from a spot on the map. Choose the address to deliver this order to."
 }

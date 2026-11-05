@@ -20,8 +20,11 @@ const _nellore = ll.LatLng(14.4426, 79.9865);
 /// "Use current location" with the GPS [fix]: the pin starts there, the accuracy circle shows how sure
 /// the phone is, and the customer moves the pin to the door. "Locate me" fetches a fresh fix.
 class MapPinPage extends ConsumerStatefulWidget {
-  const MapPinPage({super.key, this.fix});
+  const MapPinPage({super.key, this.fix, this.returnOnDone = false});
   final Located? fix;
+
+  /// Go back to the page that opened it (checkout, Account) with the saved location, instead of Home.
+  final bool returnOnDone;
 
   @override
   ConsumerState<MapPinPage> createState() => _MapPinPageState();
@@ -89,7 +92,9 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
           ? await saveAddressAndUse(ref, AddressInput(label: _label, line: _line.text.trim(), landmark: _landmark.text.trim(), location: _centre))
           : await ref.read(locationControllerProvider.notifier).set(_centre, _fix != null ? LocationSource.gps : LocationSource.pin);
       if (!mounted) return;
-      if (loc.serviceable) {
+      if (widget.returnOnDone && context.canPop()) {
+        context.pop(loc);
+      } else if (loc.serviceable) {
         context.go('/');
       } else {
         setState(() => _notServiceable = true);
@@ -206,8 +211,8 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
                 if (_notServiceable) const Padding(padding: EdgeInsets.only(top: SanthaSpacing.s3), child: NotServiceableCard()),
                 const SizedBox(height: SanthaSpacing.s3),
                 SanthaButton(label: l.saveAndContinue, loading: _busy, onPressed: () => _confirm(save: true)),
-                const SizedBox(height: SanthaSpacing.s2),
-                SanthaButton(label: l.skipSaving, variant: SanthaButtonVariant.outline, onPressed: _busy ? null : () => _confirm(save: false)),
+                if (!widget.returnOnDone) const SizedBox(height: SanthaSpacing.s2),
+                if (!widget.returnOnDone) SanthaButton(label: l.skipSaving, variant: SanthaButtonVariant.outline, onPressed: _busy ? null : () => _confirm(save: false)),
               ]),
             ),
           ),

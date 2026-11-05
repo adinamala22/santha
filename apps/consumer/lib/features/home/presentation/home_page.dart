@@ -62,7 +62,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (loc == null) return const Scaffold(body: LoadingView());
     final feed = loc.serviceable ? ref.watch(feedProvider(_query)) : null;
     final stores = feed?.value?.value.stores ?? const <StoreSummary>[];
-    final fastest = stores.where((s) => s.open && !s.eta.scheduled).map((s) => s.eta).fold<Eta?>(null, (a, e) => a == null || e.minMin < a.minMin ? e : a);
+    final fastest = stores.where((s) => s.open && s.deliverable && !s.eta.scheduled).map((s) => s.eta).fold<Eta?>(null, (a, e) => a == null || e.minMin < a.minMin ? e : a);
 
     return Scaffold(
       backgroundColor: SanthaColors.white,

@@ -55,6 +55,11 @@ class OrdersPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
+    // Order status changes (realtime) refresh the list while it is open.
+    ref.listen(realtimeEventsProvider, (_, next) {
+      final name = next.value?.name;
+      if (name != null && name != 'order.location' && next.value?.orderId != null) ref.invalidate(ordersProvider);
+    });
     final orders = ref.watch(ordersProvider);
     return Scaffold(
       appBar: AppBar(title: Text(l.navOrders)),
@@ -195,7 +200,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                   Expanded(
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                       Text(l.orderPlacedTitle, style: text.titleLarge?.copyWith(color: SanthaColors.leaf)),
-                      Text(l.orderPlacedBody(value.merchantName), style: text.bodySmall),
+                      Text(l.orderPlacedBody(l.localeName == 'te' && value.merchantNameTe != null ? value.merchantNameTe! : value.merchantName), style: text.bodySmall),
                     ]),
                   ),
                 ]),

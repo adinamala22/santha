@@ -76,11 +76,17 @@ class OrdersBoardController extends AsyncNotifier<OrdersBoard> {
     if (next.hasValue || state.value == null) state = next;
   }
 
+  /// Shows another tab. If its list can't load, the previous tab stays selected (and the error is rethrown).
   Future<void> selectTab(OrderBucket tab) async {
     final cur = state.value;
     if (cur != null) state = AsyncData(cur.copyWith(tab: tab));
-    final list = await _api.list(tab);
-    state = AsyncData((state.value ?? cur!).copyWith(tab: tab, list: list));
+    try {
+      final list = await _api.list(tab);
+      state = AsyncData((state.value ?? cur!).copyWith(tab: tab, list: list));
+    } catch (_) {
+      if (cur != null) state = AsyncData((state.value ?? cur).copyWith(tab: cur.tab, list: cur.list));
+      rethrow;
+    }
   }
 
   /// Accept with the fulfilment choice (M6): self (a staff member, or the owner when [staffId] is null) or rider.
