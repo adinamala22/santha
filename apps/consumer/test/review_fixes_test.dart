@@ -46,6 +46,8 @@ void main() {
     expect(h.container.read(cartControllerProvider).isEmpty, isFalse);
     await tester.tap(find.text('Account'));
     await settle(tester, 10);
+    // The account list builds lazily; Sign out sits below Help & support, so scroll it into being first.
+    await tester.scrollUntilVisible(find.text('Sign out'), 200, scrollable: find.byType(Scrollable).last);
     await tapVisible(tester, find.text('Sign out'));
     await settle(tester, 10);
     expect(h.container.read(cartControllerProvider).isEmpty, isTrue);

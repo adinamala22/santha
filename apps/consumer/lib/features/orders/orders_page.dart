@@ -16,6 +16,7 @@ import '../checkout/bill_view.dart';
 import '../checkout/checkout_page.dart';
 import 'after_delivery.dart';
 import 'tracking_view.dart';
+import '../../support.dart';
 
 String orderStateLabel(AppLocalizations l, OrderState s) => switch (s) {
       OrderState.awaitingPayment => l.state_AWAITING_PAYMENT,
@@ -285,6 +286,23 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
             const SizedBox(height: SanthaSpacing.s2),
             Text('${l.deliverToAddress}: ${value.addressLine}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
             if (value.instructions != null) Text(value.instructions!, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            const SizedBox(height: SanthaSpacing.s4),
+            // Support chat about this order (ADR-028); one conversation per order.
+            SanthaButton(
+              key: const ValueKey('order-get-help'),
+              label: l.supportGetHelp,
+              icon: Icons.support_agent,
+              variant: SanthaButtonVariant.outline,
+              onPressed: () => startSupportChat(
+                context,
+                ref,
+                strings: supportStrings(l),
+                topics: supportTopics,
+                orderId: value.id,
+                orderCode: value.code,
+                initialTopic: value.state == OrderState.delivered ? 'missing_item' : 'order_late',
+              ),
+            ),
           ]),
         AsyncError() => ErrorView(onRetry: () => ref.invalidate(orderProvider(id))),
         _ => const LoadingView(),

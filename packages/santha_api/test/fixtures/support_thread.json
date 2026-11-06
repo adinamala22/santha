@@ -1,0 +1,17 @@
+{
+ "id": "5b0b8f8e-6a43-4f43-9a55-2f3c8f1f2a01",
+ "app": "consumer",
+ "orderId": "6f2ca5bf-335a-4c70-a77f-6f9800e83a63",
+ "orderCode": "SNAWHNNF",
+ "topic": "order_late",
+ "status": "waiting_customer",
+ "lastMessageAt": "2026-11-05T10:12:00.000Z",
+ "lastMessagePreview": "Sorry! The store is packing it now, 10 more minutes.",
+ "unreadByUser": 1,
+ "resolvedAt": null,
+ "createdAt": "2026-11-05T10:05:00.000Z",
+ "messages": [
+  {"id": "7a1d2c3e-0000-4000-8000-000000000001", "author": "user", "body": "My order is late, where is it?", "createdAt": "2026-11-05T10:05:00.000Z"},
+  {"id": "7a1d2c3e-0000-4000-8000-000000000002", "author": "support", "body": "Sorry! The store is packing it now, 10 more minutes.", "createdAt": "2026-11-05T10:12:00.000Z"}
+ ]
+}

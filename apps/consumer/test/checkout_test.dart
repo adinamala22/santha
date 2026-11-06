@@ -324,6 +324,39 @@ void main() {
     expect(h.events, contains('issue_reported'));
   });
 
+  testWidgets('ADR-028: support chat from the order page (about that order) and from Account', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+
+    await tapVisible(tester, find.byKey(const ValueKey('order-get-help')));
+    await settle(tester, 10);
+    expect(find.text('Order #${o['code']}'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('support-first-message')), 'How long will it take?');
+    await settle(tester, 4);
+    await tester.tap(find.byKey(const ValueKey('support-start'))); // "Order is late" is preselected
+    await settle(tester, 20);
+    expect((h.backend.bodies['POST /v1/support/threads'] as Map), {'topic': 'order_late', 'body': 'How long will it take?', 'orderId': o['id']});
+    expect(find.text('How long will it take?'), findsOneWidget);
+    expect(h.events, contains('support_thread_opened'));
+    await tester.pageBack();
+    await settle(tester, 10);
+
+    await tester.tap(find.byKey(const ValueKey('close-order')));
+    await settle(tester, 10);
+    await tester.tap(find.text('Account'));
+    await settle(tester, 10);
+    await tapVisible(tester, find.byKey(const ValueKey('open-support')));
+    await settle(tester, 10);
+    expect(find.text('Help & support'), findsOneWidget);
+    expect(find.byKey(const ValueKey('support-thread-th1')), findsOneWidget);
+  });
+
   testWidgets('M7: the wallet page lists refund credits', (tester) async {
     await pumpAtHome(tester);
     await tester.tap(find.text('Account'));

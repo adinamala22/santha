@@ -65,6 +65,9 @@ class FakeBackend implements HttpClientAdapter {
   /// Fields merged into the kirana store page (e.g. deliversHere / notDeliveringReason).
   Map<String, dynamic> kiranaPagePatch = {};
 
+  // Support chat state (ADR-028)
+  final supportThreads = <Map<String, dynamic>>[];
+
   // M8 state
   final consents = <String, bool>{};
   final grievances = <Map<String, dynamic>>[];
@@ -223,6 +226,19 @@ class FakeBackend implements HttpClientAdapter {
           'location': (o.data as Map)['location'],
           'isDefault': false,
         }),
+      // Support chat (ADR-028): opening returns the new thread; the list holds what was opened.
+      'GET /v1/support/threads' => (200, {'items': supportThreads}),
+      'POST /v1/support/threads' => (() {
+          final b = o.data as Map;
+          final t = <String, dynamic>{
+            'id': 'th${supportThreads.length + 1}', 'app': 'consumer', 'orderId': b['orderId'], 'orderCode': b['orderId'] == null ? null : _order()['code'],
+            'topic': b['topic'], 'status': 'waiting_support', 'lastMessageAt': '2026-11-05T10:00:00.000Z', 'lastMessagePreview': b['body'],
+            'unreadByUser': 0, 'resolvedAt': null, 'createdAt': '2026-11-05T10:00:00.000Z',
+          };
+          supportThreads.insert(0, t);
+          return (201, {...t, 'messages': [{'id': 'sm1', 'author': 'user', 'body': b['body'], 'createdAt': '2026-11-05T10:00:00.000Z'}]});
+        })(),
+      final r when r.startsWith('GET /v1/support/threads/') => (200, {...supportThreads.first, 'messages': [{'id': 'sm1', 'author': 'user', 'body': supportThreads.first['lastMessagePreview'], 'createdAt': '2026-11-05T10:00:00.000Z'}]}),
       'GET /v1/feed' => (200, _feed(o.queryParameters)),
       'GET /v1/search' => (200, (() {
           final r = fixture('search_atta');

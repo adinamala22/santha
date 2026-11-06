@@ -14,6 +14,7 @@ import '../../account/privacy_page.dart';
 import '../../location/location_controller.dart';
 import '../../location/location_page.dart';
 import '../../orders/orders_page.dart';
+import '../../../support.dart';
 
 /// Bottom navigation: Home · Search · Orders · Account. The cart bar sits above it on Home.
 class HomeShell extends ConsumerWidget {
@@ -75,6 +76,19 @@ class AccountPage extends ConsumerWidget {
         ),
         const WalletTile(),
         const _WhatsappTile(),
+        ListTile(
+          key: const ValueKey('open-support'),
+          contentPadding: EdgeInsets.zero,
+          leading: Badge(
+            isLabelVisible: ref.watch(supportUnreadProvider) > 0,
+            label: Text('${ref.watch(supportUnreadProvider)}'),
+            child: const Icon(Icons.support_agent),
+          ),
+          title: Text(l.supportTitle),
+          subtitle: Text(l.supportIntro, maxLines: 2, overflow: TextOverflow.ellipsis),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SupportInboxPage(strings: supportStrings(l), topics: supportTopics))),
+        ),
         ListTile(
           key: const ValueKey('privacy-help'),
           contentPadding: EdgeInsets.zero,

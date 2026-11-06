@@ -11,6 +11,7 @@ import 'copy.dart';
 import '../../orders/presentation/merchant_home.dart';
 import 'start_page.dart';
 import 'widgets.dart';
+import '../../../support.dart';
 
 /// Merchant home: start → checklist → under review → live (orders home, M5), driven by GET /merchants/me.
 class OnboardingGate extends ConsumerWidget {
@@ -209,6 +210,19 @@ class StatusPage extends ConsumerWidget {
                 subtitle: Text(l.catOpenSub),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => context.push('/catalogue'),
+              ),
+            ),
+            Card(
+              child: ListTile(
+                key: const ValueKey('open-support'),
+                leading: Badge(
+                  isLabelVisible: ref.watch(supportUnreadProvider) > 0,
+                  label: Text('${ref.watch(supportUnreadProvider)}'),
+                  child: const Icon(Icons.support_agent, color: SanthaColors.indigo),
+                ),
+                title: Text(l.supportTitle),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SupportInboxPage(strings: supportStrings(l), topics: supportTopics))),
               ),
             ),
             if (view.merchant.status == MerchantStatus.live)

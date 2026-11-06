@@ -1011,5 +1011,43 @@
       }
     }
   },
-  "startDelivery": "Start delivery"
+  "startDelivery": "Start delivery",
+  "supportTitle": "Help & support",
+  "supportIntro": "Chat with the Santha team. We usually reply within a few minutes, 8 am to 10 pm.",
+  "supportNewChat": "New chat",
+  "supportEmpty": "No chats yet. Start one if you need help.",
+  "supportTopicTitle": "What do you need help with?",
+  "supportMessageHint": "Write your message",
+  "supportSend": "Send",
+  "supportStart": "Start chat",
+  "supportSender": "Santha support",
+  "supportWaitingSupport": "Waiting for support",
+  "supportWaitingCustomer": "Support replied",
+  "supportResolved": "Resolved",
+  "supportResolvedNote": "This chat is resolved. Write here if you still need help.",
+  "supportOrderLabel": "Order #{code}",
+  "@supportOrderLabel": {
+    "placeholders": {
+      "code": {
+        "type": "String"
+      }
+    }
+  },
+  "supportTooManyOpen": "You already have 3 open chats. Reply in one of them.",
+  "supportSlowDown": "Please wait a few minutes before writing again.",
+  "supportClosed": "This chat is closed. Start a new one.",
+  "supportLoading": "Loading",
+  "supportGetHelp": "Get help with this order",
+  "topic_order_late": "Order is late",
+  "topic_missing_item": "Item missing",
+  "topic_wrong_item": "Wrong or damaged item",
+  "topic_payment": "Payment",
+  "topic_refund": "Refund",
+  "topic_account": "My account",
+  "topic_other": "Something else",
+  "topic_orders": "Orders",
+  "topic_payout": "Payouts",
+  "topic_catalogue": "Catalogue",
+  "topic_delivery": "A delivery",
+  "topic_app": "The app"
 }
