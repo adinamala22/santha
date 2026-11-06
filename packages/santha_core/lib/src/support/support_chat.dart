@@ -7,6 +7,7 @@ import 'package:santha_ui/santha_ui.dart';
 
 import '../analytics/analytics.dart';
 import '../auth/auth_controller.dart';
+import '../push/push.dart';
 import '../realtime/realtime.dart';
 
 /// Copy for the support chat screens, supplied by each app in its language (en/te), like [OtpLoginStrings].
@@ -426,4 +427,13 @@ class _NewChatSheetState extends State<_NewChatSheet> {
       ),
     );
   }
+}
+
+/// A tapped support-reply notification (kind `support`, ADR-028) opens its chat on top of the current
+/// screen. Returns false for other kinds, which the app routes itself.
+bool openSupportFromPush(PushTap tap, NavigatorState? nav, SupportStrings Function() strings) {
+  final id = tap.threadId;
+  if (tap.kind != 'support' || id == null || nav == null) return false;
+  nav.push(MaterialPageRoute<void>(builder: (_) => SupportChatPage(threadId: id, strings: strings())));
+  return true;
 }

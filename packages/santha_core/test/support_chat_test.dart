@@ -189,6 +189,35 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('You already have 3 open chats.'), findsOneWidget);
   });
+
+  testWidgets('a tapped support-reply notification opens its chat; other kinds are left to the app', (tester) async {
+    final nav = GlobalKey<NavigatorState>();
+    api = _Support();
+    realtime = FakeRealtime();
+    final container = ProviderContainer(overrides: [
+      appConfigProvider.overrideWithValue(const AppConfig(flavor: Flavor.dev, app: SanthaApp.consumer, apiBaseUrl: 'http://api.test')),
+      keyValueStoreProvider.overrideWithValue(MemoryKeyValueStore()),
+      deviceIdProvider.overrideWithValue('device-test-1'),
+      realtimeEventsProvider.overrideWith((ref) => realtime.events),
+      supportPollEveryProvider.overrideWithValue(null),
+      apiClientProvider.overrideWith((ref) => SanthaApiClient(baseUrl: 'http://api.test', deviceId: 'device-test-1', tokens: ref.watch(tokenStoreProvider), dio: Dio()..httpClientAdapter = api)),
+    ]);
+    addTearDown(container.dispose);
+    await tester.pumpWidget(UncontrolledProviderScope(container: container, child: MaterialApp(navigatorKey: nav, home: const Text('home'))));
+    api.threads.add({
+      'id': 't9', 'app': 'consumer', 'orderId': null, 'orderCode': null, 'topic': 'payment', 'status': 'waiting_customer',
+      'lastMessageAt': '2026-11-05T10:00:00.000Z', 'lastMessagePreview': 'Refund sent', 'unreadByUser': 1, 'resolvedAt': null,
+      'createdAt': '2026-11-05T10:00:00.000Z',
+      'messages': [{'id': 'm0', 'author': 'support', 'body': 'Refund sent', 'createdAt': '2026-11-05T10:00:00.000Z'}],
+    });
+
+    expect(openSupportFromPush(const PushTap({'kind': 'order', 'orderId': 'o1'}), nav.currentState, () => _strings), isFalse);
+    expect(openSupportFromPush(const PushTap({'kind': 'support'}), nav.currentState, () => _strings), isFalse); // no thread id
+    expect(openSupportFromPush(const PushTap({'kind': 'support', 'threadId': 't9'}), nav.currentState, () => _strings), isTrue);
+    await tester.pumpAndSettle();
+    expect(api.calls, contains('GET /v1/support/threads/t9'));
+    expect(find.text('Refund sent'), findsOneWidget);
+  });
 }
 
 /// SanthaButton exposes onPressed; read "enabled" through it.

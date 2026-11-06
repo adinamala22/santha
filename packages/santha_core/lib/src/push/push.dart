@@ -18,6 +18,8 @@ class PushTap {
   final Map<String, String> data;
   String? get kind => data['kind'];
   String? get orderId => data['orderId'];
+  /// Set on support replies (kind `support`, ADR-028).
+  String? get threadId => data['threadId'];
 }
 
 /// Push messaging on this phone. [NoPush] when Firebase is not configured (local dev, tests).

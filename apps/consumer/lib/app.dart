@@ -7,6 +7,7 @@ import 'features/cart/cart_controller.dart';
 import 'features/location/location_controller.dart';
 import 'l10n/gen/app_localizations.dart';
 import 'router/router.dart';
+import 'support.dart';
 
 class SanthaConsumerApp extends ConsumerStatefulWidget {
   const SanthaConsumerApp({super.key});
@@ -38,6 +39,7 @@ class _SanthaConsumerAppState extends ConsumerState<SanthaConsumerApp> {
       final tap = next.value;
       if (tap == null) return;
       ref.read(analyticsProvider).track('push_opened', {'kind': tap.kind});
+      if (_openSupport(ref, tap)) return;
       final id = tap.orderId;
       if (id != null) ref.read(routerProvider).push('/orders/$id');
     });
@@ -54,3 +56,10 @@ class _SanthaConsumerAppState extends ConsumerState<SanthaConsumerApp> {
     );
   }
 }
+
+/// A support reply opens its chat (ADR-028).
+bool _openSupport(WidgetRef ref, PushTap tap) => openSupportFromPush(
+      tap,
+      ref.read(routerProvider).routerDelegate.navigatorKey.currentState,
+      () => supportStrings(lookupAppLocalizations(ref.read(localeControllerProvider))),
+    );

@@ -33,5 +33,5 @@ The PRD's MVP scope includes "support chat" after an order, "support" in the rid
 
 ## Consequences
 - New tables `support_threads` and `support_messages` (migration `20261115000000_support_chat`), with Prisma and in-memory implementations.
-- Opening the chat from a tapped `support` notification arrives together with push (ADR-027), once both are merged.
+- A tapped `support` notification opens its chat on top of the current screen in all three apps (`openSupportFromPush` in santha_core, with push from ADR-027).
 - No message search or SLA reports yet. Ops work from the inbox order: the oldest waiting for us is at the bottom.
