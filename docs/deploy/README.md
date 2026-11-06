@@ -243,11 +243,25 @@ backend. Prod uses a managed database; give tools a read-only user there.
    - After that, set the variable `PLAY_UPLOAD=true` and the secret `PLAY_SERVICE_ACCOUNT_JSON`, and each prod run
      uploads to the **internal** track.
    - Promote to closed testing, then production, in the Play Console, with a staged rollout of 10 % → 50 % → 100 %.
-5. iOS needs a Mac or a macOS CI runner plus an Apple developer account. It is not set up yet.
+5. **Push notifications (ADR-027).** These steps are done once, in the Firebase console.
+   - Create one Firebase project, for example `santha`.
+   - Add **Android apps** with these package names:
+     - QA (stg builds): `app.santha.consumer.stg`, `app.santha.merchant.stg`, `app.santha.rider.stg`;
+     - PROD: `app.santha.consumer`, `app.santha.merchant`, `app.santha.rider`.
+   - You don't need to download `google-services.json`: the apps get their settings at build time.
+   - In `config/values/test.values.yaml` (stg ids) and `prod.values.yaml` (prod ids), fill `apps.firebase`:
+     - `projectId` and `senderId`: from Project settings → General / Cloud Messaging;
+     - `apiKey`: the Web API key;
+     - `appIds`: each app's "App ID" (`1:…:android:…`).
+   - Project settings → Service accounts → **Generate new private key**. On the server, add these to the stack's `.env`:
+     - `FCM_SERVICE_ACCOUNT_B64=$(base64 -w0 key.json)`;
+     - `PUSH_PROVIDER=fcm`, or set `backend.pushProvider: fcm` in the values file.
+   - Then redeploy the backend and rebuild the apps.
+6. iOS needs a Mac or a macOS CI runner plus an Apple developer account. It is not set up yet. Push on iOS also needs an APNs key in Firebase.
 
 ## What is still missing before real users
 See `docs/launch/launch-checklist.md`. In particular:
-- Firebase config in the apps (push notifications);
+- Firebase config in the apps for push notifications (§5 step 5);
 - real masked calling (Exotel) and WhatsApp providers;
 - the MSG91 DLT templates;
 - Razorpay live keys and the webhook URL `https://api.santhaapp.com/v1/webhooks/razorpay`. In Razorpay test mode, use `https://api.test.santhaapp.com/v1/webhooks/razorpay`.

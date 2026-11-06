@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Santha Indigo (design/tokens/tokens.json): accent of the notification icon. -->
+    <color name="santha_indigo">#1F2A5C</color>
+</resources>

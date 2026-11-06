@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Put } from '@nestjs/common';
 import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { createZodDto } from '../../common/zod-dto';
@@ -21,6 +21,13 @@ export class NotificationsController {
   @HttpCode(204)
   async pushToken(@Body() b: PushTokenDto, @CurrentUser() u: AuthUser): Promise<void> {
     await this.notifications.registerToken(u.userId, u.deviceId, b.token, b.platform);
+  }
+
+  /** Sign-out on this phone (the app calls it before logging out): its notifications stop. */
+  @Delete('push-token')
+  @HttpCode(204)
+  async removePushToken(@CurrentUser() u: AuthUser): Promise<void> {
+    await this.notifications.unregisterToken(u.userId, u.deviceId);
   }
 
   @Get('notification-preferences')

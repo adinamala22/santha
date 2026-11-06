@@ -11,6 +11,14 @@ class SanthaMerchantApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Push (review G1): keep this phone registered while signed in; a tapped notification (new orders and store news open the orders home).
+    ref.watch(pushSyncProvider);
+    ref.listen(pushTapsProvider, (_, next) {
+      final tap = next.value;
+      if (tap == null) return;
+      ref.read(analyticsProvider).track('push_opened', {'kind': tap.kind});
+      ref.read(routerProvider).go('/');
+    });
     final locale = ref.watch(localeControllerProvider);
     final config = ref.watch(appConfigProvider);
     return MaterialApp.router(

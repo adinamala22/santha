@@ -18,6 +18,8 @@ dependencies:
   dio: ^5.8.0
   santha_api: any
   santha_ui: any
+  firebase_core: ^5.1.0
+  firebase_messaging: ^17.0.1
 
 dev_dependencies:
   flutter_test:

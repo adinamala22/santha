@@ -37,6 +37,8 @@ export abstract class NotificationRepository {
   abstract upsertToken(t: Omit<PushTokenRecord, 'updatedAt'>): Promise<void>;
   abstract tokensFor(userId: string): Promise<PushTokenRecord[]>;
   abstract removeToken(token: string): Promise<void>;
+  /** Sign-out: this phone stops getting the person's notifications. */
+  abstract removeTokenForDevice(userId: string, deviceId: string): Promise<void>;
   abstract whatsappOptIn(userId: string): Promise<boolean>;
   abstract setWhatsappOptIn(userId: string, value: boolean): Promise<void>;
 }
@@ -70,6 +72,10 @@ export class PrismaNotificationRepository extends NotificationRepository {
 
   async removeToken(token: string) {
     await this.prisma.pushToken.deleteMany({ where: { token } });
+  }
+
+  async removeTokenForDevice(userId: string, deviceId: string) {
+    await this.prisma.pushToken.deleteMany({ where: { userId, deviceId } });
   }
 
   async whatsappOptIn(userId: string) {
@@ -118,6 +124,11 @@ export class InMemoryNotificationRepository extends NotificationRepository {
 
   async removeToken(token: string) {
     for (const [k, v] of this.tokens) if (v.token === token) this.tokens.delete(k);
+  }
+
+  async removeTokenForDevice(userId: string, deviceId: string) {
+    const t = this.tokens.get(deviceId);
+    if (t?.userId === userId) this.tokens.delete(deviceId);
   }
 
   async whatsappOptIn(userId: string) {

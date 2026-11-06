@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android notification channels (Settings → Apps → Notifications). -->
+    <string name="channel_updates">డెలివరీ అప్‌డేట్‌లు</string>
+    <string name="channel_orders_alarm">కొత్త డెలివరీ ఆఫర్లు (రింగ్ అవుతాయి)</string>
+</resources>
