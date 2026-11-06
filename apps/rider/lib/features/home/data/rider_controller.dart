@@ -1,10 +1,13 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
+
+import '../../../l10n/gen/app_localizations.dart';
 
 final riderApiProvider = Provider<RiderApi>((ref) => RiderApi(ref.watch(apiClientProvider)));
 
@@ -22,6 +25,37 @@ final locationSourceProvider = Provider<LocationSource>((ref) => () async {
       } catch (_) {
         return null;
       }
+    });
+
+/// Positions while online, kept alive when the rider switches to Google Maps or locks the phone: an Android
+/// foreground service with a visible notification, iOS background location updates (review G3). Tests: null.
+typedef LiveLocations = Stream<Point> Function(AppLocalizations l);
+
+final liveLocationsProvider = Provider<LiveLocations?>((ref) => (l) {
+      final LocationSettings settings = switch (defaultTargetPlatform) {
+        TargetPlatform.android => AndroidSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 20,
+            intervalDuration: const Duration(seconds: 10),
+            foregroundNotificationConfig: ForegroundNotificationConfig(
+              notificationTitle: l.liveLocationTitle,
+              notificationText: l.liveLocationText,
+              notificationChannelName: l.liveLocationChannel,
+              enableWakeLock: true,
+              setOngoing: true,
+            ),
+          ),
+        TargetPlatform.iOS => AppleSettings(
+            accuracy: LocationAccuracy.high,
+            distanceFilter: 20,
+            activityType: ActivityType.otherNavigation,
+            pauseLocationUpdatesAutomatically: false,
+            allowBackgroundLocationUpdates: true,
+            showBackgroundLocationIndicator: true,
+          ),
+        _ => const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 20),
+      };
+      return Geolocator.getPositionStream(locationSettings: settings).map((p) => Point(p.latitude, p.longitude));
     });
 
 /// How often the home refreshes (offers, jobs) and the position is sent while online. Tests: null.
@@ -54,6 +88,8 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
   Analytics get _analytics => ref.read(analyticsProvider);
   Timer? _tick;
   String? _rungFor;
+  StreamSubscription<Point>? _live;
+  DateTime? _lastSent;
 
   @override
   Future<RiderHome> build() async {
@@ -66,9 +102,40 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
       final name = next.value?.name;
       if (name == 'offer.new' || name == 'offer.withdrawn' || name == 'job.updated') reload();
     });
+    ref.onDispose(_stopLive);
     final home = await _api.home();
     _ring(home);
+    _syncLive(home);
     return home;
+  }
+
+  /// Online → the background position stream runs; offline → it stops (and its notification goes away).
+  void _syncLive(RiderHome h) {
+    if (h.online && _live == null) {
+      final source = ref.read(liveLocationsProvider);
+      if (source == null) return;
+      final l = lookupAppLocalizations(ref.read(localeControllerProvider));
+      _live = source(l).listen(_onFix, onError: (Object _) {
+        ref.read(riderLocationOffProvider.notifier).set(true);
+        _stopLive(); // try again on the next refresh (e.g. after the rider allows location)
+      });
+    } else if (!h.online) {
+      _stopLive();
+    }
+  }
+
+  void _stopLive() {
+    _live?.cancel();
+    _live = null;
+  }
+
+  /// At most one position every 10 s reaches the server (live tracking, dispatch).
+  Future<void> _onFix(Point p) async {
+    if (ref.read(riderLocationOffProvider)) ref.read(riderLocationOffProvider.notifier).set(false);
+    final now = DateTime.now();
+    if (_lastSent != null && now.difference(_lastSent!) < const Duration(seconds: 10)) return;
+    _lastSent = now;
+    await _api.sendLocation(p.lat, p.lng).catchError((_) {});
   }
 
   void _ring(RiderHome h) {
@@ -81,7 +148,7 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
 
   Future<void> _heartbeat() async {
     if (state.value?.online != true) return;
-    await sendLocation();
+    if (_live == null) await sendLocation(); // the background stream sends its own positions
     await reload();
   }
 
@@ -93,20 +160,26 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
 
   Future<void> reload() async {
     final next = await AsyncValue.guard(_api.home);
-    if (next.hasValue) _ring(next.value!);
+    if (next.hasValue) {
+      _ring(next.value!);
+      _syncLive(next.value!);
+    }
     if (next.hasValue || state.value == null) state = next;
   }
 
   Future<void> goOnline(List<String> zones) async {
     final h = await _api.setStatus(online: true, zones: zones);
     state = AsyncData(h);
+    _syncLive(h);
     _analytics.track('online_toggled', {'online': true, 'zones': zones.length});
     await sendLocation();
     await reload();
   }
 
   Future<void> goOffline() async {
-    state = AsyncData(await _api.setStatus(online: false));
+    final h = await _api.setStatus(online: false);
+    state = AsyncData(h);
+    _syncLive(h);
     _analytics.track('online_toggled', {'online': false});
   }
 
@@ -154,6 +227,20 @@ class JobController extends AsyncNotifier<Job> {
   Future<void> pickedUp(String code) async {
     state = AsyncData(await _api.pickedUp(id, code));
     _analytics.track('picked_up', {'job_id': id});
+  }
+
+  /// Couldn't deliver (ADR-026): the job stays with the rider until they retry or support decides.
+  Future<void> failed(FailedReason reason, String? note) async {
+    state = AsyncData(await _api.failed(id, reason, note: note));
+    _analytics.track('delivery_failed', {'job_id': id, 'reason': reason.wire, 'has_note': (note ?? '').trim().isNotEmpty});
+    ref.invalidate(riderHomeProvider);
+  }
+
+  /// The customer called back: on the way again.
+  Future<void> retry() async {
+    state = AsyncData(await _api.retry(id));
+    _analytics.track('delivery_retried', {'job_id': id, 'by': 'rider'});
+    ref.invalidate(riderHomeProvider);
   }
 
   Future<void> delivered(String otp, int? codPaise) async {

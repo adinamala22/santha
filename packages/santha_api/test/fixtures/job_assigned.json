@@ -37,5 +37,7 @@
  "arrivedAt": null,
  "pickedUpAt": null,
  "deliveredAt": null,
- "pickupCodeRequired": true
+ "pickupCodeRequired": true,
+ "failedReason": null,
+ "failedAt": null
 }

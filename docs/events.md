@@ -47,3 +47,5 @@ City-wide stores and the Open switch (ADR-021), server: merchant.availability_ch
 
 Service coverage (ADR-019), server: **config.city_coverage_changed**(city_id, before, after) · merchant.updated with fields [radiusM] when ops change a store's radius. Audit actions: city.coverage_changed, merchant.radius_changed.
 Client (consumer app, ADR-019): gps_fix(accuracy_m, precise) when "Use current location" gets a fix; location_set(source: gps) once the customer confirms it on the pin.
+
+Couldn't deliver (ADR-026). Server: the order moves to **FAILED_DELIVERY** (reason `failed_<reason>`, outcome `delivery_failed_<reason>`). After a retry it moves back to OUT_FOR_DELIVERY (reason `retry_delivery`); after ops cancel it, to CANCELLED (reason `delivery_failed`). Notifications: customer.delivery_failed · merchant.delivery_failed. Audit rows: dispatch.delivery_failed (courier) · dispatch.delivery_retried · dispatch.failed_delivery_cancelled (refund, reason). The live board raises `delivery_failed` under Needs attention. Client (rider app): **delivery_failed**(job_id, reason, has_note) · **delivery_retried**(job_id, by).

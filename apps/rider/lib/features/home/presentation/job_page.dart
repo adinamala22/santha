@@ -69,7 +69,14 @@ class _JobPageState extends ConsumerState<JobPage> {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text(l.apiError(e))),
         data: (j) => ListView(padding: const EdgeInsets.all(SanthaSpacing.s4), children: [
-          if (j.state == DeliveryState.delivered) ..._done(l) else if (j.state == DeliveryState.pickedUp) ..._toCustomer(l, j) else ..._toStore(l, j),
+          if (j.state == DeliveryState.delivered)
+            ..._done(l)
+          else if (j.state == DeliveryState.failed)
+            ..._failed(l, j)
+          else if (j.state == DeliveryState.pickedUp)
+            ..._toCustomer(l, j)
+          else
+            ..._toStore(l, j),
           if (_error != null) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s3), child: Text(_error!, key: const ValueKey('job-error'), style: const TextStyle(color: SanthaColors.chilli))),
         ]),
       ),
@@ -170,6 +177,51 @@ class _JobPageState extends ConsumerState<JobPage> {
             ? null
             : () => _run(() => ctl.delivered(_code.text.trim(), j.codDuePaise > 0 ? ((double.tryParse(_cash.text.trim()) ?? 0) * 100).round() : null)),
       ),
+      const SizedBox(height: SanthaSpacing.s3),
+      SanthaButton(
+        key: const ValueKey('couldnt-deliver'),
+        label: l.couldntDeliver,
+        variant: SanthaButtonVariant.outline,
+        onPressed: _busy ? null : () => _reportFailed(l, j),
+      ),
+    ];
+  }
+
+  /// Couldn't deliver (ADR-026): pick why, optionally say what happened.
+  Future<void> _reportFailed(AppLocalizations l, Job j) async {
+    final picked = await showModalBottomSheet<(FailedReason, String)>(context: context, isScrollControlled: true, builder: (_) => const _FailSheet());
+    if (picked == null || !mounted) return;
+    await _run(() => ref.read(jobProvider(widget.id).notifier).failed(picked.$1, picked.$2));
+  }
+
+  /// Waiting for support with the order in hand; the customer may still call back.
+  List<Widget> _failed(AppLocalizations l, Job j) {
+    final text = Theme.of(context).textTheme;
+    final ctl = ref.read(jobProvider(widget.id).notifier);
+    return [
+      Container(
+        key: const ValueKey('failed-panel'),
+        padding: const EdgeInsets.all(SanthaSpacing.s4),
+        decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.md)),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text(l.failedHeadline, style: text.titleMedium),
+          if (j.failedReason != null) Text(l.failedReasonLine(l.failedReason(j.failedReason!)), key: const ValueKey('failed-reason'), style: text.bodyMedium),
+          const SizedBox(height: SanthaSpacing.s2),
+          Text(l.failedBody, style: text.bodyMedium?.copyWith(color: SanthaColors.slate)),
+        ]),
+      ),
+      const SizedBox(height: SanthaSpacing.s4),
+      Text('#${j.code}${j.dropName == null ? '' : ' · ${j.dropName}'}', style: text.titleMedium),
+      Text([j.dropLine, ?j.dropLandmark].join(', '), style: text.bodyMedium?.copyWith(color: SanthaColors.slate)),
+      const SizedBox(height: SanthaSpacing.s3),
+      SanthaButton(
+        key: const ValueKey('call-customer'),
+        label: l.callCustomer,
+        variant: SanthaButtonVariant.outline,
+        onPressed: () => ref.read(launcherProvider)(Uri.parse('tel:${j.callNumber}')),
+      ),
+      const SizedBox(height: SanthaSpacing.s3),
+      SanthaButton(key: const ValueKey('deliver-now'), label: l.deliverNow, loading: _busy, onPressed: _busy ? null : () => _run(ctl.retry)),
     ];
   }
 
@@ -197,4 +249,51 @@ class _CodeField extends StatelessWidget {
         style: Theme.of(context).textTheme.headlineSmall?.copyWith(letterSpacing: 12),
         decoration: InputDecoration(labelText: label, counterText: ''),
       );
+}
+
+class _FailSheet extends StatefulWidget {
+  const _FailSheet();
+  @override
+  State<_FailSheet> createState() => _FailSheetState();
+}
+
+class _FailSheetState extends State<_FailSheet> {
+  FailedReason? _reason;
+  final _note = TextEditingController();
+
+  @override
+  void dispose() {
+    _note.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    return SafeArea(
+      child: Padding(
+        padding: EdgeInsets.fromLTRB(SanthaSpacing.s4, SanthaSpacing.s4, SanthaSpacing.s4, MediaQuery.viewInsetsOf(context).bottom + SanthaSpacing.s4),
+        child: SingleChildScrollView(
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+            Text(l.failTitle, style: text.titleMedium),
+            Text(l.failCallFirst, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            RadioGroup<FailedReason>(
+              groupValue: _reason,
+              onChanged: (r) => setState(() => _reason = r),
+              child: Column(children: [
+                for (final r in FailedReason.values) RadioListTile<FailedReason>(key: ValueKey('fail-${r.wire}'), value: r, title: Text(l.failedReason(r))),
+              ]),
+            ),
+            TextField(key: const ValueKey('fail-note'), controller: _note, maxLength: 300, maxLines: 2, decoration: InputDecoration(hintText: l.failNoteHint)),
+            SanthaButton(
+              key: const ValueKey('fail-report'),
+              label: l.failReport,
+              onPressed: _reason == null ? null : () => Navigator.pop(context, (_reason!, _note.text.trim())),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
 }

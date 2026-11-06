@@ -83,7 +83,8 @@ export interface TransitionSet {
   acceptedAt?: Date;
   readyAt?: Date;
   packBy?: Date;
-  outcomeReason?: string;
+  /** null clears it (a failed delivery tried again, ADR-026). */
+  outcomeReason?: string | null;
 }
 
 export type NewOrder<Q = unknown> = Omit<OrderRecord<Q>, 'createdAt' | 'updatedAt' | 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason'> &

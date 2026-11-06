@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { FAILED_REASONS } from './dto/dispatch.dto';
 import { DomainError } from '../../common/errors/domain-error';
 import { MicroMarketsService } from '../analytics-config/micro-markets.service';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';
@@ -57,6 +58,8 @@ export class DispatchViews {
       pickedUpAt: iso(f.pickedUpAt),
       deliveredAt: iso(f.deliveredAt),
       pickupCodeRequired: courier === 'rider',
+      failedReason: f.state === 'failed' ? failedReasonOf(o.outcomeReason) : null,
+      failedAt: iso(f.failedAt),
     };
   }
 
@@ -286,7 +289,7 @@ export class DispatchViews {
         o.state !== 'AWAITING_PAYMENT' &&
         o.state !== 'PAYMENT_FAILED',
     );
-    const activeStates = ['PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'PICKED_UP', 'OUT_FOR_DELIVERY'];
+    const activeStates = ['PLACED', 'ACCEPTED', 'PREPARING', 'READY', 'PICKED_UP', 'OUT_FOR_DELIVERY', 'FAILED_DELIVERY'];
     const active = todays
       .filter((o) => activeStates.includes(o.state))
       .concat(recent.filter((o) => activeStates.includes(o.state) && (o.placedAt ?? o.createdAt) < today));
@@ -297,7 +300,7 @@ export class DispatchViews {
     };
     const rows = [];
     const attention: Array<{
-      kind: 'no_rider' | 'eta_breach' | 'auto_paused';
+      kind: 'no_rider' | 'eta_breach' | 'auto_paused' | 'delivery_failed';
       orderId: string | null;
       code: string | null;
       merchantName: string;
@@ -317,7 +320,17 @@ export class DispatchViews {
           minutes: Math.floor((now.getTime() - f.requestedAt.getTime()) / 60_000),
           stage: f.fallbackStage,
         });
-      if (f?.etaAt && f.etaAt > f.promisedAt)
+      // Couldn't deliver (ADR-026): ops retry it or cancel it.
+      if (f?.state === 'failed')
+        attention.push({
+          kind: 'delivery_failed',
+          orderId: o.id,
+          code: o.code,
+          merchantName: row.merchantName,
+          minutes: Math.floor((now.getTime() - (f.failedAt ?? now).getTime()) / 60_000),
+          stage: o.outcomeReason?.replace(/^delivery_failed_/, '') ?? null,
+        });
+      if (f?.state !== 'failed' && f?.etaAt && f.etaAt > f.promisedAt)
         attention.push({
           kind: 'eta_breach',
           orderId: o.id,
@@ -379,4 +392,10 @@ export class DispatchViews {
       })),
     };
   }
+}
+
+/** "delivery_failed_no_answer" → "no_answer" (ADR-026). */
+export function failedReasonOf(outcome: string | null): (typeof FAILED_REASONS)[number] {
+  const r = outcome?.replace(/^delivery_failed_/, '');
+  return (FAILED_REASONS as readonly string[]).includes(r ?? '') ? (r as (typeof FAILED_REASONS)[number]) : 'other';
 }

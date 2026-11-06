@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -6,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:rider/app.dart';
+import 'package:rider/features/home/data/rider_controller.dart';
 import 'package:rider/flavors.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
+import 'package:santha_ui/santha_ui.dart';
 
 import 'support/fake_rider.dart';
 
@@ -31,6 +34,7 @@ Future<(ProviderContainer, FakeRiderApi)> pumpRider(
   FakeRealtime? realtime,
   Counter? rings,
   List<Uri>? launched,
+  LiveLocations? liveLocations,
 }) async {
   late FakeRiderApi api;
   final tokens = MemoryTokenStore();
@@ -44,7 +48,7 @@ Future<(ProviderContainer, FakeRiderApi)> pumpRider(
     deviceIdProvider.overrideWithValue('test-device-0001'),
     tokenStoreProvider.overrideWithValue(tokens),
     apiClientProvider.overrideWith((ref) => SanthaApiClient(baseUrl: 'http://api.test', deviceId: 'test-device-0001', tokens: ref.watch(tokenStoreProvider), dio: Dio()..httpClientAdapter = _MeBackend())),
-    ...riderOverrides(make ?? (c) => FakeRiderApi(c), onApi: (a) => api = a, realtime: realtime, rings: rings, launched: launched),
+    ...riderOverrides(make ?? (c) => FakeRiderApi(c), onApi: (a) => api = a, realtime: realtime, rings: rings, launched: launched, liveLocations: liveLocations),
   ]);
   addTearDown(container.dispose);
   await tester.pumpWidget(UncontrolledProviderScope(container: container, child: const SanthaRiderApp()));
@@ -154,6 +158,62 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(SnackBar), findsOneWidget);
     expect(api.online, isTrue);
+  });
+
+  testWidgets("couldn't deliver: pick why; the job waits with the rider; the customer calls back and it goes out again", (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY')]));
+    await tester.tap(find.byKey(const ValueKey('job-j1')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const ValueKey('couldnt-deliver')));
+    await tester.tap(find.byKey(const ValueKey('couldnt-deliver')));
+    await tester.pumpAndSettle();
+    expect(find.text('Call the customer at least once before reporting this.'), findsOneWidget);
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('fail-report'))).onPressed, isNull); // a reason first
+    await tester.tap(find.byKey(const ValueKey('fail-no_answer')));
+    await tester.enterText(find.byKey(const ValueKey('fail-note')), 'Gate locked');
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('fail-report')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'failed no_answer Gate locked');
+    expect(find.byKey(const ValueKey('failed-panel')), findsOneWidget);
+    expect(find.text('Reason: Customer not answering'), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('deliver-now')));
+    await tester.pumpAndSettle();
+    expect(api.calls.last, 'retry');
+    expect(find.byKey(const ValueKey('mark-delivered')), findsOneWidget);
+  });
+
+  testWidgets("couldn't deliver, in Telugu; the home says it is waiting for support", (tester) async {
+    await pumpRider(tester, locale: 'te', make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.failed, orderState: 'FAILED_DELIVERY', failedReason: FailedReason.wrongAddress)]));
+    expect(find.text('డెలివరీ కాలేదు · సపోర్ట్ కోసం వేచి ఉంది'), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('job-j1')));
+    await tester.pumpAndSettle();
+    expect(find.text('కారణం: చిరునామా తప్పు లేదా అసంపూర్ణం'), findsOneWidget);
+  });
+
+  testWidgets('online: positions come from the background stream (throttled to one per 10 s); offline stops it', (tester) async {
+    final fixes = StreamController<Point>.broadcast();
+    var listening = 0;
+    final (container, api) = await pumpRider(
+      tester,
+      make: (c) => FakeRiderApi(c, online: true),
+      liveLocations: (l) {
+        expect(l.liveLocationTitle, 'Santha Rider is online'); // the Android notification text
+        listening++;
+        return fixes.stream;
+      },
+    );
+    expect(listening, 1);
+    fixes.add(const Point(14.45, 79.99));
+    fixes.add(const Point(14.451, 79.99)); // within 10 s: not sent
+    await tester.pump();
+    expect(api.sent.map((p) => (p.lat, p.lng)), [(14.45, 79.99)]);
+
+    await tester.tap(find.byKey(const ValueKey('online-toggle')));
+    await tester.pumpAndSettle();
+    expect(fixes.hasListener, isFalse); // offline: the stream (and its notification) stops
+    await fixes.close();
   });
 
   testWidgets('earnings list today’s deliveries with their pay', (tester) async {

@@ -3,7 +3,7 @@
  * serviceability (FR-LOC-1), the store page and home-kitchen page payloads (FR-DIS-5, FR-CAT-5),
  * category browse and "did you mean" hints in search (FR-DIS-2/3), one-tap ADD data.
  */
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { SEED_ADDRESSES, SEED_MERCHANTS, SEED_MICRO_MARKETS, SEED_OUTSIDE_POINT } from '../../src/dev/seed-data';
 import { bootFakeApp, type FakeApp, type Session } from './harness';
 
@@ -137,8 +137,15 @@ describe('M3 · consumer discovery backend (fake mode)', () => {
   });
 
   it('search results carry what one-tap ADD needs', async () => {
-    const r = await http().get(`/v1/search?${q(centre('dargamitta'))}&q=toor%20dal`).expect(200);
-    const item = r.body.groups[0].items[0];
-    expect(item).toMatchObject({ merchantId: kirana.id, variantId: expect.any(String), variantLabel: '500 g' });
+    // Open stores rank first; at midday IST every seeded kirana is open, so the nearest one leads.
+    // (Late evening, Ramesh Stores closes at 22:00 before the other kirana and would drop below it.)
+    vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-05T06:30:00Z') });
+    try {
+      const r = await http().get(`/v1/search?${q(centre('dargamitta'))}&q=toor%20dal`).expect(200);
+      const item = r.body.groups[0].items[0];
+      expect(item).toMatchObject({ merchantId: kirana.id, variantId: expect.any(String), variantLabel: '500 g' });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

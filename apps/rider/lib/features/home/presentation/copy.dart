@@ -18,6 +18,14 @@ extension RiderCopy on AppLocalizations {
         _ => payBatch(rupees(p.amountPaise)),
       };
 
+  String failedReason(FailedReason r) => switch (r) {
+        FailedReason.noAnswer => failNoAnswer,
+        FailedReason.wrongAddress => failWrongAddress,
+        FailedReason.customerRefused => failRefused,
+        FailedReason.unsafe => failUnsafe,
+        FailedReason.other => failOther,
+      };
+
   String duration(int minutes) => minutes >= 60 ? hoursMinutes(minutes ~/ 60, minutes % 60) : minutesOnly(minutes);
 
   String apiError(Object e) {

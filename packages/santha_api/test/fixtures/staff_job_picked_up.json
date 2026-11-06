@@ -28,5 +28,7 @@
  "arrivedAt": "2026-11-02T16:27:17.041Z",
  "pickedUpAt": "2026-11-02T16:27:17.041Z",
  "deliveredAt": null,
- "pickupCodeRequired": false
+ "pickupCodeRequired": false,
+ "failedReason": null,
+ "failedAt": null
 }

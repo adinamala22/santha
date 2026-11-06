@@ -19,7 +19,7 @@ RiderOffer testOffer({String id = 'o1', int expiresInSec = 24}) => RiderOffer(
       dropDistanceM: 1100,
     );
 
-Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt}) => Job(
+Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt, FailedReason? failedReason}) => Job(
       id: 'j1',
       orderId: 'ord1',
       code: 'SN4821',
@@ -41,6 +41,7 @@ Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = '
       callNumber: '+918047112345',
       pickupCodeRequired: true,
       arrivedAt: arrivedAt,
+      failedReason: failedReason,
     );
 
 /// In-memory rider backend with the rules the screens rely on (codes, readiness, expiry).
@@ -85,7 +86,10 @@ class FakeRiderApi extends RiderApi {
   }
 
   @override
-  Future<void> sendLocation(double lat, double lng) async => calls.add('location');
+  Future<void> sendLocation(double lat, double lng) async {
+    calls.add('location');
+    sent.add(Point(lat, lng));
+  }
 
   @override
   Future<Job> accept(String offerId) async {
@@ -141,6 +145,26 @@ class FakeRiderApi extends RiderApi {
     return j;
   }
 
+  @override
+  Future<Job> failed(String id, FailedReason reason, {String? note}) async {
+    calls.add('failed ${reason.wire} ${note ?? ''}'.trim());
+    if (_get(id).state != DeliveryState.pickedUp) throw const ApiException(code: 'INVALID_STATE', status: 409);
+    final j = testJob(state: DeliveryState.failed, orderState: 'FAILED_DELIVERY', failedReason: reason);
+    _put(j);
+    return j;
+  }
+
+  @override
+  Future<Job> retry(String id) async {
+    calls.add('retry');
+    final j = testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY');
+    _put(j);
+    return j;
+  }
+
+  /// Positions sent to the server, in order.
+  final sent = <Point>[];
+
   List<Payout> payoutList = [];
 
   @override
@@ -156,13 +180,14 @@ class Counter {
   int n = 0;
 }
 
-List<Override> riderOverrides(FakeRiderApi Function(SanthaApiClient) make, {required void Function(FakeRiderApi) onApi, FakeRealtime? realtime, Counter? rings, List<Uri>? launched}) => [
+List<Override> riderOverrides(FakeRiderApi Function(SanthaApiClient) make, {required void Function(FakeRiderApi) onApi, FakeRealtime? realtime, Counter? rings, List<Uri>? launched, LiveLocations? liveLocations}) => [
       riderApiProvider.overrideWith((ref) {
         final api = make(ref.watch(apiClientProvider));
         onApi(api);
         return api;
       }),
       riderPollEveryProvider.overrideWithValue(null),
+      liveLocationsProvider.overrideWithValue(liveLocations),
       riderNowProvider.overrideWith((ref) => Stream.value(testNow)),
       realtimeProvider.overrideWithValue(realtime ?? FakeRealtime()),
       offerAlertProvider.overrideWithValue(() => rings?.n++),

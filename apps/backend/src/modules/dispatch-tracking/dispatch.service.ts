@@ -50,6 +50,7 @@ import {
   type OfferRecord,
   type RiderRecord,
 } from './dispatch.repository';
+import type { FAILED_REASONS } from './dto/dispatch.dto';
 import { RiderLocations } from './rider-locations';
 
 export const OFFER_SEC = 30;
@@ -192,6 +193,7 @@ export class DispatchService implements OnModuleInit {
       arrivedAt: null,
       pickedUpAt: null,
       deliveredAt: null,
+      failedAt: null,
     });
     if (mode === 'self') {
       await this.sendStaffLink(f, merchant, order);
@@ -672,6 +674,100 @@ export class DispatchService implements OnModuleInit {
       { whatsapp: true },
     );
     return next;
+  }
+
+  // ───────────── couldn't deliver (ADR-026) ─────────────
+
+  /**
+   * The courier could not hand the order over (no answer, wrong address, refused, unsafe). The order waits
+   * as FAILED_DELIVERY with the courier until they try again (the customer called back) or ops cancel it.
+   */
+  async failed(
+    f: FulfilmentRecord,
+    actor: 'rider' | 'staff',
+    actorId: string | null,
+    reason: (typeof FAILED_REASONS)[number],
+    note?: string,
+  ): Promise<FulfilmentRecord> {
+    if (f.state !== 'picked_up')
+      throw new DomainError('INVALID_STATE', 'Only an order on its way can be marked as not delivered.', { state: f.state });
+    const c = await this.ctx(f);
+    if (!(await this.orders.move(c.order, 'FAILED_DELIVERY', actor, actorId, `failed_${reason}`, { outcomeReason: `delivery_failed_${reason}` })))
+      throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.');
+    const next = (await this.repo.updateFulfilment(f.id, 'picked_up', { state: 'failed', failedAt: this.clock() }))!;
+    await this.repo.appendAudit({
+      entity: 'order',
+      entityId: f.orderId,
+      action: 'dispatch.delivery_failed',
+      actorId: actor === 'rider' ? actorId : null,
+      requestId: null,
+      microMarketId: f.microMarketId,
+      before: { state: 'picked_up' },
+      after: { state: 'failed', reason, note: note ?? null, by: actor },
+    });
+    await this.notifications.notify(
+      'customer.delivery_failed',
+      { userId: c.order.userId },
+      { code: c.order.code, store: c.merchant.name },
+      { orderId: f.orderId, merchantId: f.merchantId },
+      { whatsapp: true, urgent: true },
+    );
+    await this.notifications.notify(
+      'merchant.delivery_failed',
+      { userId: c.merchant.ownerUserId },
+      { code: c.order.code },
+      { orderId: f.orderId, merchantId: f.merchantId },
+    );
+    return next;
+  }
+
+  /** Back on the way after a failed attempt: by the courier (the customer called back) or by ops. */
+  async retryDelivery(f: FulfilmentRecord, actor: 'rider' | 'staff' | 'ops', actorId: string | null, ops?: OpsActor): Promise<FulfilmentRecord> {
+    if (f.state !== 'failed') throw new DomainError('INVALID_STATE', 'This delivery has not failed.', { state: f.state });
+    const c = await this.ctx(f);
+    if (c.order.state !== 'FAILED_DELIVERY')
+      throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.', { state: c.order.state });
+    if (!(await this.orders.move(c.order, 'OUT_FOR_DELIVERY', actor, actorId, 'retry_delivery', { outcomeReason: null })))
+      throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.');
+    const next = (await this.repo.updateFulfilment(f.id, 'failed', { state: 'picked_up', failedAt: null }))!;
+    if (ops)
+      await this.repo.appendAudit({
+        entity: 'order',
+        entityId: f.orderId,
+        action: 'dispatch.delivery_retried',
+        actorId: ops.userId,
+        requestId: ops.requestId,
+        microMarketId: f.microMarketId,
+        before: { state: 'failed' },
+        after: { state: 'picked_up' },
+      });
+    const courier = await this.courier(next);
+    await this.notifications.notify(
+      'customer.out_for_delivery',
+      { userId: c.order.userId },
+      { name: courier?.name ?? '', code: c.order.code, otp: f.deliveryOtp },
+      { orderId: f.orderId, merchantId: f.merchantId },
+      { whatsapp: true },
+    );
+    if (actor === 'ops' && f.riderUserId) this.notifications.toRoom(`user:${f.riderUserId}`, 'job.updated', { fulfilmentId: f.id });
+    return next;
+  }
+
+  /** Ops end a failed delivery: cancelled, refunded only if they say so (audited). */
+  async cancelFailed(orderId: string, refund: boolean, reason: string, ops: OpsActor): Promise<void> {
+    const f = await this.fulfilmentOrThrow(orderId);
+    if (f.state !== 'failed') throw new DomainError('INVALID_STATE', 'This delivery has not failed.', { state: f.state });
+    await this.lifecycle.cancelFailedDelivery(orderId, ops.userId, refund, reason);
+    await this.repo.appendAudit({
+      entity: 'order',
+      entityId: orderId,
+      action: 'dispatch.failed_delivery_cancelled',
+      actorId: ops.userId,
+      requestId: ops.requestId,
+      microMarketId: f.microMarketId,
+      before: { state: 'failed' },
+      after: { state: 'cancelled', refund, reason },
+    });
   }
 
   // ───────────── live location & ETA ─────────────

@@ -115,6 +115,8 @@ class Job {
     this.arrivedAt,
     this.pickedUpAt,
     this.deliveredAt,
+    this.failedReason,
+    this.failedAt,
   });
   factory Job.fromJson(Json j) {
     final s = j['store'] as Json;
@@ -144,6 +146,8 @@ class Job {
       pickedUpAt: _date(j['pickedUpAt']),
       deliveredAt: _date(j['deliveredAt']),
       pickupCodeRequired: j['pickupCodeRequired'] as bool,
+      failedReason: j['failedReason'] == null ? null : FailedReason.parse(j['failedReason'] as String),
+      failedAt: _date(j['failedAt']),
     );
   }
   final String id;
@@ -170,7 +174,24 @@ class Job {
   final DateTime? pickedUpAt;
   final DateTime? deliveredAt;
   final bool pickupCodeRequired;
+
+  /// Couldn't deliver (ADR-026): why, while the job waits for a retry or for Santha support.
+  final FailedReason? failedReason;
+  final DateTime? failedAt;
   bool get ready => orderState == 'READY';
+}
+
+/// Why a delivery could not be handed over (ADR-026).
+enum FailedReason {
+  noAnswer('no_answer'),
+  wrongAddress('wrong_address'),
+  customerRefused('customer_refused'),
+  unsafe('unsafe'),
+  other('other');
+
+  const FailedReason(this.wire);
+  final String wire;
+  static FailedReason parse(String s) => values.firstWhere((r) => r.wire == s, orElse: () => other);
 }
 
 class Zone {
@@ -270,6 +291,13 @@ class RiderApi {
 
   Future<Job> delivered(String id, {required String otp, int? codCollectedPaise}) =>
       _job(() => _dio.post<Json>('/v1/jobs/$id/delivered', data: {'otp': otp, 'codCollectedPaise': ?codCollectedPaise}));
+
+  /// Couldn't deliver (ADR-026): the order waits as FAILED_DELIVERY with the rider. 409 INVALID_STATE unless on the way.
+  Future<Job> failed(String id, FailedReason reason, {String? note}) =>
+      _job(() => _dio.post<Json>('/v1/jobs/$id/failed', data: {'reason': reason.wire, if (note != null && note.trim().isNotEmpty) 'note': note.trim()}));
+
+  /// Back on the way after a failed attempt (the customer called back).
+  Future<Job> retry(String id) => _job(() => _dio.post<Json>('/v1/jobs/$id/retry'));
 
   /// Payouts (weekly by default) with the earned / cash-held breakdown (M7).
   Future<List<Payout>> payouts() =>

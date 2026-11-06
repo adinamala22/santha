@@ -307,6 +307,19 @@ export class OrderLifecycleService implements OnModuleInit {
     await this.refundRemaining(o, 'No delivery partner was available');
   }
 
+  /**
+   * Ops end a delivery the courier could not hand over (ADR-026): cancel, and refund what is left only
+   * when ops say so (e.g. a wrong pin from the app, not a customer who never answered).
+   */
+  async cancelFailedDelivery(orderId: string, opsUserId: string, refund: boolean, note: string): Promise<void> {
+    const o = await this.repo.get(orderId);
+    if (!o) throw new DomainError('NOT_FOUND', 'Order not found');
+    if (o.state !== 'FAILED_DELIVERY') throw new DomainError('INVALID_STATE', 'This delivery has not failed.', { state: o.state });
+    if (!(await this.orders.move(o, 'CANCELLED', 'ops', opsUserId, 'delivery_failed', { outcomeReason: o.outcomeReason ?? 'delivery_failed' })))
+      throw new DomainError('INVALID_STATE', 'This order changed. Refresh and try again.');
+    if (refund) await this.refundRemaining(o, `Delivery failed: ${note}`);
+  }
+
   private async refundRemaining(order: OrderRecord, note: string): Promise<void> {
     const fresh = (await this.repo.get(order.id))!;
     const remaining = fresh.totalPaise - fresh.refundedPaise;

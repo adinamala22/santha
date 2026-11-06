@@ -9,6 +9,7 @@ import { dateTime, rupees } from '@/lib/format';
 import { opsGet, opsLocale } from '@/lib/ops/server';
 import { forceSelf, reassignOrder } from './actions';
 import { AutoRefresh, type LivePoint, LiveMap } from './live-map';
+import { FailedDeliveryActions } from './failed-delivery-actions';
 import { ReassignForm } from './reassign-form';
 
 export const metadata = { title: 'Live orders' };
@@ -111,6 +112,7 @@ export default async function LivePage() {
                         {o.payment[x.paymentMethod]} {rupees(x.totalPaise)}
                       </td>
                       <td className={`${tableCls.td} space-y-2`}>
+                        {x.fulfilmentState === 'failed' ? <FailedDeliveryActions orderId={x.orderId} code={x.code} locale={locale} /> : null}
                         {movable ? (
                           <>
                             <ReassignForm

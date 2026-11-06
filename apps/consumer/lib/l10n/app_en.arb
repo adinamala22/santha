@@ -1007,5 +1007,6 @@
   "deliversAnywhere": "Delivers anywhere",
   "deliversAnywhereNote": "The store delivers this order itself. You can track it live in the app.",
   "notDeliveringOtherCity": "This store delivers only within its own city.",
-  "checkoutPickAddress": "You were browsing from a spot on the map. Choose the address to deliver this order to."
+  "checkoutPickAddress": "You were browsing from a spot on the map. Choose the address to deliver this order to.",
+  "outcomeDeliveryFailed": "We couldn't hand over your order. The delivery partner will call you, or you can call them below. Santha support will help if needed."
 }

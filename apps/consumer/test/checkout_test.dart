@@ -227,6 +227,27 @@ void main() {
     expect(dialled.last, h.backend.tracking!['courier']['callNumber']);
   });
 
+  testWidgets("ADR-026: couldn't deliver — the order explains it and the courier can still be called", (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.tracking = {...fixture('tracking_picked_up'), 'orderId': o['id'], 'state': 'failed'};
+    h.backend.orderPatch = {'state': 'FAILED_DELIVERY'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'FAILED_DELIVERY'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('delivery-failed')), findsOneWidget);
+    expect(find.text('Delivery attempt failed'), findsOneWidget);
+    expect(find.byKey(const ValueKey('eta')), findsNothing); // no promise while it waits
+    await tapVisible(tester, find.byKey(const ValueKey('call-courier')));
+    expect(dialled.last, h.backend.tracking!['courier']['callNumber']);
+  });
+
   testWidgets('M6: no courier after the fallback ladder: the customer can cancel for a full refund', (tester) async {
     final realtime = FakeRealtime();
     final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);

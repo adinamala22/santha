@@ -134,7 +134,11 @@ class _JobTile extends StatelessWidget {
       child: ListTile(
         leading: const Icon(Icons.delivery_dining, color: SanthaColors.indigo),
         title: Text('${l.currentDelivery} · #${job.code}'),
-        subtitle: Text(job.state == DeliveryState.pickedUp ? '${l.stepToCustomer} · ${job.dropLine}' : '${l.stepToStore} · ${job.storeName}'),
+        subtitle: Text(switch (job.state) {
+          DeliveryState.failed => l.jobFailedSub,
+          DeliveryState.pickedUp => '${l.stepToCustomer} · ${job.dropLine}',
+          _ => '${l.stepToStore} · ${job.storeName}',
+        }),
         trailing: const Icon(Icons.chevron_right),
         onTap: () => context.push('/job/${job.id}'),
       ),

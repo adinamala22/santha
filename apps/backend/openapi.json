@@ -5097,6 +5097,102 @@
         ]
       }
     },
+    "/v1/jobs/{id}/failed": {
+      "post": {
+        "operationId": "RiderController_failed",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FailedDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Couldn't deliver (ADR-026): the order waits as FAILED_DELIVERY. 409 INVALID_STATE unless on the way",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/jobs/{id}/retry": {
+      "post": {
+        "operationId": "RiderController_retry",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Back on the way after a failed attempt (the customer called back)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
     "/v1/staff-jobs/{token}": {
       "get": {
         "operationId": "StaffJobsController_get",
@@ -5183,6 +5279,76 @@
         "responses": {
           "default": {
             "description": "Customer's OTP; cash collected for COD. 422 WRONG_CODE",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}/failed": {
+      "post": {
+        "operationId": "StaffJobsController_failed",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FailedDeliveryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Couldn't deliver (ADR-026)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "staff-jobs"
+        ]
+      }
+    },
+    "/v1/staff-jobs/{token}/retry": {
+      "post": {
+        "operationId": "StaffJobsController_retry",
+        "parameters": [
+          {
+            "name": "token",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Back on the way after a failed attempt",
             "content": {
               "application/json": {
                 "schema": {
@@ -5539,6 +5705,86 @@
         "responses": {
           "default": {
             "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/orders/{id}/retry-delivery": {
+      "post": {
+        "operationId": "OpsDispatchController_retryDelivery",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "A failed delivery goes out again with the same courier (ADR-026); audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/orders/{id}/cancel-failed-delivery": {
+      "post": {
+        "operationId": "OpsDispatchController_cancelFailed",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OpsCancelFailedDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Cancel a failed delivery, refunding the customer only when `refund` is true (ADR-026); audited",
             "content": {
               "application/json": {
                 "schema": {
@@ -22800,6 +23046,23 @@
                 },
                 "pickupCodeRequired": {
                   "type": "boolean"
+                },
+                "failedReason": {
+                  "type": "string",
+                  "enum": [
+                    "no_answer",
+                    "wrong_address",
+                    "customer_refused",
+                    "unsafe",
+                    "other",
+                    null
+                  ],
+                  "nullable": true
+                },
+                "failedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
                 }
               },
               "required": [
@@ -22821,7 +23084,9 @@
                 "arrivedAt",
                 "pickedUpAt",
                 "deliveredAt",
-                "pickupCodeRequired"
+                "pickupCodeRequired",
+                "failedReason",
+                "failedAt"
               ],
               "additionalProperties": false
             }
@@ -23130,6 +23395,23 @@
           },
           "pickupCodeRequired": {
             "type": "boolean"
+          },
+          "failedReason": {
+            "type": "string",
+            "enum": [
+              "no_answer",
+              "wrong_address",
+              "customer_refused",
+              "unsafe",
+              "other",
+              null
+            ],
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
           }
         },
         "required": [
@@ -23151,7 +23433,9 @@
           "arrivedAt",
           "pickedUpAt",
           "deliveredAt",
-          "pickupCodeRequired"
+          "pickupCodeRequired",
+          "failedReason",
+          "failedAt"
         ],
         "additionalProperties": false
       },
@@ -23189,6 +23473,29 @@
             "maximum": 10000000
           }
         }
+      },
+      "FailedDeliveryDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "no_answer",
+              "wrong_address",
+              "customer_refused",
+              "unsafe",
+              "other"
+            ]
+          },
+          "note": {
+            "description": "What happened, in a few words",
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "reason"
+        ]
       },
       "StaffDeliveredDto": {
         "type": "object",
@@ -23790,7 +24097,8 @@
                   "enum": [
                     "no_rider",
                     "eta_breach",
-                    "auto_paused"
+                    "auto_paused",
+                    "delivery_failed"
                   ]
                 },
                 "orderId": {
@@ -24141,6 +24449,24 @@
           "store"
         ],
         "additionalProperties": false
+      },
+      "OpsCancelFailedDto": {
+        "type": "object",
+        "properties": {
+          "refund": {
+            "type": "boolean",
+            "description": "Refund what the customer paid (wallet for online payments)"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "refund",
+          "reason"
+        ]
       },
       "PayoutListDto_Output": {
         "type": "object",
