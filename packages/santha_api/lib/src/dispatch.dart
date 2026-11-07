@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 
 import 'api_client.dart';
 import 'api_exception.dart';
+import 'merchant_models.dart';
 import 'models.dart';
 import 'money.dart';
 
@@ -215,10 +216,19 @@ class RiderHome {
     required this.jobs,
     this.rating,
     this.offer,
+    this.status = RiderStatus.approved,
+    this.statusNote,
+    this.cashInHandPaise = 0,
+    this.acceptancePct,
   });
   factory RiderHome.fromJson(Json j) {
     final t = j['today'] as Json;
     return RiderHome(
+      // An older server sends no status; it had no onboarding, so everyone it knows is approved.
+      status: RiderStatus.fromWire(j['status'] as String?),
+      statusNote: j['statusNote'] as String?,
+      cashInHandPaise: (j['cashInHandPaise'] as int?) ?? 0,
+      acceptancePct: j['acceptancePct'] as int?,
       name: j['name'] as String,
       vehicle: j['vehicle'] as String,
       online: j['online'] as bool,
@@ -243,6 +253,82 @@ class RiderHome {
   final int onlineMinToday;
   final RiderOffer? offer;
   final List<Job> jobs;
+  /// Onboarding (ADR-029): only approved riders go online.
+  final RiderStatus status;
+  /// Why ops rejected or paused the rider.
+  final String? statusNote;
+  /// COD cash collected this payout period; the next payout deducts it.
+  final int cashInHandPaise;
+  /// Offers accepted ÷ shown, in %; null before the first offer.
+  final int? acceptancePct;
+}
+
+/// Rider onboarding status (ADR-029).
+enum RiderStatus {
+  draft,
+  submitted,
+  approved,
+  rejected,
+  suspended;
+
+  static RiderStatus fromWire(String? v) => v == null ? approved : values.firstWhere((s) => s.name == v, orElse: () => draft);
+}
+
+/// Vehicles a rider can sign up with. A cycle needs no number plate or driving licence.
+enum RiderVehicle {
+  bike,
+  scooter,
+  electric,
+  cycle;
+
+  bool get needsLicence => this != cycle;
+  static RiderVehicle fromWire(String v) => values.firstWhere((x) => x.name == v, orElse: () => bike);
+}
+
+/// One onboarding step: profile, identity (Aadhaar or PAN), driving_licence, bank.
+class RiderStep {
+  const RiderStep(this.key, this.done);
+  final String key;
+  final bool done;
+}
+
+/// GET /v1/riders/me/onboarding: what the rider has filled in and what is left (ADR-029).
+class RiderOnboarding {
+  const RiderOnboarding({
+    required this.status,
+    required this.name,
+    required this.vehicle,
+    required this.editable,
+    required this.steps,
+    required this.checks,
+    this.statusNote,
+    this.vehicleNumber,
+    this.submittedAt,
+  });
+  factory RiderOnboarding.fromJson(Json j) => RiderOnboarding(
+        status: RiderStatus.fromWire(j['status'] as String),
+        statusNote: j['statusNote'] as String?,
+        name: j['name'] as String,
+        vehicle: RiderVehicle.fromWire(j['vehicle'] as String),
+        vehicleNumber: j['vehicleNumber'] as String?,
+        editable: j['editable'] as bool,
+        steps: [for (final s in j['steps'] as List) RiderStep((s as Json)['key'] as String, s['done'] as bool)],
+        checks: [for (final c in j['checks'] as List) KycCheck.fromJson(c as Json)],
+        submittedAt: _date(j['submittedAt']),
+      );
+  final RiderStatus status;
+  final String? statusNote;
+  final String name;
+  final RiderVehicle vehicle;
+  final String? vehicleNumber;
+  final bool editable;
+  final List<RiderStep> steps;
+  final List<KycCheck> checks;
+  final DateTime? submittedAt;
+
+  bool done(String key) => steps.any((s) => s.key == key && s.done);
+  bool get complete => steps.every((s) => s.done);
+  KycCheck? check(KycKind kind) => checks.where((c) => c.kind == kind).firstOrNull;
 }
 
 class Earning {
@@ -298,6 +384,33 @@ class RiderApi {
 
   /// Back on the way after a failed attempt (the customer called back).
   Future<Job> retry(String id) => _job(() => _dio.post<Json>('/v1/jobs/$id/retry'));
+
+  // ── onboarding (ADR-029) ──
+
+  Future<RiderOnboarding> onboarding() => _onb(() => _dio.get<Json>('/v1/riders/me/onboarding'));
+
+  Future<RiderOnboarding> updateProfile({required String name, required RiderVehicle vehicle, String? vehicleNumber}) => _onb(
+        () => _dio.put<Json>('/v1/riders/me/profile', data: {'name': name, 'vehicle': vehicle.name, if (vehicle.needsLicence) 'vehicleNumber': ?vehicleNumber}),
+      );
+
+  Future<KycCheck> verifyPan({required String pan, required String name}) =>
+      _kyc(() => _dio.put<Json>('/v1/riders/me/kyc/pan', data: {'pan': pan, 'name': name}));
+
+  Future<KycCheck> startAadhaar(String aadhaar) => _kyc(() => _dio.post<Json>('/v1/riders/me/kyc/aadhaar/start', data: {'aadhaar': aadhaar}));
+
+  Future<KycCheck> verifyAadhaar(String otp) => _kyc(() => _dio.post<Json>('/v1/riders/me/kyc/aadhaar/verify', data: {'otp': otp}));
+
+  Future<KycCheck> recordDrivingLicence(String number) =>
+      _kyc(() => _dio.put<Json>('/v1/riders/me/kyc/driving-licence', data: {'number': number}));
+
+  Future<KycCheck> verifyBank({required String accountNumber, required String ifsc, required String holderName}) =>
+      _kyc(() => _dio.put<Json>('/v1/riders/me/kyc/bank', data: {'accountNumber': accountNumber, 'ifsc': ifsc, 'holderName': holderName}));
+
+  /// 422 CHECKLIST_INCOMPLETE (details.missing) until every step is done.
+  Future<RiderOnboarding> submit() => _onb(() => _dio.post<Json>('/v1/riders/me/submit'));
+
+  Future<RiderOnboarding> _onb(Future<Response<Json>> Function() req) => _call(() async => RiderOnboarding.fromJson((await req()).data!));
+  Future<KycCheck> _kyc(Future<Response<Json>> Function() req) => _call(() async => KycCheck.fromJson((await req()).data!));
 
   /// Payouts (weekly by default) with the earned / cash-held breakdown (M7).
   Future<List<Payout>> payouts() =>

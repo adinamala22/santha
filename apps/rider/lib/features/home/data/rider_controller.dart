@@ -143,6 +143,7 @@ class RiderHomeController extends AsyncNotifier<RiderHome> {
     if (id != null && id != _rungFor) {
       _rungFor = id;
       ref.read(offerAlertProvider)();
+      _analytics.track('offer_shown', {'offer_id': id, 'pay_paise': h.offer!.payPaise});
     }
   }
 
@@ -222,7 +223,10 @@ class JobController extends AsyncNotifier<Job> {
     if (next.hasValue) state = next;
   }
 
-  Future<void> arrived() async => state = AsyncData(await _api.arrived(id));
+  Future<void> arrived() async {
+    state = AsyncData(await _api.arrived(id));
+    _analytics.track('arrived_store', {'job_id': id});
+  }
 
   Future<void> pickedUp(String code) async {
     state = AsyncData(await _api.pickedUp(id, code));
@@ -250,6 +254,9 @@ class JobController extends AsyncNotifier<Job> {
   }
 }
 
-final earningsProvider = FutureProvider.autoDispose<RiderEarnings>((ref) => ref.watch(riderApiProvider).earnings());
+final earningsProvider = FutureProvider.autoDispose<RiderEarnings>((ref) {
+  ref.read(analyticsProvider).track('earnings_viewed', {});
+  return ref.watch(riderApiProvider).earnings();
+});
 
 final payoutsProvider = FutureProvider.autoDispose<List<Payout>>((ref) => ref.watch(riderApiProvider).payouts());

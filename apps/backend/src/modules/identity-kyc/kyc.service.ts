@@ -5,6 +5,7 @@ import { KycProvider, type KycResult } from '../../infra/providers/kyc/kyc.provi
 import {
   isAadhaar,
   isBankAccount,
+  isDrivingLicence,
   isDrugLicence,
   isFssai,
   isGstin,
@@ -13,6 +14,7 @@ import {
   maskAadhaar,
   maskAccount,
   maskPan,
+  normalizeDrivingLicence,
   panOfGstin,
 } from './domain/kyc-formats';
 import { type KycCheckInput, type KycCheckRecord, type KycKind, KycRepository, type Subject } from './kyc.repository';
@@ -130,6 +132,25 @@ export class KycService {
     if (!isDrugLicence(number)) throw invalid('Enter the drug licence number as printed on the licence.', 'number');
     return this.persist(subject, {
       kind: 'drug_licence',
+      status: 'pending',
+      valueMasked: null,
+      valuePublic: number,
+      nameOnRecord: null,
+      provider: 'manual-review',
+      providerRef: null,
+      failureReason: null,
+      details: null,
+      verifiedAt: null,
+    }, actor);
+  }
+
+  /** Riders (ADR-029): the driving licence number is captured here; ops check it against the card before approving. */
+  async recordDrivingLicence(subject: Subject, input: { number: string }, actor: KycActor): Promise<KycCheckRecord> {
+    const number = normalizeDrivingLicence(input.number);
+    if (!isDrivingLicence(number))
+      throw invalid('Enter the licence number as printed on your driving licence, like AP09 2015 0001234.', 'number');
+    return this.persist(subject, {
+      kind: 'driving_licence',
       status: 'pending',
       valueMasked: null,
       valuePublic: number,

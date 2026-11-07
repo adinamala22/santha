@@ -5830,6 +5830,592 @@
         ]
       }
     },
+    "/v1/riders/me/onboarding": {
+      "get": {
+        "operationId": "RiderOnboardingController_get",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Sign-up status, steps and document checks",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderOnboardingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/profile": {
+      "put": {
+        "operationId": "RiderOnboardingController_profile",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderProfileDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Name, vehicle and number plate (none for a cycle)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderOnboardingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/kyc/pan": {
+      "put": {
+        "operationId": "RiderOnboardingController_pan",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PanDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KycCheckDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/kyc/aadhaar/start": {
+      "post": {
+        "operationId": "RiderOnboardingController_aadhaarStart",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AadhaarStartDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OTP sent to the Aadhaar-linked mobile; status pending",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KycCheckDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/kyc/aadhaar/verify": {
+      "post": {
+        "operationId": "RiderOnboardingController_aadhaarVerify",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AadhaarVerifyDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KycCheckDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/kyc/driving-licence": {
+      "put": {
+        "operationId": "RiderOnboardingController_drivingLicence",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DrivingLicenceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Recorded for ops to check against the card (status pending)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KycCheckDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/kyc/bank": {
+      "put": {
+        "operationId": "RiderOnboardingController_bank",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BankDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Penny-drop check of the payout account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KycCheckDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/submit": {
+      "post": {
+        "operationId": "RiderOnboardingController_submit",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "422 CHECKLIST_INCOMPLETE with the missing steps",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderOnboardingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/ops/riders": {
+      "get": {
+        "operationId": "OpsRidersController_list",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Comma-separated: draft, submitted, approved, rejected, suspended",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsRiderListDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/riders/{id}": {
+      "get": {
+        "operationId": "OpsRidersController_detail",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsRiderDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/riders/{id}/approve": {
+      "post": {
+        "operationId": "OpsRidersController_approve",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderApproveDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "From submitted (all checks done) or to lift a pause; audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsRiderDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/riders/{id}/reject": {
+      "post": {
+        "operationId": "OpsRidersController_reject",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Back to the rider to fix; the reason is shown to them; audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsRiderDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/riders/{id}/suspend": {
+      "post": {
+        "operationId": "OpsRidersController_suspend",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderReasonDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "No new offers at once; a delivery in hand is finished; audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsRiderDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/merchants/me/payouts": {
       "get": {
         "operationId": "MerchantMoneyController_payouts",
@@ -13545,7 +14131,8 @@
                     "gst_exemption",
                     "fssai",
                     "bank",
-                    "drug_licence"
+                    "drug_licence",
+                    "driving_licence"
                   ]
                 },
                 "status": {
@@ -14065,7 +14652,8 @@
               "gst_exemption",
               "fssai",
               "bank",
-              "drug_licence"
+              "drug_licence",
+              "driving_licence"
             ]
           },
           "status": {
@@ -14734,7 +15322,8 @@
                           "gst_exemption",
                           "fssai",
                           "bank",
-                          "drug_licence"
+                          "drug_licence",
+                          "driving_licence"
                         ]
                       },
                       "status": {
@@ -23155,6 +23744,22 @@
             "type": "number",
             "nullable": true
           },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "suspended"
+            ],
+            "description": "Onboarding (ADR-029): only approved riders go online"
+          },
+          "statusNote": {
+            "description": "Why ops rejected or paused the rider",
+            "type": "string",
+            "nullable": true
+          },
           "today": {
             "type": "object",
             "properties": {
@@ -23180,6 +23785,19 @@
               "onlineMin"
             ],
             "additionalProperties": false
+          },
+          "cashInHandPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "COD cash collected this payout period; the next payout deducts it"
+          },
+          "acceptancePct": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Offers accepted ÷ shown, in %; null before the first offer",
+            "nullable": true
           },
           "offer": {
             "type": "object",
@@ -23507,7 +24125,11 @@
           "zones",
           "allZones",
           "rating",
+          "status",
+          "statusNote",
           "today",
+          "cashInHandPaise",
+          "acceptancePct",
           "offer",
           "jobs"
         ],
@@ -24873,6 +25495,518 @@
         },
         "required": [
           "refund",
+          "reason"
+        ]
+      },
+      "RiderOnboardingDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "suspended"
+            ]
+          },
+          "statusNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "vehicle": {
+            "type": "string",
+            "enum": [
+              "bike",
+              "scooter",
+              "electric",
+              "cycle"
+            ]
+          },
+          "vehicleNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "editable": {
+            "type": "boolean",
+            "description": "Details can change only before submitting or after a rejection"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "profile",
+                    "identity",
+                    "driving_licence",
+                    "bank"
+                  ]
+                },
+                "done": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "key",
+                "done"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "pan",
+                    "aadhaar",
+                    "gstin",
+                    "gst_exemption",
+                    "fssai",
+                    "bank",
+                    "drug_licence",
+                    "driving_licence"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "verified",
+                    "failed"
+                  ]
+                },
+                "valueMasked": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "valuePublic": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "nameOnRecord": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "failureReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "details": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "nullable": true
+                },
+                "verifiedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "kind",
+                "status",
+                "valueMasked",
+                "valuePublic",
+                "nameOnRecord",
+                "provider",
+                "failureReason",
+                "details",
+                "verifiedAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "submittedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "statusNote",
+          "name",
+          "vehicle",
+          "vehicleNumber",
+          "editable",
+          "steps",
+          "checks",
+          "submittedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RiderProfileDto": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 80
+          },
+          "vehicle": {
+            "type": "string",
+            "enum": [
+              "bike",
+              "scooter",
+              "electric",
+              "cycle"
+            ]
+          },
+          "vehicleNumber": {
+            "description": "Number plate; not needed for a cycle",
+            "type": "string",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "name",
+          "vehicle"
+        ]
+      },
+      "DrivingLicenceDto": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 24
+          }
+        },
+        "required": [
+          "number"
+        ]
+      },
+      "OpsRiderListDto_Output": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "userId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "phoneMasked": {
+                  "type": "string"
+                },
+                "vehicle": {
+                  "type": "string",
+                  "enum": [
+                    "bike",
+                    "scooter",
+                    "electric",
+                    "cycle"
+                  ]
+                },
+                "vehicleNumber": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "submitted",
+                    "approved",
+                    "rejected",
+                    "suspended"
+                  ]
+                },
+                "online": {
+                  "type": "boolean"
+                },
+                "rating": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "submittedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                },
+                "decidedAt": {
+                  "type": "string",
+                  "description": "ISO-8601 timestamp",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "userId",
+                "name",
+                "phoneMasked",
+                "vehicle",
+                "vehicleNumber",
+                "status",
+                "online",
+                "rating",
+                "submittedAt",
+                "decidedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "OpsRiderDto_Output": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "submitted",
+              "approved",
+              "rejected",
+              "suspended"
+            ]
+          },
+          "statusNote": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string"
+          },
+          "vehicle": {
+            "type": "string",
+            "enum": [
+              "bike",
+              "scooter",
+              "electric",
+              "cycle"
+            ]
+          },
+          "vehicleNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "editable": {
+            "type": "boolean",
+            "description": "Details can change only before submitting or after a rejection"
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "enum": [
+                    "profile",
+                    "identity",
+                    "driving_licence",
+                    "bank"
+                  ]
+                },
+                "done": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "key",
+                "done"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "checks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "pan",
+                    "aadhaar",
+                    "gstin",
+                    "gst_exemption",
+                    "fssai",
+                    "bank",
+                    "drug_licence",
+                    "driving_licence"
+                  ]
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "pending",
+                    "verified",
+                    "failed"
+                  ]
+                },
+                "valueMasked": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "valuePublic": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "nameOnRecord": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "provider": {
+                  "type": "string"
+                },
+                "failureReason": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "details": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {},
+                  "nullable": true
+                },
+                "verifiedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                }
+              },
+              "required": [
+                "kind",
+                "status",
+                "valueMasked",
+                "valuePublic",
+                "nameOnRecord",
+                "provider",
+                "failureReason",
+                "details",
+                "verifiedAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "submittedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "phoneMasked": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "rating": {
+            "type": "number",
+            "nullable": true
+          },
+          "decidedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          }
+        },
+        "required": [
+          "status",
+          "statusNote",
+          "name",
+          "vehicle",
+          "vehicleNumber",
+          "editable",
+          "steps",
+          "checks",
+          "submittedAt",
+          "userId",
+          "phoneMasked",
+          "online",
+          "rating",
+          "decidedAt"
+        ],
+        "additionalProperties": false
+      },
+      "RiderApproveDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
+      },
+      "RiderReasonDto": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 5,
+            "maxLength": 300,
+            "description": "Shown to the rider"
+          }
+        },
+        "required": [
           "reason"
         ]
       },

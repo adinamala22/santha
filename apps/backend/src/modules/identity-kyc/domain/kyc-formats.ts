@@ -81,6 +81,17 @@ export const isIfsc = (v: string) => /^[A-Z]{4}0[A-Z0-9]{6}$/.test(v);
 /** Indian bank account numbers are 9–18 digits. */
 export const isBankAccount = (v: string) => /^\d{9,18}$/.test(v);
 
+/**
+ * Driving licence (Sarathi format): state code, 2-digit RTO (sometimes with a letter), year of issue, 7-digit
+ * serial — e.g. AP09 2015 0001234. Spaces and hyphens are ignored. Captured for ops review (ADR-029).
+ */
+export const normalizeDrivingLicence = (v: string) => v.toUpperCase().replace(/[\s-]/g, '');
+export const isDrivingLicence = (v: string) => /^[A-Z]{2}\d{2}[A-Z0-9]?(19|20)\d{2}\d{7}$/.test(v);
+
+/** Vehicle registration: AP26AB1234 style, or a Bharat series number (22BH1234AA). Spaces and hyphens ignored. */
+export const normalizeVehicleNumber = (v: string) => v.toUpperCase().replace(/[\s-]/g, '');
+export const isVehicleNumber = (v: string) => /^[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{1,4}$/.test(v) || /^\d{2}BH\d{4}[A-Z]{1,2}$/.test(v);
+
 /** Drug licence numbers vary by state (e.g. AP/NLR/20B/12345); captured for ops review. */
 export const isDrugLicence = (v: string) => /^[A-Z0-9][A-Z0-9/ -]{4,39}$/.test(v);
 

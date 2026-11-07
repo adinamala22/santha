@@ -31,6 +31,8 @@ import {
 import { DispatchService } from './dispatch.service';
 import { DispatchViews } from './dispatch.views';
 import { MemoryRiderLocations, RedisRiderLocations, RiderLocations } from './rider-locations';
+import { OpsRidersController, RiderOnboardingController } from './rider-onboarding.controller';
+import { RiderOnboardingService } from './rider-onboarding.service';
 
 /**
  * dispatch-tracking — fulfilment assignment, rider offers, fallback ladder, live tracking (M6, ADR-012).
@@ -51,6 +53,8 @@ import { MemoryRiderLocations, RedisRiderLocations, RiderLocations } from './rid
     TrackingController,
     MerchantDeliveriesController,
     OpsDispatchController,
+    RiderOnboardingController,
+    OpsRidersController,
   ],
   providers: [
     {
@@ -75,6 +79,7 @@ import { MemoryRiderLocations, RedisRiderLocations, RiderLocations } from './rid
     { provide: CallMaskingProvider, useValue: new MockCallMaskingProvider() },
     DispatchService,
     DispatchViews,
+    RiderOnboardingService,
   ],
   exports: [DispatchService],
 })

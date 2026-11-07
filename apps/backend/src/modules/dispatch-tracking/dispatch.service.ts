@@ -64,6 +64,15 @@ type OrderRecord = NonNullable<Awaited<ReturnType<OrdersService['get']>>>;
 
 const IST_MS = 330 * 60_000;
 /** Start of the IST day containing `now`. */
+const notApproved = (r: RiderRecord | null) =>
+  new DomainError(
+    'RIDER_NOT_APPROVED',
+    r?.status === 'suspended'
+      ? 'Your account is paused. Contact Santha support.'
+      : 'Finish your sign-up and wait for approval before going online.',
+    { status: r?.status ?? 'draft' },
+  );
+
 export const istDayStart = (now: Date) =>
   new Date(Math.floor((now.getTime() + IST_MS) / 86_400_000) * 86_400_000 - IST_MS);
 
@@ -237,7 +246,7 @@ export class DispatchService implements OnModuleInit {
     const standby = f.fallbackStage === 'standby' || f.fallbackStage === 'customer_notified';
     const radius = standby ? STANDBY_RADIUS_M : OFFER_RADIUS_M;
     const tried = new Set((await this.repo.offersFor(f.id)).map((o) => o.riderUserId));
-    const online = new Map((await this.repo.riders({ online: true })).map((r) => [r.userId, r]));
+    const online = new Map((await this.repo.riders({ online: true, status: ['approved'] })).map((r) => [r.userId, r]));
     const candidates: Candidate[] = [];
     for (const pos of await this.locations.near(c.store, radius, now)) {
       const r = online.get(pos.riderId);
@@ -315,6 +324,8 @@ export class DispatchService implements OnModuleInit {
 
   async acceptOffer(riderUserId: string, offerId: string): Promise<FulfilmentRecord> {
     const o = await this.riderOffer(riderUserId, offerId);
+    const me = await this.repo.getRider(riderUserId);
+    if (me?.status !== 'approved') throw notApproved(me);
     const now = this.clock();
     if (o.state === 'offered' && now >= o.expiresAt) {
       await this.onOfferExpired(o.id);
@@ -511,6 +522,8 @@ export class DispatchService implements OnModuleInit {
     const f = await this.fulfilmentOrThrow(orderId);
     const rider = await this.repo.getRider(riderUserId);
     if (!rider) throw new DomainError('NOT_FOUND', 'Rider not found');
+    if (rider.status !== 'approved')
+      throw new DomainError('VALIDATION_FAILED', 'This rider is not approved.', { field: 'riderUserId' });
     if (!rider.online)
       throw new DomainError('VALIDATION_FAILED', 'This rider is offline.', { field: 'riderUserId' });
     await this.withdrawOffers(f.id);
@@ -625,7 +638,11 @@ export class DispatchService implements OnModuleInit {
   ): Promise<FulfilmentRecord> {
     if (f.state !== 'picked_up')
       throw new DomainError('INVALID_STATE', 'Pick up the order first.', { state: f.state });
-    if (!proof.photoMediaId && proof.otp !== f.deliveryOtp)
+    // Audit B1: a photo id was taken on trust, so any UUID skipped the customer's OTP. No courier can upload a
+    // delivery photo yet, so none is accepted until photo proof ships with an ownership check.
+    if (proof.photoMediaId)
+      throw new DomainError('VALIDATION_FAILED', "Ask the customer for the 4-digit OTP in their app.", { field: 'otp' });
+    if (proof.otp !== f.deliveryOtp)
       throw new DomainError(
         'WRONG_CODE',
         'That OTP is not right. Ask the customer for the 4-digit code in their app.',
@@ -827,6 +844,10 @@ export class DispatchService implements OnModuleInit {
     let r = await this.repo.getRider(userId);
     r ??= await this.repo.upsertRider({ userId, name: me.name ?? 'Rider' });
     const now = this.clock();
+    if (online && r.status !== 'approved') throw notApproved(r);
+    // Going offline mid-delivery would stop the customer's live tracking (audit B3).
+    if (!online && (await this.repo.activeFulfilments({ riderUserId: userId })).length)
+      throw new DomainError('RIDER_HAS_ACTIVE_JOB', 'Finish your delivery before going offline.');
     if (online) {
       return (await this.repo.updateRider(userId, {
         online: true,
@@ -873,6 +894,18 @@ export class DispatchService implements OnModuleInit {
     if (!r.online || !r.onlineSince) return carried;
     const since = r.onlineSince > today ? r.onlineSince : today;
     return carried + Math.max(0, Math.round((now.getTime() - since.getTime()) / 60_000));
+  }
+
+  /**
+   * COD cash the rider collected in the current payout period (today for daily payouts, this IST week for
+   * weekly). The next payout deducts it, so this is what they should hand over or expect to net off.
+   */
+  async cashInHand(r: RiderRecord): Promise<number> {
+    const today = istDayStart(this.clock());
+    const dow = new Date(today.getTime() + 330 * 60_000).getUTCDay(); // 0 = Sunday
+    const since = r.payoutCadence === 'daily' ? today : new Date(today.getTime() - ((dow + 6) % 7) * 86_400_000);
+    const delivered = await this.repo.deliveredForRider(r.userId, since);
+    return delivered.filter((f) => f.mode === 'rider').reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0);
   }
 
   async earnings(userId: string): Promise<{ deliveries: FulfilmentRecord[]; totalPaise: number }> {

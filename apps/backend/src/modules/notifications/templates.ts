@@ -90,6 +90,19 @@ export const TEMPLATES = {
     en: { title: 'Finding a delivery partner', body: 'It is taking longer than usual to find someone for order {code}. New estimate {eta}. You can cancel for a full refund.' },
     te: { title: 'డెలివరీ భాగస్వామి కోసం వెతుకుతున్నాం', body: 'ఆర్డర్ {code}కు ఎవరినైనా కనుగొనడం ఆలస్యం అవుతోంది. కొత్త అంచనా {eta}. పూర్తి రీఫండ్‌తో రద్దు చేయవచ్చు.' },
   },
+  // Rider onboarding (ADR-029)
+  'rider.approved': {
+    en: { title: 'You are approved to deliver', body: 'Welcome to Santha. Open the app, choose your areas and go online to get orders.' },
+    te: { title: 'డెలివరీ చేయడానికి మీకు ఆమోదం లభించింది', body: 'సంతకు స్వాగతం. యాప్ తెరిచి, మీ ప్రాంతాలు ఎంచుకుని, ఆర్డర్ల కోసం ఆన్‌లైన్‌కి వెళ్లండి.' },
+  },
+  'rider.rejected': {
+    en: { title: 'Your rider sign-up needs changes', body: '{reason} Open the app to fix your details and submit again.' },
+    te: { title: 'మీ రైడర్ నమోదులో మార్పులు అవసరం', body: '{reason} యాప్ తెరిచి మీ వివరాలు సరిచేసి మళ్లీ సమర్పించండి.' },
+  },
+  'rider.suspended': {
+    en: { title: 'Your rider account is paused', body: '{reason} Contact Santha support in the app.' },
+    te: { title: 'మీ రైడర్ ఖాతా నిలిపివేయబడింది', body: '{reason} యాప్‌లో సంత సపోర్ట్‌ను సంప్రదించండి.' },
+  },
   'support.reply': {
     en: { title: 'Santha support replied', body: 'Open the app to read the reply and continue the chat.' },
     te: { title: 'సంత సపోర్ట్ సమాధానం ఇచ్చింది', body: 'సమాధానం చదవడానికి, చాట్ కొనసాగించడానికి యాప్ తెరవండి.' },

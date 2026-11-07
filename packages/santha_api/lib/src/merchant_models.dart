@@ -30,7 +30,9 @@ enum KycKind implements Wire {
   gstExemption('gst_exemption'),
   fssai('fssai'),
   bank('bank'),
-  drugLicence('drug_licence');
+  drugLicence('drug_licence'),
+  /// Riders (ADR-029): recorded, checked by ops.
+  drivingLicence('driving_licence');
 
   const KycKind(this.wire);
   @override

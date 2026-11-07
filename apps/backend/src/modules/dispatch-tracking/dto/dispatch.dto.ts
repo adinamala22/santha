@@ -130,7 +130,13 @@ export class RiderHomeDto extends createZodDto(
     zones: z.array(z.object({ id: z.uuid(), name: z.string(), nameTe: z.string() })),
     allZones: z.array(z.object({ id: z.uuid(), name: z.string(), nameTe: z.string() })),
     rating: z.number().nullable(),
+    status: z
+      .enum(['draft', 'submitted', 'approved', 'rejected', 'suspended'])
+      .describe('Onboarding (ADR-029): only approved riders go online'),
+    statusNote: z.string().nullable().describe('Why ops rejected or paused the rider'),
     today: z.object({ deliveries: int, earningsPaise: int, onlineMin: int }),
+    cashInHandPaise: int.describe('COD cash collected this payout period; the next payout deducts it'),
+    acceptancePct: int.nullable().describe('Offers accepted ÷ shown, in %; null before the first offer'),
     offer: OfferViewSchema.nullable(),
     jobs: z.array(JobViewSchema),
   }),

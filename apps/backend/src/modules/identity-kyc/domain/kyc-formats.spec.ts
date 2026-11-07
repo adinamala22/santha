@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  isDrivingLicence,
+  isVehicleNumber,
+  normalizeDrivingLicence,
+  normalizeVehicleNumber,
   gstinCheckChar,
   isAadhaar,
   isBankAccount,
@@ -61,5 +65,21 @@ describe('KYC formats', () => {
     expect(maskPan('ABCPR1234K')).toBe('AB******4K');
     expect(maskAadhaar('234567890124')).toBe('XXXX XXXX 0124');
     expect(maskAccount('123456789012')).toBe('•••• 9012');
+  });
+
+  it('driving licence (ADR-029): Sarathi format, spaces and hyphens ignored', () => {
+    expect(isDrivingLicence(normalizeDrivingLicence('AP09 2015 0001234'))).toBe(true);
+    expect(isDrivingLicence(normalizeDrivingLicence('ap-26-2019-0012345'))).toBe(true);
+    expect(isDrivingLicence(normalizeDrivingLicence('TS07A20200001234'))).toBe(true); // RTO with a letter
+    expect(isDrivingLicence('AP0920150001')).toBe(false); // too short
+    expect(isDrivingLicence('AP0918150001234')).toBe(false); // no plausible year
+  });
+
+  it('vehicle number (ADR-029): state series and Bharat series', () => {
+    expect(isVehicleNumber(normalizeVehicleNumber('AP 26 AB 1234'))).toBe(true);
+    expect(isVehicleNumber(normalizeVehicleNumber('ap-39-x-7'))).toBe(true);
+    expect(isVehicleNumber(normalizeVehicleNumber('22 BH 1234 AA'))).toBe(true);
+    expect(isVehicleNumber('1234')).toBe(false);
+    expect(isVehicleNumber('AP26AB12345')).toBe(false);
   });
 });

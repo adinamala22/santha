@@ -89,14 +89,23 @@ describe("Couldn't deliver (ADR-026, fake mode)", () => {
     const live = (await http().get('/v1/ops/live').set(ops).expect(200)).body;
     expect(live.attention).toEqual(expect.arrayContaining([expect.objectContaining({ kind: 'delivery_failed', orderId: o.id, stage: 'no_answer' })]));
 
+    // Holding the goods: no going offline (the customer's tracking would stop, audit B3).
+    const off = await http().put('/v1/riders/me/status').set(rider.headers).send({ online: false }).expect(409);
+    expect(off.body.error.code).toBe('RIDER_HAS_ACTIVE_JOB');
+
     // Reported once only.
     expect((await http().post(`/v1/jobs/${jobId}/failed`).set(rider.headers).send({ reason: 'other' }).expect(409)).body.error.code).toBe('INVALID_STATE');
 
     await http().post(`/v1/jobs/${jobId}/retry`).set(rider.headers).expect(200);
     expect(await state(c, o.id)).toMatchObject({ state: 'OUT_FOR_DELIVERY', outcomeReason: null });
     const otp = (await http().get(`/v1/orders/${o.id}/tracking`).set(c.headers).expect(200)).body.deliveryOtp;
+    const cashBefore = (await http().get('/v1/riders/me').set(rider.headers).expect(200)).body.cashInHandPaise as number;
     await http().post(`/v1/jobs/${jobId}/delivered`).set(rider.headers).send({ otp, codCollectedPaise: o.totalPaise }).expect(200);
     expect((await state(c, o.id)).state).toBe('DELIVERED');
+    // The cash is with the rider until the next payout deducts it.
+    const home = (await http().get('/v1/riders/me').set(rider.headers).expect(200)).body;
+    expect(home.cashInHandPaise).toBe(cashBefore + o.totalPaise);
+    expect(home.acceptancePct).toEqual(expect.any(Number));
   });
 
   it('ops cancel a failed delivery with a refund (wallet), or without; both audited', async () => {

@@ -132,6 +132,14 @@ export function buildSeedPromos(): PromoRecord[] {
 }
 
 /** M6: rider profiles for the demo riders (offline until they go online in the rider app). */
-export function buildSeedRiders(): Array<{ userId: string; name: string; vehicle: string; rating: number }> {
-  return SEED_PEOPLE.filter((p) => p.roles.includes('rider')).map((p, i) => ({ userId: p.id, name: p.name, vehicle: i === 2 ? 'cycle' : 'bike', rating: [4.8, 4.6, 4.9][i] ?? 4.5 }));
+export function buildSeedRiders(): Array<{ userId: string; name: string; vehicle: string; rating: number; status: 'approved'; vehicleNumber: string | null }> {
+  // The demo riders are already onboarded and approved (ADR-029).
+  return SEED_PEOPLE.filter((p) => p.roles.includes('rider')).map((p, i) => ({
+    userId: p.id,
+    name: p.name,
+    vehicle: i === 2 ? 'cycle' : 'bike',
+    rating: [4.8, 4.6, 4.9][i] ?? 4.5,
+    status: 'approved' as const,
+    vehicleNumber: i === 2 ? null : `AP26AB${1001 + i}`,
+  }));
 }

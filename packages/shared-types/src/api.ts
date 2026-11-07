@@ -1860,6 +1860,214 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/riders/me/onboarding": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderOnboardingController_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/profile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RiderOnboardingController_profile"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/kyc/pan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RiderOnboardingController_pan"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/kyc/aadhaar/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderOnboardingController_aadhaarStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/kyc/aadhaar/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderOnboardingController_aadhaarVerify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/kyc/driving-licence": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RiderOnboardingController_drivingLicence"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/kyc/bank": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["RiderOnboardingController_bank"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderOnboardingController_submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/riders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsRidersController_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/riders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsRidersController_detail"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/riders/{id}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsRidersController_approve"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/riders/{id}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsRidersController_reject"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/riders/{id}/suspend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsRidersController_suspend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/merchants/me/payouts": {
         parameters: {
             query?: never;
@@ -4092,7 +4300,7 @@ export interface components {
             }[];
             kyc: {
                 /** @enum {string} */
-                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence" | "driving_licence";
                 /** @enum {string} */
                 status: "pending" | "verified" | "failed";
                 valueMasked: string | null;
@@ -4205,7 +4413,7 @@ export interface components {
         };
         KycCheckDto_Output: {
             /** @enum {string} */
-            kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+            kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence" | "driving_licence";
             /** @enum {string} */
             status: "pending" | "verified" | "failed";
             valueMasked: string | null;
@@ -4351,7 +4559,7 @@ export interface components {
                 }[];
                 kyc: {
                     /** @enum {string} */
-                    kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence";
+                    kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence" | "driving_licence";
                     /** @enum {string} */
                     status: "pending" | "verified" | "failed";
                     valueMasked: string | null;
@@ -6243,11 +6451,22 @@ export interface components {
                 nameTe: string;
             }[];
             rating: number | null;
+            /**
+             * @description Onboarding (ADR-029): only approved riders go online
+             * @enum {string}
+             */
+            status: "draft" | "submitted" | "approved" | "rejected" | "suspended";
+            /** @description Why ops rejected or paused the rider */
+            statusNote: string | null;
             today: {
                 deliveries: number;
                 earningsPaise: number;
                 onlineMin: number;
             };
+            /** @description COD cash collected this payout period; the next payout deducts it */
+            cashInHandPaise: number;
+            /** @description Offers accepted ÷ shown, in %; null before the first offer */
+            acceptancePct: number | null;
             offer: {
                 /** Format: uuid */
                 id: string;
@@ -6628,6 +6847,121 @@ export interface components {
         OpsCancelFailedDto: {
             /** @description Refund what the customer paid (wallet for online payments) */
             refund: boolean;
+            reason: string;
+        };
+        RiderOnboardingDto_Output: {
+            /** @enum {string} */
+            status: "draft" | "submitted" | "approved" | "rejected" | "suspended";
+            statusNote: string | null;
+            name: string;
+            /** @enum {string} */
+            vehicle: "bike" | "scooter" | "electric" | "cycle";
+            vehicleNumber: string | null;
+            /** @description Details can change only before submitting or after a rejection */
+            editable: boolean;
+            steps: {
+                /** @enum {string} */
+                key: "profile" | "identity" | "driving_licence" | "bank";
+                done: boolean;
+            }[];
+            checks: {
+                /** @enum {string} */
+                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence" | "driving_licence";
+                /** @enum {string} */
+                status: "pending" | "verified" | "failed";
+                valueMasked: string | null;
+                valuePublic: string | null;
+                nameOnRecord: string | null;
+                provider: string;
+                failureReason: string | null;
+                details: {
+                    [key: string]: unknown;
+                } | null;
+                /** Format: date-time */
+                verifiedAt: string | null;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            /** @description ISO-8601 timestamp */
+            submittedAt: string | null;
+        };
+        RiderProfileDto: {
+            name: string;
+            /** @enum {string} */
+            vehicle: "bike" | "scooter" | "electric" | "cycle";
+            /** @description Number plate; not needed for a cycle */
+            vehicleNumber?: string;
+        };
+        DrivingLicenceDto: {
+            number: string;
+        };
+        OpsRiderListDto_Output: {
+            items: {
+                /** Format: uuid */
+                userId: string;
+                name: string;
+                phoneMasked: string;
+                /** @enum {string} */
+                vehicle: "bike" | "scooter" | "electric" | "cycle";
+                vehicleNumber: string | null;
+                /** @enum {string} */
+                status: "draft" | "submitted" | "approved" | "rejected" | "suspended";
+                online: boolean;
+                rating: number | null;
+                /** @description ISO-8601 timestamp */
+                submittedAt: string | null;
+                /** @description ISO-8601 timestamp */
+                decidedAt: string | null;
+            }[];
+        };
+        OpsRiderDto_Output: {
+            /** @enum {string} */
+            status: "draft" | "submitted" | "approved" | "rejected" | "suspended";
+            statusNote: string | null;
+            name: string;
+            /** @enum {string} */
+            vehicle: "bike" | "scooter" | "electric" | "cycle";
+            vehicleNumber: string | null;
+            /** @description Details can change only before submitting or after a rejection */
+            editable: boolean;
+            steps: {
+                /** @enum {string} */
+                key: "profile" | "identity" | "driving_licence" | "bank";
+                done: boolean;
+            }[];
+            checks: {
+                /** @enum {string} */
+                kind: "pan" | "aadhaar" | "gstin" | "gst_exemption" | "fssai" | "bank" | "drug_licence" | "driving_licence";
+                /** @enum {string} */
+                status: "pending" | "verified" | "failed";
+                valueMasked: string | null;
+                valuePublic: string | null;
+                nameOnRecord: string | null;
+                provider: string;
+                failureReason: string | null;
+                details: {
+                    [key: string]: unknown;
+                } | null;
+                /** Format: date-time */
+                verifiedAt: string | null;
+                /** Format: date-time */
+                updatedAt: string;
+            }[];
+            /** @description ISO-8601 timestamp */
+            submittedAt: string | null;
+            /** Format: uuid */
+            userId: string;
+            phoneMasked: string;
+            online: boolean;
+            rating: number | null;
+            /** @description ISO-8601 timestamp */
+            decidedAt: string | null;
+        };
+        RiderApproveDto: {
+            note?: string;
+        };
+        RiderReasonDto: {
+            /** @description Shown to the rider */
             reason: string;
         };
         PayoutListDto_Output: {
@@ -10664,6 +10998,335 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_get: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sign-up status, steps and document checks */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderOnboardingDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_profile: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderProfileDto"];
+            };
+        };
+        responses: {
+            /** @description Name, vehicle and number plate (none for a cycle) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderOnboardingDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_pan: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PanDto"];
+            };
+        };
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_aadhaarStart: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AadhaarStartDto"];
+            };
+        };
+        responses: {
+            /** @description OTP sent to the Aadhaar-linked mobile; status pending */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_aadhaarVerify: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AadhaarVerifyDto"];
+            };
+        };
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_drivingLicence: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DrivingLicenceDto"];
+            };
+        };
+        responses: {
+            /** @description Recorded for ops to check against the card (status pending) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_bank: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BankDto"];
+            };
+        };
+        responses: {
+            /** @description Penny-drop check of the payout account */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["KycCheckDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_submit: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 422 CHECKLIST_INCOMPLETE with the missing steps */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderOnboardingDto_Output"];
+                };
+            };
+        };
+    };
+    OpsRidersController_list: {
+        parameters: {
+            query?: {
+                /** @description Comma-separated: draft, submitted, approved, rejected, suspended */
+                status?: string;
+            };
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsRiderListDto_Output"];
+                };
+            };
+        };
+    };
+    OpsRidersController_detail: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsRiderDto_Output"];
+                };
+            };
+        };
+    };
+    OpsRidersController_approve: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderApproveDto"];
+            };
+        };
+        responses: {
+            /** @description From submitted (all checks done) or to lift a pause; audited */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsRiderDto_Output"];
+                };
+            };
+        };
+    };
+    OpsRidersController_reject: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderReasonDto"];
+            };
+        };
+        responses: {
+            /** @description Back to the rider to fix; the reason is shown to them; audited */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsRiderDto_Output"];
+                };
+            };
+        };
+    };
+    OpsRidersController_suspend: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderReasonDto"];
+            };
+        };
+        responses: {
+            /** @description No new offers at once; a delivery in hand is finished; audited */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsRiderDto_Output"];
                 };
             };
         };
