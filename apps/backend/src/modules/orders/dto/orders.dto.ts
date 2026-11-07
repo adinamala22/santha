@@ -26,6 +26,7 @@ export class PlaceOrderDto extends createZodDto(
     quoteId: z.uuid().describe('From POST /cart/price; the order is placed at exactly this bill'),
     paymentMethod: z.enum(['online', 'cod']),
     instructions: z.string().trim().max(300).nullable().optional().describe('Delivery instructions, e.g. "Ring the bell twice"'),
+    tipPaise: z.number().int().min(0).max(50_000).optional().describe('Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers'),
   }),
 ) {}
 
@@ -155,6 +156,7 @@ const OrderSchema = z.object({
   taxPaise: int,
   discountPaise: int,
   totalPaise: int,
+  tipPaise: int.describe('Tip for the delivery partner, included in totalPaise (ADR-032)'),
   /** Refunded so far (cancellations, removed or cheaper substitute items), M5. */
   refundedPaise: int,
   /** Why it ended: a reject / cancel reason, or "accept_timeout". */
@@ -258,6 +260,7 @@ export const toOrderDto = (v: OrderView) => {
     taxPaise: o.taxPaise,
     discountPaise: o.discountPaise,
     totalPaise: o.totalPaise,
+    tipPaise: o.tipPaise ?? 0,
     refundedPaise: o.refundedPaise ?? 0,
     outcomeReason: o.outcomeReason ?? null,
     canCancel: o.state === 'PLACED',

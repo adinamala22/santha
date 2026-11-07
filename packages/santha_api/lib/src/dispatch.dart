@@ -232,6 +232,8 @@ class RiderHome {
     this.statusNote,
     this.cashInHandPaise = 0,
     this.acceptancePct,
+    this.cashLimitPaise,
+    this.incentives = const [],
   });
   factory RiderHome.fromJson(Json j) {
     final t = j['today'] as Json;
@@ -241,6 +243,8 @@ class RiderHome {
       statusNote: j['statusNote'] as String?,
       cashInHandPaise: (j['cashInHandPaise'] as int?) ?? 0,
       acceptancePct: j['acceptancePct'] as int?,
+      cashLimitPaise: j['cashLimitPaise'] as int?,
+      incentives: [for (final i in (j['incentives'] as List?) ?? const []) Incentive.fromJson(i as Json)],
       name: j['name'] as String,
       vehicle: j['vehicle'] as String,
       online: j['online'] as bool,
@@ -273,6 +277,31 @@ class RiderHome {
   final int cashInHandPaise;
   /// Offers accepted ÷ shown, in %; null before the first offer.
   final int? acceptancePct;
+
+  /// At this much cash the rider gets prepaid orders only; null = no limit (ADR-032).
+  final int? cashLimitPaise;
+
+  /// Delivery targets with bonuses and progress (ADR-032).
+  final List<Incentive> incentives;
+
+  bool get atCashLimit => cashLimitPaise != null && cashInHandPaise >= cashLimitPaise!;
+}
+
+/// A delivery target with a bonus and the rider's progress (ADR-032).
+class Incentive {
+  const Incentive({required this.weekly, required this.deliveries, required this.bonusPaise, required this.done, required this.achieved});
+  factory Incentive.fromJson(Json j) => Incentive(
+        weekly: j['period'] == 'week',
+        deliveries: j['deliveries'] as int,
+        bonusPaise: j['bonusPaise'] as int,
+        done: j['done'] as int,
+        achieved: j['achieved'] as bool,
+      );
+  final bool weekly;
+  final int deliveries;
+  final int bonusPaise;
+  final int done;
+  final bool achieved;
 }
 
 /// Rider onboarding status (ADR-029).

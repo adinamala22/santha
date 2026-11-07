@@ -28,6 +28,8 @@ class FakeBackend implements HttpClientAdapter {
   bool offline = false;
   bool serviceable = true;
   final requests = <String>[];
+  /// Body of the last POST /v1/orders (ADR-032: the tip).
+  Map<String, dynamic>? lastOrderBody;
 
   // M4 state
   String? cartMerchantId;
@@ -123,7 +125,12 @@ class FakeBackend implements HttpClientAdapter {
           if (extraFees.isNotEmpty) (q['bill']['fees'] as List).insertAll(1, extraFees);
           return q;
         })()),
-      'POST /v1/orders' => (201, _order()),
+      'POST /v1/orders' => (() {
+          lastOrderBody = Map<String, dynamic>.from(o.data as Map);
+          final tip = (lastOrderBody!['tipPaise'] as int?) ?? 0;
+          final placed = _order();
+          return (201, {...placed, 'tipPaise': tip, 'totalPaise': (placed['totalPaise'] as int) + tip});
+        })(),
       'GET /v1/orders' => (200, {'items': [_order()]}),
       'GET /v1/wallet' => (200, fixture('wallet')),
       final r when r.startsWith('GET /v1/orders/') && r.endsWith('/tracking') =>

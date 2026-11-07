@@ -16,3 +16,13 @@ export async function decideRider(userId: string, _prev: ActionState, form: Form
   revalidatePath('/admin/riders');
   return r.ok ? { ok: true, done: action } : { ok: false, code: r.code, message: r.message };
 }
+
+/** Cash the rider handed over (ADR-032): rupees in, paise to the API; audited there. */
+export async function recordDeposit(userId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  const rupees = Number(String(form.get('amount') ?? '').replace(/,/g, ''));
+  if (!Number.isFinite(rupees) || rupees <= 0) return { ok: false, code: 'VALIDATION_FAILED' };
+  const note = String(form.get('note') ?? '').trim();
+  const r = await opsApi(`/v1/ops/riders/${userId}/cash-deposits`, { method: 'POST', body: { amountPaise: Math.round(rupees * 100), ...(note ? { note } : {}) } });
+  revalidatePath(`/admin/riders/${userId}`);
+  return r.ok ? { ok: true, done: 'deposit' } : { ok: false, code: r.code, message: r.message };
+}

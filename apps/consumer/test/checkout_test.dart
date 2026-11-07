@@ -5,6 +5,7 @@ import 'package:consumer/features/cart/cart_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:santha_core/santha_core.dart';
+import 'package:santha_ui/santha_ui.dart';
 
 import 'support/harness.dart';
 
@@ -387,5 +388,25 @@ void main() {
     await settle(tester, 10);
     expect(find.byKey(const ValueKey('wallet-balance')), findsOneWidget);
     expect(find.textContaining('Balance ₹'), findsOneWidget);
+  });
+
+  testWidgets('ADR-032: a tip is added to the bill and the total, and sent with the order', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
+    await openCheckout(tester);
+    final total = tester.widget<Text>(find.byKey(const ValueKey('bill-total'))).data!;
+    expect(find.text('Tip your delivery partner'), findsOneWidget);
+    await tapVisible(tester, find.byKey(const ValueKey('tip-2000')));
+    expect(find.text('Tip for your delivery partner'), findsOneWidget);
+    final withTip = tester.widget<Text>(find.byKey(const ValueKey('bill-total'))).data!;
+    int paise(String s) => (double.parse(s.replaceAll(RegExp(r'[^0-9.]'), '')) * 100).round();
+    expect(paise(withTip) - paise(total), 2000);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    expect(tester.widget<SanthaButton>(find.byKey(const ValueKey('place-order'))).label, contains(withTip));
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    expect(h.backend.lastOrderBody?['tipPaise'], 2000);
+    expect(h.events, contains('tip_selected'));
   });
 }

@@ -132,4 +132,17 @@ void main() {
     expect(w.deliveries, 4);
     expect(w.days[3].cashPaise, 31200);
   });
+
+  test('ADR-032: cash limit and incentive progress on the rider home', () {
+    final h = RiderHome.fromJson(fixture('rider_home_offer'));
+    expect(h.cashLimitPaise, 200000);
+    expect(h.atCashLimit, isFalse); // 48000 in hand
+    expect(h.incentives, hasLength(2));
+    expect(h.incentives.first.weekly, isFalse);
+    expect(h.incentives.first.done, 4);
+    expect(h.incentives.last.achieved, isTrue);
+    final none = RiderHome.fromJson({...fixture('rider_home_offer')}..remove('cashLimitPaise')..remove('incentives'));
+    expect(none.cashLimitPaise, isNull);
+    expect(none.incentives, isEmpty);
+  });
 }

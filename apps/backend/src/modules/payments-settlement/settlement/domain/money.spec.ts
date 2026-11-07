@@ -46,8 +46,22 @@ describe('merchant payout', () => {
 describe('rider payout', () => {
   it('pay minus COD cash in hand; can go negative', () => {
     expect(computeRiderPayout([{ orderId: 'a', code: 'A', payPaise: 4_400, codCollectedPaise: 0 }, { orderId: 'b', code: 'B', payPaise: 5_000, codCollectedPaise: 20_000 }])).toEqual({
-      deliveries: 2, earnedPaise: 9_400, cashHeldPaise: 20_000, adjustmentsPaise: 0, netPaise: -10_600,
+      deliveries: 2, earnedPaise: 9_400, incentivesPaise: 0, cashHeldPaise: 20_000, depositsPaise: 0, adjustmentsPaise: 0, netPaise: -10_600,
     });
+  });
+
+  it('ADR-032: incentive bonuses add; cash already deposited with Santha is not deducted twice', () => {
+    const p = computeRiderPayout([{ orderId: 'b', code: 'B', payPaise: 5_000, codCollectedPaise: 20_000 }], 0, { incentivesPaise: 15_000, depositsPaise: 20_000 });
+    expect(p).toMatchObject({ earnedPaise: 5_000, incentivesPaise: 15_000, cashHeldPaise: 20_000, depositsPaise: 20_000, netPaise: 20_000 });
+  });
+
+  it("ADR-032: the tip is the store's only when its own staff delivered", () => {
+    const base = { orderId: 'o', code: 'O', itemsPaise: 10_000, merchantRefundsPaise: 0, packagingPaise: 0, deliveryFeePaise: 0, selfBonusPaise: 0, codCollectedByStorePaise: 0, tipPaise: 2_000 };
+    const self = computeMerchantPayout([{ ...base, mode: 'self' }], DEFAULT_PAYOUT_RATES).lines[0]!;
+    const rider = computeMerchantPayout([{ ...base, mode: 'rider' }], DEFAULT_PAYOUT_RATES).lines[0]!;
+    expect(self.tipPaise).toBe(2_000);
+    expect(rider.tipPaise).toBe(0);
+    expect(self.netPaise - rider.netPaise).toBe(2_000 + Math.round(10_000 * 0.03) + Math.round(Math.round(10_000 * 0.03) * 0.18) - 0); // tip + the lower self commission and its GST
   });
 });
 

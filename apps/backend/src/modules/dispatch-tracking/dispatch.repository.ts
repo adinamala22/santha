@@ -67,6 +67,16 @@ export interface RiderSosRecord {
   note: string | null;
 }
 
+/** Cash a rider handed over to Santha (ADR-032). */
+export interface RiderCashDepositRecord {
+  id: string;
+  riderUserId: string;
+  amountPaise: number;
+  note: string | null;
+  recordedBy: string;
+  createdAt: Date;
+}
+
 export interface FulfilmentRecord {
   id: string;
   orderId: string;
@@ -173,6 +183,10 @@ export abstract class DispatchRepository {
   abstract updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>): Promise<RiderPhotoRecord | null>;
   /** Ready photos of a rider, newest first. */
   abstract riderPhotos(riderUserId: string, kind?: RiderPhotoKind): Promise<RiderPhotoRecord[]>;
+
+  abstract createDeposit(d: Omit<RiderCashDepositRecord, 'createdAt'>): Promise<RiderCashDepositRecord>;
+  /** Deposits from `since` (inclusive), oldest first. */
+  abstract deposits(riderUserId: string, since: Date): Promise<RiderCashDepositRecord[]>;
 
   abstract createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>): Promise<RiderSosRecord>;
   abstract sos(id: string): Promise<RiderSosRecord | null>;
@@ -375,6 +389,14 @@ export class PrismaDispatchRepository extends DispatchRepository {
 
   createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>) {
     return this.prisma.riderSos.create({ data: s });
+  }
+
+  createDeposit(d: Omit<RiderCashDepositRecord, 'createdAt'>) {
+    return this.prisma.riderCashDeposit.create({ data: d });
+  }
+
+  deposits(riderUserId: string, since: Date) {
+    return this.prisma.riderCashDeposit.findMany({ where: { riderUserId, createdAt: { gte: since } }, orderBy: { createdAt: 'asc' } });
   }
 
   sos(id: string) {
@@ -606,6 +628,18 @@ export class InMemoryDispatchRepository extends DispatchRepository {
     const next = { ...r, ...patch };
     this.photos.set(id, next);
     return structuredClone(next);
+  }
+
+  private readonly depositRows: RiderCashDepositRecord[] = [];
+
+  async createDeposit(d: Omit<RiderCashDepositRecord, 'createdAt'>) {
+    const row = { ...d, createdAt: new Date() };
+    this.depositRows.push(row);
+    return structuredClone(row);
+  }
+
+  async deposits(riderUserId: string, since: Date) {
+    return structuredClone(this.depositRows.filter((d) => d.riderUserId === riderUserId && d.createdAt >= since));
   }
 
   private readonly sosRows = new Map<string, RiderSosRecord>();

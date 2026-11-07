@@ -7,7 +7,9 @@ import { ridersCopy } from '@/i18n/riders';
 import { dateOnly, dateTime } from '@/lib/format';
 import { mediaSrc } from '@/lib/media';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
-import { decideRider } from './actions';
+import { decideRider, recordDeposit } from './actions';
+import { DepositForm } from './deposit-form';
+import { rupees } from '@/lib/format';
 import { resolveSos } from '../../live/actions';
 import { sosMapUrl } from '../../live/sos-actions';
 import { liveCopy } from '@/i18n/live';
@@ -44,6 +46,7 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
     [c.cols.submitted, r.submittedAt ? dateTime(r.submittedAt, locale) : '—'],
     [c.online, r.online ? copy.common.yes : copy.common.no],
     [c.rating, r.rating == null ? '—' : r.rating.toFixed(1)],
+    [c.cashInHand, `${rupees(r.cashInHandPaise)}${r.cashLimitPaise == null ? '' : ` / ${rupees(r.cashLimitPaise)}`}`],
   ];
 
   return (
@@ -198,12 +201,23 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
             )}
           </Card>
 
+          {r.status === 'approved' || r.status === 'suspended' ? (
+            <Card title={c.depositTitle}>
+              <p className="mb-3 text-sm text-slate">{c.depositHint}</p>
+              {session?.canDecide ? (
+                <DepositForm action={recordDeposit.bind(null, r.userId)} copy={{ amount: c.depositAmount, note: c.depositNote, record: c.depositRecord, done: c.depositDone }} errors={copy.errors} />
+              ) : (
+                <Notice>{copy.common.readOnly}</Notice>
+              )}
+            </Card>
+          ) : null}
+
           <Card title={c.history}>
             {audit.items.length ? (
               <ol className="space-y-3">
                 {audit.items.map((a) => (
                   <li key={a.id} className="border-l-2 border-indigo-100 pl-4">
-                    <p className="font-medium text-ink">{c.status[a.action.replace('rider.', '') as keyof typeof c.status] ?? a.action}</p>
+                    <p className="font-medium text-ink">{c.status[a.action.replace('rider.', '') as keyof typeof c.status] ?? c.events[a.action.replace('rider.', '') as keyof typeof c.events] ?? a.action}</p>
                     <p className="text-sm text-slate">{dateTime(a.createdAt, locale)}</p>
                     {(a.after as { note?: string } | null)?.note ? <p className="text-sm text-ink">{(a.after as { note: string }).note}</p> : null}
                   </li>

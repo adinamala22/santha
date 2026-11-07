@@ -59,6 +59,8 @@ export interface OrderRecord<Q = unknown> {
   taxPaise: number;
   discountPaise: number;
   totalPaise: number;
+  /** Tip for the delivery partner (ADR-032), included in totalPaise. */
+  tipPaise: number;
   promoCode: string | null;
   quote: Q;
   idempotencyKey: string;
@@ -87,8 +89,8 @@ export interface TransitionSet {
   outcomeReason?: string | null;
 }
 
-export type NewOrder<Q = unknown> = Omit<OrderRecord<Q>, 'createdAt' | 'updatedAt' | 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason'> &
-  Partial<Pick<OrderRecord<Q>, 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason'>>;
+export type NewOrder<Q = unknown> = Omit<OrderRecord<Q>, 'createdAt' | 'updatedAt' | 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason' | 'tipPaise'> &
+  Partial<Pick<OrderRecord<Q>, 'fulfilmentMode' | 'acceptedAt' | 'readyAt' | 'packBy' | 'refundedPaise' | 'outcomeReason' | 'tipPaise'>>;
 
 export interface TransitionRecord {
   from: OrderState | null;
@@ -171,6 +173,7 @@ const toRecord = (o: OrderRow): OrderRecord => ({
   taxPaise: o.taxPaise,
   discountPaise: o.discountPaise,
   totalPaise: o.totalPaise,
+  tipPaise: o.tipPaise,
   promoCode: o.promoCode,
   quote: o.quote,
   idempotencyKey: o.idempotencyKey,
@@ -380,6 +383,7 @@ class OrderStore extends MemoryStore<State> {
             readyAt: null,
             packBy: null,
             refundedPaise: 0,
+            tipPaise: 0,
             outcomeReason: null,
             ...this.clone(o),
             lines: o.lines.map((l) => ({ status: 'ok' as const, substituteItemId: null, substituteVariantId: null, substituteName: null, substituteVariantLabel: null, substituteUnitPaise: null, refundPaise: 0, ...this.clone(l) })),

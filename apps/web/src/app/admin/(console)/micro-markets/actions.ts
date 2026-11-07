@@ -16,6 +16,8 @@ export interface EditorState {
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 const FEES = ['deliveryBasePaise', 'deliveryPerKmPaise', 'freeDeliveryAbovePaise', 'smallOrderThresholdPaise', 'smallOrderFeePaise', 'platformFeePaise', 'beyondRadiusSurchargePaise', 'packagingFeeCapPaise'] as const;
 const RIDER = ['basePaise', 'perKmPaise', 'waitPerMinPaise', 'batchBonusPaise'] as const;
+/** Incentive rows in the editor (ADR-032; the API allows up to 6). */
+const INCENTIVE_ROWS = 4;
 const SLA = ['merchantAcceptSec', 'etaBufferMin', 'riderFallbackMin', 'staleCatalogueHours'] as const;
 
 type Config = Pick<MicroMarketVersion, 'polygon' | 'hours' | 'fees' | 'cod' | 'sla' | 'riderPay'>;
@@ -36,7 +38,18 @@ function parseConfig(form: FormData): Config {
       allowedTypes: (['retail', 'fashion'] as const).filter((t) => form.get(`cod.type.${t}`) === 'on'),
     },
     sla: Object.fromEntries(SLA.map((k) => [k, Number(s(`sla.${k}`))])) as Config['sla'],
-    riderPay: Object.fromEntries(RIDER.map((k) => [k, rupeeInputToPaise(s(`riderPay.${k}`))])) as Config['riderPay'],
+    riderPay: {
+      ...(Object.fromEntries(RIDER.map((k) => [k, rupeeInputToPaise(s(`riderPay.${k}`))])) as Pick<Config['riderPay'], (typeof RIDER)[number]>),
+      // ADR-032: blank = no cash limit; incentive rows without a delivery count are skipped.
+      cashLimitPaise: s('riderPay.cashLimitPaise').trim() ? rupeeInputToPaise(s('riderPay.cashLimitPaise')) : null,
+      incentives: Array.from({ length: INCENTIVE_ROWS }, (_, i) => i)
+        .filter((i) => Number(s(`incentive.${i}.deliveries`)) > 0)
+        .map((i) => ({
+          deliveries: Math.round(Number(s(`incentive.${i}.deliveries`))),
+          bonusPaise: rupeeInputToPaise(s(`incentive.${i}.bonus`)),
+          period: s(`incentive.${i}.period`) === 'week' ? ('week' as const) : ('day' as const),
+        })),
+    },
   };
 }
 

@@ -24,6 +24,8 @@ import {
   RiderStatusDto,
   RiderWeekDto,
   ResolveSosDto,
+  CashDepositDto,
+  CashDepositViewDto,
   SosDto,
   SosViewDto,
   StaffDeliveredDto,
@@ -370,6 +372,15 @@ export class OpsDispatchController {
   async cancelFailed(@Param('id', ParseUUIDPipe) id: string, @Body() b: OpsCancelFailedDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
     await this.dispatch.cancelFailed(id, b.refund, b.reason, { userId: u.userId, requestId });
     return this.views.opsDelivery(id);
+  }
+
+  @Post('riders/:id/cash-deposits')
+  @HttpCode(201)
+  @ZodResponse({ status: 201, type: CashDepositViewDto, description: 'Cash the rider handed over (ADR-032): lowers cash in hand, credited in the payout; audited' })
+  async cashDeposit(@Param('id', ParseUUIDPipe) id: string, @Body() b: CashDepositDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
+    const d = await this.dispatch.recordDeposit(id, b.amountPaise, b.note?.trim() || null, { userId: u.userId, requestId });
+    const r = (await this.dispatch.rider(id))!;
+    return { id: d.id, amountPaise: d.amountPaise, createdAt: d.createdAt.toISOString(), cashInHandPaise: await this.dispatch.cashInHand(r) };
   }
 
   @Post('sos/:id/resolve')

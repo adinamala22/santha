@@ -472,5 +472,68 @@
         "type": "int"
       }
     }
+  },
+  "payTip": "{amount} tip",
+  "@payTip": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "cashLimitReached": "You hold {amount} in cash (limit {limit}). You will get prepaid orders only until you deposit the cash with Santha.",
+  "@cashLimitReached": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "cashLimitLine": "Cash limit: {limit}",
+  "@cashLimitLine": {
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveDay": "Today: {done} of {target} deliveries for a {bonus} bonus",
+  "@incentiveDay": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveWeek": "This week: {done} of {target} deliveries for a {bonus} bonus",
+  "@incentiveWeek": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "target": {
+        "type": "int"
+      },
+      "bonus": {
+        "type": "String"
+      }
+    }
+  },
+  "incentiveDone": "Bonus earned: {bonus}. It comes with your payout.",
+  "@incentiveDone": {
+    "placeholders": {
+      "bonus": {
+        "type": "String"
+      }
+    }
   }
 }

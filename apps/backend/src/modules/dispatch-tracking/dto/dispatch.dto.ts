@@ -4,7 +4,7 @@ import { z } from 'zod';
 const int = z.number().int();
 const iso = z.string().describe('ISO-8601 timestamp');
 const latLng = z.object({ lat: z.number().min(-90).max(90), lng: z.number().min(-180).max(180) });
-const payLine = z.object({ code: z.enum(['base', 'distance', 'wait', 'batch']), amountPaise: int });
+const payLine = z.object({ code: z.enum(['base', 'distance', 'wait', 'batch', 'tip']), amountPaise: int });
 
 // ───────────── inputs ─────────────
 
@@ -137,7 +137,11 @@ export class RiderHomeDto extends createZodDto(
       .describe('Onboarding (ADR-029): only approved riders go online'),
     statusNote: z.string().nullable().describe('Why ops rejected or paused the rider'),
     today: z.object({ deliveries: int, earningsPaise: int, onlineMin: int }),
-    cashInHandPaise: int.describe('COD cash collected this payout period; the next payout deducts it'),
+    cashInHandPaise: int.describe('COD cash collected this payout period less cash deposited; the next payout deducts it'),
+    cashLimitPaise: int.nullable().describe('At this much cash in hand the rider gets prepaid orders only; null = no limit (ADR-032)'),
+    incentives: z
+      .array(z.object({ period: z.enum(['day', 'week']), deliveries: int, bonusPaise: int, done: int, achieved: z.boolean() }))
+      .describe('Delivery targets with bonuses and progress today / this week (ADR-032)'),
     acceptancePct: int.nullable().describe('Offers accepted ÷ shown, in %; null before the first offer'),
     offer: OfferViewSchema.nullable(),
     jobs: z.array(JobViewSchema),
@@ -152,6 +156,11 @@ export class SosDto extends createZodDto(
   }),
 ) {}
 export class SosViewDto extends createZodDto(z.object({ id: z.uuid(), createdAt: iso, fulfilmentId: z.uuid().nullable() })) {}
+export class CashDepositDto extends createZodDto(
+  z.object({ amountPaise: int.min(100).max(10_000_000), note: z.string().trim().max(300).optional() }),
+) {}
+export class CashDepositViewDto extends createZodDto(z.object({ id: z.uuid(), amountPaise: int, createdAt: iso, cashInHandPaise: int })) {}
+
 export class ResolveSosDto extends createZodDto(z.object({ note: z.string().trim().max(300).optional() })) {}
 export class RiderWeekDto extends createZodDto(
   z.object({

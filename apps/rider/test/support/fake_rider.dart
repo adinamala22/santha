@@ -50,8 +50,10 @@ Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = '
 
 /// In-memory rider backend with the rules the screens rely on (codes, readiness, expiry).
 class FakeRiderApi extends RiderApi {
-  FakeRiderApi(super.client, {this.online = false, this.offer, List<Job>? jobs, this.status = RiderStatus.approved, this.statusNote, this.cashInHandPaise = 0, this.acceptancePct})
+  FakeRiderApi(super.client, {this.online = false, this.offer, List<Job>? jobs, this.status = RiderStatus.approved, this.statusNote, this.cashInHandPaise = 0, this.acceptancePct, this.cashLimitPaise, this.incentives = const []})
       : jobs = jobs ?? [];
+  int? cashLimitPaise;
+  List<Incentive> incentives;
   RiderStatus status;
   String? statusNote;
   int cashInHandPaise;
@@ -89,6 +91,8 @@ class FakeRiderApi extends RiderApi {
         statusNote: statusNote,
         cashInHandPaise: cashInHandPaise,
         acceptancePct: acceptancePct,
+        cashLimitPaise: cashLimitPaise,
+        incentives: incentives,
       );
 
   // ── onboarding (ADR-029), with the server's rules ──

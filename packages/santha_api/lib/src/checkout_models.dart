@@ -429,6 +429,7 @@ class Order {
     this.outcomeReason,
     this.canCancel = false,
     this.merchantType = 'retail',
+    this.tipPaise = 0,
   });
   factory Order.fromJson(Json j) {
     final m = j['merchant'] as Json;
@@ -457,6 +458,7 @@ class Order {
       outcomeReason: j['outcomeReason'] as String?,
       canCancel: j['canCancel'] as bool? ?? false,
       merchantType: m['type'] as String? ?? 'retail',
+      tipPaise: j['tipPaise'] as int? ?? 0,
     );
   }
   final String id;
@@ -480,6 +482,9 @@ class Order {
   final PaymentCheckout? payment;
   /// Refunded to the wallet so far (M5).
   final int refundedPaise;
+
+  /// Tip for the delivery partner (ADR-032), included in [totalPaise].
+  final int tipPaise;
   final String? outcomeReason;
   /// True until the store accepts.
   final bool canCancel;

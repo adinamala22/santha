@@ -116,7 +116,7 @@ export interface RiderPayConfig {
 }
 
 export interface PayLine {
-  code: 'base' | 'distance' | 'wait' | 'batch';
+  code: 'base' | 'distance' | 'wait' | 'batch' | 'tip';
   amountPaise: number;
 }
 

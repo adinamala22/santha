@@ -7,8 +7,11 @@ import '../../l10n/gen/app_localizations.dart';
 
 /// Bill breakdown: items, fees (waived ones struck through as FREE), GST, coupon, total, savings.
 class BillView extends StatelessWidget {
-  const BillView({super.key, required this.bill});
+  const BillView({super.key, required this.bill, this.tipPaise = 0});
   final Bill bill;
+
+  /// Tip for the delivery partner (ADR-032): shown as its own line and added to the total.
+  final int tipPaise;
 
   @override
   Widget build(BuildContext context) {
@@ -29,10 +32,11 @@ class BillView extends StatelessWidget {
             : _Row(feeLabel(f.code), rupees(f.amountPaise)),
       for (final t in bill.taxes) _Row(t.cookedFood ? l.billGstFood(t.ratePercent) : l.billGstFees(t.ratePercent), rupees(t.amountPaise)),
       if (bill.discountPaise > 0) _Row(l.billDiscount(bill.discountCode ?? ''), '−${rupees(bill.discountPaise)}', valueColor: SanthaColors.leaf),
+      if (tipPaise > 0) _Row(l.billTip, rupees(tipPaise)),
       const Divider(),
       Row(children: [
         Expanded(child: Text(l.billTotal, style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700))),
-        Text(rupees(bill.totalPaise), key: const ValueKey('bill-total'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        Text(rupees(bill.totalPaise + tipPaise), key: const ValueKey('bill-total'), style: text.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
       ]),
       if (bill.mrpSavingsPaise > 0)
         Align(alignment: Alignment.centerLeft, child: Text(l.billSavings(rupees(bill.mrpSavingsPaise)), style: text.bodySmall?.copyWith(color: SanthaColors.leaf))),

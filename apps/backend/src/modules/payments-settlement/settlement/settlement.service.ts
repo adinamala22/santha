@@ -120,6 +120,7 @@ export class SettlementService implements OnModuleInit {
       deliveryFeePaise: fee('delivery') + fee('beyond_radius'), // both pay for the trip (ADR-022)
       selfBonusPaise: f.selfBonusPaise,
       codCollectedByStorePaise: f.mode === 'self' ? (f.codCollectedPaise ?? 0) : 0,
+      tipPaise: o.tipPaise ?? 0,
     };
   }
 
@@ -205,10 +206,15 @@ export class SettlementService implements OnModuleInit {
       if ((r.payoutCadence ?? 'weekly') !== cadence) continue;
       const delivered = (await this.dispatch.deliveredForRider(r.userId, start)).filter((f) => f.deliveredAt! < end && f.mode === 'rider');
       const carried = await this.carried('rider', r.userId, start);
-      if (!delivered.length && !carried) continue;
+      const deposits = await this.dispatch.depositsFor(r.userId, start, end);
+      if (!delivered.length && !carried && !deposits.length) continue;
       const lines: RiderDelivery[] = [];
       for (const f of delivered) lines.push({ orderId: f.orderId, code: (await this.orders.get(f.orderId))?.code ?? '', payPaise: f.riderPayPaise, codCollectedPaise: f.codCollectedPaise ?? 0 });
-      const p = computeRiderPayout(lines, carried?.netPaise ?? 0);
+      const incentives = await this.dispatch.incentivesEarned(r, start, end);
+      const p = computeRiderPayout(lines, carried?.netPaise ?? 0, {
+        incentivesPaise: incentives.reduce((s, i) => s + i.bonusPaise, 0),
+        depositsPaise: deposits.reduce((s, d) => s + d.amountPaise, 0),
+      });
       const payout = await this.save(run, 'rider', r.userId, null, p.earnedPaise, p.netPaise, lines, { ...p }, 0, 0);
       if (carried) await this.repo.updatePayout(carried.id, { transferRef: `carried:${payout.id}` });
       await this.statement(payout, r.name, []);
@@ -230,7 +236,7 @@ export class SettlementService implements OnModuleInit {
       const rows = p.lines as RiderDelivery[];
       return [['order', 'pay_paise', 'cod_collected_paise'].join(','), ...rows.map((r) => [r.code, r.payPaise, r.codCollectedPaise].map(esc).join(','))].join('\n') + '\n';
     }
-    const cols = ['code', 'mode', 'itemsPaise', 'packagingPaise', 'deliveryCreditPaise', 'bonusPaise', 'commissionPercent', 'commissionPaise', 'commissionGstPaise', 'tcsPaise', 'tdsPaise', 'cashWithStorePaise', 'netPaise'] as const;
+    const cols = ['code', 'mode', 'itemsPaise', 'packagingPaise', 'deliveryCreditPaise', 'bonusPaise', 'tipPaise', 'commissionPercent', 'commissionPaise', 'commissionGstPaise', 'tcsPaise', 'tdsPaise', 'cashWithStorePaise', 'netPaise'] as const;
     const rows = p.lines as Array<Record<(typeof cols)[number], unknown>>;
     return [cols.join(','), ...rows.map((r) => cols.map((c) => esc(r[c])).join(','))].join('\n') + '\n';
   }
@@ -240,10 +246,10 @@ export class SettlementService implements OnModuleInit {
     const period = `${istDate(p.periodStart)} to ${istDate(new Date(p.periodEnd.getTime() - 1))}`;
     const out: string[] = [`${name}`, `Period: ${period} (IST)    Payout: ${p.id}`, ''];
     if (p.partyType === 'merchant') {
-      out.push('Order        Mode   Items        Pack     Delivery  Bonus    Commission      GST     TCS     TDS    Cash held     Net');
+      out.push('Order        Mode   Items        Pack     Delivery  Bonus    Tip      Commission      GST     TCS     TDS    Cash held     Net');
       for (const l of p.lines as Array<Record<string, number | string>>)
         out.push(
-          [String(l.code).padEnd(12), String(l.mode).padEnd(6), rs(l.itemsPaise as number).padStart(11), rs(l.packagingPaise as number).padStart(9), rs(l.deliveryCreditPaise as number).padStart(10), rs(l.bonusPaise as number).padStart(8), `${rs(l.commissionPaise as number)} (${l.commissionPercent}%)`.padStart(16), rs(l.commissionGstPaise as number).padStart(8), rs(l.tcsPaise as number).padStart(8), rs(l.tdsPaise as number).padStart(7), rs(l.cashWithStorePaise as number).padStart(11), rs(l.netPaise as number).padStart(11)].join(' '),
+          [String(l.code).padEnd(12), String(l.mode).padEnd(6), rs(l.itemsPaise as number).padStart(11), rs(l.packagingPaise as number).padStart(9), rs(l.deliveryCreditPaise as number).padStart(10), rs(l.bonusPaise as number).padStart(8), rs((l.tipPaise as number) ?? 0).padStart(8), `${rs(l.commissionPaise as number)} (${l.commissionPercent}%)`.padStart(16), rs(l.commissionGstPaise as number).padStart(8), rs(l.tcsPaise as number).padStart(8), rs(l.tdsPaise as number).padStart(7), rs(l.cashWithStorePaise as number).padStart(11), rs(l.netPaise as number).padStart(11)].join(' '),
         );
       out.push('', 'Tax invoice for Santha commission (supply of services, SAC 998599):');
       out.push(`  Commission ${rs(t.commissionPaise ?? 0)}   CGST 9% ${rs(t.cgstPaise ?? 0)}   SGST 9% ${rs(t.sgstPaise ?? 0)}   Total ${rs((t.commissionPaise ?? 0) + (t.cgstPaise ?? 0) + (t.sgstPaise ?? 0))}`);
@@ -256,7 +262,7 @@ export class SettlementService implements OnModuleInit {
     } else {
       out.push('Order          Pay        COD cash held');
       for (const l of p.lines as RiderDelivery[]) out.push(`${l.code.padEnd(14)} ${rs(l.payPaise).padStart(10)} ${rs(l.codCollectedPaise).padStart(14)}`);
-      out.push('', `Earned ${rs(t.earnedPaise ?? 0)}   Cash held ${rs(t.cashHeldPaise ?? 0)}   Carried ${rs(t.adjustmentsPaise ?? 0)}`);
+      out.push('', `Earned ${rs(t.earnedPaise ?? 0)}   Incentives ${rs(t.incentivesPaise ?? 0)}   Cash held ${rs(t.cashHeldPaise ?? 0)}   Deposited ${rs(t.depositsPaise ?? 0)}   Carried ${rs(t.adjustmentsPaise ?? 0)}`);
     }
     out.push('', `NET PAYABLE ${rs(p.netPaise)}${p.netPaise <= 0 ? '  (nothing to transfer; a negative balance is carried to the next payout)' : ''}`);
     const key = `statements/${p.partyType}/${p.partyId}/${istDate(p.periodStart)}-${p.id.slice(0, 8)}.pdf`;

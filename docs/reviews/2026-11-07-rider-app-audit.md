@@ -91,3 +91,8 @@ It is compared with what quick-commerce delivery-partner apps commonly offer, su
 - Next steps 2 and 3 are done (ADR-031), in the PR `feat/rider-sos-earnings`:
   - SOS, with 112 and the ops live board;
   - earnings for the last 7 days.
+- Tips at checkout, incentives, and a cash limit set by ops (off by default) are done (ADR-032), in the PR `feat/rider-tips-incentives`.
+- UPI QR at the door: not wanted.
+- Still open:
+  - tipping after delivery (needs a separate tip payment);
+  - the offline job cache.

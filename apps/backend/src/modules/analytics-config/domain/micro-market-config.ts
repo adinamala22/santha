@@ -54,11 +54,23 @@ export const SlaSchema = z.object({
   staleCatalogueHours: z.number().int().min(1).max(720),
 });
 
+/** A delivery target with a bonus (ADR-032): e.g. 10 deliveries in a day → Rs 150. */
+export const IncentiveSchema = z.object({
+  deliveries: z.number().int().min(1).max(200),
+  bonusPaise: paise,
+  period: z.enum(['day', 'week']),
+});
+export type Incentive = z.infer<typeof IncentiveSchema>;
+
 export const RiderPaySchema = z.object({
   basePaise: paise,
   perKmPaise: paise,
   waitPerMinPaise: paise,
   batchBonusPaise: paise,
+  /** COD cash a rider may hold before getting prepaid orders only; null = no limit (ADR-032). */
+  cashLimitPaise: paise.nullable().default(null),
+  /** Delivery targets with bonuses, paid in the rider payout (ADR-032). */
+  incentives: z.array(IncentiveSchema).max(6).default([]),
 });
 
 const weight = z.number().min(0).max(1);
@@ -128,7 +140,7 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
   },
   cod: { enabled: true, maxOrderPaise: 150000, allowedTypes: ['retail', 'fashion'] },
   sla: { merchantAcceptSec: 20, merchantAcceptHardSec: 120, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },
-  riderPay: { basePaise: 3000, perKmPaise: 700, waitPerMinPaise: 100, batchBonusPaise: 1500 },
+  riderPay: { basePaise: 3000, perKmPaise: 700, waitPerMinPaise: 100, batchBonusPaise: 1500, cashLimitPaise: null, incentives: [] },
   discovery: DEFAULT_DISCOVERY,
 };
 

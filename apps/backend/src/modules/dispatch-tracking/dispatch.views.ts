@@ -112,6 +112,8 @@ export class DispatchViews {
         onlineMin: await this.dispatch.onlineMinutes(r),
       },
       cashInHandPaise: await this.dispatch.cashInHand(r),
+      cashLimitPaise: (await this.dispatch.riderPayFor(r)).cashLimitPaise,
+      incentives: await this.dispatch.incentives(r),
       acceptancePct: r.offersShown ? Math.round((100 * r.offersAccepted) / r.offersShown) : null,
       offer: live[0] ? await this.offer(live[0]) : null,
       jobs: await Promise.all(jobs.map((j) => this.job(j, 'rider'))),

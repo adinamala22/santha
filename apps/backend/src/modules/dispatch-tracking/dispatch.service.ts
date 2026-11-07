@@ -79,6 +79,12 @@ const notApproved = (r: RiderRecord | null) =>
 
 export const istDayStart = (now: Date) =>
   new Date(Math.floor((now.getTime() + IST_MS) / 86_400_000) * 86_400_000 - IST_MS);
+/** Monday 00:00 IST of the week containing `now`. */
+export const istWeekStart = (now: Date) => {
+  const today = istDayStart(now);
+  const dow = new Date(today.getTime() + IST_MS).getUTCDay(); // 0 = Sunday
+  return new Date(today.getTime() - ((dow + 6) % 7) * 86_400_000);
+};
 
 export interface OpsActor {
   userId: string;
@@ -253,12 +259,16 @@ export class DispatchService implements OnModuleInit {
     const radius = standby ? STANDBY_RADIUS_M : OFFER_RADIUS_M;
     const tried = new Set((await this.repo.offersFor(f.id)).map((o) => o.riderUserId));
     const online = new Map((await this.repo.riders({ online: true, status: ['approved'] })).map((r) => [r.userId, r]));
+    const codDue = c.order.paymentMethod === 'cod' ? Math.max(0, c.order.totalPaise - c.order.refundedPaise) : 0;
+    const limit = codDue > 0 ? (await this.config(f.microMarketId)).riderPay.cashLimitPaise : null;
     const candidates: Candidate[] = [];
     for (const pos of await this.locations.near(c.store, radius, now)) {
       const r = online.get(pos.riderId);
       if (!r || tried.has(r.userId)) continue;
       if (!standby && r.zones.length && !r.zones.includes(f.microMarketId)) continue;
       if ((await this.repo.openOffersForRider(r.userId)).length) continue;
+      // Cash limit (ADR-032): a rider at the limit gets prepaid orders only.
+      if (codDue > 0 && limit != null && (await this.cashInHand(r)) + codDue > limit) continue;
       const jobs = await this.repo.activeFulfilments({ riderUserId: r.userId });
       if (jobs.length >= 2) continue;
       if (jobs.length === 1) {
@@ -710,6 +720,12 @@ export class DispatchService implements OnModuleInit {
         pay += extra.amountPaise;
       }
     }
+    // The customer's tip goes 100% to the rider (ADR-032). Store staff: credited to the store at settlement.
+    const tip = c.order.tipPaise ?? 0;
+    if (f.mode === 'rider' && tip > 0 && !payLines.some((l) => l.code === 'tip')) {
+      payLines = [...payLines, { code: 'tip', amountPaise: tip }];
+      pay += tip;
+    }
     const next = (await this.repo.updateFulfilment(f.id, 'picked_up', {
       state: 'delivered',
       deliveredAt: now,
@@ -936,12 +952,74 @@ export class DispatchService implements OnModuleInit {
    * COD cash the rider collected in the current payout period (today for daily payouts, this IST week for
    * weekly). The next payout deducts it, so this is what they should hand over or expect to net off.
    */
-  async cashInHand(r: RiderRecord): Promise<number> {
-    const today = istDayStart(this.clock());
-    const dow = new Date(today.getTime() + 330 * 60_000).getUTCDay(); // 0 = Sunday
-    const since = r.payoutCadence === 'daily' ? today : new Date(today.getTime() - ((dow + 6) % 7) * 86_400_000);
+  async cashInHand(r: Pick<RiderRecord, 'userId' | 'payoutCadence'>): Promise<number> {
+    const since = r.payoutCadence === 'daily' ? istDayStart(this.clock()) : istWeekStart(this.clock());
     const delivered = await this.repo.deliveredForRider(r.userId, since);
-    return delivered.filter((f) => f.mode === 'rider').reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0);
+    const collected = delivered.filter((f) => f.mode === 'rider').reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0);
+    // Cash already handed over to Santha this period (ADR-032).
+    const deposited = (await this.repo.deposits(r.userId, since)).reduce((s, d) => s + d.amountPaise, 0);
+    return Math.max(0, collected - deposited);
+  }
+
+  /**
+   * Rider pay rules for a rider (cash limit, incentives): the first micro-market they work in, else the first one.
+   * Riders work in one city at pilot scale, so one config applies to all their deliveries.
+   */
+  async riderPayFor(r: Pick<RiderRecord, 'zones'>) {
+    const id = r.zones[0] ?? (await this.markets.list())[0]?.market.id;
+    return id ? (await this.config(id)).riderPay : RiderPaySchema.parse(DEFAULT_CONFIG.riderPay);
+  }
+
+  /** Progress on each incentive (ADR-032): deliveries today / this IST week against the targets. */
+  async incentives(r: RiderRecord): Promise<Array<{ period: 'day' | 'week'; deliveries: number; bonusPaise: number; done: number; achieved: boolean }>> {
+    const cfg = await this.riderPayFor(r);
+    if (!cfg.incentives.length) return [];
+    const delivered = (await this.repo.deliveredForRider(r.userId, istWeekStart(this.clock()))).filter((f) => f.mode === 'rider');
+    const today = istDayStart(this.clock());
+    const count = { day: delivered.filter((f) => f.deliveredAt! >= today).length, week: delivered.length };
+    return cfg.incentives.map((i) => ({ ...i, done: Math.min(count[i.period], i.deliveries), achieved: count[i.period] >= i.deliveries }));
+  }
+
+  /** Incentive bonuses earned in [start, end) (settlement): each day's daily targets, plus weekly targets per IST week. */
+  async incentivesEarned(r: RiderRecord, start: Date, end: Date): Promise<Array<{ period: 'day' | 'week'; deliveries: number; bonusPaise: number; date: string }>> {
+    const cfg = await this.riderPayFor(r);
+    if (!cfg.incentives.length) return [];
+    const delivered = (await this.repo.deliveredForRider(r.userId, start)).filter((f) => f.mode === 'rider' && f.deliveredAt! < end);
+    const out: Array<{ period: 'day' | 'week'; deliveries: number; bonusPaise: number; date: string }> = [];
+    const date = (d: Date) => new Date(d.getTime() + IST_MS).toISOString().slice(0, 10);
+    for (let day = istDayStart(start); day < end; day = new Date(day.getTime() + 86_400_000)) {
+      const next = new Date(day.getTime() + 86_400_000);
+      const n = delivered.filter((f) => f.deliveredAt! >= day && f.deliveredAt! < next).length;
+      for (const i of cfg.incentives) if (i.period === 'day' && n >= i.deliveries) out.push({ ...i, date: date(day) });
+    }
+    // A weekly target counts only for a whole Mon–Sun week inside the period.
+    for (let wk = istWeekStart(start); wk < end; wk = new Date(wk.getTime() + 7 * 86_400_000)) {
+      const wkEnd = new Date(wk.getTime() + 7 * 86_400_000);
+      if (wk < start || wkEnd > end) continue;
+      const n = delivered.filter((f) => f.deliveredAt! >= wk && f.deliveredAt! < wkEnd).length;
+      for (const i of cfg.incentives) if (i.period === 'week' && n >= i.deliveries) out.push({ ...i, date: date(wk) });
+    }
+    return out;
+  }
+
+  /** Ops record cash the rider handed over (ADR-032); audited. */
+  async recordDeposit(riderUserId: string, amountPaise: number, note: string | null, actor: OpsActor) {
+    const r = await this.repo.getRider(riderUserId);
+    if (!r) throw new DomainError('NOT_FOUND', 'Rider not found');
+    const d = await this.repo.createDeposit({ id: randomUUID(), riderUserId, amountPaise, note, recordedBy: actor.userId });
+    await this.repo.appendAudit({
+      entity: 'rider',
+      entityId: riderUserId,
+      action: 'rider.cash_deposit',
+      actorId: actor.userId,
+      requestId: actor.requestId,
+      after: { amountPaise, note },
+    });
+    return d;
+  }
+
+  depositsFor(riderUserId: string, start: Date, end: Date) {
+    return this.repo.deposits(riderUserId, start).then((ds) => ds.filter((d) => d.createdAt < end));
   }
 
   /** The last 7 IST days including today, oldest first: deliveries, pay and COD cash per day. */
