@@ -306,6 +306,25 @@ class FakeRiderApi extends RiderApi {
   @override
   Future<List<Payout>> payouts() async => payoutList;
 
+  /// SOS fails as if the phone had no network.
+  bool sosFails = false;
+
+  @override
+  Future<String> sos({double? lat, double? lng, bool called112 = false}) async {
+    if (sosFails) throw const ApiException(code: ApiException.network, status: 0);
+    calls.add('sos $called112 ${lat != null}');
+    return 'sos1';
+  }
+
+  @override
+  Future<RiderWeek> earningsWeek() async {
+    final days = [
+      for (var i = 6; i >= 0; i--)
+        EarningDay(DateTime.utc(2026, 11, 2).subtract(Duration(days: i)), i == 0 ? deliveries + 2 : (i == 3 ? 1 : 0), i == 0 ? earned + 9600 : (i == 3 ? 4800 : 0), 0),
+    ];
+    return RiderWeek(days.fold(0, (s, d) => s + d.earnedPaise), days.fold(0, (s, d) => s + d.deliveries), days);
+  }
+
   @override
   Future<RiderEarnings> earnings() async => RiderEarnings(earned, 320, [
         if (deliveries > 0) Earning('SN4821', testNow, 4800, const [PayLine('base', 3000), PayLine('distance', 1800)]),

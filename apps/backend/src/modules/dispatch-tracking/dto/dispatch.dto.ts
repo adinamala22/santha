@@ -144,6 +144,23 @@ export class RiderHomeDto extends createZodDto(
   }),
 ) {}
 
+export class SosDto extends createZodDto(
+  z.object({
+    lat: z.number().min(-90).max(90).optional(),
+    lng: z.number().min(-180).max(180).optional(),
+    called112: z.boolean().optional().describe('The rider also chose to call 112'),
+  }),
+) {}
+export class SosViewDto extends createZodDto(z.object({ id: z.uuid(), createdAt: iso, fulfilmentId: z.uuid().nullable() })) {}
+export class ResolveSosDto extends createZodDto(z.object({ note: z.string().trim().max(300).optional() })) {}
+export class RiderWeekDto extends createZodDto(
+  z.object({
+    totalPaise: int,
+    deliveries: int,
+    days: z.array(z.object({ date: z.string().describe('IST date, YYYY-MM-DD'), deliveries: int, earnedPaise: int, cashPaise: int })),
+  }),
+) {}
+
 export class RiderEarningsDto extends createZodDto(
   z.object({
     totalPaise: int,
@@ -266,12 +283,16 @@ export class OpsLiveDto extends createZodDto(
     }),
     attention: z.array(
       z.object({
-        kind: z.enum(['no_rider', 'eta_breach', 'auto_paused', 'delivery_failed']),
+        kind: z.enum(['no_rider', 'eta_breach', 'auto_paused', 'delivery_failed', 'rider_sos']),
         orderId: z.uuid().nullable(),
         code: z.string().nullable(),
         merchantName: z.string(),
         minutes: int,
         stage: z.string().nullable(),
+        sos: z
+          .object({ id: z.uuid(), riderUserId: z.uuid(), riderName: z.string(), lat: z.number().nullable(), lng: z.number().nullable(), called112: z.boolean() })
+          .nullable()
+          .describe('A rider pressed SOS (ADR-031); listed first'),
       }),
     ),
     orders: z.array(OpsDeliverySchema),

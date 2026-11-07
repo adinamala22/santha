@@ -310,13 +310,29 @@ export class DispatchViews {
     };
     const rows = [];
     const attention: Array<{
-      kind: 'no_rider' | 'eta_breach' | 'auto_paused' | 'delivery_failed';
+      kind: 'no_rider' | 'eta_breach' | 'auto_paused' | 'delivery_failed' | 'rider_sos';
       orderId: string | null;
       code: string | null;
       merchantName: string;
       minutes: number;
       stage: string | null;
+      sos?: { id: string; riderUserId: string; riderName: string; lat: number | null; lng: number | null; called112: boolean } | null;
     }> = [];
+    // SOS first (ADR-031): every open alert, whatever the order is doing.
+    const riderNames = new Map((await this.dispatch.ridersAll()).map((r) => [r.userId, r.name]));
+    for (const s of await this.dispatch.openSos()) {
+      const f = s.fulfilmentId ? await this.dispatch.fulfilmentById(s.fulfilmentId) : null;
+      const o = f ? await this.orders.get(f.orderId) : null;
+      attention.push({
+        kind: 'rider_sos',
+        orderId: o?.id ?? null,
+        code: o?.code ?? null,
+        merchantName: o ? await nameOf(o.merchantId) : '—',
+        minutes: Math.floor((now.getTime() - s.createdAt.getTime()) / 60_000),
+        stage: s.called112 ? 'called_112' : null,
+        sos: { id: s.id, riderUserId: s.riderUserId, riderName: riderNames.get(s.riderUserId) ?? '—', lat: s.lat, lng: s.lng, called112: s.called112 },
+      });
+    }
     for (const o of active) {
       const f = await this.dispatch.fulfilmentForOrder(o.id);
       const row = await this.opsRow(o, f, await nameOf(o.merchantId));
@@ -390,7 +406,9 @@ export class DispatchViews {
             )
           : null,
       },
-      attention: attention.sort((a, b) => b.minutes - a.minutes),
+      attention: attention
+        .sort((a, b) => Number(b.kind === 'rider_sos') - Number(a.kind === 'rider_sos') || b.minutes - a.minutes)
+        .map((a) => ({ ...a, sos: a.sos ?? null })),
       orders: rows,
       riders: riders.map((r) => ({
         userId: r.userId,

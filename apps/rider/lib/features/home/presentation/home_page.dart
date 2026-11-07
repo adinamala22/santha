@@ -11,6 +11,7 @@ import '../../../l10n/gen/app_localizations.dart';
 import '../../onboarding/onboarding_view.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import 'sos.dart';
 import '../../../support.dart';
 
 /// Rider home (wireframe rider/01-offer): online toggle with zones, the ringing offer card with its
@@ -29,6 +30,7 @@ class HomePage extends ConsumerWidget {
         foregroundColor: SanthaColors.white,
         title: Text(home.value?.name ?? l.appName),
         actions: [
+          if (home.value?.status == RiderStatus.approved) const SosButton(),
           IconButton(tooltip: l.earningsTitle, icon: const Icon(Icons.account_balance_wallet), onPressed: () => context.push('/earnings')),
           IconButton(
             key: const ValueKey('open-support'),

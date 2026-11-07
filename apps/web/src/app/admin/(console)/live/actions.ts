@@ -38,3 +38,12 @@ export async function resolveFailedDelivery(orderId: string, _prev: ActionState,
   revalidatePath(`/admin/orders/${orderId}`);
   return r.ok ? { ok: true, done: 'cancel' } : { ok: false, code: r.code, message: r.message };
 }
+
+/** Close a rider SOS (ADR-031) with what happened; audited by the backend. */
+export async function resolveSos(sosId: string, _prev: ActionState, form: FormData): Promise<ActionState> {
+  const note = String(form.get('note') ?? '').trim();
+  if (note.length < 3) return { ok: false, code: 'REASON_REQUIRED' };
+  const r = await opsApi(`/v1/ops/sos/${sosId}/resolve`, { method: 'POST', body: { note } });
+  revalidatePath('/admin/live');
+  return r.ok ? { ok: true, done: 'resolve' } : { ok: false, code: r.code, message: r.message };
+}

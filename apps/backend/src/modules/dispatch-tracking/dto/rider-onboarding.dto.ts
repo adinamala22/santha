@@ -59,6 +59,11 @@ export class OpsRiderDto extends createZodDto(
   RiderOnboardingSchema.extend(OpsRiderRow.shape).extend({
     selfieUrl: z.string().nullable().describe('Short-lived link (5 min)'),
     licenceUrl: z.string().nullable().describe('Short-lived link (5 min) to the licence card photo'),
+    openSos: z
+      .object({ id: z.uuid(), createdAt: iso, lat: z.number().nullable(), lng: z.number().nullable(), called112: z.boolean(), orderCode: z.string().nullable() })
+      .nullable()
+      .describe('An SOS not yet resolved (ADR-031)'),
+    phoneForOps: z.string().describe('Full phone number, so ops can call the rider back (ops roles only)'),
   }),
 ) {}
 

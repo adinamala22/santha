@@ -1,0 +1,48 @@
+{
+ "totalPaise": 19200,
+ "deliveries": 4,
+ "days": [
+  {
+   "date": "2026-11-01",
+   "deliveries": 0,
+   "earnedPaise": 0,
+   "cashPaise": 0
+  },
+  {
+   "date": "2026-11-02",
+   "deliveries": 1,
+   "earnedPaise": 4800,
+   "cashPaise": 0
+  },
+  {
+   "date": "2026-11-03",
+   "deliveries": 0,
+   "earnedPaise": 0,
+   "cashPaise": 0
+  },
+  {
+   "date": "2026-11-04",
+   "deliveries": 2,
+   "earnedPaise": 9600,
+   "cashPaise": 31200
+  },
+  {
+   "date": "2026-11-05",
+   "deliveries": 0,
+   "earnedPaise": 0,
+   "cashPaise": 0
+  },
+  {
+   "date": "2026-11-06",
+   "deliveries": 0,
+   "earnedPaise": 0,
+   "cashPaise": 0
+  },
+  {
+   "date": "2026-11-07",
+   "deliveries": 1,
+   "earnedPaise": 4800,
+   "cashPaise": 0
+  }
+ ]
+}

@@ -963,6 +963,26 @@ model RiderPhoto {
   @@map("rider_photos")
 }
 
+/// A rider pressed SOS (ADR-031). Open until ops resolve it; shown on the live board.
+model RiderSos {
+  id           String    @id @db.Uuid
+  riderUserId  String    @map("rider_user_id") @db.Uuid
+  /// The delivery in hand, if any.
+  fulfilmentId String?   @map("fulfilment_id") @db.Uuid
+  lat          Float?
+  lng          Float?
+  /// The rider also chose to call 112.
+  called112    Boolean   @default(false) @map("called_112")
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  resolvedAt   DateTime? @map("resolved_at") @db.Timestamptz(6)
+  resolvedBy   String?   @map("resolved_by") @db.Uuid
+  note         String?
+
+  @@index([resolvedAt])
+  @@index([riderUserId])
+  @@map("rider_sos")
+}
+
 /// How one order reaches the customer: the store's staff (self), a Santha rider, or a 3PL partner.
 model Fulfilment {
   id                String    @id @db.Uuid

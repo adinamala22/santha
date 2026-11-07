@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import 'sos.dart';
 import '../../../support.dart';
 
 /// Opens a URL outside the app (maps navigation, phone dialer). Tests override it.
@@ -68,6 +69,7 @@ class _JobPageState extends ConsumerState<JobPage> {
         foregroundColor: SanthaColors.white,
         title: Text(job.value == null ? '' : l.orderCode(job.value!.code)),
         actions: [
+          const SosButton(),
           if (job.value case final j?)
             IconButton(
               key: const ValueKey('job-support'),

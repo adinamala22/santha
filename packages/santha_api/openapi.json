@@ -4852,6 +4852,86 @@
         ]
       }
     },
+    "/v1/riders/me/earnings/week": {
+      "get": {
+        "operationId": "RiderController_week",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "The last 7 IST days, oldest first: deliveries, pay and COD cash per day",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderWeekDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/sos": {
+      "post": {
+        "operationId": "RiderController_sos",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SosDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "SOS (ADR-031): alerts Santha ops with the position and the delivery in hand; pressing again returns the open alert",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SosViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
     "/v1/offers/{id}/accept": {
       "post": {
         "operationId": "RiderController_accept",
@@ -5858,6 +5938,51 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/OpsDeliveryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/ops/sos/{id}/resolve": {
+      "post": {
+        "operationId": "OpsDispatchController_resolveSos",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveSosDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Close a rider SOS after ops reached the rider (ADR-031); audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SosViewDto_Output"
                 }
               }
             }
@@ -24397,6 +24522,106 @@
         ],
         "additionalProperties": false
       },
+      "RiderWeekDto_Output": {
+        "type": "object",
+        "properties": {
+          "totalPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "deliveries": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "days": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "IST date, YYYY-MM-DD"
+                },
+                "deliveries": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "earnedPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "cashPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "date",
+                "deliveries",
+                "earnedPaise",
+                "cashPaise"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "totalPaise",
+          "deliveries",
+          "days"
+        ],
+        "additionalProperties": false
+      },
+      "SosDto": {
+        "type": "object",
+        "properties": {
+          "lat": {
+            "type": "number",
+            "minimum": -90,
+            "maximum": 90
+          },
+          "lng": {
+            "type": "number",
+            "minimum": -180,
+            "maximum": 180
+          },
+          "called112": {
+            "description": "The rider also chose to call 112",
+            "type": "boolean"
+          }
+        }
+      },
+      "SosViewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "fulfilmentId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "fulfilmentId"
+        ],
+        "additionalProperties": false
+      },
       "JobViewDto_Output": {
         "type": "object",
         "properties": {
@@ -25293,7 +25518,8 @@
                     "no_rider",
                     "eta_breach",
                     "auto_paused",
-                    "delivery_failed"
+                    "delivery_failed",
+                    "rider_sos"
                   ]
                 },
                 "orderId": {
@@ -25321,6 +25547,50 @@
                     "string",
                     "null"
                   ]
+                },
+                "sos": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "riderUserId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "riderName": {
+                      "type": "string"
+                    },
+                    "lat": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "lng": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "called112": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "riderUserId",
+                    "riderName",
+                    "lat",
+                    "lng",
+                    "called112"
+                  ],
+                  "additionalProperties": false,
+                  "description": "A rider pressed SOS (ADR-031); listed first",
+                  "nullable": true
                 }
               },
               "required": [
@@ -25329,7 +25599,8 @@
                 "code",
                 "merchantName",
                 "minutes",
-                "stage"
+                "stage",
+                "sos"
               ],
               "additionalProperties": false
             }
@@ -25662,6 +25933,15 @@
           "refund",
           "reason"
         ]
+      },
+      "ResolveSosDto": {
+        "type": "object",
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          }
+        }
       },
       "RiderPhotoRequestDto": {
         "type": "object",
@@ -26313,6 +26593,56 @@
             "description": "Short-lived link (5 min) to the licence card photo",
             "type": "string",
             "nullable": true
+          },
+          "openSos": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "createdAt": {
+                "type": "string",
+                "description": "ISO-8601 timestamp"
+              },
+              "lat": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "lng": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "called112": {
+                "type": "boolean"
+              },
+              "orderCode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "createdAt",
+              "lat",
+              "lng",
+              "called112",
+              "orderCode"
+            ],
+            "additionalProperties": false,
+            "description": "An SOS not yet resolved (ADR-031)",
+            "nullable": true
+          },
+          "phoneForOps": {
+            "type": "string",
+            "description": "Full phone number, so ops can call the rider back (ops roles only)"
           }
         },
         "required": [
@@ -26332,7 +26662,9 @@
           "rating",
           "decidedAt",
           "selfieUrl",
-          "licenceUrl"
+          "licenceUrl",
+          "openSos",
+          "phoneForOps"
         ],
         "additionalProperties": false
       },

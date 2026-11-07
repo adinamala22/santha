@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_ui/santha_ui.dart';
@@ -16,6 +17,7 @@ class EarningsPage extends ConsumerWidget {
     final l = AppLocalizations.of(context);
     final e = ref.watch(earningsProvider);
     final payouts = ref.watch(payoutsProvider).value ?? const <Payout>[];
+    final week = ref.watch(weekProvider).value;
     String day(DateTime d) {
       final t = d.toUtc().add(const Duration(hours: 5, minutes: 30));
       return '${t.day.toString().padLeft(2, '0')}/${t.month.toString().padLeft(2, '0')}';
@@ -38,6 +40,8 @@ class EarningsPage extends ConsumerWidget {
               ),
             ),
           const SizedBox(height: SanthaSpacing.s6),
+          if (week != null) _Week(week: week),
+          const SizedBox(height: SanthaSpacing.s6),
           Text(l.payoutsTitle, style: text.titleMedium),
           if (payouts.isEmpty) Text(l.payoutsEmpty, style: const TextStyle(color: SanthaColors.slate)),
           for (final p in payouts)
@@ -50,6 +54,45 @@ class EarningsPage extends ConsumerWidget {
             ),
         ]),
       ),
+    );
+  }
+}
+
+/// The last 7 days (ADR-031): one row per day with a bar for its pay, newest first.
+class _Week extends StatelessWidget {
+  const _Week({required this.week});
+  final RiderWeek week;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    final text = Theme.of(context).textTheme;
+    final top = week.days.fold<int>(0, (m, d) => d.earnedPaise > m ? d.earnedPaise : m);
+    final locale = Localizations.localeOf(context).languageCode;
+    return Column(
+      key: const ValueKey('week'),
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(l.weekTitle, style: text.titleMedium),
+        Text(l.weekTotal(rupees(week.totalPaise), week.deliveries), key: const ValueKey('week-total'), style: text.bodyMedium?.copyWith(color: SanthaColors.slate)),
+        const SizedBox(height: SanthaSpacing.s2),
+        for (final d in week.days.reversed)
+          Padding(
+            key: ValueKey('day-${d.date.toIso8601String().substring(0, 10)}'),
+            padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s1),
+            child: Row(children: [
+              SizedBox(width: 92, child: Text(DateFormat('EEE d MMM', locale).format(d.date), style: text.bodySmall)),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(SanthaRadius.sm),
+                  child: LinearProgressIndicator(value: top == 0 ? 0 : d.earnedPaise / top, minHeight: 10, backgroundColor: SanthaColors.indigo100, color: SanthaColors.leaf),
+                ),
+              ),
+              const SizedBox(width: SanthaSpacing.s2),
+              SizedBox(width: 120, child: Text(l.weekDay(rupees(d.earnedPaise), d.deliveries), textAlign: TextAlign.end, style: text.bodySmall)),
+            ]),
+          ),
+      ],
     );
   }
 }

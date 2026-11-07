@@ -53,6 +53,20 @@ export interface RiderPhotoRecord {
 export const RIDER_PHOTO_KINDS = ['selfie', 'licence', 'delivery'] as const;
 export type RiderPhotoKind = (typeof RIDER_PHOTO_KINDS)[number];
 
+/** A rider's SOS (ADR-031). */
+export interface RiderSosRecord {
+  id: string;
+  riderUserId: string;
+  fulfilmentId: string | null;
+  lat: number | null;
+  lng: number | null;
+  called112: boolean;
+  createdAt: Date;
+  resolvedAt: Date | null;
+  resolvedBy: string | null;
+  note: string | null;
+}
+
 export interface FulfilmentRecord {
   id: string;
   orderId: string;
@@ -159,6 +173,13 @@ export abstract class DispatchRepository {
   abstract updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>): Promise<RiderPhotoRecord | null>;
   /** Ready photos of a rider, newest first. */
   abstract riderPhotos(riderUserId: string, kind?: RiderPhotoKind): Promise<RiderPhotoRecord[]>;
+
+  abstract createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>): Promise<RiderSosRecord>;
+  abstract sos(id: string): Promise<RiderSosRecord | null>;
+  /** Open SOS alerts (all riders, or one), oldest first. */
+  abstract openSos(riderUserId?: string): Promise<RiderSosRecord[]>;
+  /** Compare-and-set: only an open alert is resolved; null when it already was. */
+  abstract resolveSos(id: string, by: string, note: string | null, at: Date): Promise<RiderSosRecord | null>;
 }
 
 const asStates = (e: FulfilmentState | readonly FulfilmentState[]) => (typeof e === 'string' ? [e] : [...e]);
@@ -350,6 +371,23 @@ export class PrismaDispatchRepository extends DispatchRepository {
   async updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>) {
     const n = await this.prisma.riderPhoto.updateMany({ where: { id }, data: patch });
     return n.count ? this.photo(id) : null;
+  }
+
+  createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>) {
+    return this.prisma.riderSos.create({ data: s });
+  }
+
+  sos(id: string) {
+    return this.prisma.riderSos.findUnique({ where: { id } });
+  }
+
+  openSos(riderUserId?: string) {
+    return this.prisma.riderSos.findMany({ where: { resolvedAt: null, ...(riderUserId ? { riderUserId } : {}) }, orderBy: { createdAt: 'asc' } });
+  }
+
+  async resolveSos(id: string, by: string, note: string | null, at: Date) {
+    const n = await this.prisma.riderSos.updateMany({ where: { id, resolvedAt: null }, data: { resolvedAt: at, resolvedBy: by, note } });
+    return n.count ? this.sos(id) : null;
   }
 
   async riderPhotos(riderUserId: string, kind?: RiderPhotoKind) {
@@ -567,6 +605,35 @@ export class InMemoryDispatchRepository extends DispatchRepository {
     if (!r) return null;
     const next = { ...r, ...patch };
     this.photos.set(id, next);
+    return structuredClone(next);
+  }
+
+  private readonly sosRows = new Map<string, RiderSosRecord>();
+
+  async createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>) {
+    const row: RiderSosRecord = { ...s, createdAt: new Date(), resolvedAt: null, resolvedBy: null, note: null };
+    this.sosRows.set(s.id, row);
+    return structuredClone(row);
+  }
+
+  async sos(id: string) {
+    const r = this.sosRows.get(id);
+    return r ? structuredClone(r) : null;
+  }
+
+  async openSos(riderUserId?: string) {
+    return structuredClone(
+      [...this.sosRows.values()]
+        .filter((s) => !s.resolvedAt && (!riderUserId || s.riderUserId === riderUserId))
+        .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
+    );
+  }
+
+  async resolveSos(id: string, by: string, note: string | null, at: Date) {
+    const r = this.sosRows.get(id);
+    if (!r || r.resolvedAt) return null;
+    const next = { ...r, resolvedAt: at, resolvedBy: by, note };
+    this.sosRows.set(id, next);
     return structuredClone(next);
   }
 

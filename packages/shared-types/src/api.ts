@@ -1476,6 +1476,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/riders/me/earnings/week": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["RiderController_week"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/sos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_sos"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/offers/{id}/accept": {
         parameters: {
             query?: never;
@@ -1870,6 +1902,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["OpsDispatchController_cancelFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/ops/sos/{id}/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_resolveSos"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6614,6 +6662,31 @@ export interface components {
                 }[];
             }[];
         };
+        RiderWeekDto_Output: {
+            totalPaise: number;
+            deliveries: number;
+            days: {
+                /** @description IST date, YYYY-MM-DD */
+                date: string;
+                deliveries: number;
+                earnedPaise: number;
+                cashPaise: number;
+            }[];
+        };
+        SosDto: {
+            lat?: number;
+            lng?: number;
+            /** @description The rider also chose to call 112 */
+            called112?: boolean;
+        };
+        SosViewDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            /** Format: uuid */
+            fulfilmentId: string | null;
+        };
         JobViewDto_Output: {
             /** Format: uuid */
             id: string;
@@ -6828,13 +6901,24 @@ export interface components {
             };
             attention: {
                 /** @enum {string} */
-                kind: "no_rider" | "eta_breach" | "auto_paused" | "delivery_failed";
+                kind: "no_rider" | "eta_breach" | "auto_paused" | "delivery_failed" | "rider_sos";
                 /** Format: uuid */
                 orderId: string | null;
                 code: string | null;
                 merchantName: string;
                 minutes: number;
                 stage: string | null;
+                /** @description A rider pressed SOS (ADR-031); listed first */
+                sos: {
+                    /** Format: uuid */
+                    id: string;
+                    /** Format: uuid */
+                    riderUserId: string;
+                    riderName: string;
+                    lat: number | null;
+                    lng: number | null;
+                    called112: boolean;
+                } | null;
             }[];
             orders: {
                 /** Format: uuid */
@@ -6908,6 +6992,9 @@ export interface components {
             /** @description Refund what the customer paid (wallet for online payments) */
             refund: boolean;
             reason: string;
+        };
+        ResolveSosDto: {
+            note?: string;
         };
         RiderPhotoRequestDto: {
             /** @enum {string} */
@@ -7069,6 +7156,19 @@ export interface components {
             selfieUrl: string | null;
             /** @description Short-lived link (5 min) to the licence card photo */
             licenceUrl: string | null;
+            /** @description An SOS not yet resolved (ADR-031) */
+            openSos: {
+                /** Format: uuid */
+                id: string;
+                /** @description ISO-8601 timestamp */
+                createdAt: string;
+                lat: number | null;
+                lng: number | null;
+                called112: boolean;
+                orderCode: string | null;
+            } | null;
+            /** @description Full phone number, so ops can call the rider back (ops roles only) */
+            phoneForOps: string;
         };
         RiderApproveDto: {
             note?: string;
@@ -10537,6 +10637,54 @@ export interface operations {
             };
         };
     };
+    RiderController_week: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The last 7 IST days, oldest first: deliveries, pay and COD cash per day */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderWeekDto_Output"];
+                };
+            };
+        };
+    };
+    RiderController_sos: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SosDto"];
+            };
+        };
+        responses: {
+            /** @description SOS (ADR-031): alerts Santha ops with the position and the delivery in hand; pressing again returns the open alert */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SosViewDto_Output"];
+                };
+            };
+        };
+    };
     RiderController_accept: {
         parameters: {
             query?: never;
@@ -11135,6 +11283,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_resolveSos: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolveSosDto"];
+            };
+        };
+        responses: {
+            /** @description Close a rider SOS after ops reached the rider (ADR-031); audited */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SosViewDto_Output"];
                 };
             };
         };

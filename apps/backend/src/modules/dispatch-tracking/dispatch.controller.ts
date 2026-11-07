@@ -22,6 +22,10 @@ import {
   RiderEarningsDto,
   RiderHomeDto,
   RiderStatusDto,
+  RiderWeekDto,
+  ResolveSosDto,
+  SosDto,
+  SosViewDto,
   StaffDeliveredDto,
   StatementPreviewDto,
   StatementQueryDto,
@@ -68,6 +72,21 @@ export class RiderController {
   @ZodResponse({ type: RiderEarningsDto, description: "Today's deliveries (IST) with the pay breakdown" })
   async earnings(@CurrentUser() u: AuthUser) {
     return this.views.earnings(await this.dispatch.rider(u.userId));
+  }
+
+  @Get('riders/me/earnings/week')
+  @ZodResponse({ type: RiderWeekDto, description: 'The last 7 IST days, oldest first: deliveries, pay and COD cash per day' })
+  async week(@CurrentUser() u: AuthUser) {
+    const days = await this.dispatch.earningsWeek(u.userId);
+    return { days, totalPaise: days.reduce((s, d) => s + d.earnedPaise, 0), deliveries: days.reduce((s, d) => s + d.deliveries, 0) };
+  }
+
+  @Post('riders/me/sos')
+  @HttpCode(200)
+  @ZodResponse({ type: SosViewDto, description: 'SOS (ADR-031): alerts Santha ops with the position and the delivery in hand; pressing again returns the open alert' })
+  async sos(@Body() b: SosDto, @CurrentUser() u: AuthUser) {
+    const s = await this.dispatch.sos(u.userId, b);
+    return { id: s.id, createdAt: s.createdAt.toISOString(), fulfilmentId: s.fulfilmentId };
   }
 
   @Post('offers/:id/accept')
@@ -351,5 +370,13 @@ export class OpsDispatchController {
   async cancelFailed(@Param('id', ParseUUIDPipe) id: string, @Body() b: OpsCancelFailedDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
     await this.dispatch.cancelFailed(id, b.refund, b.reason, { userId: u.userId, requestId });
     return this.views.opsDelivery(id);
+  }
+
+  @Post('sos/:id/resolve')
+  @HttpCode(200)
+  @ZodResponse({ type: SosViewDto, description: 'Close a rider SOS after ops reached the rider (ADR-031); audited' })
+  async resolveSos(@Param('id', ParseUUIDPipe) id: string, @Body() b: ResolveSosDto, @CurrentUser() u: AuthUser, @RequestId() requestId: string | null) {
+    const s = await this.dispatch.resolveSos(id, { userId: u.userId, requestId }, b.note?.trim() || null);
+    return { id: s.id, createdAt: s.createdAt.toISOString(), fulfilmentId: s.fulfilmentId };
   }
 }

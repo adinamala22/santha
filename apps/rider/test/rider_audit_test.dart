@@ -222,4 +222,49 @@ void main() {
     expect(events, contains(('delivered', 'photo')));
     expect(events.map((e) => e.$1), contains('arrived_customer'));
   });
+
+  testWidgets('ADR-031: SOS → Call 112 dials 112 first, then alerts Santha with the location', (tester) async {
+    final launched = <Uri>[];
+    final (container, api) = await pumpRider(tester, launched: launched, make: (c) => FakeRiderApi(c, online: true));
+    await tapKey(tester, 'sos');
+    expect(find.text('Emergency help'), findsOneWidget);
+    await tapKey(tester, 'sos-112');
+    expect(launched, [Uri.parse('tel:112')]);
+    expect(api.calls, contains('sos true true'));
+    expect(find.text('Santha support has been alerted and will call you.'), findsOneWidget);
+    final events = (container.read(analyticsProvider) as DebugAnalytics).events.map((e) => e.$1);
+    expect(events, contains('sos_pressed'));
+  });
+
+  testWidgets('ADR-031: SOS from a delivery, alert only; without network it says to call 112', (tester) async {
+    final launched = <Uri>[];
+    final (_, api) = await pumpRider(tester, launched: launched, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob()]));
+    await tapKey(tester, 'job-j1');
+    await tapKey(tester, 'sos');
+    await tapKey(tester, 'sos-alert');
+    expect(launched, isEmpty);
+    expect(api.calls, contains('sos false true'));
+    api.sosFails = true;
+    await tapKey(tester, 'sos');
+    await tapKey(tester, 'sos-alert');
+    expect(find.text('Could not alert Santha (no network). Call 112 if you need help now.'), findsOneWidget);
+  });
+
+  testWidgets('ADR-031: SOS is not offered before approval', (tester) async {
+    await pumpRider(tester, make: (c) => FakeRiderApi(c, status: RiderStatus.submitted));
+    expect(find.byKey(const ValueKey('sos')), findsNothing);
+  });
+
+  testWidgets('ADR-031: earnings show the last 7 days, newest first; Telugu', (tester) async {
+    await pumpRider(tester, locale: 'te');
+    await tester.tap(find.byTooltip('ఈరోజు ఆదాయం'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('week-total')), 200);
+    expect(find.text('గత 7 రోజులు'), findsOneWidget);
+    expect(find.text('3 డెలివరీల నుండి ₹144'), findsOneWidget);
+    expect(find.byKey(const ValueKey('day-2026-11-02')), findsOneWidget);
+    expect(find.byKey(const ValueKey('day-2026-10-27')), findsOneWidget);
+    final rows = tester.widgetList<Padding>(find.byWidgetPredicate((w) => w.key is ValueKey<String> && (w.key! as ValueKey<String>).value.startsWith('day-'))).map((w) => (w.key! as ValueKey<String>).value).toList();
+    expect(rows.first, 'day-2026-11-02'); // newest first
+  });
 }

@@ -8,6 +8,9 @@ import { dateOnly, dateTime } from '@/lib/format';
 import { mediaSrc } from '@/lib/media';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 import { decideRider } from './actions';
+import { resolveSos } from '../../live/actions';
+import { sosMapUrl } from '../../live/sos-actions';
+import { liveCopy } from '@/i18n/live';
 
 export const metadata = { title: 'Rider' };
 const TONE = { draft: 'draft', submitted: 'submitted', approved: 'live', rejected: 'rejected', suspended: 'rejected' } as const;
@@ -19,6 +22,7 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
   const copy = consoleCopy(locale);
   const mc = copy.merchant;
   const c = ridersCopy(locale);
+  const lc = liveCopy(locale);
   const [r, audit] = await Promise.all([opsGet<OpsRider>(`/v1/ops/riders/${id}`), opsGet<AuditList>(`/v1/ops/audit?entity=rider&entityId=${id}`)]);
 
   const choices: ConfirmChoice[] =
@@ -48,6 +52,44 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
         ‹ {c.back}
       </Link>
       <PageHeader title={r.name} sub={r.phoneMasked} actions={<Chip tone={TONE[r.status]}>{c.status[r.status]}</Chip>} />
+      {r.openSos ? (
+        <section id="sos" data-testid="rider-sos" className="mb-6 rounded-lg border-2 border-chilli bg-chilli/10 p-4">
+          <h2 className="text-lg font-semibold text-chilli">{fill(lc.sosOpenTitle, { min: Math.max(0, Math.floor((Date.now() - Date.parse(r.openSos.createdAt)) / 60_000)) })}</h2>
+          <ul className="mt-2 space-y-1 text-sm text-ink">
+            {r.openSos.orderCode ? <li>{fill(lc.sosOrder, { code: r.openSos.orderCode })}</li> : null}
+            {r.openSos.called112 ? <li className="text-chilli">{lc.sosCalled112}</li> : null}
+            <li>
+              <a href={`tel:${r.phoneForOps}`} className="font-medium text-indigo hover:underline s-focus">
+                {fill(lc.sosCallRider, { phone: r.phoneForOps })}
+              </a>
+            </li>
+            <li>
+              {r.openSos.lat != null && r.openSos.lng != null ? (
+                <a href={sosMapUrl(r.openSos.lat, r.openSos.lng)} target="_blank" rel="noreferrer" className="text-indigo hover:underline s-focus">
+                  {lc.sosMap} ↗
+                </a>
+              ) : (
+                lc.sosNoLocation
+              )}
+            </li>
+          </ul>
+          <div className="mt-3">
+            {session?.canDecide ? (
+              <ConfirmAction
+                action={resolveSos.bind(null, r.openSos.id)}
+                choices={[{ value: 'resolve', label: lc.sosResolve, question: fill(lc.sosConfirm, { rider: r.name }) }]}
+                noteLabel={lc.sosNote}
+                doneText={{ resolve: lc.sosResolved }}
+                errors={copy.errors}
+                confirmText={copy.common.confirm}
+                cancelText={copy.common.cancel}
+              />
+            ) : (
+              <Notice>{copy.common.readOnly}</Notice>
+            )}
+          </div>
+        </section>
+      ) : null}
       {r.statusNote ? (
         <div className="mb-6">
           <Notice tone="error">{fill(c.lastNote, { note: r.statusNote })}</Notice>
