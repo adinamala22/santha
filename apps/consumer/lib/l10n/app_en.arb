@@ -1046,5 +1046,7 @@
   "topic_payout": "Payouts",
   "topic_catalogue": "Catalogue",
   "topic_delivery": "A delivery",
-  "topic_app": "The app"
+  "topic_app": "The app",
+  "courierAtDoor": "Your delivery partner is at your door. Keep your OTP ready.",
+  "leftAtDoor": "Left at your door. This is the photo your delivery partner took."
 }

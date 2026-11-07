@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
@@ -56,6 +57,29 @@ final liveLocationsProvider = Provider<LiveLocations?>((ref) => (l) {
         _ => const LocationSettings(accuracy: LocationAccuracy.high, distanceFilter: 20),
       };
       return Geolocator.getPositionStream(locationSettings: settings).map((p) => Point(p.latitude, p.longitude));
+    });
+
+/// A photo taken with the camera (ADR-030). Tests override [photoTakerProvider].
+class PickedPhoto {
+  const PickedPhoto(this.bytes, this.contentType);
+  final Uint8List bytes;
+  final String contentType;
+}
+
+typedef PhotoTaker = Future<PickedPhoto?> Function({bool front});
+
+/// Camera only (no gallery): sign-up selfie (front camera), licence card and door photos (back camera).
+final photoTakerProvider = Provider<PhotoTaker>((ref) => ({bool front = false}) async {
+      final x = await ImagePicker().pickImage(
+        source: ImageSource.camera,
+        preferredCameraDevice: front ? CameraDevice.front : CameraDevice.rear,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 80,
+      );
+      if (x == null) return null;
+      final name = x.name.toLowerCase();
+      return PickedPhoto(await x.readAsBytes(), x.mimeType ?? (name.endsWith('.png') ? 'image/png' : 'image/jpeg'));
     });
 
 /// How often the home refreshes (offers, jobs) and the position is sent while online. Tests: null.
@@ -231,6 +255,20 @@ class JobController extends AsyncNotifier<Job> {
   Future<void> pickedUp(String code) async {
     state = AsyncData(await _api.pickedUp(id, code));
     _analytics.track('picked_up', {'job_id': id});
+  }
+
+  /// At the customer's door (ADR-030): the customer is told; the waiting timer starts.
+  Future<void> arrivedDrop() async {
+    state = AsyncData(await _api.arrivedDrop(id));
+    _analytics.track('arrived_customer', {'job_id': id});
+  }
+
+  /// Left at the door with a photo instead of the OTP (prepaid orders, after arriving; ADR-030).
+  Future<void> deliveredWithPhoto(PickedPhoto p) async {
+    final photoId = await _api.uploadPhoto(p.bytes, kind: 'delivery', contentType: p.contentType, fulfilmentId: id);
+    state = AsyncData(await _api.deliveredWithPhoto(id, photoId));
+    _analytics.track('delivered', {'job_id': id, 'verification': 'photo', 'cod_paise': 0});
+    ref.invalidate(riderHomeProvider);
   }
 
   /// Couldn't deliver (ADR-026): the job stays with the rider until they retry or support decides.

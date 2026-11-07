@@ -26,7 +26,7 @@ export class OpsRiderQueryDto extends createZodDto(
 
 // ───────────── outputs ─────────────
 
-const step = z.object({ key: z.enum(['profile', 'identity', 'driving_licence', 'bank']), done: z.boolean() });
+const step = z.object({ key: z.enum(['profile', 'selfie', 'identity', 'driving_licence', 'bank']), done: z.boolean() });
 
 export const RiderOnboardingSchema = z.object({
   status: z.enum(RIDER_STATUSES),
@@ -37,6 +37,7 @@ export const RiderOnboardingSchema = z.object({
   editable: z.boolean().describe('Details can change only before submitting or after a rejection'),
   steps: z.array(step),
   checks: z.array(KycCheckSchema),
+  photos: z.object({ selfie: z.boolean(), licence: z.boolean() }).describe('Which sign-up photos are in (ADR-030)'),
   submittedAt: iso.nullable(),
 });
 export class RiderOnboardingDto extends createZodDto(RiderOnboardingSchema) {}
@@ -54,4 +55,27 @@ const OpsRiderRow = z.object({
   decidedAt: iso.nullable(),
 });
 export class OpsRiderListDto extends createZodDto(z.object({ items: z.array(OpsRiderRow) })) {}
-export class OpsRiderDto extends createZodDto(RiderOnboardingSchema.extend(OpsRiderRow.shape)) {}
+export class OpsRiderDto extends createZodDto(
+  RiderOnboardingSchema.extend(OpsRiderRow.shape).extend({
+    selfieUrl: z.string().nullable().describe('Short-lived link (5 min)'),
+    licenceUrl: z.string().nullable().describe('Short-lived link (5 min) to the licence card photo'),
+  }),
+) {}
+
+// ───────────── photos (ADR-030) ─────────────
+
+export class RiderPhotoRequestDto extends createZodDto(
+  z.object({
+    kind: z.enum(['selfie', 'licence', 'delivery']),
+    contentType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+    fulfilmentId: z.uuid().optional().describe('Required for a door photo (kind delivery)'),
+  }),
+) {}
+const RiderPhotoSchema = z.object({ id: z.uuid(), kind: z.enum(['selfie', 'licence', 'delivery']), status: z.enum(['uploading', 'ready']) });
+export class RiderPhotoDto extends createZodDto(RiderPhotoSchema) {}
+export class RiderPhotoTicketDto extends createZodDto(
+  z.object({
+    photo: RiderPhotoSchema,
+    upload: z.object({ url: z.string(), method: z.literal('PUT'), headers: z.record(z.string(), z.string()), expiresAt: iso }),
+  }),
+) {}

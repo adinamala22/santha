@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { DEV_CLOCK, type DevClock } from '../common/clock';
 import { Public } from '../common/auth/decorators';
 import { DomainError } from '../common/errors/domain-error';
-import { ObjectStorage, MemoryObjectStorage } from '../infra/storage/object-storage';
+import { ObjectStorage, MemoryObjectStorage, PRIVATE_PREFIX } from '../infra/storage/object-storage';
 
 class AdvanceClockDto extends createZodDto(z.object({ hours: z.number().min(0).max(24 * 30).default(0), minutes: z.number().min(0).max(60 * 24).default(0) })) {}
 
@@ -44,13 +44,29 @@ export class DevController {
 
   @Get('media/*key')
   serve(@Param('key') key: string | string[], @Res() res: Response): void {
-    const entry = this.memory().entry(Array.isArray(key) ? key.join('/') : key);
+    const k = Array.isArray(key) ? key.join('/') : key;
+    const entry = k.startsWith(PRIVATE_PREFIX) || k.startsWith('originals/') ? null : this.memory().entry(k);
     if (!entry) {
       res.status(404).end();
       return;
     }
     res.setHeader('Content-Type', entry.contentType);
     res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.end(entry.body);
+  }
+
+  /** Target of MemoryObjectStorage.presignGet: private objects with a valid, unexpired signature only. */
+  @Get('private')
+  servePrivate(@Query() q: Record<string, string>, @Res() res: Response): void {
+    const store = this.memory();
+    const key = q.key ?? '';
+    const entry = store.verify(key, 'GET', Number(q.exp), q.sig ?? '') ? store.entry(key) : null;
+    if (!entry) {
+      res.status(404).end();
+      return;
+    }
+    res.setHeader('Content-Type', entry.contentType);
+    res.setHeader('Cache-Control', 'private, no-store');
     res.end(entry.body);
   }
 

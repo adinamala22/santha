@@ -7,6 +7,7 @@ import { OrdersService } from '../orders/orders.service';
 import type { FulfilmentRecord, OfferRecord, RiderRecord } from './dispatch.repository';
 import { DispatchService, istDayStart } from './dispatch.service';
 import { RiderLocations } from './rider-locations';
+import { RiderPhotosService } from './rider-photos.service';
 
 const iso = (d: Date | null | undefined) => d?.toISOString() ?? null;
 const pct = (n: number) => Math.round(n * 10) / 10;
@@ -20,6 +21,7 @@ export class DispatchViews {
     private readonly merchants: MerchantsService,
     private readonly markets: MicroMarketsService,
     private readonly locations: RiderLocations,
+    private readonly photos: RiderPhotosService,
   ) {}
 
   // ───────────── rider ─────────────
@@ -60,6 +62,8 @@ export class DispatchViews {
       pickupCodeRequired: courier === 'rider',
       failedReason: f.state === 'failed' ? failedReasonOf(o.outcomeReason) : null,
       failedAt: iso(f.failedAt),
+      arrivedDropAt: iso(f.arrivedDropAt),
+      photoProofAllowed: courier === 'rider' && this.dispatch.photoProofAllowed(o),
     };
   }
 
@@ -161,6 +165,8 @@ export class DispatchViews {
       etaAt: iso(f.etaAt),
       fallbackStage: f.fallbackStage,
       canCancelNoCourier: f.state === 'searching' && f.fallbackStage === 'customer_notified',
+      arrivedDropAt: iso(f.arrivedDropAt),
+      proofPhotoUrl: f.proof === 'photo' ? await this.photos.urlById(f.proofMediaId) : null,
     };
   }
 

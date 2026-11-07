@@ -34,6 +34,7 @@ const fulfilment = (over: Partial<FulfilmentRecord> = {}): Omit<FulfilmentRecord
   requestedAt: new Date(),
   assignedAt: null,
   arrivedAt: null,
+  arrivedDropAt: null,
   pickedUpAt: null,
   deliveredAt: null,
   failedAt: null,
@@ -75,6 +76,22 @@ export function dispatchRepositoryContract(name: string, make: () => Promise<{ r
       expect(again).toMatchObject({ name: 'Kiran K', online: true, zones: [zone], offersShown: 2, offersAccepted: 1 });
       expect((await repo.riders({ online: true })).map((x) => x.userId)).toContain(id);
       expect(await repo.updateRider(randomUUID(), { online: true })).toBeNull();
+    });
+
+    it('rider photos (ADR-030): create, mark ready, only ready ones listed (newest first, by kind)', async () => {
+      const { repo, riderId } = await make();
+      const id = await riderId();
+      const base = { riderUserId: id, fulfilmentId: null, contentType: 'image/jpeg', key: null } as const;
+      const a = await repo.createPhoto({ ...base, id: randomUUID(), kind: 'selfie', status: 'uploading', originalKey: `originals/${id}/a` });
+      expect(await repo.riderPhotos(id)).toEqual([]);
+      await repo.updatePhoto(a.id, { status: 'ready', key: `private/riders/${id}/a.webp` });
+      await new Promise((r) => setTimeout(r, 5));
+      const f = randomUUID();
+      const b = await repo.createPhoto({ ...base, id: randomUUID(), kind: 'delivery', fulfilmentId: f, status: 'ready', originalKey: `originals/${id}/b` });
+      expect((await repo.riderPhotos(id)).map((p) => p.id)).toEqual([b.id, a.id]);
+      expect((await repo.riderPhotos(id, 'selfie')).map((p) => p.id)).toEqual([a.id]);
+      expect(await repo.photo(b.id)).toMatchObject({ kind: 'delivery', fulfilmentId: f, status: 'ready' });
+      expect(await repo.updatePhoto(randomUUID(), { status: 'ready' })).toBeNull();
     });
 
     it('riders (ADR-029): new riders start as drafts; onboarding fields round-trip; status filter', async () => {

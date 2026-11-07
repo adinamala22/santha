@@ -25,5 +25,7 @@
  "promisedAt": "2026-11-02T16:47:16.910Z",
  "etaAt": "2026-11-02T16:29:16.974Z",
  "fallbackStage": "none",
- "canCancelNoCourier": false
+ "canCancelNoCourier": false,
+ "arrivedDropAt": "2026-11-07T06:10:00.000Z",
+ "proofPhotoUrl": null
 }

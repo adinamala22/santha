@@ -177,7 +177,8 @@ describe('M6 · hybrid fulfilment, dispatch and tracking (fake mode)', () => {
     // Once: the customer has no push token in this test, so one SMS (and one skipped push in the log).
     expect((await commsLog(o.id)).filter((x) => x.template === 'customer.delivery_delayed' && x.status === 'sent')).toHaveLength(1);
 
-    // Audit B1: a made-up "door photo" id no longer skips the customer's OTP.
+    // Audit B1: a made-up "door photo" id no longer skips the customer's OTP (even at the door, ADR-030).
+    await http().post(`/v1/jobs/${job.id}/arrived-drop`).set(far.headers).expect(200);
     const fakePhoto = await http().post(`/v1/jobs/${job.id}/delivered`).set(far.headers).send({ photoMediaId: '6f1c2d3e-4a5b-4c6d-8e7f-001122334455' }).expect(400);
     expect(fakePhoto.body.error.code).toBe('VALIDATION_FAILED');
     // Mid-delivery the rider can't go offline (audit B3).

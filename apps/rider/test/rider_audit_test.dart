@@ -32,6 +32,11 @@ void main() {
     expect(api.calls, contains('profile Kiran Kumar bike ap 26 ab 4321'));
     expect(find.textContaining('Kiran Kumar · Motorbike · AP26AB4321'), findsOneWidget);
 
+    // A selfie with the front camera (ADR-030).
+    await tapKey(tester, 'step-selfie');
+    expect(api.calls, contains('photo selfie'));
+    expect(find.textContaining('Photo added'), findsOneWidget);
+
     // Identity with PAN.
     await tapKey(tester, 'step-identity');
     await tapKey(tester, 'onb-identity-switch');
@@ -42,6 +47,8 @@ void main() {
 
     await tapKey(tester, 'step-driving_licence');
     await tester.enterText(find.byKey(const ValueKey('onb-licence')), 'AP26 2019 0012345');
+    await tapKey(tester, 'onb-licence-photo'); // the card, for ops to compare
+    expect(api.calls, contains('photo licence'));
     await tapKey(tester, 'onb-save-licence');
     expect(find.textContaining('Added, we will check it'), findsOneWidget);
 
@@ -59,7 +66,7 @@ void main() {
   });
 
   testWidgets('B2: Aadhaar with OTP: a wrong code asks for a new OTP; a cycle needs no licence', (tester) async {
-    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, status: RiderStatus.draft));
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, status: RiderStatus.draft)..selfie = true);
     await tapKey(tester, 'step-profile');
     await tester.enterText(find.byKey(const ValueKey('onb-name')), 'Ravi');
     await tapKey(tester, 'vehicle-cycle');
@@ -176,5 +183,43 @@ void main() {
     await tester.pumpAndSettle();
     final events = (container.read(analyticsProvider) as DebugAnalytics).events.map((e) => e.$1);
     expect(events, contains('earnings_viewed'));
+  });
+
+  testWidgets('ADR-030: arrived at the customer starts a waiting timer; after 5 minutes it says what to do', (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY')]));
+    await tapKey(tester, 'job-j1');
+    expect(find.byKey(const ValueKey('waiting-at-door')), findsNothing);
+    await tapKey(tester, 'arrived-drop');
+    expect(api.calls, contains('arrived-drop'));
+    expect(find.text('Waiting at the door: 00:00'), findsOneWidget);
+    expect(find.byKey(const ValueKey('waiting-long')), findsNothing);
+    expect(find.byKey(const ValueKey('deliver-photo')), findsNothing); // a cash order: OTP only
+  });
+
+  testWidgets('ADR-030: waited over 5 minutes → call again or report; Telugu', (tester) async {
+    await pumpRider(
+      tester,
+      locale: 'te',
+      make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', arrivedDropAt: testNow.subtract(const Duration(minutes: 6, seconds: 5)))]),
+    );
+    await tapKey(tester, 'job-j1');
+    expect(find.text('తలుపు వద్ద వేచి ఉన్నారు: 06:05'), findsOneWidget);
+    expect(find.byKey(const ValueKey('waiting-long')), findsOneWidget);
+  });
+
+  testWidgets('ADR-030: a prepaid order is left at the door with a photo (back camera), no OTP', (tester) async {
+    final (container, api) = await pumpRider(
+      tester,
+      make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 0, photoProofAllowed: true)]),
+    );
+    await tapKey(tester, 'job-j1');
+    expect(find.byKey(const ValueKey('deliver-photo')), findsNothing); // arrive first
+    await tapKey(tester, 'arrived-drop');
+    await tapKey(tester, 'deliver-photo');
+    expect(api.calls, containsAllInOrder(['photo delivery j1', 'delivered-photo ph1']));
+    expect(find.byKey(const ValueKey('delivered-done')), findsOneWidget);
+    final events = (container.read(analyticsProvider) as DebugAnalytics).events.map((e) => (e.$1, e.$2['verification']));
+    expect(events, contains(('delivered', 'photo')));
+    expect(events.map((e) => e.$1), contains('arrived_customer'));
   });
 }

@@ -74,9 +74,16 @@ class RiderOnboardingView extends ConsumerWidget {
           ],
           const SizedBox(height: SanthaSpacing.s4),
           _StepTile(stepKey: 'profile', title: l.onbStepProfile, subtitle: o.done('profile') ? '${o.name} · ${l.vehicleName(o.vehicle)}${o.vehicleNumber == null ? '' : ' · ${o.vehicleNumber}'}' : null, o: o, onTap: () => _open(context, ref, _ProfileSheet(o: o))),
+          _StepTile(
+            stepKey: 'selfie',
+            title: l.onbStepSelfie,
+            subtitle: o.hasSelfie ? l.onbPhotoAdded : l.onbSelfieHint,
+            o: o,
+            onTap: () => _takePhoto(context, ref, 'selfie', front: true),
+          ),
           _StepTile(stepKey: 'identity', title: l.onbStepIdentity, subtitle: (o.check(KycKind.aadhaar) ?? o.check(KycKind.pan))?.display, check: _identityCheck(o), o: o, onTap: () => _open(context, ref, const _IdentitySheet())),
           if (o.vehicle.needsLicence)
-            _StepTile(stepKey: 'driving_licence', title: l.onbStepLicence, subtitle: o.check(KycKind.drivingLicence)?.display, check: o.check(KycKind.drivingLicence), o: o, onTap: () => _open(context, ref, const _LicenceSheet()))
+            _StepTile(stepKey: 'driving_licence', title: l.onbStepLicence, subtitle: [?o.check(KycKind.drivingLicence)?.display, if (o.hasLicencePhoto) l.onbPhotoAdded].join(' · '), check: o.check(KycKind.drivingLicence), o: o, onTap: () => _open(context, ref, _LicenceSheet(hasPhoto: o.hasLicencePhoto, number: o.check(KycKind.drivingLicence)?.valuePublic)))
           else
             ListTile(key: const ValueKey('step-driving_licence'), leading: const Icon(Icons.check_circle, color: SanthaColors.leaf), title: Text(l.onbStepLicence), subtitle: Text(l.onbNoLicenceNeeded)),
           _StepTile(stepKey: 'bank', title: l.onbStepBank, subtitle: o.check(KycKind.bank)?.display, check: o.check(KycKind.bank), o: o, onTap: () => _open(context, ref, const _BankSheet())),
@@ -102,6 +109,20 @@ class RiderOnboardingView extends ConsumerWidget {
 
   Future<void> _open(BuildContext context, WidgetRef ref, Widget sheet) async {
     await showModalBottomSheet<void>(context: context, isScrollControlled: true, builder: (_) => sheet);
+    ref.invalidate(riderOnboardingProvider);
+  }
+
+  /// Sign-up photo (ADR-030): camera, upload, refresh the steps.
+  Future<void> _takePhoto(BuildContext context, WidgetRef ref, String kind, {bool front = false}) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    final picked = await ref.read(photoTakerProvider)(front: front);
+    if (picked == null) return;
+    try {
+      await ref.read(riderApiProvider).uploadPhoto(picked.bytes, kind: kind, contentType: picked.contentType);
+    } catch (e) {
+      messenger.showSnackBar(SnackBar(content: Text(l.apiError(e))));
+    }
     ref.invalidate(riderOnboardingProvider);
   }
 
@@ -369,13 +390,16 @@ class _IdentitySheetState extends ConsumerState<_IdentitySheet> with _SheetActio
 }
 
 class _LicenceSheet extends ConsumerStatefulWidget {
-  const _LicenceSheet();
+  const _LicenceSheet({required this.hasPhoto, this.number});
+  final bool hasPhoto;
+  final String? number;
   @override
   ConsumerState<_LicenceSheet> createState() => _LicenceSheetState();
 }
 
 class _LicenceSheetState extends ConsumerState<_LicenceSheet> with _SheetAction {
-  final _number = TextEditingController();
+  late final _number = TextEditingController(text: widget.number ?? '');
+  late bool _hasPhoto = widget.hasPhoto;
 
   @override
   void dispose() {
@@ -389,6 +413,26 @@ class _LicenceSheetState extends ConsumerState<_LicenceSheet> with _SheetAction 
     return _Sheet(title: l.onbStepLicence, children: [
       TextField(key: const ValueKey('onb-licence'), controller: _number, textCapitalization: TextCapitalization.characters, decoration: InputDecoration(labelText: l.onbLicence, hintText: 'AP09 2015 0001234')),
       Padding(padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s2), child: Text(l.onbLicenceNote, style: Theme.of(context).textTheme.bodySmall?.copyWith(color: SanthaColors.slate))),
+      // A photo of the card for ops to compare (ADR-030).
+      ListTile(
+        contentPadding: EdgeInsets.zero,
+        leading: Icon(_hasPhoto ? Icons.check_circle : Icons.photo_camera, color: _hasPhoto ? SanthaColors.leaf : SanthaColors.indigo),
+        title: Text(l.onbLicencePhoto),
+        subtitle: Text(_hasPhoto ? l.onbPhotoAdded : l.onbTodo),
+        trailing: TextButton(
+          key: const ValueKey('onb-licence-photo'),
+          onPressed: busy
+              ? null
+              : () => act((api) async {
+                    final picked = await ref.read(photoTakerProvider)();
+                    if (picked == null) return false;
+                    await api.uploadPhoto(picked.bytes, kind: 'licence', contentType: picked.contentType);
+                    setState(() => _hasPhoto = true);
+                    return false;
+                  }),
+          child: Text(l.onbTakePhoto),
+        ),
+      ),
       errorLine(),
       SanthaButton(
         key: const ValueKey('onb-save-licence'),

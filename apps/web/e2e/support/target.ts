@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { type APIRequestContext, expect, type Page } from '@playwright/test';
 
 /**
@@ -140,4 +142,14 @@ export async function deliverBySelf(request: APIRequestContext, owner: Headers, 
   await call(request, 'post', `/staff-jobs/${token}/picked-up`, { status: 200 });
   const otp = (await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer })).deliveryOtp;
   await call(request, 'post', `/staff-jobs/${token}/delivered`, { data: { otp, codCollectedPaise: order.totalPaise }, status: 200 });
+}
+
+/** Rider photo (ADR-030) as the app sends it: presigned upload, PUT the image, complete. Returns the photo id. */
+export async function uploadRiderPhoto(request: APIRequestContext, rider: Headers, kind: 'selfie' | 'licence' | 'delivery', fulfilmentId?: string): Promise<string> {
+  const t = await call(request, 'post', '/riders/me/photos', { headers: rider, data: { kind, contentType: 'image/png', ...(fulfilmentId ? { fulfilmentId } : {}) } });
+  const url = String(t.upload.url).startsWith('/') ? `${new URL(API).origin}${t.upload.url}` : t.upload.url;
+  const put = await request.put(url, { headers: t.upload.headers, data: readFileSync(join(__dirname, 'rider-photo.png')) });
+  expect(put.ok(), await put.text()).toBe(true);
+  await call(request, 'post', `/riders/me/photos/${t.photo.id}/complete`, { headers: rider, status: 200 });
+  return t.photo.id as string;
 }

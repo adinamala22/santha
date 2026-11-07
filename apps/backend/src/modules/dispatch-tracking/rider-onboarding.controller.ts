@@ -12,7 +12,8 @@ import {
   PanDto,
   toKycDto,
 } from '../merchant-catalogue/dto/merchants.dto';
-import { RIDER_STATUSES, type RiderRecord, type RiderStatus } from './dispatch.repository';
+import { RIDER_STATUSES, type RiderPhotoRecord, type RiderRecord, type RiderStatus } from './dispatch.repository';
+import { RiderPhotosService } from './rider-photos.service';
 import {
   DrivingLicenceDto,
   OpsRiderDto,
@@ -21,6 +22,9 @@ import {
   RiderApproveDto,
   RiderOnboardingDto,
   RiderProfileDto,
+  RiderPhotoDto,
+  RiderPhotoRequestDto,
+  RiderPhotoTicketDto,
   RiderReasonDto,
 } from './dto/rider-onboarding.dto';
 import { type RiderOnboardingView, RiderOnboardingService, type RiderVehicle } from './rider-onboarding.service';
@@ -36,8 +40,10 @@ const toOnboarding = (v: RiderOnboardingView) => ({
   editable: v.editable,
   steps: v.steps,
   checks: v.checks.map(toKycDto),
+  photos: { selfie: !!v.photos.selfie, licence: !!v.photos.licence },
   submittedAt: iso(v.rider.submittedAt),
 });
+const toPhoto = (p: RiderPhotoRecord) => ({ id: p.id, kind: p.kind, status: p.status });
 
 /** Rider app: sign-up details and documents (ADR-029). */
 @ApiTags('riders')
@@ -46,7 +52,24 @@ const toOnboarding = (v: RiderOnboardingView) => ({
 @Roles('rider')
 @Controller('riders/me')
 export class RiderOnboardingController {
-  constructor(private readonly onboarding: RiderOnboardingService) {}
+  constructor(
+    private readonly onboarding: RiderOnboardingService,
+    private readonly photos: RiderPhotosService,
+  ) {}
+
+  @Post('photos')
+  @ZodResponse({ status: 201, type: RiderPhotoTicketDto, description: 'Presigned upload (PUT the bytes to upload.url, then complete). Selfie / licence card while signing up; a door photo for a delivery on the way (ADR-030)' })
+  async photo(@Body() b: RiderPhotoRequestDto, @CurrentUser() u: AuthUser) {
+    const t = await this.photos.request(u.userId, b);
+    return { photo: toPhoto(t.photo), upload: { ...t.upload, expiresAt: t.upload.expiresAt.toISOString() } };
+  }
+
+  @Post('photos/:id/complete')
+  @HttpCode(200)
+  @ZodResponse({ status: 200, type: RiderPhotoDto, description: 'Checks and stores the photo privately' })
+  async photoDone(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
+    return toPhoto(await this.photos.complete(u.userId, id));
+  }
 
   @Get('onboarding')
   @ZodResponse({ type: RiderOnboardingDto, description: 'Sign-up status, steps and document checks' })
@@ -109,6 +132,7 @@ export class OpsRidersController {
   constructor(
     private readonly onboarding: RiderOnboardingService,
     private readonly auth: AuthService,
+    private readonly photos: RiderPhotosService,
   ) {}
 
   private async row(r: RiderRecord) {
@@ -128,7 +152,12 @@ export class OpsRidersController {
   }
 
   private async full(v: RiderOnboardingView) {
-    return { ...toOnboarding(v), ...(await this.row(v.rider)) };
+    return {
+      ...toOnboarding(v),
+      ...(await this.row(v.rider)),
+      selfieUrl: await this.photos.url(v.photos.selfie),
+      licenceUrl: await this.photos.url(v.photos.licence),
+    };
   }
 
   @Get()

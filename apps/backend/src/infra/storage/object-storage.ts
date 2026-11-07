@@ -25,7 +25,15 @@ export abstract class ObjectStorage {
   abstract put(key: string, body: Buffer, contentType: string): Promise<void>;
   /** Public (CDN) URL of a stored object — absolute, or "/"-relative to the API in fake mode. */
   abstract publicUrl(key: string): string;
+  /**
+   * Short-lived download link for a private object (keys under private/, e.g. rider photos, ADR-030).
+   * Absolute, or "/"-relative to the API in fake mode.
+   */
+  abstract presignGet(key: string, ttlSec?: number): Promise<string>;
 }
+
+/** Objects under this prefix are never public: served only through presignGet. */
+export const PRIVATE_PREFIX = 'private/';
 
 @Injectable()
 export class S3ObjectStorage extends ObjectStorage {
@@ -87,8 +95,18 @@ export class S3ObjectStorage extends ObjectStorage {
   async put(key: string, body: Buffer, contentType: string): Promise<void> {
     await this.ensureBucket();
     await this.client.send(
-      new PutObjectCommand({ Bucket: this.bucket(), Key: key, Body: body, ContentType: contentType, CacheControl: 'public, max-age=31536000, immutable' }),
+      new PutObjectCommand({
+        Bucket: this.bucket(),
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+        CacheControl: key.startsWith(PRIVATE_PREFIX) ? 'private, no-store' : 'public, max-age=31536000, immutable',
+      }),
     );
+  }
+
+  async presignGet(key: string, ttlSec = 300): Promise<string> {
+    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: this.bucket(), Key: key }), { expiresIn: ttlSec });
   }
 
   publicUrl(key: string): string {
@@ -135,6 +153,12 @@ export class MemoryObjectStorage extends ObjectStorage {
 
   publicUrl(key: string): string {
     return `/v1/dev/media/${key}`;
+  }
+
+  async presignGet(key: string, ttlSec = 300): Promise<string> {
+    const expires = Date.now() + ttlSec * 1000;
+    const qs = new URLSearchParams({ key, exp: String(expires), sig: this.sign(key, 'GET', expires) });
+    return `/v1/dev/private?${qs}`;
   }
 }
 

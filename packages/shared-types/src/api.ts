@@ -1540,6 +1540,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/jobs/{id}/arrived-drop": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderController_arrivedDrop"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/jobs/{id}/picked-up": {
         parameters: {
             query?: never;
@@ -1854,6 +1870,38 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["OpsDispatchController_cancelFailed"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/photos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderOnboardingController_photo"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/riders/me/photos/{id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["RiderOnboardingController_photoDone"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6535,6 +6583,10 @@ export interface components {
                 failedReason: "no_answer" | "wrong_address" | "customer_refused" | "unsafe" | "other" | null;
                 /** @description ISO-8601 timestamp */
                 failedAt: string | null;
+                /** @description When the courier marked arrived at the customer's door (ADR-030) */
+                arrivedDropAt: string | null;
+                /** @description A door photo may replace the OTP: prepaid, up to ₹2,000, after arriving (ADR-030) */
+                photoProofAllowed: boolean;
             }[];
         };
         RiderStatusDto: {
@@ -6609,6 +6661,10 @@ export interface components {
             failedReason: "no_answer" | "wrong_address" | "customer_refused" | "unsafe" | "other" | null;
             /** @description ISO-8601 timestamp */
             failedAt: string | null;
+            /** @description When the courier marked arrived at the customer's door (ADR-030) */
+            arrivedDropAt: string | null;
+            /** @description A door photo may replace the OTP: prepaid, up to ₹2,000, after arriving (ADR-030) */
+            photoProofAllowed: boolean;
         };
         PickupDto: {
             /** @description Code shown on the store order card */
@@ -6671,6 +6727,10 @@ export interface components {
             /** @enum {string} */
             fallbackStage: "none" | "tpl" | "self_bonus" | "standby" | "customer_notified";
             canCancelNoCourier: boolean;
+            /** @description The courier is at the door */
+            arrivedDropAt: string | null;
+            /** @description Delivered with a door photo: a short-lived link to it (ADR-030) */
+            proofPhotoUrl: string | null;
         };
         MerchantDeliveryListDto_Output: {
             items: {
@@ -6849,6 +6909,45 @@ export interface components {
             refund: boolean;
             reason: string;
         };
+        RiderPhotoRequestDto: {
+            /** @enum {string} */
+            kind: "selfie" | "licence" | "delivery";
+            /** @enum {string} */
+            contentType: "image/jpeg" | "image/png" | "image/webp";
+            /**
+             * Format: uuid
+             * @description Required for a door photo (kind delivery)
+             */
+            fulfilmentId?: string;
+        };
+        RiderPhotoTicketDto_Output: {
+            photo: {
+                /** Format: uuid */
+                id: string;
+                /** @enum {string} */
+                kind: "selfie" | "licence" | "delivery";
+                /** @enum {string} */
+                status: "uploading" | "ready";
+            };
+            upload: {
+                url: string;
+                /** @enum {string} */
+                method: "PUT";
+                headers: {
+                    [key: string]: string;
+                };
+                /** @description ISO-8601 timestamp */
+                expiresAt: string;
+            };
+        };
+        RiderPhotoDto_Output: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "selfie" | "licence" | "delivery";
+            /** @enum {string} */
+            status: "uploading" | "ready";
+        };
         RiderOnboardingDto_Output: {
             /** @enum {string} */
             status: "draft" | "submitted" | "approved" | "rejected" | "suspended";
@@ -6861,7 +6960,7 @@ export interface components {
             editable: boolean;
             steps: {
                 /** @enum {string} */
-                key: "profile" | "identity" | "driving_licence" | "bank";
+                key: "profile" | "selfie" | "identity" | "driving_licence" | "bank";
                 done: boolean;
             }[];
             checks: {
@@ -6882,6 +6981,11 @@ export interface components {
                 /** Format: date-time */
                 updatedAt: string;
             }[];
+            /** @description Which sign-up photos are in (ADR-030) */
+            photos: {
+                selfie: boolean;
+                licence: boolean;
+            };
             /** @description ISO-8601 timestamp */
             submittedAt: string | null;
         };
@@ -6926,7 +7030,7 @@ export interface components {
             editable: boolean;
             steps: {
                 /** @enum {string} */
-                key: "profile" | "identity" | "driving_licence" | "bank";
+                key: "profile" | "selfie" | "identity" | "driving_licence" | "bank";
                 done: boolean;
             }[];
             checks: {
@@ -6947,6 +7051,11 @@ export interface components {
                 /** Format: date-time */
                 updatedAt: string;
             }[];
+            /** @description Which sign-up photos are in (ADR-030) */
+            photos: {
+                selfie: boolean;
+                licence: boolean;
+            };
             /** @description ISO-8601 timestamp */
             submittedAt: string | null;
             /** Format: uuid */
@@ -6956,6 +7065,10 @@ export interface components {
             rating: number | null;
             /** @description ISO-8601 timestamp */
             decidedAt: string | null;
+            /** @description Short-lived link (5 min) */
+            selfieUrl: string | null;
+            /** @description Short-lived link (5 min) to the licence card photo */
+            licenceUrl: string | null;
         };
         RiderApproveDto: {
             note?: string;
@@ -10516,6 +10629,30 @@ export interface operations {
             };
         };
     };
+    RiderController_arrivedDrop: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description At the customer's door: the customer is told; starts the waiting timer (ADR-030) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["JobViewDto_Output"];
+                };
+            };
+        };
+    };
     RiderController_pickedUp: {
         parameters: {
             query?: never;
@@ -10998,6 +11135,56 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_photo: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RiderPhotoRequestDto"];
+            };
+        };
+        responses: {
+            /** @description Presigned upload (PUT the bytes to upload.url, then complete). Selfie / licence card while signing up; a door photo for a delivery on the way (ADR-030) */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderPhotoTicketDto_Output"];
+                };
+            };
+        };
+    };
+    RiderOnboardingController_photoDone: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Checks and stores the photo privately */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RiderPhotoDto_Output"];
                 };
             };
         };

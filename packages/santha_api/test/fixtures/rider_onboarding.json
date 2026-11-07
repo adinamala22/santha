@@ -11,6 +11,10 @@
    "done": true
   },
   {
+   "key": "selfie",
+   "done": true
+  },
+  {
    "key": "identity",
    "done": true
   },
@@ -63,5 +67,9 @@
    "updatedAt": "2026-11-07T05:02:00.000Z"
   }
  ],
- "submittedAt": "2026-11-07T05:03:00.000Z"
+ "submittedAt": "2026-11-07T05:03:00.000Z",
+ "photos": {
+  "selfie": true,
+  "licence": false
+ }
 }

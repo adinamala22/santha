@@ -119,6 +119,8 @@ export const JobViewSchema = z.object({
   /** Couldn't deliver (ADR-026): why, while the job waits for a retry or ops. */
   failedReason: z.enum(FAILED_REASONS).nullable(),
   failedAt: iso.nullable(),
+  arrivedDropAt: iso.nullable().describe("When the courier marked arrived at the customer's door (ADR-030)"),
+  photoProofAllowed: z.boolean().describe('A door photo may replace the OTP: prepaid, up to ₹2,000, after arriving (ADR-030)'),
 });
 export class JobViewDto extends createZodDto(JobViewSchema) {}
 
@@ -172,6 +174,8 @@ export class TrackingDto extends createZodDto(
     fallbackStage: z.enum(['none', 'tpl', 'self_bonus', 'standby', 'customer_notified']),
     /** No courier found after the fallback ladder: the customer may cancel for a full refund. */
     canCancelNoCourier: z.boolean(),
+    arrivedDropAt: iso.nullable().describe('The courier is at the door'),
+    proofPhotoUrl: z.string().nullable().describe('Delivered with a door photo: a short-lived link to it (ADR-030)'),
   }),
 ) {}
 

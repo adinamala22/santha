@@ -66,6 +66,8 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Santha Rider uses the camera for your sign-up photos and for a photo at the door when you deliver without contact.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Santha Rider uses your location to send you nearby orders and to show customers where their delivery is.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>

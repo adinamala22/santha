@@ -225,7 +225,8 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.lg)),
                 child: Text(l.outcomeDeliveryFailed, style: text.bodyMedium),
               ),
-            if (const [OrderState.accepted, OrderState.preparing, OrderState.ready, OrderState.pickedUp, OrderState.outForDelivery, OrderState.failedDelivery].contains(value.state)) ...[
+            // Delivered: the section shows only a door photo, if the courier left the order at the door (ADR-030).
+            if (const [OrderState.accepted, OrderState.preparing, OrderState.ready, OrderState.pickedUp, OrderState.outForDelivery, OrderState.failedDelivery, OrderState.delivered].contains(value.state)) ...[
               TrackingSection(orderId: value.id, storeName: l.localeName == 'te' && value.merchantNameTe != null ? value.merchantNameTe! : value.merchantName),
               const SizedBox(height: SanthaSpacing.s4),
             ],

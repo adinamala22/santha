@@ -1,4 +1,6 @@
 // Dispatch & tracking models and API (M6), mirroring dispatch.dto.ts.
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 
 import 'api_client.dart';
@@ -118,6 +120,8 @@ class Job {
     this.deliveredAt,
     this.failedReason,
     this.failedAt,
+    this.arrivedDropAt,
+    this.photoProofAllowed = false,
   });
   factory Job.fromJson(Json j) {
     final s = j['store'] as Json;
@@ -149,6 +153,8 @@ class Job {
       pickupCodeRequired: j['pickupCodeRequired'] as bool,
       failedReason: j['failedReason'] == null ? null : FailedReason.parse(j['failedReason'] as String),
       failedAt: _date(j['failedAt']),
+      arrivedDropAt: _date(j['arrivedDropAt']),
+      photoProofAllowed: (j['photoProofAllowed'] as bool?) ?? false,
     );
   }
   final String id;
@@ -179,6 +185,12 @@ class Job {
   /// Couldn't deliver (ADR-026): why, while the job waits for a retry or for Santha support.
   final FailedReason? failedReason;
   final DateTime? failedAt;
+
+  /// At the customer's door (ADR-030): starts the waiting timer.
+  final DateTime? arrivedDropAt;
+
+  /// A door photo may replace the OTP (prepaid, up to Rs 2,000, after arriving).
+  final bool photoProofAllowed;
   bool get ready => orderState == 'READY';
 }
 
@@ -304,8 +316,12 @@ class RiderOnboarding {
     this.statusNote,
     this.vehicleNumber,
     this.submittedAt,
+    this.hasSelfie = false,
+    this.hasLicencePhoto = false,
   });
   factory RiderOnboarding.fromJson(Json j) => RiderOnboarding(
+        hasSelfie: ((j['photos'] as Json?)?['selfie'] as bool?) ?? false,
+        hasLicencePhoto: ((j['photos'] as Json?)?['licence'] as bool?) ?? false,
         status: RiderStatus.fromWire(j['status'] as String),
         statusNote: j['statusNote'] as String?,
         name: j['name'] as String,
@@ -325,6 +341,10 @@ class RiderOnboarding {
   final List<RiderStep> steps;
   final List<KycCheck> checks;
   final DateTime? submittedAt;
+
+  /// Sign-up photos (ADR-030).
+  final bool hasSelfie;
+  final bool hasLicencePhoto;
 
   bool done(String key) => steps.any((s) => s.key == key && s.done);
   bool get complete => steps.every((s) => s.done);
@@ -352,8 +372,10 @@ class RiderEarnings {
 
 /// Rider app API. Errors: OFFER_EXPIRED (409), WRONG_CODE (422), NOT_READY (409).
 class RiderApi {
-  RiderApi(this.client);
+  RiderApi(this.client, {Dio? uploader}) : _uploader = uploader ?? Dio();
   final SanthaApiClient client;
+  /// Plain client for presigned uploads (no auth headers go to storage).
+  final Dio _uploader;
   Dio get _dio => client.dio;
 
   Future<RiderHome> home() => _call(() async => RiderHome.fromJson((await _dio.get<Json>('/v1/riders/me')).data!));
@@ -406,6 +428,27 @@ class RiderApi {
   Future<KycCheck> verifyBank({required String accountNumber, required String ifsc, required String holderName}) =>
       _kyc(() => _dio.put<Json>('/v1/riders/me/kyc/bank', data: {'accountNumber': accountNumber, 'ifsc': ifsc, 'holderName': holderName}));
 
+  /// Private rider photo (ADR-030): presigned upload, PUT the bytes, complete. Returns the photo id.
+  /// [kind]: selfie | licence (while signing up) | delivery (with [fulfilmentId], on the way).
+  Future<String> uploadPhoto(Uint8List bytes, {required String kind, required String contentType, String? fulfilmentId}) => _call(() async {
+        final t = (await _dio.post<Json>('/v1/riders/me/photos', data: {'kind': kind, 'contentType': contentType, 'fulfilmentId': ?fulfilmentId})).data!;
+        final upload = t['upload'] as Json;
+        final id = (t['photo'] as Json)['id'] as String;
+        await _uploader.put<void>(
+          client.resolve(upload['url'] as String),
+          data: Stream.fromIterable([bytes]),
+          options: Options(headers: {...(upload['headers'] as Map).cast<String, Object>(), Headers.contentLengthHeader: bytes.length}),
+        );
+        await _dio.post<Json>('/v1/riders/me/photos/$id/complete');
+        return id;
+      });
+
+  /// At the customer's door (ADR-030): the customer is told; the job shows when.
+  Future<Job> arrivedDrop(String id) => _job(() => _dio.post<Json>('/v1/jobs/$id/arrived-drop'));
+
+  /// Delivered with a door photo instead of the OTP (prepaid, after arriving; ADR-030).
+  Future<Job> deliveredWithPhoto(String id, String photoId) => _job(() => _dio.post<Json>('/v1/jobs/$id/delivered', data: {'photoMediaId': photoId}));
+
   /// 422 CHECKLIST_INCOMPLETE (details.missing) until every step is done.
   Future<RiderOnboarding> submit() => _onb(() => _dio.post<Json>('/v1/riders/me/submit'));
 
@@ -445,6 +488,8 @@ class Tracking {
     this.courierLocation,
     this.courierLocationAt,
     this.etaAt,
+    this.arrivedDropAt,
+    this.proofPhotoUrl,
   });
   factory Tracking.fromJson(Json j) {
     final s = j['store'] as Json;
@@ -464,6 +509,8 @@ class Tracking {
       etaAt: _date(j['etaAt']),
       fallbackStage: _stage(j['fallbackStage'] as String),
       canCancelNoCourier: j['canCancelNoCourier'] as bool,
+      arrivedDropAt: _date(j['arrivedDropAt']),
+      proofPhotoUrl: j['proofPhotoUrl'] as String?,
     );
   }
   final String orderId;
@@ -481,6 +528,12 @@ class Tracking {
   final FallbackStage fallbackStage;
   final bool canCancelNoCourier;
 
+  /// The courier is at the door (ADR-030).
+  final DateTime? arrivedDropAt;
+
+  /// Delivered with a door photo: a short-lived link (relative in fake mode; resolve against the API base).
+  final String? proofPhotoUrl;
+
   Tracking withLocation(Point p, DateTime? eta) => Tracking(
         orderId: orderId,
         mode: mode,
@@ -496,6 +549,8 @@ class Tracking {
         etaAt: eta ?? etaAt,
         fallbackStage: fallbackStage,
         canCancelNoCourier: canCancelNoCourier,
+        arrivedDropAt: arrivedDropAt,
+        proofPhotoUrl: proofPhotoUrl,
       );
 }
 

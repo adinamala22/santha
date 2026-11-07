@@ -70,6 +70,10 @@ export const TEMPLATES = {
     en: { title: 'On the way', body: '{name} is bringing your order {code}. Share OTP {otp} at the door.' },
     te: { title: 'దారిలో ఉంది', body: '{name} మీ ఆర్డర్ {code} తెస్తున్నారు. తలుపు వద్ద OTP {otp} చెప్పండి.' },
   },
+  'customer.courier_arrived': {
+    en: { title: 'Your delivery is at the door', body: 'The delivery partner has reached you with order {code}. Keep your OTP ready.' },
+    te: { title: 'మీ డెలివరీ తలుపు వద్ద ఉంది', body: 'డెలివరీ భాగస్వామి ఆర్డర్ {code}తో మీ వద్దకు వచ్చారు. మీ OTP సిద్ధంగా ఉంచండి.' },
+  },
   'customer.order_delivered': {
     en: { title: 'Delivered', body: 'Your order {code} from {store} was delivered. Enjoy!' },
     te: { title: 'డెలివరీ అయింది', body: '{store} నుండి మీ ఆర్డర్ {code} డెలివరీ అయింది.' },

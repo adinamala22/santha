@@ -5,6 +5,7 @@ import { ConfirmAction, type ConfirmChoice } from '@/components/admin/confirm-ac
 import { consoleCopy, fill } from '@/i18n/console';
 import { ridersCopy } from '@/i18n/riders';
 import { dateOnly, dateTime } from '@/lib/format';
+import { mediaSrc } from '@/lib/media';
 import { opsGet, opsLocale, opsSession } from '@/lib/ops/server';
 import { decideRider } from './actions';
 
@@ -64,6 +65,27 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
                 </div>
               ))}
             </dl>
+          </Card>
+
+          <Card title={c.photos}>
+            <div className="grid grid-cols-2 gap-4" data-testid="rider-photos">
+              {(
+                [
+                  [c.selfie, r.selfieUrl],
+                  [c.licencePhoto, r.licenceUrl],
+                ] as const
+              ).map(([label, url]) => (
+                <figure key={label}>
+                  {url ? (
+                    // eslint-disable-next-line @next/next/no-img-element -- private, short-lived link from the API (ADR-030)
+                    <img src={mediaSrc(url) ?? url} alt={label} className="aspect-[4/3] w-full rounded-md bg-sky object-cover" />
+                  ) : (
+                    <div className="flex aspect-[4/3] items-center justify-center rounded-md bg-sky text-sm text-slate">{c.noPhoto}</div>
+                  )}
+                  <figcaption className="mt-1 text-sm text-slate">{label}</figcaption>
+                </figure>
+              ))}
+            </div>
           </Card>
 
           <Card title={c.steps}>

@@ -84,3 +84,7 @@ It is compared with what quick-commerce delivery-partner apps commonly offer, su
   - rider app: `test/rider_audit_test.dart`;
   - e2e: `apps/web/e2e/features/rider-onboarding.spec.ts`.
 - Home: cash with you and acceptance rate.
+- Next step 1 is done (ADR-030), in the PR `feat/rider-photo-proof`:
+  - photo proof of delivery;
+  - rider selfie and licence-card uploads;
+  - arrived at the customer, with a waiting timer.

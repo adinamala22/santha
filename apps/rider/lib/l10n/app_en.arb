@@ -425,5 +425,22 @@
       }
     }
   },
-  "cashInvalid": "Enter the cash you collected, like 1200."
+  "cashInvalid": "Enter the cash you collected, like 1200.",
+  "onbStepSelfie": "A clear photo of your face",
+  "onbSelfieHint": "Take a selfie in good light, without a helmet or sunglasses",
+  "onbPhotoAdded": "Photo added",
+  "onbTakePhoto": "Take photo",
+  "onbLicencePhoto": "Photo of the licence card",
+  "arrivedCustomer": "Arrived at the customer",
+  "waitingAtDoor": "Waiting at the door: {time}",
+  "@waitingAtDoor": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "waitingLongHint": "Call the customer again. If they still don't answer, report Couldn't deliver.",
+  "deliverWithPhoto": "Leave at the door with a photo",
+  "deliverWithPhotoHint": "Only if the customer asked for no contact. Place the order safely at the door and take a photo that shows it; the customer sees the photo."
 }
