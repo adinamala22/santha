@@ -24,8 +24,19 @@ export interface RiderRecord {
   /** weekly (default) | daily payouts (M7). */
   payoutCadence: string;
   lastSeenAt: Date | null;
+  /** Onboarding (ADR-029). Only approved riders go online, get offers or accept them. */
+  status: RiderStatus;
+  vehicleNumber: string | null;
+  /** Why ops rejected or suspended the rider. */
+  statusNote: string | null;
+  submittedAt: Date | null;
+  decidedAt: Date | null;
+  decidedBy: string | null;
   createdAt: Date;
 }
+
+export const RIDER_STATUSES = ['draft', 'submitted', 'approved', 'rejected', 'suspended'] as const;
+export type RiderStatus = (typeof RIDER_STATUSES)[number];
 
 export interface FulfilmentRecord {
   id: string;
@@ -92,7 +103,7 @@ export abstract class DispatchRepository {
     userId: string,
     patch: Partial<Omit<RiderRecord, 'userId' | 'createdAt'>>,
   ): Promise<RiderRecord | null>;
-  abstract riders(filter?: { online?: boolean }): Promise<RiderRecord[]>;
+  abstract riders(filter?: { online?: boolean; status?: RiderStatus[] }): Promise<RiderRecord[]>;
   abstract countOffer(userId: string, accepted: boolean): Promise<void>;
 
   abstract createFulfilment(f: Omit<FulfilmentRecord, 'updatedAt'>): Promise<FulfilmentRecord>;
@@ -129,6 +140,8 @@ export abstract class DispatchRepository {
 
 const asStates = (e: FulfilmentState | readonly FulfilmentState[]) => (typeof e === 'string' ? [e] : [...e]);
 
+const toRider = (r: Prisma.RiderGetPayload<object>): RiderRecord => ({ ...r, status: r.status as RiderStatus });
+
 const toFulfilment = (r: Prisma.FulfilmentGetPayload<object>): FulfilmentRecord => ({
   ...r,
   mode: r.mode as FulfilmentMode,
@@ -149,17 +162,20 @@ export class PrismaDispatchRepository extends DispatchRepository {
     super();
   }
 
-  getRider(userId: string) {
-    return this.prisma.rider.findUnique({ where: { userId } });
+  async getRider(userId: string) {
+    const r = await this.prisma.rider.findUnique({ where: { userId } });
+    return r ? toRider(r) : null;
   }
 
   upsertRider(r: Pick<RiderRecord, 'userId' | 'name'> & Partial<RiderRecord>) {
     const { userId, ...rest } = r;
-    return this.prisma.rider.upsert({
-      where: { userId },
-      create: { userId, ...rest },
-      update: { name: rest.name },
-    });
+    return this.prisma.rider
+      .upsert({
+        where: { userId },
+        create: { userId, ...rest },
+        update: { name: rest.name },
+      })
+      .then(toRider);
   }
 
   async updateRider(userId: string, patch: Partial<Omit<RiderRecord, 'userId' | 'createdAt'>>) {
@@ -167,11 +183,15 @@ export class PrismaDispatchRepository extends DispatchRepository {
     return n.count ? this.getRider(userId) : null;
   }
 
-  riders(filter: { online?: boolean } = {}) {
-    return this.prisma.rider.findMany({
-      where: filter.online === undefined ? {} : { online: filter.online },
+  async riders(filter: { online?: boolean; status?: RiderStatus[] } = {}) {
+    const rows = await this.prisma.rider.findMany({
+      where: {
+        ...(filter.online === undefined ? {} : { online: filter.online }),
+        ...(filter.status ? { status: { in: filter.status } } : {}),
+      },
       orderBy: { name: 'asc' },
     });
+    return rows.map(toRider);
   }
 
   async countOffer(userId: string, accepted: boolean) {
@@ -298,7 +318,10 @@ export class InMemoryDispatchRepository extends DispatchRepository {
   }
 
   /** Fake mode: starts with the demo riders (offline). */
-  static seeded(sinks: FakeSinks, riders: Array<Pick<RiderRecord, 'userId' | 'name' | 'vehicle' | 'rating'>>): InMemoryDispatchRepository {
+  static seeded(
+    sinks: FakeSinks,
+    riders: Array<Pick<RiderRecord, 'userId' | 'name' | 'vehicle' | 'rating' | 'status' | 'vehicleNumber'>>,
+  ): InMemoryDispatchRepository {
     const repo = new InMemoryDispatchRepository(sinks);
     for (const x of riders) void repo.upsertRider(x);
     return repo;
@@ -332,6 +355,12 @@ export class InMemoryDispatchRepository extends DispatchRepository {
           onlineSince: null,
           onlineMinToday: 0,
           lastSeenAt: null,
+          status: 'draft',
+          vehicleNumber: null,
+          statusNote: null,
+          submittedAt: null,
+          decidedAt: null,
+          decidedBy: null,
           createdAt: new Date(),
           ...r,
         };
@@ -347,10 +376,11 @@ export class InMemoryDispatchRepository extends DispatchRepository {
     return structuredClone(next);
   }
 
-  async riders(filter: { online?: boolean } = {}) {
+  async riders(filter: { online?: boolean; status?: RiderStatus[] } = {}) {
     return structuredClone(
       [...this.riderRows.values()]
         .filter((r) => filter.online === undefined || r.online === filter.online)
+        .filter((r) => !filter.status || filter.status.includes(r.status))
         .sort((a, b) => a.name.localeCompare(b.name)),
     );
   }

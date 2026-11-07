@@ -100,11 +100,15 @@ export class DispatchViews {
       zones: zones.filter((z) => r.zones.includes(z.id)),
       allZones: zones,
       rating: r.rating,
+      status: r.status,
+      statusNote: r.statusNote,
       today: {
         deliveries: earnings.deliveries.length,
         earningsPaise: earnings.totalPaise,
         onlineMin: await this.dispatch.onlineMinutes(r),
       },
+      cashInHandPaise: await this.dispatch.cashInHand(r),
+      acceptancePct: r.offersShown ? Math.round((100 * r.offersAccepted) / r.offersShown) : null,
       offer: live[0] ? await this.offer(live[0]) : null,
       jobs: await Promise.all(jobs.map((j) => this.job(j, 'rider'))),
     };

@@ -46,6 +46,10 @@ export const ERROR_STATUS = {
   OFFER_EXPIRED: 409,
   WRONG_CODE: 422,
   NOT_READY: 409,
+  /** ADR-029: onboarding not finished or not approved by ops (or suspended). */
+  RIDER_NOT_APPROVED: 403,
+  /** Going offline or signing out with a delivery in hand. */
+  RIDER_HAS_ACTIVE_JOB: 409,
   // M7 — money
   FOUR_EYES_REQUIRED: 409,
   APPROVAL_LIMIT: 403,

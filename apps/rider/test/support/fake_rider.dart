@@ -46,7 +46,14 @@ Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = '
 
 /// In-memory rider backend with the rules the screens rely on (codes, readiness, expiry).
 class FakeRiderApi extends RiderApi {
-  FakeRiderApi(super.client, {this.online = false, this.offer, List<Job>? jobs}) : jobs = jobs ?? [];
+  FakeRiderApi(super.client, {this.online = false, this.offer, List<Job>? jobs, this.status = RiderStatus.approved, this.statusNote, this.cashInHandPaise = 0, this.acceptancePct})
+      : jobs = jobs ?? [];
+  RiderStatus status;
+  String? statusNote;
+  int cashInHandPaise;
+  int? acceptancePct;
+  /// Job loads fail this many times (network), then work.
+  int jobFailures = 0;
   bool online;
   RiderOffer? offer;
   final List<Job> jobs;
@@ -74,7 +81,96 @@ class FakeRiderApi extends RiderApi {
         offer: online ? offer : null,
         jobs: jobs.where((j) => j.state != DeliveryState.delivered).toList(),
         rating: 4.8,
+        status: status,
+        statusNote: statusNote,
+        cashInHandPaise: cashInHandPaise,
+        acceptancePct: acceptancePct,
       );
+
+  // ── onboarding (ADR-029), with the server's rules ──
+  String onbName = 'Rider';
+  RiderVehicle onbVehicle = RiderVehicle.bike;
+  String? onbPlate;
+  final checks = <KycKind, KycCheck>{};
+  bool aadhaarOtpSent = false;
+
+  KycCheck _check(KycKind kind, KycStatus s, {String? masked, String? public, String? reason}) =>
+      checks[kind] = KycCheck(kind: kind, status: s, valueMasked: masked, valuePublic: public, failureReason: reason);
+
+  RiderOnboarding _onb() {
+    bool ok(KycKind k, {bool pending = false}) => checks[k]?.status == KycStatus.verified || (pending && checks[k]?.status == KycStatus.pending);
+    return RiderOnboarding(
+      status: status,
+      statusNote: statusNote,
+      name: onbName,
+      vehicle: onbVehicle,
+      vehicleNumber: onbPlate,
+      editable: status == RiderStatus.draft || status == RiderStatus.rejected,
+      steps: [
+        RiderStep('profile', onbName != 'Rider' && (!onbVehicle.needsLicence || onbPlate != null)),
+        RiderStep('identity', ok(KycKind.aadhaar) || ok(KycKind.pan)),
+        RiderStep('driving_licence', !onbVehicle.needsLicence || ok(KycKind.drivingLicence, pending: true)),
+        RiderStep('bank', ok(KycKind.bank)),
+      ],
+      checks: checks.values.toList(),
+    );
+  }
+
+  @override
+  Future<RiderOnboarding> onboarding() async => _onb();
+
+  @override
+  Future<RiderOnboarding> updateProfile({required String name, required RiderVehicle vehicle, String? vehicleNumber}) async {
+    calls.add('profile $name ${vehicle.name} ${vehicleNumber ?? ''}'.trim());
+    final plate = vehicleNumber?.toUpperCase().replaceAll(RegExp(r'[\s-]'), '');
+    if (vehicle.needsLicence && (plate == null || !RegExp(r'^[A-Z]{2}\d{1,2}[A-Z]{0,3}\d{1,4}$').hasMatch(plate))) {
+      throw const ApiException(code: 'VALIDATION_FAILED', status: 400);
+    }
+    onbName = name;
+    onbVehicle = vehicle;
+    onbPlate = vehicle.needsLicence ? plate : null;
+    return _onb();
+  }
+
+  @override
+  Future<KycCheck> verifyPan({required String pan, required String name}) async {
+    calls.add('pan $pan');
+    return _check(KycKind.pan, pan.contains('0000') ? KycStatus.failed : KycStatus.verified, masked: 'AB******4K', reason: pan.contains('0000') ? 'PAN not found' : null);
+  }
+
+  @override
+  Future<KycCheck> startAadhaar(String aadhaar) async {
+    calls.add('aadhaar start');
+    aadhaarOtpSent = true;
+    return _check(KycKind.aadhaar, KycStatus.pending, masked: 'XXXX XXXX ${aadhaar.substring(aadhaar.length - 4)}');
+  }
+
+  @override
+  Future<KycCheck> verifyAadhaar(String otp) async {
+    calls.add('aadhaar verify $otp');
+    final good = otp == '123456';
+    return _check(KycKind.aadhaar, good ? KycStatus.verified : KycStatus.failed, masked: checks[KycKind.aadhaar]?.valueMasked, reason: good ? null : 'Wrong OTP');
+  }
+
+  @override
+  Future<KycCheck> recordDrivingLicence(String number) async {
+    calls.add('licence $number');
+    return _check(KycKind.drivingLicence, KycStatus.pending, public: number.replaceAll(' ', ''));
+  }
+
+  @override
+  Future<KycCheck> verifyBank({required String accountNumber, required String ifsc, required String holderName}) async {
+    calls.add('bank $accountNumber $ifsc');
+    return _check(KycKind.bank, KycStatus.verified, masked: '•••• ${accountNumber.substring(accountNumber.length - 4)}');
+  }
+
+  @override
+  Future<RiderOnboarding> submit() async {
+    calls.add('submit');
+    if (!_onb().complete) throw const ApiException(code: 'CHECKLIST_INCOMPLETE', status: 422);
+    status = RiderStatus.submitted;
+    return _onb();
+  }
 
   @override
   Future<RiderHome> setStatus({required bool online, List<String>? zones}) async {
@@ -112,6 +208,10 @@ class FakeRiderApi extends RiderApi {
 
   @override
   Future<Job> job(String id) async {
+    if (jobFailures > 0) {
+      jobFailures--;
+      throw const ApiException(code: ApiException.network, status: 0);
+    }
     final j = _get(id);
     return ready && j.orderState == 'PREPARING' ? testJob(state: j.state, orderState: 'READY', arrivedAt: j.arrivedAt) : j;
   }

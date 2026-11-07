@@ -26,6 +26,13 @@ extension RiderCopy on AppLocalizations {
         FailedReason.other => failOther,
       };
 
+  String vehicleName(RiderVehicle v) => switch (v) {
+        RiderVehicle.bike => vehicleBike,
+        RiderVehicle.scooter => vehicleScooter,
+        RiderVehicle.electric => vehicleElectric,
+        RiderVehicle.cycle => vehicleCycle,
+      };
+
   String duration(int minutes) => minutes >= 60 ? hoursMinutes(minutes ~/ 60, minutes % 60) : minutesOnly(minutes);
 
   String apiError(Object e) {
@@ -35,6 +42,10 @@ extension RiderCopy on AppLocalizations {
       'WRONG_CODE' => wrongCode,
       'NOT_READY' => notReady,
       'OFFER_EXPIRED' => offerGone,
+      'RIDER_HAS_ACTIVE_JOB' => finishDeliveryFirst,
+      'RIDER_NOT_APPROVED' => notApprovedYet,
+      'CHECKLIST_INCOMPLETE' => onbIncomplete,
+      'VALIDATION_FAILED' || 'KYC_FAILED' => checkDetails,
       _ => genericError,
     };
   }

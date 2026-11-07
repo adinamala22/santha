@@ -365,5 +365,65 @@
   "topic_payout": "Payouts",
   "topic_catalogue": "Catalogue",
   "topic_delivery": "A delivery",
-  "topic_app": "The app"
+  "topic_app": "The app",
+  "onbTitle": "Sign up to deliver with Santha",
+  "onbIntro": "Finish these steps and submit. We check your details, usually within one working day, and then you can go online.",
+  "onbStepProfile": "Your name and vehicle",
+  "onbStepIdentity": "Aadhaar or PAN",
+  "onbStepLicence": "Driving licence",
+  "onbStepBank": "Bank account for payouts",
+  "onbDone": "Done",
+  "onbTodo": "To do",
+  "onbBeingChecked": "Added, we will check it",
+  "onbNotVerified": "Not verified",
+  "onbNoLicenceNeeded": "Not needed for a cycle",
+  "onbSubmit": "Submit for approval",
+  "onbIncomplete": "Finish all the steps first.",
+  "onbSubmittedTitle": "Thanks! We are checking your details",
+  "onbSubmittedBody": "This usually takes one working day. We will send you a message when you can start delivering.",
+  "onbRejectedTitle": "Please fix your details and submit again",
+  "onbSuspendedTitle": "Your account is paused",
+  "onbSuspendedBody": "You cannot go online for now. Chat with Santha support to know more.",
+  "onbName": "Full name (as on your ID)",
+  "onbVehicle": "Vehicle",
+  "vehicleBike": "Motorbike",
+  "vehicleScooter": "Scooter",
+  "vehicleElectric": "Electric scooter",
+  "vehicleCycle": "Cycle",
+  "onbVehicleNumber": "Number plate",
+  "onbSave": "Save",
+  "onbAadhaar": "Aadhaar number",
+  "onbAadhaarOtp": "OTP sent to your Aadhaar mobile",
+  "onbSendOtp": "Send OTP",
+  "onbVerify": "Verify",
+  "onbUsePan": "Use PAN instead",
+  "onbUseAadhaar": "Use Aadhaar instead",
+  "onbPan": "PAN",
+  "onbPanName": "Name on PAN",
+  "onbLicence": "Licence number",
+  "onbLicenceNote": "Keep the card with you. We check the number before approving.",
+  "onbAccount": "Account number",
+  "onbIfsc": "IFSC",
+  "onbHolder": "Account holder name",
+  "checkDetails": "Please check what you entered and try again.",
+  "notApprovedYet": "Your sign-up is not approved yet.",
+  "finishDeliveryFirst": "Finish your delivery before going offline.",
+  "signOutBlocked": "Finish your delivery before signing out.",
+  "cashInHand": "Cash with you: {amount}. It comes off your next payout.",
+  "@cashInHand": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      }
+    }
+  },
+  "acceptanceLine": "You accepted {pct}% of offers",
+  "@acceptanceLine": {
+    "placeholders": {
+      "pct": {
+        "type": "int"
+      }
+    }
+  },
+  "cashInvalid": "Enter the cash you collected, like 1200."
 }

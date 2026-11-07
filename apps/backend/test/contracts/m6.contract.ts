@@ -77,6 +77,18 @@ export function dispatchRepositoryContract(name: string, make: () => Promise<{ r
       expect(await repo.updateRider(randomUUID(), { online: true })).toBeNull();
     });
 
+    it('riders (ADR-029): new riders start as drafts; onboarding fields round-trip; status filter', async () => {
+      const { repo, riderId } = await make();
+      const id = await riderId();
+      expect(await repo.upsertRider({ userId: id, name: 'Ravi' })).toMatchObject({ status: 'draft', vehicleNumber: null, statusNote: null, submittedAt: null });
+      const at = new Date('2026-11-07T05:00:00.000Z');
+      const ops = randomUUID();
+      await repo.updateRider(id, { status: 'rejected', vehicleNumber: 'AP26AB1234', statusNote: 'Blurred licence', submittedAt: at, decidedAt: at, decidedBy: ops });
+      expect(await repo.getRider(id)).toMatchObject({ status: 'rejected', vehicleNumber: 'AP26AB1234', statusNote: 'Blurred licence', submittedAt: at, decidedAt: at, decidedBy: ops });
+      expect((await repo.riders({ status: ['rejected'] })).map((x) => x.userId)).toContain(id);
+      expect((await repo.riders({ status: ['approved', 'submitted'] })).map((x) => x.userId)).not.toContain(id);
+    });
+
     it('fulfilments: one per order, by token, compare-and-swap on state, active filters', async () => {
       const { repo } = await make();
       const token = `tok-${randomUUID()}`;

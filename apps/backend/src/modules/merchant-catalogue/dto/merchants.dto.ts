@@ -66,7 +66,7 @@ export class AddStaffDto extends createZodDto(
 ) {}
 
 export const KycCheckSchema = z.object({
-  kind: z.enum(['pan', 'aadhaar', 'gstin', 'gst_exemption', 'fssai', 'bank', 'drug_licence']),
+  kind: z.enum(['pan', 'aadhaar', 'gstin', 'gst_exemption', 'fssai', 'bank', 'drug_licence', 'driving_licence']),
   status: z.enum(['pending', 'verified', 'failed']),
   valueMasked: z.string().nullable(),
   valuePublic: z.string().nullable(),

@@ -168,6 +168,7 @@ enum KycKind {
   fssai
   bank
   drug_licence
+  driving_licence
 }
 
 enum KycStatus {
@@ -925,8 +926,18 @@ model Rider {
   /// weekly (default) | daily payouts (M7)
   payoutCadence  String    @default("weekly") @map("payout_cadence")
   lastSeenAt     DateTime? @map("last_seen_at") @db.Timestamptz(6)
+  /// Onboarding (ADR-029): draft | submitted | approved | rejected | suspended. Only approved riders go online.
+  status         String    @default("draft")
+  /// Registration number of the vehicle (none for a cycle).
+  vehicleNumber  String?   @map("vehicle_number")
+  /// Why ops rejected or suspended the rider (shown to the rider).
+  statusNote     String?   @map("status_note")
+  submittedAt    DateTime? @map("submitted_at") @db.Timestamptz(6)
+  decidedAt      DateTime? @map("decided_at") @db.Timestamptz(6)
+  decidedBy      String?   @map("decided_by") @db.Uuid
   createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
 
+  @@index([status])
   @@map("riders")
 }
 

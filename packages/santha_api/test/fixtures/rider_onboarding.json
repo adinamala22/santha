@@ -1,0 +1,67 @@
+{
+ "status": "rejected",
+ "statusNote": "The licence photo does not match the number.",
+ "name": "Kiran Kumar",
+ "vehicle": "bike",
+ "vehicleNumber": "AP26AB4321",
+ "editable": true,
+ "steps": [
+  {
+   "key": "profile",
+   "done": true
+  },
+  {
+   "key": "identity",
+   "done": true
+  },
+  {
+   "key": "driving_licence",
+   "done": true
+  },
+  {
+   "key": "bank",
+   "done": false
+  }
+ ],
+ "checks": [
+  {
+   "kind": "pan",
+   "status": "verified",
+   "valueMasked": "AB******4K",
+   "valuePublic": null,
+   "nameOnRecord": "KIRAN KUMAR",
+   "provider": "mock-kyc",
+   "failureReason": null,
+   "details": null,
+   "verifiedAt": "2026-11-07T05:00:00.000Z",
+   "updatedAt": "2026-11-07T05:00:00.000Z"
+  },
+  {
+   "kind": "driving_licence",
+   "status": "pending",
+   "valueMasked": null,
+   "valuePublic": "AP2620190012345",
+   "nameOnRecord": null,
+   "provider": "manual-review",
+   "failureReason": null,
+   "details": null,
+   "verifiedAt": null,
+   "updatedAt": "2026-11-07T05:01:00.000Z"
+  },
+  {
+   "kind": "bank",
+   "status": "failed",
+   "valueMasked": "•••• 9012",
+   "valuePublic": null,
+   "nameOnRecord": null,
+   "provider": "mock-kyc",
+   "failureReason": "The name on the account does not match.",
+   "details": {
+    "ifsc": "SBIN0001234"
+   },
+   "verifiedAt": null,
+   "updatedAt": "2026-11-07T05:02:00.000Z"
+  }
+ ],
+ "submittedAt": "2026-11-07T05:03:00.000Z"
+}

@@ -41,7 +41,8 @@ class _JobPageState extends ConsumerState<JobPage> {
     super.dispose();
   }
 
-  Future<void> _run(Future<void> Function() fn) async {
+  /// [clearCode]: after pickup or delivery the code field is done; Arrived keeps what was typed (audit B6).
+  Future<void> _run(Future<void> Function() fn, {bool clearCode = true}) async {
     final l = AppLocalizations.of(context);
     setState(() {
       _busy = true;
@@ -49,7 +50,7 @@ class _JobPageState extends ConsumerState<JobPage> {
     });
     try {
       await fn();
-      _code.clear();
+      if (clearCode) _code.clear();
     } catch (e) {
       setState(() => _error = l.apiError(e));
     } finally {
@@ -78,7 +79,16 @@ class _JobPageState extends ConsumerState<JobPage> {
       ),
       body: job.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text(l.apiError(e))),
+        error: (e, _) => Center(
+          child: Padding(
+            padding: const EdgeInsets.all(SanthaSpacing.s6),
+            child: Column(mainAxisSize: MainAxisSize.min, children: [
+              Text(l.apiError(e), textAlign: TextAlign.center),
+              const SizedBox(height: SanthaSpacing.s4),
+              SanthaButton(key: const ValueKey('job-retry'), label: l.retry, onPressed: () => ref.invalidate(jobProvider(widget.id))),
+            ]),
+          ),
+        ),
         data: (j) => ListView(padding: const EdgeInsets.all(SanthaSpacing.s4), children: [
           if (j.state == DeliveryState.delivered)
             ..._done(l)
@@ -113,7 +123,7 @@ class _JobPageState extends ConsumerState<JobPage> {
       Text(j.ready ? l.orderReady : l.waitingReady, key: const ValueKey('ready-state'), style: TextStyle(color: j.ready ? SanthaColors.leaf : SanthaColors.marigold600)),
       const SizedBox(height: SanthaSpacing.s3),
       if (j.arrivedAt == null)
-        SanthaButton(key: const ValueKey('arrived'), label: l.arrived, variant: SanthaButtonVariant.outline, onPressed: _busy ? null : () => _run(ctl.arrived)),
+        SanthaButton(key: const ValueKey('arrived'), label: l.arrived, variant: SanthaButtonVariant.outline, onPressed: _busy ? null : () => _run(ctl.arrived, clearCode: false)),
       const SizedBox(height: SanthaSpacing.s3),
       _CodeField(key: const ValueKey('pickup-code'), controller: _code, label: l.pickupCodeLabel),
       const SizedBox(height: SanthaSpacing.s3),
@@ -186,7 +196,15 @@ class _JobPageState extends ConsumerState<JobPage> {
         loading: _busy,
         onPressed: _busy
             ? null
-            : () => _run(() => ctl.delivered(_code.text.trim(), j.codDuePaise > 0 ? ((double.tryParse(_cash.text.trim()) ?? 0) * 100).round() : null)),
+            : () {
+                int? cash;
+                if (j.codDuePaise > 0) {
+                  cash = cashPaise(_cash.text);
+                  // Unreadable cash is never sent as Rs 0 (audit B5).
+                  if (cash == null) return setState(() => _error = l.cashInvalid);
+                }
+                _run(() => ctl.delivered(_code.text.trim(), cash));
+              },
       ),
       const SizedBox(height: SanthaSpacing.s3),
       SanthaButton(
@@ -244,6 +262,13 @@ class _JobPageState extends ConsumerState<JobPage> {
         const SizedBox(height: SanthaSpacing.s6),
         SanthaButton(label: l.backHome, onPressed: () => context.canPop() ? context.pop() : context.go('/')),
       ];
+}
+
+/// Cash typed by the rider, in paise: "1,200", "₹ 1200.50" and "1200" all read; anything else is null.
+int? cashPaise(String text) {
+  final t = text.replaceAll(RegExp(r'[\s,₹]'), '');
+  if (!RegExp(r'^\d+(\.\d{1,2})?$').hasMatch(t)) return null;
+  return (double.parse(t) * 100).round();
 }
 
 class _CodeField extends StatelessWidget {

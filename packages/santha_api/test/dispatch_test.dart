@@ -76,4 +76,35 @@ void main() {
     final e = RiderEarnings.fromJson(fixture('rider_earnings'));
     expect(e.totalPaise, e.deliveries.fold<int>(0, (a, x) => a + x.payPaise));
   });
+
+  test('rider home (ADR-029): status, cash in hand and acceptance; an older server without status means approved', () {
+    final h = RiderHome.fromJson(fixture('rider_home_offer'));
+    expect(h.status, RiderStatus.approved);
+    expect(h.cashInHandPaise, 48000);
+    expect(h.acceptancePct, 75);
+    final old = {...fixture('rider_home_offer')}
+      ..remove('status')
+      ..remove('statusNote')
+      ..remove('cashInHandPaise')
+      ..remove('acceptancePct');
+    final o = RiderHome.fromJson(old);
+    expect(o.status, RiderStatus.approved);
+    expect(o.cashInHandPaise, 0);
+    expect(o.acceptancePct, isNull);
+  });
+
+  test('rider onboarding (ADR-029): steps, checks and the rejection reason', () {
+    final o = RiderOnboarding.fromJson(fixture('rider_onboarding'));
+    expect(o.status, RiderStatus.rejected);
+    expect(o.statusNote, contains('licence'));
+    expect(o.vehicle, RiderVehicle.bike);
+    expect(o.vehicle.needsLicence, isTrue);
+    expect(RiderVehicle.cycle.needsLicence, isFalse);
+    expect(o.done('profile'), isTrue);
+    expect(o.done('bank'), isFalse);
+    expect(o.complete, isFalse);
+    expect(o.check(KycKind.drivingLicence)?.display, 'AP2620190012345');
+    expect(o.check(KycKind.bank)?.status, KycStatus.failed);
+    expect(o.check(KycKind.aadhaar), isNull);
+  });
 }

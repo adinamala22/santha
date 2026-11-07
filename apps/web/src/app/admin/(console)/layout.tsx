@@ -10,6 +10,7 @@ import { launchCopy } from '@/i18n/launch';
 import { moneyCopy } from '@/i18n/money';
 import { orderCopy } from '@/i18n/orders';
 import { promoCopy } from '@/i18n/promos';
+import { ridersCopy } from '@/i18n/riders';
 import { supportCopy } from '@/i18n/support';
 import { opsLocale, opsSession } from '@/lib/ops/server';
 
@@ -34,6 +35,7 @@ export default async function ConsoleLayout({ children }: { children: ReactNode 
           <NavLink href="/admin/payouts">{moneyCopy(locale).nav.payouts}</NavLink>
           <NavLink href="/admin/disputes">{moneyCopy(locale).nav.disputes}</NavLink>
           <NavLink href="/admin/merchants">{copy.nav.merchants}</NavLink>
+          <NavLink href="/admin/riders">{ridersCopy(locale).nav}</NavLink>
           <NavLink href="/admin/catalogue">{catalogueCopy(locale).nav}</NavLink>
           <NavLink href="/admin/promos">{promoCopy(locale).nav}</NavLink>
           <NavLink href="/admin/reports">{launchCopy(locale).nav.reports}</NavLink>

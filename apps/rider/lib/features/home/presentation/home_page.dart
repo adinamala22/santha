@@ -8,6 +8,7 @@ import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
+import '../../onboarding/onboarding_view.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
 import '../../../support.dart';
@@ -36,13 +37,15 @@ class HomePage extends ConsumerWidget {
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SupportInboxPage(strings: supportStrings(l), topics: supportTopics))),
           ),
           IconButton(tooltip: l.switchLanguage, icon: const Icon(Icons.translate), onPressed: () => ref.read(localeControllerProvider.notifier).toggle()),
-          IconButton(tooltip: l.signOut, icon: const Icon(Icons.logout), onPressed: () => ref.read(authControllerProvider.notifier).signOut()),
+          IconButton(key: const ValueKey('sign-out'), tooltip: l.signOut, icon: const Icon(Icons.logout), onPressed: () => _signOut(context, ref)),
         ],
       ),
       body: home.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _Retry(message: l.apiError(e), onRetry: () => ref.read(riderHomeProvider.notifier).reload()),
-        data: (h) => RefreshIndicator(
+        data: (h) => h.status != RiderStatus.approved
+            ? RefreshIndicator(onRefresh: () => ref.read(riderHomeProvider.notifier).reload(), child: RiderOnboardingView(home: h))
+            : RefreshIndicator(
           onRefresh: () => ref.read(riderHomeProvider.notifier).reload(),
           child: ListView(
             key: const ValueKey('rider-home'),
@@ -170,6 +173,17 @@ class _TodayCard extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(l.todayLine(home.deliveriesToday, rupees(home.earningsTodayPaise), l.duration(home.onlineMinToday)), style: text.titleSmall),
           const SizedBox(height: SanthaSpacing.s2),
+          // Cash from COD orders: the next payout deducts it.
+          if (home.cashInHandPaise > 0)
+            Padding(
+              padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
+              child: Text(l.cashInHand(rupees(home.cashInHandPaise)), key: const ValueKey('cash-in-hand'), style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ),
+          if (home.acceptancePct != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
+              child: Text(l.acceptanceLine(home.acceptancePct!), key: const ValueKey('acceptance'), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            ),
           // Customers' delivery rating (it weighs in which rider gets an offer first).
           if (rating == null)
             Text(l.noRatingYet, key: const ValueKey('rider-rating'), style: text.bodySmall?.copyWith(color: SanthaColors.slate))
@@ -211,6 +225,13 @@ class _StatusCard extends ConsumerWidget {
         activeTrackColor: SanthaColors.leaf,
         onChanged: (on) async {
           final ctl = ref.read(riderHomeProvider.notifier);
+          // With a delivery in hand the rider stays online, so the customer keeps seeing them (audit B3).
+          if (!on && home.jobs.isNotEmpty) {
+            ScaffoldMessenger.of(context)
+              ..hideCurrentSnackBar()
+              ..showSnackBar(SnackBar(content: Text(l.finishDeliveryFirst)));
+            return;
+          }
           if (!on) return _guard(context, ctl.goOffline);
           final zones = await _pickZones(context, home);
           if (zones != null && context.mounted) await _guard(context, () => ctl.goOnline(zones));
@@ -263,6 +284,27 @@ class _Retry extends StatelessWidget {
           ]),
         ),
       );
+}
+
+/// Signing out goes offline first (so the online time stops counting); with a delivery in hand it is refused
+/// (audit B4).
+Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+  final l = AppLocalizations.of(context);
+  final h = ref.read(riderHomeProvider).value;
+  if (h != null && h.jobs.isNotEmpty) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l.signOutBlocked)));
+    return;
+  }
+  if (h?.online ?? false) {
+    try {
+      await ref.read(riderHomeProvider.notifier).goOffline();
+    } catch (_) {
+      // No network: sign out anyway; the server stops offering once positions go stale.
+    }
+  }
+  await ref.read(authControllerProvider.notifier).signOut();
 }
 
 /// Runs a home action; a failure shows a message instead of an uncaught error.

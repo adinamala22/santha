@@ -59,6 +59,10 @@ describe('M6 · hybrid fulfilment, dispatch and tracking (fake mode)', () => {
     await http().post('/v1/riders/me/location').set(r.headers).send(at).expect(204);
   };
   const offline = (r: Session) => http().put('/v1/riders/me/status').set(r.headers).send({ online: false }).expect(200);
+  /** Riders holding deliveries stay online (audit B3); with two jobs they get no more offers anyway. */
+  const offlineIfFree = async (r: Session) => {
+    if (!(await riderHome(r)).jobs.length) await offline(r);
+  };
   const tracking = async (c: Session, orderId: string) => (await http().get(`/v1/orders/${orderId}/tracking`).set(c.headers).expect(200)).body;
   const delivery = async (orderId: string) => ((await http().get('/v1/merchants/me/deliveries').set(owner.headers).expect(200)).body.items as Array<Record<string, unknown>>).find((d) => d.orderId === orderId)!;
   const commsLog = async (orderId: string) => (await http().get(`/v1/ops/orders/${orderId}`).set((await fake.opsSignIn()).headers).expect(200)).body.comms as Array<{ template: string; channel: string; status: string }>;
@@ -173,6 +177,12 @@ describe('M6 · hybrid fulfilment, dispatch and tracking (fake mode)', () => {
     // Once: the customer has no push token in this test, so one SMS (and one skipped push in the log).
     expect((await commsLog(o.id)).filter((x) => x.template === 'customer.delivery_delayed' && x.status === 'sent')).toHaveLength(1);
 
+    // Audit B1: a made-up "door photo" id no longer skips the customer's OTP.
+    const fakePhoto = await http().post(`/v1/jobs/${job.id}/delivered`).set(far.headers).send({ photoMediaId: '6f1c2d3e-4a5b-4c6d-8e7f-001122334455' }).expect(400);
+    expect(fakePhoto.body.error.code).toBe('VALIDATION_FAILED');
+    // Mid-delivery the rider can't go offline (audit B3).
+    expect((await http().put('/v1/riders/me/status').set(far.headers).send({ online: false }).expect(409)).body.error.code).toBe('RIDER_HAS_ACTIVE_JOB');
+
     await http().post(`/v1/jobs/${job.id}/delivered`).set(far.headers).send({ otp: t.deliveryOtp }).expect(200);
     expect((await http().get(`/v1/orders/${o.id}`).set(c.headers).expect(200)).body.state).toBe('DELIVERED');
     const earnings = (await http().get('/v1/riders/me/earnings').set(far.headers).expect(200)).body;
@@ -216,11 +226,12 @@ describe('M6 · hybrid fulfilment, dispatch and tracking (fake mode)', () => {
     expect(offer.payLines.map((l: { code: string }) => l.code)).toContain('batch');
     await http().post(`/v1/offers/${offer.id}/accept`).set(a.headers).expect(200);
     expect((await riderHome(a)).jobs).toHaveLength(2);
-    await offline(a);
+    // With deliveries in hand the rider stays online (audit B3); two jobs is the cap, so no more offers come.
+    expect((await http().put('/v1/riders/me/status').set(a.headers).send({ online: false }).expect(409)).body.error.code).toBe('RIDER_HAS_ACTIVE_JOB');
   });
 
   it('ACCEPTANCE: no rider for 5 min → fallback ladder (3PL → self-delivery bonus → standby → customer told, may cancel with a refund)', async () => {
-    for (const r of riders) await offline(r);
+    for (const r of riders) await offlineIfFree(r);
     const c = await customer('9876500806');
     const o = await order(c, 'online');
     const total = (await http().get(`/v1/orders/${o.id}`).set(c.headers).expect(200)).body.totalPaise as number;
@@ -256,7 +267,7 @@ describe('M6 · hybrid fulfilment, dispatch and tracking (fake mode)', () => {
   });
 
   it('the store takes the bonus and delivers itself; the statement shows the bonus', async () => {
-    for (const r of riders) await offline(r);
+    for (const r of riders) await offlineIfFree(r);
     const c = await customer('9876500807');
     const o = await order(c, 'cod');
     await accept(o.id, { fulfilmentMode: 'rider' });
