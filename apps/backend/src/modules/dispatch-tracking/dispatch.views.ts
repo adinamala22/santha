@@ -256,6 +256,28 @@ export class DispatchViews {
 
   // ───────────── ops ─────────────
 
+  /** The door evidence of one order, for ops disputes (ADR-033). */
+  async opsProof(orderId: string) {
+    const o = await this.orders.get(orderId);
+    if (!o) throw new DomainError('NOT_FOUND', 'Order not found');
+    const f = await this.dispatch.fulfilmentForOrder(orderId);
+    const courier = f ? await this.dispatch.courier(f) : null;
+    const end = f?.deliveredAt ?? f?.failedAt ?? null;
+    return {
+      orderId,
+      mode: f?.mode ?? null,
+      state: f?.state ?? null,
+      courier: f && f.state !== 'searching' ? (courier?.name ?? null) : null,
+      arrivedDropAt: iso(f?.arrivedDropAt),
+      deliveredAt: iso(f?.deliveredAt),
+      failedAt: iso(f?.failedAt),
+      waitedMinutes: f?.arrivedDropAt && end ? Math.max(0, Math.round((end.getTime() - f.arrivedDropAt.getTime()) / 60000)) : null,
+      proof: f?.proof ?? null,
+      photoUrl: f?.proof === 'photo' ? await this.photos.urlById(f.proofMediaId) : null,
+      codCollectedPaise: f?.codCollectedPaise ?? null,
+    };
+  }
+
   async opsDelivery(orderId: string) {
     const o = await this.orders.get(orderId);
     if (!o) throw new DomainError('NOT_FOUND', 'Order not found');

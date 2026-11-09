@@ -16,6 +16,7 @@ import {
   MerchantDeliveryDto,
   MerchantDeliveryListDto,
   OpsDeliveryDto,
+  OpsDeliveryProofDto,
   OpsLiveDto,
   PickupDto,
   ReassignDto,
@@ -328,6 +329,13 @@ export class OpsDispatchController {
   })
   live() {
     return this.views.live();
+  }
+
+  @Get('orders/:id/delivery-proof')
+  @Roles('admin', 'ops', 'support')
+  @ZodResponse({ type: OpsDeliveryProofDto, description: 'How the order was handed over: OTP or door photo, door times, cash (ADR-033). The photo link expires in 5 minutes.' })
+  deliveryProof(@Param('id', ParseUUIDPipe) id: string) {
+    return this.views.opsProof(id);
   }
 
   @Post('orders/:id/reassign')
