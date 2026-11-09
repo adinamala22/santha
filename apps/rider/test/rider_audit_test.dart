@@ -209,6 +209,28 @@ void main() {
     expect(find.byKey(const ValueKey('waiting-long')), findsOneWidget);
   });
 
+  testWidgets('ADR-036: the customer said leave it at the door: the rider is told, and is not asked to keep waiting', (tester) async {
+    final job = testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 0, photoProofAllowed: true, leaveAtDoor: true, arrivedDropAt: testNow.subtract(const Duration(minutes: 8)));
+    await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [job]));
+    await tapKey(tester, 'job-j1');
+    expect(find.byKey(const ValueKey('leave-at-door')), findsOneWidget);
+    expect(find.textContaining('leave the order at the door'), findsOneWidget);
+    expect(find.byKey(const ValueKey('waiting-long')), findsNothing); // 8 minutes at the door, but no "call again or report" prompt
+  });
+
+  testWidgets('ADR-036: the leave-at-door note in Telugu', (tester) async {
+    final job = testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 0, photoProofAllowed: true, leaveAtDoor: true);
+    await pumpRider(tester, locale: 'te', make: (c) => FakeRiderApi(c, online: true, jobs: [job]));
+    await tapKey(tester, 'job-j1');
+    expect(find.textContaining('తలుపు వద్ద వదిలేయండి'), findsOneWidget);
+  });
+
+  testWidgets('ADR-036: no note when the customer did not ask for it', (tester) async {
+    await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 0, photoProofAllowed: true)]));
+    await tapKey(tester, 'job-j1');
+    expect(find.byKey(const ValueKey('leave-at-door')), findsNothing);
+  });
+
   testWidgets('ADR-030: a prepaid order is left at the door with a photo (back camera), no OTP', (tester) async {
     final (container, api) = await pumpRider(
       tester,

@@ -52,6 +52,9 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
             {o.detail.address}: {x.address.line}
             {x.address.landmark ? `, ${x.address.landmark}` : ''}
           </p>
+          <p className="text-sm text-slate" data-testid="leave-at-door">
+            {fill(o.detail.leaveAtDoor, { answer: x.address.leaveAtDoor ? o.detail.yes : o.detail.no })}
+          </p>
           {x.instructions ? (
             <p className="text-sm text-slate">
               {o.detail.instructions}: {x.instructions}

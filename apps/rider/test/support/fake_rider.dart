@@ -21,7 +21,7 @@ RiderOffer testOffer({String id = 'o1', int expiresInSec = 24}) => RiderOffer(
       dropDistanceM: 1100,
     );
 
-Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt, FailedReason? failedReason, DateTime? arrivedDropAt, bool photoProofAllowed = false}) => Job(
+Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt, FailedReason? failedReason, DateTime? arrivedDropAt, bool photoProofAllowed = false, bool leaveAtDoor = false}) => Job(
       id: 'j1',
       orderId: 'ord1',
       code: 'SN4821',
@@ -46,6 +46,7 @@ Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = '
       failedReason: failedReason,
       arrivedDropAt: arrivedDropAt,
       photoProofAllowed: photoProofAllowed,
+      leaveAtDoor: leaveAtDoor,
     );
 
 /// In-memory rider backend with the rules the screens rely on (codes, readiness, expiry).

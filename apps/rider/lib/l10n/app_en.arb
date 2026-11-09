@@ -535,5 +535,6 @@
         "type": "String"
       }
     }
-  }
+  },
+  "leaveAtDoorRider": "The customer said: leave the order at the door. Put it down safely, take a photo of it at the door and use \"Deliver with photo\". No need to wait."
 }

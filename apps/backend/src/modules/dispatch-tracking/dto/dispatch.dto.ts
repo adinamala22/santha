@@ -102,6 +102,7 @@ export const JobViewSchema = z.object({
     landmark: z.string().nullable(),
     lat: z.number(),
     lng: z.number(),
+    leaveAtDoor: z.boolean().describe('The customer is happy for the order to be left at the door (ADR-036)'),
   }),
   instructions: z.string().nullable(),
   itemCount: int,

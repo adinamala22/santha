@@ -15,6 +15,7 @@ export function addressRepositoryContract(name: string, make: () => Promise<{ re
       location: { lat: 14.4535, lng: 79.996 },
       microMarketId: null,
       isDefault: false,
+      leaveAtDoor: false,
       ...extra,
     });
 
@@ -31,6 +32,18 @@ export function addressRepositoryContract(name: string, make: () => Promise<{ re
         [a.id, true],
         [b.id, false],
       ]);
+    });
+
+    it('keeps the leave-at-door choice (ADR-036): off by default, can be turned on and off', async () => {
+      const { repo, userId } = await make();
+      const u = await userId();
+      const a = await repo.transaction((tx) => tx.create(base(u)));
+      expect(a.leaveAtDoor).toBe(false);
+      expect((await repo.transaction((tx) => tx.update(a.id, { leaveAtDoor: true }))).leaveAtDoor).toBe(true);
+      expect((await repo.get(a.id))?.leaveAtDoor).toBe(true);
+      const b = await repo.transaction((tx) => tx.create(base(u, { leaveAtDoor: true })));
+      expect(b.leaveAtDoor).toBe(true);
+      expect((await repo.transaction((tx) => tx.update(a.id, { leaveAtDoor: false }))).leaveAtDoor).toBe(false);
     });
 
     it('updates fields and the pin; removes; other users never see them', async () => {

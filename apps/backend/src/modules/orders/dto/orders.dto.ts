@@ -26,6 +26,7 @@ export class PlaceOrderDto extends createZodDto(
     quoteId: z.uuid().describe('From POST /cart/price; the order is placed at exactly this bill'),
     paymentMethod: z.enum(['online', 'cod']),
     instructions: z.string().trim().max(300).nullable().optional().describe('Delivery instructions, e.g. "Ring the bell twice"'),
+    leaveAtDoor: z.boolean().optional().describe('Leave the order at the door (ADR-036); prepaid only, defaults to the choice saved on the address'),
     tipPaise: z.number().int().min(0).max(50_000).optional().describe('Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers'),
   }),
 ) {}
@@ -87,6 +88,7 @@ const AddressSchema = z.object({
   landmark: z.string().nullable(),
   pincode: z.string().nullable(),
   location: latLng,
+  leaveAtDoor: z.boolean().optional().describe('Leave at the door (ADR-036): prepaid orders only'),
 });
 
 const WhenOutSchema = z.object({

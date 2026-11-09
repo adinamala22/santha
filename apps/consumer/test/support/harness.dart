@@ -45,6 +45,8 @@ class FakeBackend implements HttpClientAdapter {
 
   /// Fee rows added to the priced bill (e.g. the beyond-radius charge, ADR-022).
   List<Map<String, dynamic>> extraFees = [];
+  /// The choice saved on the delivery address (ADR-036).
+  bool savedLeaveAtDoor = false;
 
   // M6 state: the tracking response (null → 404 until the store accepts).
   Map<String, dynamic>? tracking;
@@ -122,6 +124,7 @@ class FakeBackend implements HttpClientAdapter {
       'PUT /v1/cart' => (200, fixture('cart')),
       'POST /v1/cart/price' => (200, (() {
           final q = fixture(cartMerchantId == kitchenId ? 'checkout_kitchen' : 'checkout_retail');
+          (q['address'] as Map<String, dynamic>)['leaveAtDoor'] = savedLeaveAtDoor;
           if (extraFees.isNotEmpty) (q['bill']['fees'] as List).insertAll(1, extraFees);
           return q;
         })()),
@@ -304,12 +307,13 @@ Future<void> settle(WidgetTester tester, [int frames = 12]) async {
 }
 
 /// Boots the app on a phone-sized screen. With [signIn], walks the OTP flow first.
-Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, DeviceLocator? locator}) async {
+Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, DeviceLocator? locator, void Function(FakeBackend)? prepare}) async {
   tester.view.physicalSize = const Size(1080, 3000); // 360 × 1000 dp
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
   final backend = FakeBackend();
+  prepare?.call(backend);
   final analytics = DebugAnalytics();
   final container = ProviderContainer(
     overrides: [
@@ -352,8 +356,8 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
 }
 
 /// Signs in and picks the seeded default address (Dargamitta) → home.
-Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime}) async {
-  final h = await pumpApp(tester, locale: locale, kv: kv, realtime: realtime);
+Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, void Function(FakeBackend)? prepare}) async {
+  final h = await pumpApp(tester, locale: locale, kv: kv, realtime: realtime, prepare: prepare);
   await tester.tap(find.textContaining('Sai Residency'));
   await settle(tester, 20);
   return h;

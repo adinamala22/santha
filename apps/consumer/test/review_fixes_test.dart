@@ -92,6 +92,22 @@ void main() {
     expect(find.byKey(const ValueKey('place-order')), findsOneWidget);
   });
 
+  testWidgets('ADR-036: a new address can say prepaid orders are left at the door; off unless chosen', (tester) async {
+    final h = await pumpApp(tester, kv: {'santha.cart': _cart, 'santha.location': _pinnedAway});
+    await settle(tester, 20);
+    await tapVisible(tester, find.byKey(const ValueKey('cart-bar')));
+    await tapVisible(tester, find.byKey(const ValueKey('to-checkout')));
+    await settle(tester, 20);
+    await tapVisible(tester, find.byKey(const ValueKey('add-address')));
+    await settle(tester, 20);
+    expect(find.text('Leave my prepaid orders at the door'), findsOneWidget);
+    await tester.enterText(find.byKey(const ValueKey('address-line')), '7-1, Gandhi Nagar');
+    await tapVisible(tester, find.byKey(const ValueKey('address-leave-at-door')));
+    await tapVisible(tester, find.text('Save and continue'));
+    await settle(tester, 30);
+    expect((h.backend.bodies['POST /v1/me/addresses'] as Map)['leaveAtDoor'], true);
+  });
+
   testWidgets('C4: deleting the address you deliver to keeps the spot on the map, without the address', (tester) async {
     final h = await pumpAtHome(tester);
     expect(h.container.read(deliveryPointProvider)!.address?.id, '80000000-0000-4000-8000-000000000001');

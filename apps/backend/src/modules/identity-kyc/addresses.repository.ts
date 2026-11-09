@@ -19,6 +19,8 @@ export interface AddressRecord {
   location: LatLng;
   microMarketId: string | null;
   isDefault: boolean;
+  /** Prepaid orders to this address may be left at the door (ADR-036). */
+  leaveAtDoor: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -57,12 +59,13 @@ interface Row {
   lng: number;
   micro_market_id: string | null;
   is_default: boolean;
+  leave_at_door: boolean;
   created_at: Date;
   updated_at: Date;
 }
 
 const COLS = Prisma.sql`a.id::text, a.user_id::text, a.label, a.name, a.line, a.landmark, a.pincode,
-  ST_Y(a.location::geometry) AS lat, ST_X(a.location::geometry) AS lng, a.micro_market_id::text, a.is_default, a.created_at, a.updated_at`;
+  ST_Y(a.location::geometry) AS lat, ST_X(a.location::geometry) AS lng, a.micro_market_id::text, a.is_default, a.leave_at_door, a.created_at, a.updated_at`;
 
 const toRecord = (r: Row): AddressRecord => ({
   id: r.id,
@@ -75,6 +78,7 @@ const toRecord = (r: Row): AddressRecord => ({
   location: { lat: r.lat, lng: r.lng },
   microMarketId: r.micro_market_id,
   isDefault: r.is_default,
+  leaveAtDoor: r.leave_at_door,
   createdAt: r.created_at,
   updatedAt: r.updated_at,
 });
@@ -96,9 +100,9 @@ class PrismaAddressTx implements AddressTx {
   async create(a: NewAddress): Promise<AddressRecord> {
     const id = randomUUID();
     await this.tx.$executeRaw`
-      INSERT INTO addresses (id, user_id, label, name, line, landmark, pincode, location, micro_market_id, is_default, updated_at)
+      INSERT INTO addresses (id, user_id, label, name, line, landmark, pincode, location, micro_market_id, is_default, leave_at_door, updated_at)
       VALUES (${id}::uuid, ${a.userId}::uuid, ${a.label}, ${a.name}, ${a.line}, ${a.landmark}, ${a.pincode}, ${point(a.location)},
-        ${a.microMarketId}::uuid, ${a.isDefault}, now())`;
+        ${a.microMarketId}::uuid, ${a.isDefault}, ${a.leaveAtDoor}, now())`;
     return (await selectWhere(this.tx, Prisma.sql`a.id = ${id}::uuid`))[0]!;
   }
 

@@ -1052,5 +1052,8 @@
   "tipTitle": "Tip your delivery partner",
   "tipNote": "100% of the tip goes to the person who brings your order.",
   "tipNone": "No tip",
-  "billTip": "Tip for your delivery partner"
+  "billTip": "Tip for your delivery partner",
+  "leaveAtDoorTitle": "Leave at my door",
+  "leaveAtDoorNote": "Prepaid orders only. Your delivery partner leaves the order at your door and sends you a photo.",
+  "leaveAtDoorSave": "Leave my prepaid orders at the door"
 }

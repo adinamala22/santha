@@ -79,6 +79,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   PaymentMethodChoice _method = PaymentMethodChoice.online;
   /// Tip for the delivery partner (ADR-032), on top of the bill; 100% to whoever delivers.
   int _tipPaise = 0;
+  /// Leave-at-door chosen for this order; null keeps the choice saved on the address (ADR-036).
+  bool? _leaveAtDoor;
   Checkout? _quote;
   Object? _error;
   bool _loading = true;
@@ -159,7 +161,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     setState(() => _placing = true);
     final analytics = ref.read(analyticsProvider);
     try {
-      var order = await ref.read(checkoutApiProvider).placeOrder(quoteId: q.quoteId, method: _method, idempotencyKey: _idemKey!, instructions: _instructions.text, tipPaise: _tipPaise);
+      var order = await ref.read(checkoutApiProvider).placeOrder(quoteId: q.quoteId, method: _method, idempotencyKey: _idemKey!, instructions: _instructions.text, tipPaise: _tipPaise, leaveAtDoor: _method == PaymentMethodChoice.online ? (_leaveAtDoor ?? q.leaveAtDoor) : null);
       if (order.state == OrderState.awaitingPayment && order.payment != null) {
         if (!mounted) return;
         final paid = await payForOrder(context, ref, order);
@@ -294,6 +296,17 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                         ),
                     ]),
                   ]),
+                ),
+              // Leave at the door (ADR-036): prepaid orders only, since cash is collected at the door.
+              if (q != null && _method == PaymentMethodChoice.online)
+                SwitchListTile(
+                  key: const ValueKey('leave-at-door'),
+                  contentPadding: EdgeInsets.zero,
+                  activeThumbColor: SanthaColors.indigo,
+                  title: Text(l.leaveAtDoorTitle),
+                  subtitle: Text(l.leaveAtDoorNote),
+                  value: _leaveAtDoor ?? q.leaveAtDoor,
+                  onChanged: (v) => setState(() => _leaveAtDoor = v),
                 ),
               TextField(
                 controller: _instructions,
