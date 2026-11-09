@@ -115,6 +115,22 @@ jobs:
               echo "skip=true" >> "$GITHUB_OUTPUT"
             fi
           fi
+      - name: Free disk space on the server (old images and build cache)
+        if: steps.order.outputs.skip != 'true'
+        env: { HOST: '${{ secrets.SSH_HOST }}', USER: '${{ secrets.SSH_USER }}' }
+        run: |
+          # Every deploy leaves the previous tagged images behind; on a small disk they fill it up and the
+          # next deploy fails with "No space left on device". This removes only images no container uses,
+          # and the build cache. Volumes (database, files) are never touched.
+          ssh -i ~/.ssh/id_deploy "$USER@$HOST" '
+            echo "before:"; df -h / | tail -1
+            docker image prune -af >/dev/null || true
+            docker builder prune -af >/dev/null || true
+            sudo -n journalctl --vacuum-size=100M >/dev/null 2>&1 || true
+            echo "after:"; df -h / | tail -1
+            use=$(df --output=pcent / | tail -1 | tr -dc 0-9)
+            if [ "$use" -ge 95 ]; then echo "::error::The server disk is still ${use}% full after cleanup: enlarge the volume (docs/deploy/README.md)."; exit 1; fi
+          '
       - name: Copy the stack files and values (never the server's .env)
         if: steps.order.outputs.skip != 'true'
         env: { HOST: '${{ secrets.SSH_HOST }}', USER: '${{ secrets.SSH_USER }}' }
