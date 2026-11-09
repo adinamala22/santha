@@ -35,7 +35,7 @@ export default defineConfig({
       timeout: 120_000,
       cwd: '../..',
       // Every test signs in (ops + merchant OTPs from one IP): relax the fake backend's OTP limits.
-      env: { PORT: apiPort, WEB_BASE_URL: web, CORS_ORIGINS: web, OTP_RESEND_COOLDOWN_SEC: '0', OTP_LIMIT_PER_PHONE_HOUR: '1000', OTP_LIMIT_PER_DEVICE_HOUR: '1000', OTP_LIMIT_PER_IP_HOUR: '10000', OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: '1000', OPS_LOGIN_LIMIT_PER_IP_HOUR: '1000' },
+      env: { PORT: apiPort, WEB_BASE_URL: web, CORS_ORIGINS: web, OTP_RESEND_COOLDOWN_SEC: '0', OTP_LIMIT_PER_PHONE_HOUR: '1000', OTP_LIMIT_PER_DEVICE_HOUR: '1000', OTP_LIMIT_PER_IP_HOUR: '10000', OPS_LOGIN_LIMIT_PER_EMAIL_HOUR: '1000', OPS_LOGIN_LIMIT_PER_IP_HOUR: '1000', OPS_ALERT_PHONES: '+919811100001' },
     },
     {
       // A production build: stable under a long suite (dev-mode compile workers can crash) and closer

@@ -27052,6 +27052,33 @@
                   "string",
                   "null"
                 ]
+              },
+              "paging": {
+                "type": "object",
+                "properties": {
+                  "phones": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "reached": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "at": {
+                    "type": "string",
+                    "description": "ISO-8601 timestamp",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "phones",
+                  "reached",
+                  "at"
+                ],
+                "additionalProperties": false,
+                "description": "On-call phones set, reached by the latest page, and when (ADR-034)"
               }
             },
             "required": [
@@ -27060,7 +27087,8 @@
               "lat",
               "lng",
               "called112",
-              "orderCode"
+              "orderCode",
+              "paging"
             ],
             "additionalProperties": false,
             "description": "An SOS not yet resolved (ADR-031)",

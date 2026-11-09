@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { appSignIn, call, HAS_OPS, opsSignIn } from '../support/target';
+import { appSignIn, call, HAS_OPS, LIVE, opsSignIn } from '../support/target';
 
 /**
  * Rider SOS (ADR-031), fake + live: a demo rider presses SOS (API, as the app does), it is first on the live board
@@ -21,6 +21,9 @@ test('SOS reaches the live board; ops call the rider and resolve it', async ({ p
 
   const panel = page.getByTestId('rider-sos');
   await expect(panel).toContainText('SOS ·');
+  // The rider page says whether the on-call phones were paged (ADR-034): in every state it names the on-call phones.
+  await expect(panel.getByTestId('sos-paging')).toContainText(/on-call phone/);
+  if (!LIVE) await expect(panel.getByTestId('sos-paging')).toContainText('Paged 1 of 1 on-call phones'); // the fake server has one set
   await expect(panel.getByRole('link', { name: /Call the rider/ })).toHaveAttribute('href', /^tel:\+91/);
   await panel.getByRole('button', { name: 'Resolve' }).click();
   await page.getByLabel('What happened').fill('E2E: called the rider, all fine.');

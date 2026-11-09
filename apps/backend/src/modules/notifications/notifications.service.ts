@@ -1,4 +1,6 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { ENV } from '../../config/config.module';
+import type { Env } from '../../config/env';
 import type { DomainEvent } from '../../infra/outbox/domain-event';
 import { EventBus } from '../../infra/outbox/event-bus';
 import { MessagingProvider } from '../../infra/providers/messaging/messaging.provider';
@@ -57,6 +59,7 @@ export class NotificationsService implements OnModuleInit {
     private readonly auth: AuthService,
     private readonly merchants: MerchantsService,
     private readonly bus: EventBus,
+    @Inject(ENV) private readonly env: Env,
   ) {}
 
   onModuleInit(): void {
@@ -121,6 +124,29 @@ export class NotificationsService implements OnModuleInit {
     const phone = to.phone ?? user?.phone;
     if (!pushed && phone) await this.sendMessage('sms', phone, `${msg.title}. ${msg.body}`, template, locale, logCtx);
     if (opts.whatsapp && user && (await this.repo.whatsappOptIn(user.id))) await this.sendMessage('whatsapp', user.phone, `${msg.title}. ${msg.body}`, template, locale, logCtx);
+  }
+
+  /** The phones to page for an SOS (OPS_ALERT_PHONES). */
+  onCallPhones(): string[] {
+    return this.env.OPS_ALERT_PHONES.split(',').map((x) => x.trim()).filter(Boolean);
+  }
+
+  /**
+   * Pages every on-call phone with an SMS and an automated voice call (ADR-034). Returns how many phones got at
+   * least one of them. Never throws: a failed page is logged in the comms log and must not stop the SOS.
+   */
+  async pageOnCall(template: TemplateKey, vars: Record<string, string | number>, ctx: { userId?: string | null } = {}): Promise<number> {
+    const locale = this.env.OPS_ALERT_LOCALE;
+    const { title, body } = render(template, locale, vars);
+    const text = `${title}. ${body}`;
+    let reached = 0;
+    for (const phone of this.onCallPhones()) {
+      const logCtx = { userId: ctx.userId ?? null, merchantId: null, orderId: null };
+      const sms = await this.sendMessage('sms', phone, text, template, locale, logCtx).catch(() => false);
+      const call = await this.sendMessage('voice', phone, text, template, locale, logCtx).catch(() => false);
+      if (sms || call) reached += 1;
+    }
+    return reached;
   }
 
   /** Screen refresh in a socket room (user:{id}, merchant:{id}, rider:{id}). */
@@ -223,9 +249,10 @@ export class NotificationsService implements OnModuleInit {
     template: string,
     locale: Locale,
     ctx: { userId: string | null; merchantId: string | null; orderId: string | null },
-  ): Promise<void> {
+  ): Promise<boolean> {
     const r = await this.messaging.send({ channel, to, text, template }).catch((err: Error) => ({ ok: false, error: err.message }));
     await this.log(channel, template, locale, text, r.ok ? 'sent' : 'failed', r.ok ? null : (r.error ?? 'failed'), ctx);
+    return r.ok;
   }
 
   private async log(
