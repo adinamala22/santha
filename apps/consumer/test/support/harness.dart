@@ -46,6 +46,11 @@ class FakeBackend implements HttpClientAdapter {
   /// Fee rows added to the priced bill (e.g. the beyond-radius charge, ADR-022).
   List<Map<String, dynamic>> extraFees = [];
 
+  /// Tip after delivery (ADR-037): what the server says, and what was sent / paid.
+  bool tipAllowed = true;
+  int tippedPaise = 0;
+  Map<String, dynamic>? lastTipBody;
+
   // M6 state: the tracking response (null → 404 until the store accepts).
   Map<String, dynamic>? tracking;
   bool cancelledNoCourier = false;
@@ -163,6 +168,23 @@ class FakeBackend implements HttpClientAdapter {
           return (201, _rating()!);
         })(),
       final r when r.startsWith('GET /v1/orders/') && r.endsWith('/rating') => (200, {'rating': _rating()}),
+      final r when r.startsWith('GET /v1/orders/') && r.endsWith('/tip') => (200, {
+          'canTip': tipAllowed && tippedPaise == 0,
+          'reason': tippedPaise > 0 ? 'already_tipped' : (tipAllowed ? 'ok' : 'window_closed'),
+          'until': null,
+          'tippedPaise': tippedPaise,
+          'choicesPaise': [1000, 2000, 3000, 5000, 10000],
+          'minPaise': 1000,
+          'maxPaise': 20000,
+        }),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/tip') => (() {
+          lastTipBody = Map<String, dynamic>.from(o.data as Map);
+          return (200, {'intentId': 'tip-1', 'provider': 'mock', 'providerOrderId': 'order_tip_1', 'keyId': null, 'amountPaise': lastTipBody!['amountPaise'], 'currency': 'INR', 'status': 'created', 'lastFailure': null});
+        })(),
+      'POST /v1/dev/tips/tip-1/succeed' => (() {
+          tippedPaise = lastTipBody!['amountPaise'] as int;
+          return (200, {'intentId': 'tip-1', 'provider': 'mock', 'providerOrderId': 'order_tip_1', 'keyId': null, 'amountPaise': tippedPaise, 'currency': 'INR', 'status': 'captured', 'lastFailure': null});
+        })(),
       final r when r.startsWith('GET /v1/orders/') => (200, _order()),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/cancel') => _order()['state'] == 'PLACED'
           ? (200, (() {
@@ -304,12 +326,13 @@ Future<void> settle(WidgetTester tester, [int frames = 12]) async {
 }
 
 /// Boots the app on a phone-sized screen. With [signIn], walks the OTP flow first.
-Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, DeviceLocator? locator}) async {
+Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, DeviceLocator? locator, void Function(FakeBackend)? prepare}) async {
   tester.view.physicalSize = const Size(1080, 3000); // 360 × 1000 dp
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 
   final backend = FakeBackend();
+  prepare?.call(backend);
   final analytics = DebugAnalytics();
   final container = ProviderContainer(
     overrides: [
@@ -352,8 +375,8 @@ Future<Harness> pumpApp(WidgetTester tester, {bool signIn = true, String locale 
 }
 
 /// Signs in and picks the seeded default address (Dargamitta) → home.
-Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime}) async {
-  final h = await pumpApp(tester, locale: locale, kv: kv, realtime: realtime);
+Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<String, String> kv = const {}, FakeRealtime? realtime, void Function(FakeBackend)? prepare}) async {
+  final h = await pumpApp(tester, locale: locale, kv: kv, realtime: realtime, prepare: prepare);
   await tester.tap(find.textContaining('Sai Residency'));
   await settle(tester, 20);
   return h;
@@ -361,7 +384,8 @@ Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<Strin
 
 /// Taps a widget after scrolling it into view (the test font is wider than Poppins).
 Future<void> tapVisible(WidgetTester tester, Finder f) async {
-  await tester.ensureVisible(f);
+  // Centre it: at the edge it can sit under a pinned app bar and the tap would hit that instead.
+  await Scrollable.ensureVisible(tester.element(f), alignment: 0.5);
   await settle(tester, 4);
   await tester.tap(f);
   await settle(tester);

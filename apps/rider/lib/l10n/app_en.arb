@@ -535,5 +535,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "payoutLateTips": "Tips paid after delivery: {amount}",
+  "@payoutLateTips": {"placeholders": {"amount": {"type": "String"}}}
 }

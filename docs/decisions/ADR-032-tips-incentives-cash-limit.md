@@ -20,7 +20,7 @@ The product owner chose:
   - **A 3PL partner** (rare, mocked today): not passed on automatically. Ops settle it by hand.
 - **Cash orders:** the tip is part of the cash collected. The rider's payout deducts the cash and adds the tip, so it nets out.
 - **Refunds:** a cancellation refunds the whole total, tip included.
-- **Not yet:** tipping after delivery. It needs a separate tip payment, because the wallet holds refund credits only and a payment for an order that is already paid would conflict with the order's payment states. It is a follow-up.
+- Tipping after delivery is done in ADR-037 (a separate tip payment, 24 hours). Original note: it needs a separate tip payment, because the wallet holds refund credits only and a payment for an order that is already paid would conflict with the order's payment states. It is a follow-up.
 
 ## Incentives
 

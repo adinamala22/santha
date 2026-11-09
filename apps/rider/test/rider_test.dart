@@ -251,4 +251,30 @@ void main() {
     expect(find.text('26/10 – 01/11 · ₹586'), findsOneWidget);
     expect(find.text('Earned ₹742 − cash you held ₹156'), findsOneWidget);
   });
+
+  testWidgets('ADR-037: a payout shows the tips paid after delivery', (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true));
+    api.payoutList = [
+      Payout.fromJson({
+        'id': 'p2', 'periodStart': '2026-10-25T18:30:00.000Z', 'periodEnd': '2026-11-01T18:30:00.000Z', 'grossPaise': 74200, 'netPaise': 60600, 'status': 'transferred',
+        'totals': {'earnedPaise': 74200, 'cashHeldPaise': 15600, 'lateTipsPaise': 2000, 'adjustmentsPaise': 0}, 'lines': <Object>[], 'hasStatement': true, 'transferRef': 'trf_2',
+      }),
+    ];
+    await tester.tap(find.byTooltip('Earnings today'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Tips paid after delivery: ₹20'), findsOneWidget);
+  });
+
+  testWidgets('ADR-037: no tips line when there were none', (tester) async {
+    final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true));
+    api.payoutList = [
+      Payout.fromJson({
+        'id': 'p3', 'periodStart': '2026-10-25T18:30:00.000Z', 'periodEnd': '2026-11-01T18:30:00.000Z', 'grossPaise': 74200, 'netPaise': 58600, 'status': 'transferred',
+        'totals': {'earnedPaise': 74200, 'cashHeldPaise': 15600, 'adjustmentsPaise': 0}, 'lines': <Object>[], 'hasStatement': true, 'transferRef': 'trf_3',
+      }),
+    ];
+    await tester.tap(find.byTooltip('Earnings today'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('Tips paid after delivery'), findsNothing);
+  });
 }

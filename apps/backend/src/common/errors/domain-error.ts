@@ -55,6 +55,8 @@ export const ERROR_STATUS = {
   APPROVAL_LIMIT: 403,
   ISSUE_WINDOW_CLOSED: 422,
   DISPUTE_WINDOW_CLOSED: 422,
+  // Tip after delivery (ADR-037)
+  TIP_NOT_ALLOWED: 409,
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_STATUS;

@@ -27,6 +27,25 @@ export interface PaymentIntentRecord {
   updatedAt: Date;
 }
 
+/** A tip paid after the delivery (ADR-037). */
+export interface TipPaymentRecord {
+  id: string;
+  orderId: string;
+  userId: string;
+  riderUserId: string;
+  microMarketId: string;
+  amountPaise: number;
+  currency: string;
+  provider: string;
+  providerOrderId: string;
+  providerPaymentId: string | null;
+  status: PaymentStatus;
+  failureReason: string | null;
+  capturedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export interface WalletEntryRecord {
   id: string;
   userId: string;
@@ -45,6 +64,11 @@ export interface PaymentsTx {
    * intent failed (the order lapsed) is still recorded so the money can be credited back.
    */
   markCaptured(id: string, providerPaymentId: string, at: Date): Promise<boolean>;
+  insertTip(t: Omit<TipPaymentRecord, 'createdAt' | 'updatedAt' | 'providerPaymentId' | 'failureReason' | 'capturedAt' | 'status'>): Promise<TipPaymentRecord>;
+  /** created|failed → captured (compare-and-swap); false if already captured. */
+  markTipCaptured(id: string, providerPaymentId: string, at: Date): Promise<boolean>;
+  /** Records the last failed attempt without ending the tip (the customer may retry). */
+  noteTipFailure(id: string, reason: string): Promise<void>;
   /** created → failed (compare-and-swap). */
   markFailed(id: string, reason: string): Promise<boolean>;
   /** Records the last failed attempt without ending the intent (the customer may retry). */
@@ -63,11 +87,19 @@ export abstract class PaymentsRepository {
   abstract getIntent(id: string): Promise<PaymentIntentRecord | null>;
   abstract intentForOrder(orderId: string): Promise<PaymentIntentRecord | null>;
   abstract intentByProviderOrder(providerOrderId: string): Promise<PaymentIntentRecord | null>;
+  abstract getTip(id: string): Promise<TipPaymentRecord | null>;
+  abstract tipByProviderOrder(providerOrderId: string): Promise<TipPaymentRecord | null>;
+  /** Tips for one order, newest first. */
+  abstract tipsForOrder(orderId: string): Promise<TipPaymentRecord[]>;
+  /** Captured tips for a rider with capturedAt in [from, to) (payouts). */
+  abstract capturedTipsForRider(riderUserId: string, from: Date, to: Date): Promise<TipPaymentRecord[]>;
   abstract walletBalance(userId: string): Promise<number>;
   /** Newest first. */
   abstract walletEntries(userId: string, limit: number): Promise<WalletEntryRecord[]>;
   /** Captured payments with capturedAt in [from, to) (reconciliation, M7). */
   abstract capturedBetween(from: Date, to: Date): Promise<PaymentIntentRecord[]>;
+  /** Captured tips with capturedAt in [from, to): they are in the aggregator report too (ADR-037). */
+  abstract capturedTipsBetween(from: Date, to: Date): Promise<TipPaymentRecord[]>;
 }
 
 // ───────────── Prisma ─────────────
@@ -87,6 +119,22 @@ class PrismaPaymentsTx implements PaymentsTx {
       data: { status: 'captured', providerPaymentId, capturedAt: at, updatedAt: new Date() },
     });
     return count === 1;
+  }
+
+  async insertTip(t: Parameters<PaymentsTx['insertTip']>[0]) {
+    return (await this.tx.tipPayment.create({ data: { ...t, status: 'created' } })) as TipPaymentRecord;
+  }
+
+  async markTipCaptured(id: string, providerPaymentId: string, at: Date) {
+    const { count } = await this.tx.tipPayment.updateMany({
+      where: { id, status: { in: ['created', 'failed'] } },
+      data: { status: 'captured', providerPaymentId, capturedAt: at, updatedAt: new Date() },
+    });
+    return count === 1;
+  }
+
+  async noteTipFailure(id: string, reason: string) {
+    await this.tx.tipPayment.updateMany({ where: { id, status: 'created' }, data: { failureReason: reason, updatedAt: new Date() } });
   }
 
   async markFailed(id: string, reason: string) {
@@ -149,6 +197,22 @@ export class PrismaPaymentsRepository extends PaymentsRepository {
     return i ? toIntent(i) : null;
   }
 
+  async getTip(id: string) {
+    return (await this.prisma.tipPayment.findUnique({ where: { id } })) as TipPaymentRecord | null;
+  }
+
+  async tipByProviderOrder(providerOrderId: string) {
+    return (await this.prisma.tipPayment.findUnique({ where: { providerOrderId } })) as TipPaymentRecord | null;
+  }
+
+  async tipsForOrder(orderId: string) {
+    return (await this.prisma.tipPayment.findMany({ where: { orderId }, orderBy: { createdAt: 'desc' } })) as TipPaymentRecord[];
+  }
+
+  async capturedTipsForRider(riderUserId: string, from: Date, to: Date) {
+    return (await this.prisma.tipPayment.findMany({ where: { riderUserId, status: 'captured', capturedAt: { gte: from, lt: to } } })) as TipPaymentRecord[];
+  }
+
   async walletBalance(userId: string) {
     const r = await this.prisma.walletEntry.aggregate({ where: { userId }, _sum: { amountPaise: true } });
     return r._sum.amountPaise ?? 0;
@@ -156,6 +220,10 @@ export class PrismaPaymentsRepository extends PaymentsRepository {
 
   async capturedBetween(from: Date, to: Date) {
     return (await this.prisma.paymentIntent.findMany({ where: { status: 'captured', capturedAt: { gte: from, lt: to } } })) as PaymentIntentRecord[];
+  }
+
+  async capturedTipsBetween(from: Date, to: Date) {
+    return (await this.prisma.tipPayment.findMany({ where: { status: 'captured', capturedAt: { gte: from, lt: to } } })) as TipPaymentRecord[];
   }
 
   async walletEntries(userId: string, limit: number) {
@@ -170,13 +238,14 @@ export class PrismaPaymentsRepository extends PaymentsRepository {
 
 interface State {
   intents: PaymentIntentRecord[];
+  tips: TipPaymentRecord[];
   webhooks: Array<{ provider: string; providerEventId: string; eventType: string; payload: unknown; receivedAt: Date; processedAt: Date | null }>;
   wallet: WalletEntryRecord[];
 }
 
 class PaymentsStore extends MemoryStore<State> {
   constructor(sinks?: FakeSinks) {
-    super({ intents: [], webhooks: [], wallet: [] }, sinks);
+    super({ intents: [], tips: [], webhooks: [], wallet: [] }, sinks);
   }
 
   read<T>(fn: (s: State) => T): T {
@@ -200,6 +269,24 @@ class PaymentsStore extends MemoryStore<State> {
           if (!i || i.status === 'captured') return false;
           Object.assign(i, { status: 'captured', providerPaymentId, capturedAt: at, updatedAt: new Date() });
           return true;
+        },
+        insertTip: async (t) => {
+          if (this.state.tips.some((x) => x.providerOrderId === t.providerOrderId))
+            throw new Prisma.PrismaClientKnownRequestError('Unique constraint failed', { code: 'P2002', clientVersion: 'memory' });
+          const now = new Date();
+          const rec: TipPaymentRecord = { ...this.clone(t), status: 'created', providerPaymentId: null, failureReason: null, capturedAt: null, createdAt: now, updatedAt: now };
+          this.state.tips.push(rec);
+          return this.clone(rec);
+        },
+        markTipCaptured: async (id, providerPaymentId, at) => {
+          const t = this.state.tips.find((x) => x.id === id);
+          if (!t || t.status === 'captured') return false;
+          Object.assign(t, { status: 'captured', providerPaymentId, capturedAt: at, updatedAt: new Date() });
+          return true;
+        },
+        noteTipFailure: async (id, reason) => {
+          const t = this.state.tips.find((x) => x.id === id);
+          if (t?.status === 'created') Object.assign(t, { failureReason: reason, updatedAt: new Date() });
         },
         markFailed: async (id, reason) => {
           const i = intent(id);
@@ -256,6 +343,22 @@ export class InMemoryPaymentsRepository extends PaymentsRepository {
     return this.store.read((s) => s.intents.find((i) => i.providerOrderId === providerOrderId) ?? null);
   }
 
+  async getTip(id: string) {
+    return this.store.read((s) => s.tips.find((t) => t.id === id) ?? null);
+  }
+
+  async tipByProviderOrder(providerOrderId: string) {
+    return this.store.read((s) => s.tips.find((t) => t.providerOrderId === providerOrderId) ?? null);
+  }
+
+  async tipsForOrder(orderId: string) {
+    return this.store.read((s) => s.tips.filter((t) => t.orderId === orderId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()));
+  }
+
+  async capturedTipsForRider(riderUserId: string, from: Date, to: Date) {
+    return this.store.read((s) => s.tips.filter((t) => t.riderUserId === riderUserId && t.status === 'captured' && t.capturedAt && t.capturedAt >= from && t.capturedAt < to));
+  }
+
   async walletBalance(userId: string) {
     return this.store.read((s) => s.wallet.filter((w) => w.userId === userId).reduce((sum, w) => sum + w.amountPaise, 0));
   }
@@ -267,6 +370,10 @@ export class InMemoryPaymentsRepository extends PaymentsRepository {
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .slice(0, limit),
     );
+  }
+
+  async capturedTipsBetween(from: Date, to: Date) {
+    return this.store.read((s) => s.tips.filter((t) => t.status === 'captured' && t.capturedAt && t.capturedAt >= from && t.capturedAt < to));
   }
 
   async capturedBetween(from: Date, to: Date) {

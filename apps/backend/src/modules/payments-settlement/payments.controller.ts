@@ -29,6 +29,15 @@ export class PaymentsController {
     return value;
   }
 
+  @Post('tips/:id/confirm')
+  @HttpCode(200)
+  @ApiHeader({ name: 'Idempotency-Key', required: true })
+  @ZodResponse({ type: PaymentDto, description: 'Tip payment sheet success callback (signature verified); same shape as an order payment (ADR-037)' })
+  async confirmTip(@Param('id', ParseUUIDPipe) id: string, @Body() b: ConfirmPaymentDto, @CurrentUser() u: AuthUser, @Headers('idempotency-key') key: string | undefined) {
+    const { value } = await this.idempotency.run('tips.confirm', u.userId, key, { id, ...b }, () => this.payments.confirmTip(u.userId, id, b));
+    return value;
+  }
+
   @Get('wallet')
   @ZodResponse({ type: WalletDto, description: 'Refund credits (the wallet holds refund credits only)' })
   async wallet(@CurrentUser() u: AuthUser) {
@@ -70,5 +79,23 @@ export class DevPaymentsController {
   async simulate(@Param('id', ParseUUIDPipe) id: string, @Param('outcome') outcome: string) {
     if (this.env.APP_ENV === 'production' || (outcome !== 'succeed' && outcome !== 'fail')) throw new DomainError('NOT_FOUND', 'Not found');
     return this.payments.devSimulate(id, outcome);
+  }
+}
+
+/** Mock payment sheet for a tip (fake mode and dev builds only; never in production). */
+@ApiExcludeController()
+@Public()
+@Controller('dev/tips')
+export class DevTipsController {
+  constructor(
+    private readonly payments: PaymentsService,
+    @Inject(ENV) private readonly env: Env,
+  ) {}
+
+  @Post(':id/:outcome')
+  @HttpCode(200)
+  async simulate(@Param('id', ParseUUIDPipe) id: string, @Param('outcome') outcome: string) {
+    if (this.env.APP_ENV === 'production' || (outcome !== 'succeed' && outcome !== 'fail')) throw new DomainError('NOT_FOUND', 'Not found');
+    return this.payments.devSimulateTip(id, outcome);
   }
 }

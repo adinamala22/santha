@@ -57,22 +57,29 @@ class CheckoutApi {
 
   Future<Order> order(String id) => _call(() async => Order.fromJson((await _dio.get<Json>('/v1/orders/$id')).data!));
 
+  /// Can this delivered order still be tipped, and with what amounts (ADR-037).
+  Future<TipOffer> tipOffer(String orderId) => _call(() async => TipOffer.fromJson((await _dio.get<Json>('/v1/orders/$orderId/tip')).data!));
+
+  /// Starts a tip payment for a delivered order; pay it with the payment sheet (it confirms on /v1/tips).
+  Future<PaymentCheckout> startTip(String orderId, int amountPaise) =>
+      _call(() async => PaymentCheckout.fromJson((await _dio.post<Json>('/v1/orders/$orderId/tip', data: {'amountPaise': amountPaise})).data!, tip: true));
+
   Future<Order> abandonPayment(String orderId) => _call(() async => Order.fromJson((await _dio.post<Json>('/v1/orders/$orderId/abandon-payment')).data!));
 
   /// Payment sheet success callback (Razorpay: order id, payment id, signature).
-  Future<PaymentCheckout> confirmPayment(String intentId, {required String providerOrderId, required String providerPaymentId, required String signature, required String idempotencyKey}) =>
+  Future<PaymentCheckout> confirmPayment(String intentId, {required String providerOrderId, required String providerPaymentId, required String signature, required String idempotencyKey, bool tip = false}) =>
       _call(() async {
         final r = await _dio.post<Json>(
-          '/v1/payments/$intentId/confirm',
+          tip ? '/v1/tips/$intentId/confirm' : '/v1/payments/$intentId/confirm',
           data: {'providerOrderId': providerOrderId, 'providerPaymentId': providerPaymentId, 'signature': signature},
           options: Options(headers: {'Idempotency-Key': idempotencyKey}),
         );
-        return PaymentCheckout.fromJson(r.data!);
+        return PaymentCheckout.fromJson(r.data!, tip: tip);
       });
 
   /// Dev builds with PAYMENTS_PROVIDER=mock only: plays the payment sheet (succeed | fail).
-  Future<PaymentCheckout> mockPay(String intentId, {required bool succeed}) => _call(() async {
-        final r = await _dio.post<Json>('/v1/dev/payments/$intentId/${succeed ? 'succeed' : 'fail'}', options: SanthaApiClient.publicOptions());
+  Future<PaymentCheckout> mockPay(String intentId, {required bool succeed, bool tip = false}) => _call(() async {
+        final r = await _dio.post<Json>('/v1/dev/${tip ? 'tips' : 'payments'}/$intentId/${succeed ? 'succeed' : 'fail'}', options: SanthaApiClient.publicOptions());
         return PaymentCheckout.fromJson(r.data!);
       });
 

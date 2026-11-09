@@ -57,7 +57,7 @@ class RazorpayPaymentSheet implements PaymentSheet {
     final key = newIdempotencyKey();
     razorpay.on(Razorpay.EVENT_PAYMENT_SUCCESS, (PaymentSuccessResponse r) async {
       try {
-        await api.confirmPayment(payment.intentId, providerOrderId: r.orderId ?? payment.providerOrderId, providerPaymentId: r.paymentId ?? '', signature: r.signature ?? '', idempotencyKey: key);
+        await api.confirmPayment(payment.intentId, providerOrderId: r.orderId ?? payment.providerOrderId, providerPaymentId: r.paymentId ?? '', signature: r.signature ?? '', idempotencyKey: key, tip: payment.tip);
         if (!done.isCompleted) done.complete(const Paid());
       } on ApiException catch (e) {
         if (!done.isCompleted) done.complete(PaymentFailed(e.message));
@@ -114,7 +114,7 @@ class MockPaymentSheet implements PaymentSheet {
     );
     if (choice == null) return const PaymentCancelled();
     try {
-      final p = await api.mockPay(payment.intentId, succeed: choice);
+      final p = await api.mockPay(payment.intentId, succeed: choice, tip: payment.tip);
       return p.status == 'captured' ? const Paid() : PaymentFailed(p.lastFailure);
     } on ApiException catch (e) {
       return PaymentFailed(e.message);

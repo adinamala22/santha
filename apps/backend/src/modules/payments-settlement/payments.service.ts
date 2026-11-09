@@ -5,7 +5,7 @@ import { DomainError } from '../../common/errors/domain-error';
 import type { DomainEvent } from '../../infra/outbox/domain-event';
 import { EventBus } from '../../infra/outbox/event-bus';
 import { MockPaymentsProvider, PaymentsProvider } from '../../infra/providers/payments/payments.provider';
-import { type PaymentIntentRecord, PaymentsRepository, type WalletEntryRecord } from './payments.repository';
+import { type PaymentIntentRecord, PaymentsRepository, type TipPaymentRecord, type WalletEntryRecord } from './payments.repository';
 
 /** What the app needs to open the payment sheet (Razorpay checkout, or the dev mock sheet). */
 export interface CheckoutPayload {
@@ -85,6 +85,97 @@ export class PaymentsService implements OnModuleInit {
     };
   }
 
+  // ───────────── tips after delivery (ADR-037) ─────────────
+
+  /** A separate payment for a tip, 100% to the rider. Not part of the order, its bill or its refunds. */
+  async createTip(t: { orderId: string; code: string; userId: string; riderUserId: string; microMarketId: string; amountPaise: number }): Promise<CheckoutPayload> {
+    const po = await this.provider.createOrder({ amountPaise: t.amountPaise, receipt: `tip_${t.code}`, notes: { order_id: t.orderId, kind: 'tip' } });
+    const tip = await this.repo.transaction(async (tx) => {
+      const rec = await tx.insertTip({
+        id: randomUUID(),
+        orderId: t.orderId,
+        userId: t.userId,
+        riderUserId: t.riderUserId,
+        microMarketId: t.microMarketId,
+        amountPaise: po.amountPaise,
+        currency: po.currency,
+        provider: this.provider.name,
+        providerOrderId: po.providerOrderId,
+      });
+      await tx.appendEvent({
+        type: 'tip.intent_created',
+        aggregate: { type: 'tip', id: rec.id },
+        microMarketId: t.microMarketId,
+        actor: { type: 'user', id: t.userId },
+        payload: { order_id: t.orderId, amount_paise: rec.amountPaise, provider: rec.provider },
+      });
+      return rec;
+    });
+    return this.checkoutTip(tip);
+  }
+
+  /** The same shape as an order payment, so the apps' payment sheet opens it unchanged (intentId = the tip id). */
+  checkoutTip(t: TipPaymentRecord): CheckoutPayload {
+    return {
+      intentId: t.id,
+      provider: t.provider as 'razorpay' | 'mock',
+      providerOrderId: t.providerOrderId,
+      keyId: this.provider.keyId,
+      amountPaise: t.amountPaise,
+      currency: t.currency,
+      status: t.status,
+      lastFailure: t.failureReason,
+    };
+  }
+
+  tipsForOrder(orderId: string): Promise<TipPaymentRecord[]> {
+    return this.repo.tipsForOrder(orderId);
+  }
+
+  capturedTipsForRider(riderUserId: string, from: Date, to: Date): Promise<TipPaymentRecord[]> {
+    return this.repo.capturedTipsForRider(riderUserId, from, to);
+  }
+
+  /** Checkout success callback for a tip (signature verified). Idempotent. */
+  async confirmTip(userId: string, tipId: string, p: { providerOrderId: string; providerPaymentId: string; signature: string }): Promise<CheckoutPayload> {
+    const tip = await this.repo.getTip(tipId);
+    if (!tip || tip.userId !== userId) throw new DomainError('NOT_FOUND', 'Payment not found');
+    if (p.providerOrderId !== tip.providerOrderId || !this.provider.verifyPaymentSignature(p))
+      throw new DomainError('PAYMENT_SIGNATURE_INVALID', "We couldn't verify this payment. If money was taken, it will be refunded automatically.");
+    await this.captureTip(tip, p.providerPaymentId, 'checkout');
+    return this.checkoutTip((await this.repo.getTip(tipId))!);
+  }
+
+  private async captureTip(tip: TipPaymentRecord, providerPaymentId: string, source: 'checkout' | 'webhook' | 'dev'): Promise<void> {
+    await this.repo.transaction(async (tx) => {
+      if (!(await tx.markTipCaptured(tip.id, providerPaymentId, this.clock()))) return; // already captured
+      await tx.appendEvent({
+        type: 'tip.captured',
+        aggregate: { type: 'tip', id: tip.id },
+        microMarketId: tip.microMarketId,
+        actor: system,
+        payload: { order_id: tip.orderId, user_id: tip.userId, rider_user_id: tip.riderUserId, amount_paise: tip.amountPaise, provider_payment_id: providerPaymentId, source },
+      });
+    });
+  }
+
+  private async noteTipFailure(tip: TipPaymentRecord, reason: string): Promise<void> {
+    await this.repo.transaction((tx) => tx.noteTipFailure(tip.id, reason));
+  }
+
+  /** PAYMENTS_PROVIDER=mock only: plays the payment sheet for a tip. */
+  async devSimulateTip(tipId: string, outcome: 'succeed' | 'fail'): Promise<CheckoutPayload> {
+    if (!(this.provider instanceof MockPaymentsProvider)) throw new DomainError('NOT_FOUND', 'Not found');
+    const tip = await this.repo.getTip(tipId);
+    if (!tip) throw new DomainError('NOT_FOUND', 'Payment not found');
+    if (outcome === 'fail') await this.noteTipFailure(tip, 'Payment declined by the bank (mock)');
+    else {
+      const paymentId = `pay_mock_${randomBytes(7).toString('hex')}`;
+      await this.confirmTip(tip.userId, tip.id, { providerOrderId: tip.providerOrderId, providerPaymentId: paymentId, signature: this.provider.signPayment(tip.providerOrderId, paymentId) });
+    }
+    return this.checkoutTip((await this.repo.getTip(tipId))!);
+  }
+
   intentForOrder(orderId: string): Promise<PaymentIntentRecord | null> {
     return this.repo.intentForOrder(orderId);
   }
@@ -123,7 +214,11 @@ export class PaymentsService implements OnModuleInit {
     const intent = w.providerOrderId ? await this.repo.intentByProviderOrder(w.providerOrderId) : null;
     if (intent && w.kind === 'captured' && w.providerPaymentId) await this.capture(intent, w.providerPaymentId, 'webhook');
     if (intent && w.kind === 'failed') await this.noteFailure(intent, w.failureReason ?? 'Payment failed');
-    if (!intent && w.kind !== 'ignored') this.logger.warn({ providerOrderId: w.providerOrderId, event: w.eventType }, 'Webhook for an unknown payment');
+    // Not an order payment: it may be a tip (the app was closed before it could confirm).
+    const tip = !intent && w.providerOrderId ? await this.repo.tipByProviderOrder(w.providerOrderId) : null;
+    if (tip && w.kind === 'captured' && w.providerPaymentId) await this.captureTip(tip, w.providerPaymentId, 'webhook');
+    if (tip && w.kind === 'failed') await this.noteTipFailure(tip, w.failureReason ?? 'Payment failed');
+    if (!intent && !tip && w.kind !== 'ignored') this.logger.warn({ providerOrderId: w.providerOrderId, event: w.eventType }, 'Webhook for an unknown payment');
     await this.repo.transaction((tx) => tx.markWebhookProcessed(this.provider.name, w.providerEventId));
     return { ok: true, duplicate: false };
   }
@@ -194,8 +289,10 @@ export class PaymentsService implements OnModuleInit {
     return this.provider.transfer({ account, amountPaise, reference });
   }
 
-  capturedBetween(from: Date, to: Date) {
-    return this.repo.capturedBetween(from, to);
+  /** Everything the aggregator captured in the window: order payments and tips (same fields where they matter). */
+  async capturedBetween(from: Date, to: Date) {
+    const [orders, tips] = await Promise.all([this.repo.capturedBetween(from, to), this.repo.capturedTipsBetween(from, to)]);
+    return [...orders, ...(tips as unknown as PaymentIntentRecord[])];
   }
 
   /** The aggregator report for a day. The mock with no scripted report mirrors what was captured (2% fee). */

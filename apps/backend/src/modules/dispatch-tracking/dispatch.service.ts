@@ -4,6 +4,7 @@ import { CLOCK, type Clock } from '../../common/clock';
 import { DomainError } from '../../common/errors/domain-error';
 import { ENV } from '../../config/config.module';
 import type { Env } from '../../config/env';
+import { PaymentsService } from '../payments-settlement/payments.service';
 import type { DomainEvent } from '../../infra/outbox/domain-event';
 import { EventBus } from '../../infra/outbox/event-bus';
 import { CallMaskingProvider } from '../../infra/providers/calls/call-masking.provider';
@@ -58,6 +59,12 @@ export const OFFER_SEC = 30;
 const RETRY_SEC = 30;
 const T_OFFER = 'dispatch.offer_expired';
 const T_RETRY = 'dispatch.search_retry';
+
+/** Tip after delivery (ADR-037): open for 24 hours after the delivery; Rs 10 to Rs 200; one paid tip per order. */
+export const TIP_WINDOW_H = 24;
+export const TIP_MIN_PAISE = 1000;
+export const TIP_MAX_PAISE = 20_000;
+export const TIP_CHOICES_PAISE = [1000, 2000, 3000, 5000, 10_000];
 const T_FALLBACK = 'dispatch.fallback';
 const key = (fulfilmentId: string, t: 'offer' | 'retry' | 'fallback') => `fulfilment:${fulfilmentId}:${t}`;
 
@@ -122,6 +129,7 @@ export class DispatchService implements OnModuleInit {
     private readonly markets: MicroMarketsService,
     private readonly auth: AuthService,
     private readonly notifications: NotificationsService,
+    private readonly payments: PaymentsService,
     private readonly threePl: ThreePlProvider,
     private readonly calls: CallMaskingProvider,
     private readonly photos: RiderPhotosService,
@@ -138,6 +146,7 @@ export class DispatchService implements OnModuleInit {
     this.timers.register(T_OFFER, (d) => this.onOfferExpired(d.offerId as string));
     this.timers.register(T_RETRY, (d) => this.search(d.fulfilmentId as string));
     this.timers.register(T_FALLBACK, (d) => this.fallback(d.fulfilmentId as string));
+    this.bus.on('tip.captured', 'dispatch', (e) => this.onTipCaptured(e));
   }
 
   // ───────────── config & context ─────────────
@@ -1038,6 +1047,63 @@ export class DispatchService implements OnModuleInit {
         cashPaise: day.reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0),
       };
     });
+  }
+
+  // ───────────── tip after delivery (ADR-037) ─────────────
+
+  /** Can this customer still tip the rider who delivered the order, and with what amounts. */
+  async tipOffer(userId: string, orderId: string) {
+    const order = await this.orders.get(orderId);
+    if (!order || order.userId !== userId) throw new DomainError('NOT_FOUND', 'Order not found');
+    const f = await this.fulfilmentForOrder(orderId);
+    const base = { choicesPaise: TIP_CHOICES_PAISE, minPaise: TIP_MIN_PAISE, maxPaise: TIP_MAX_PAISE };
+    const tips = await this.payments.tipsForOrder(orderId);
+    const tippedPaise = tips.filter((t) => t.status === 'captured').reduce((s, t) => s + t.amountPaise, 0);
+    const out = (reason: 'ok' | 'not_delivered' | 'no_rider' | 'window_closed' | 'already_tipped', until: Date | null) => ({
+      canTip: reason === 'ok',
+      reason,
+      until: until?.toISOString() ?? null,
+      tippedPaise,
+      ...base,
+    });
+    if (order.state !== 'DELIVERED' || !f || !f.deliveredAt) return out('not_delivered', null);
+    if (f.mode !== 'rider' || !f.riderUserId) return out('no_rider', null);
+    const until = new Date(f.deliveredAt.getTime() + TIP_WINDOW_H * 3_600_000);
+    if (tippedPaise > 0) return out('already_tipped', until);
+    if (this.clock() > until) return out('window_closed', until);
+    return out('ok', until);
+  }
+
+  /** Starts (or resumes) the payment of a tip. The rider is credited when it is captured. */
+  async startTip(userId: string, orderId: string, amountPaise: number) {
+    if (!Number.isInteger(amountPaise) || amountPaise < TIP_MIN_PAISE || amountPaise > TIP_MAX_PAISE)
+      throw new DomainError('VALIDATION_FAILED', 'Choose a tip between Rs 10 and Rs 200.', { field: 'amountPaise' });
+    const offer = await this.tipOffer(userId, orderId);
+    if (!offer.canTip) throw new DomainError('TIP_NOT_ALLOWED', 'This order can no longer be tipped.', { reason: offer.reason });
+    const order = (await this.orders.get(orderId))!;
+    const f = (await this.fulfilmentForOrder(orderId))!;
+    // Tapping again for the same amount resumes the unpaid tip instead of opening another payment.
+    const open = (await this.payments.tipsForOrder(orderId)).find((t) => t.status === 'created' && t.amountPaise === amountPaise);
+    if (open) return this.payments.checkoutTip(open);
+    return this.payments.createTip({ orderId, code: order.code, userId, riderUserId: f.riderUserId!, microMarketId: order.microMarketId, amountPaise });
+  }
+
+  /** The tip was paid: tell the rider. The money reaches them in their next payout (settlement). */
+  private async onTipCaptured(e: DomainEvent): Promise<void> {
+    const p = e.payload as { order_id: string; rider_user_id: string; amount_paise: number };
+    const order = await this.orders.get(p.order_id);
+    await this.notifications.notify(
+      'rider.tip',
+      { userId: p.rider_user_id },
+      { amount: rupees(p.amount_paise), code: order?.code ?? '' },
+      { orderId: p.order_id },
+      { data: { kind: 'tip', orderId: p.order_id } },
+    );
+  }
+
+  /** Tips paid after delivery, captured in [start, end), credited in that payout. */
+  lateTipsFor(riderUserId: string, start: Date, end: Date) {
+    return this.payments.capturedTipsForRider(riderUserId, start, end);
   }
 
   // ───────────── SOS (ADR-031) ─────────────

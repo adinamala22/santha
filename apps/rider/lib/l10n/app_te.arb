@@ -211,5 +211,6 @@
   "cashLimitLine": "నగదు పరిమితి: {limit}",
   "incentiveDay": "ఈరోజు: {bonus} బోనస్ కోసం {target}లో {done} డెలివరీలు",
   "incentiveWeek": "ఈ వారం: {bonus} బోనస్ కోసం {target}లో {done} డెలివరీలు",
-  "incentiveDone": "బోనస్ సంపాదించారు: {bonus}. ఇది మీ చెల్లింపుతో వస్తుంది."
+  "incentiveDone": "బోనస్ సంపాదించారు: {bonus}. ఇది మీ చెల్లింపుతో వస్తుంది.",
+  "payoutLateTips": "డెలివరీ తర్వాత వచ్చిన టిప్‌లు: {amount}"
 }

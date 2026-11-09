@@ -107,6 +107,11 @@ export const TEMPLATES = {
     en: { title: 'Your rider account is paused', body: '{reason} Contact Santha support in the app.' },
     te: { title: 'మీ రైడర్ ఖాతా నిలిపివేయబడింది', body: '{reason} యాప్‌లో సంత సపోర్ట్‌ను సంప్రదించండి.' },
   },
+  // Tip after delivery (ADR-037)
+  'rider.tip': {
+    en: { title: 'You got a tip: {amount}', body: 'The customer of order {code} tipped you {amount}. It comes with your next payout. Thank you!' },
+    te: { title: 'మీకు టిప్ వచ్చింది: {amount}', body: 'ఆర్డర్ {code} కస్టమర్ మీకు {amount} టిప్ ఇచ్చారు. ఇది మీ తదుపరి చెల్లింపుతో వస్తుంది. ధన్యవాదాలు!' },
+  },
   'support.reply': {
     en: { title: 'Santha support replied', body: 'Open the app to read the reply and continue the chat.' },
     te: { title: 'సంత సపోర్ట్ సమాధానం ఇచ్చింది', body: 'సమాధానం చదవడానికి, చాట్ కొనసాగించడానికి యాప్ తెరవండి.' },

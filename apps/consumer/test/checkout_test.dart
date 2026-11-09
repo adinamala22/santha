@@ -409,4 +409,46 @@ void main() {
     expect(h.backend.lastOrderBody?['tipPaise'], 2000);
     expect(h.events, contains('tip_selected'));
   });
+
+  testWidgets('ADR-037: after delivery the customer can tip the delivery partner, paid on its own', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': fixture('order_placed')['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+
+    expect(find.text('Say thanks with a tip'), findsOneWidget);
+    expect(find.textContaining('100% goes to the person who delivered'), findsOneWidget);
+    await tapVisible(tester, find.byKey(const ValueKey('tip-later-2000')));
+    await settle(tester, 10);
+    await tapVisible(tester, find.byKey(const ValueKey('mock-pay')));
+    await settle(tester, 20);
+    expect(h.backend.lastTipBody, {'amountPaise': 2000});
+    expect(find.byKey(const ValueKey('tip-later-done')), findsOneWidget);
+    expect(find.text('You tipped ₹20. Thank you!'), findsOneWidget);
+    expect(find.byKey(const ValueKey('tip-later')), findsNothing); // once is enough
+    expect(h.events, containsAll(['tip_after_delivery_started', 'tip_after_delivery_paid']));
+  });
+
+  testWidgets('ADR-037: no tip offer when the window has closed or the store delivered', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime, prepare: (b) => b.tipAllowed = false);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': fixture('order_placed')['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('after-delivery')), findsOneWidget);
+    expect(find.byKey(const ValueKey('tip-later')), findsNothing);
+  });
 }
