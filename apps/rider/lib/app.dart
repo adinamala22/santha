@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
+import 'features/home/data/offline_rider_api.dart';
 import 'l10n/gen/app_localizations.dart';
 import 'router/router.dart';
 import 'support.dart';
@@ -20,6 +21,14 @@ class SanthaRiderApp extends ConsumerWidget {
       ref.read(analyticsProvider).track('push_opened', {'kind': tap.kind});
       if (_openSupport(ref, tap)) return;
       ref.read(routerProvider).go('/');
+    });
+    // Nothing of a rider stays on the phone after sign-out, however it ended (ADR-035).
+    ref.listen(authControllerProvider, (_, next) async {
+      if (next is! AuthSignedOut) return;
+      ref.read(riderOfflineProvider.notifier).set(null);
+      try {
+        await (await ref.read(riderCacheProvider.future)).clear();
+      } catch (_) {}
     });
     final locale = ref.watch(localeControllerProvider);
     final config = ref.watch(appConfigProvider);

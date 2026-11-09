@@ -535,5 +535,13 @@
         "type": "String"
       }
     }
+  },
+  "savedCopyBanner": "No internet. This is what was saved on this phone {minutes} min ago. Marking a step needs internet.",
+  "@savedCopyBanner": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
   }
 }

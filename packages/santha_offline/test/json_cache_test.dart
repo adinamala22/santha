@@ -30,6 +30,25 @@ void main() {
     expect(() => c.fetch<int>('other', () async => throw const SocketException('offline'), (j) => 0), throwsA(isA<SocketException>()));
   });
 
+  test('clear removes every entry (sign-out), on disk and in memory', () async {
+    final c = cache();
+    await c.put('rider_home', {'a': 1});
+    await c.put('job_x', {'b': 2});
+    await c.clear();
+    expect(await c.get('rider_home'), isNull);
+    expect(await c.get('job_x'), isNull);
+    expect(dir.listSync(), isEmpty);
+    await c.put('again', {'c': 3}); // still usable afterwards
+    expect((await c.get('again'))!.value, {'c': 3});
+
+    final mem = JsonCache(MemoryCacheStorage());
+    await mem.put('k', 1);
+    await mem.clear();
+    expect(await mem.get('k'), isNull);
+    // clearing a cache that never wrote anything is fine
+    await JsonCache(FileCacheStorage(Directory('${dir.path}/never-created'))).clear();
+  });
+
   test('keys are file-safe and the cache stays bounded', () async {
     final c = cache(max: 3);
     for (var i = 0; i < 5; i++) {

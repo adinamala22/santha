@@ -16,6 +16,9 @@ abstract interface class CacheStorage {
   Future<String?> read(String key);
   Future<void> write(String key, String value);
   Future<void> delete(String key);
+
+  /// Removes every entry (sign-out: nothing of the person stays on the phone).
+  Future<void> clear();
 }
 
 /// One file per key under [dir], LRU-bounded to [maxEntries]. Writes are atomic (temp file +
@@ -49,6 +52,14 @@ class FileCacheStorage implements CacheStorage {
     if (await f.exists()) await f.delete();
   }
 
+  @override
+  Future<void> clear() async {
+    if (!await dir.exists()) return;
+    await for (final e in dir.list()) {
+      if (e is File) await e.delete();
+    }
+  }
+
   Future<void> _evict() async {
     final files = await dir.list().where((e) => e is File && e.path.endsWith('.json')).cast<File>().toList();
     if (files.length <= maxEntries) return;
@@ -68,6 +79,8 @@ class MemoryCacheStorage implements CacheStorage {
   Future<void> write(String key, String value) async => values[key] = value;
   @override
   Future<void> delete(String key) async => values.remove(key);
+  @override
+  Future<void> clear() async => values.clear();
 }
 
 /// JSON cache of API responses with a freshness window. Network first; when the network fails
@@ -97,6 +110,8 @@ class JsonCache {
   }
 
   Future<void> remove(String key) => storage.delete(key);
+
+  Future<void> clear() => storage.clear();
 
   /// Network first; on failure fall back to the cache. Rethrows when there is nothing cached.
   Future<Cached<T>> fetch<T>(String key, Future<Object?> Function() network, T Function(Object? json) parse) async {

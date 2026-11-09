@@ -428,7 +428,10 @@ class RiderApi {
   final Dio _uploader;
   Dio get _dio => client.dio;
 
-  Future<RiderHome> home() => _call(() async => RiderHome.fromJson((await _dio.get<Json>('/v1/riders/me')).data!));
+  Future<RiderHome> home() async => RiderHome.fromJson(await homeJson());
+
+  /// The raw response, so the rider app can keep a copy of the active deliveries for when the network drops.
+  Future<Json> homeJson() => _call(() async => (await _dio.get<Json>('/v1/riders/me')).data!);
 
   Future<RiderHome> setStatus({required bool online, List<String>? zones}) =>
       _call(() async => RiderHome.fromJson((await _dio.put<Json>('/v1/riders/me/status', data: {'online': online, 'zones': ?zones})).data!));
@@ -441,7 +444,9 @@ class RiderApi {
 
   Future<void> decline(String offerId) => _call(() => _dio.post<void>('/v1/offers/$offerId/decline'));
 
-  Future<Job> job(String id) => _job(() => _dio.get<Json>('/v1/jobs/$id'));
+  Future<Job> job(String id) async => Job.fromJson(await jobJson(id));
+
+  Future<Json> jobJson(String id) => _call(() async => (await _dio.get<Json>('/v1/jobs/$id')).data!);
 
   Future<Job> arrived(String id) => _job(() => _dio.post<Json>('/v1/jobs/$id/arrived'));
 
