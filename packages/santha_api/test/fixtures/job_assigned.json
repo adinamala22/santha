@@ -39,5 +39,7 @@
  "deliveredAt": null,
  "pickupCodeRequired": true,
  "failedReason": null,
- "failedAt": null
+ "failedAt": null,
+ "arrivedDropAt": null,
+ "photoProofAllowed": true
 }

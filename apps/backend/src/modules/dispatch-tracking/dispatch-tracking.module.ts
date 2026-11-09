@@ -33,6 +33,7 @@ import { DispatchViews } from './dispatch.views';
 import { MemoryRiderLocations, RedisRiderLocations, RiderLocations } from './rider-locations';
 import { OpsRidersController, RiderOnboardingController } from './rider-onboarding.controller';
 import { RiderOnboardingService } from './rider-onboarding.service';
+import { RiderPhotosService } from './rider-photos.service';
 
 /**
  * dispatch-tracking — fulfilment assignment, rider offers, fallback ladder, live tracking (M6, ADR-012).
@@ -80,6 +81,7 @@ import { RiderOnboardingService } from './rider-onboarding.service';
     DispatchService,
     DispatchViews,
     RiderOnboardingService,
+    RiderPhotosService,
   ],
   exports: [DispatchService],
 })

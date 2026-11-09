@@ -24,8 +24,12 @@ describe('Rider onboarding and ops approval (fake mode, ADR-029)', () => {
       .set(r.headers)
       .send({ name: 'Kiran Kumar', vehicle, ...(vehicle === 'bike' ? { vehicleNumber: 'ap 26 ab 4321' } : {}) })
       .expect(200);
+    await fake.uploadRiderPhoto(r, 'selfie');
     await http().put('/v1/riders/me/kyc/pan').set(r.headers).send({ pan: 'ABCPK1234K', name: 'Kiran Kumar' }).expect(200);
-    if (vehicle === 'bike') await http().put('/v1/riders/me/kyc/driving-licence').set(r.headers).send({ number: 'AP26 2019 0012345' }).expect(200);
+    if (vehicle === 'bike') {
+      await http().put('/v1/riders/me/kyc/driving-licence').set(r.headers).send({ number: 'AP26 2019 0012345' }).expect(200);
+      await fake.uploadRiderPhoto(r, 'licence');
+    }
     await http().put('/v1/riders/me/kyc/bank').set(r.headers).send({ accountNumber: '123456789012', ifsc: 'SBIN0001234', holderName: 'Kiran Kumar' }).expect(200);
   }
 
@@ -52,9 +56,10 @@ describe('Rider onboarding and ops approval (fake mode, ADR-029)', () => {
     const r = await fake.signIn('9876511002', 'rider');
     const start = await onboarding(r);
     expect(start).toMatchObject({ status: 'draft', editable: true, checks: [] });
-    expect(start.steps.map((s: { key: string; done: boolean }) => `${s.key}:${s.done}`)).toEqual(['profile:false', 'identity:false', 'driving_licence:false', 'bank:false']);
+    expect(start.steps.map((s: { key: string; done: boolean }) => `${s.key}:${s.done}`)).toEqual(['profile:false', 'selfie:false', 'identity:false', 'driving_licence:false', 'bank:false']);
+    expect(start.photos).toEqual({ selfie: false, licence: false });
 
-    expect((await http().post('/v1/riders/me/submit').set(r.headers).expect(422)).body.error.details.missing).toEqual(['profile', 'identity', 'driving_licence', 'bank']);
+    expect((await http().post('/v1/riders/me/submit').set(r.headers).expect(422)).body.error.details.missing).toEqual(['profile', 'selfie', 'identity', 'driving_licence', 'bank']);
     const plate = await http().put('/v1/riders/me/profile').set(r.headers).send({ name: 'Kiran', vehicle: 'bike', vehicleNumber: '1234' }).expect(400);
     expect(plate.body.error.details.field).toBe('vehicleNumber');
     const licence = await http().put('/v1/riders/me/kyc/driving-licence').set(r.headers).send({ number: 'NOT A LICENCE' }).expect(400);
@@ -64,6 +69,7 @@ describe('Rider onboarding and ops approval (fake mode, ADR-029)', () => {
     const done = await onboarding(r);
     expect(done).toMatchObject({ name: 'Kiran Kumar', vehicle: 'bike', vehicleNumber: 'AP26AB4321' });
     expect(done.steps.every((s: { done: boolean }) => s.done)).toBe(true);
+    expect(done.photos).toEqual({ selfie: true, licence: true });
     expect(done.checks.find((c: { kind: string }) => c.kind === 'driving_licence')).toMatchObject({ status: 'pending', valuePublic: 'AP2620190012345', provider: 'manual-review' });
     expect(JSON.stringify(done.checks)).not.toContain('123456789012'); // the account number is masked
 
@@ -85,6 +91,15 @@ describe('Rider onboarding and ops approval (fake mode, ADR-029)', () => {
     expect(queue.every((x) => x.status === 'submitted')).toBe(true);
     const detail = (await http().get(`/v1/ops/riders/${r.user.id}`).set(ops).expect(200)).body;
     expect(detail.checks.map((c: { kind: string }) => c.kind).sort()).toEqual(['bank', 'driving_licence', 'pan']);
+    // Ops see the selfie and licence card through short-lived private links (ADR-030); nobody else can.
+    expect(detail.selfieUrl).toMatch(/^\/v1\/dev\/private\?/);
+    const img = await http().get(detail.licenceUrl).expect(200);
+    expect(img.headers['content-type']).toBe('image/webp');
+    expect(img.headers['cache-control']).toContain('no-store');
+    const forged = String(detail.licenceUrl).replace(/sig=[0-9a-f]+/, `sig=${'0'.repeat(64)}`);
+    await http().get(forged).expect(404);
+    const key = new URL(detail.licenceUrl, 'http://x').searchParams.get('key')!;
+    await http().get(`/v1/dev/media/${key}`).expect(404); // never served as a public file
 
     await http().post(`/v1/ops/riders/${r.user.id}/reject`).set(ops).send({ reason: 'no' }).expect(400); // a real reason
     await http().post(`/v1/ops/riders/${r.user.id}/reject`).set(ops).send({ reason: 'The licence photo does not match the number.' }).expect(200);

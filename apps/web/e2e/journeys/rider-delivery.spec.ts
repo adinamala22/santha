@@ -60,7 +60,11 @@ test.describe.serial('journey: delivered by a rider', () => {
     const wrong = await request.post(`${API}/jobs/${job.id}/picked-up`, { headers: rider, data: { pickupCode: d.pickupCode === '0000' ? '1111' : '0000' } });
     expect(wrong.status()).toBe(422);
     await call(request, 'post', `/jobs/${job.id}/picked-up`, { headers: rider, data: { pickupCode: d.pickupCode }, status: 200 });
+    // At the door (ADR-030): the customer sees it; a cash order still needs the OTP (no door photo).
+    const atDoor = await call(request, 'post', `/jobs/${job.id}/arrived-drop`, { headers: rider, status: 200 });
+    expect(atDoor).toMatchObject({ photoProofAllowed: false, arrivedDropAt: expect.any(String) });
     const otp = (await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer.headers })).deliveryOtp;
+    expect((await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer.headers })).arrivedDropAt).toBe(atDoor.arrivedDropAt);
     await call(request, 'post', `/jobs/${job.id}/delivered`, { headers: rider, data: { otp, codCollectedPaise: order.totalPaise }, status: 200 });
     expect((await call(request, 'get', `/orders/${order.id}`, { headers: customer.headers })).state).toBe('DELIVERED');
 

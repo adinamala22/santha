@@ -38,6 +38,21 @@ export interface RiderRecord {
 export const RIDER_STATUSES = ['draft', 'submitted', 'approved', 'rejected', 'suspended'] as const;
 export type RiderStatus = (typeof RIDER_STATUSES)[number];
 
+/** Private rider photo (ADR-030). */
+export interface RiderPhotoRecord {
+  id: string;
+  riderUserId: string;
+  kind: RiderPhotoKind;
+  fulfilmentId: string | null;
+  status: 'uploading' | 'ready';
+  contentType: string;
+  originalKey: string;
+  key: string | null;
+  createdAt: Date;
+}
+export const RIDER_PHOTO_KINDS = ['selfie', 'licence', 'delivery'] as const;
+export type RiderPhotoKind = (typeof RIDER_PHOTO_KINDS)[number];
+
 export interface FulfilmentRecord {
   id: string;
   orderId: string;
@@ -69,6 +84,8 @@ export interface FulfilmentRecord {
   requestedAt: Date;
   assignedAt: Date | null;
   arrivedAt: Date | null;
+  /** The courier reached the customer's door. */
+  arrivedDropAt: Date | null;
   pickedUpAt: Date | null;
   deliveredAt: Date | null;
   /** Couldn't deliver (ADR-026). */
@@ -136,6 +153,12 @@ export abstract class DispatchRepository {
 
   /** Ops overrides (reassign, force self-delivery) are audited. */
   abstract appendAudit(a: AuditEntry): Promise<void>;
+
+  abstract createPhoto(p: Omit<RiderPhotoRecord, 'createdAt'>): Promise<RiderPhotoRecord>;
+  abstract photo(id: string): Promise<RiderPhotoRecord | null>;
+  abstract updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>): Promise<RiderPhotoRecord | null>;
+  /** Ready photos of a rider, newest first. */
+  abstract riderPhotos(riderUserId: string, kind?: RiderPhotoKind): Promise<RiderPhotoRecord[]>;
 }
 
 const asStates = (e: FulfilmentState | readonly FulfilmentState[]) => (typeof e === 'string' ? [e] : [...e]);
@@ -149,6 +172,11 @@ const toFulfilment = (r: Prisma.FulfilmentGetPayload<object>): FulfilmentRecord 
   fallbackStage: r.fallbackStage as FallbackStage,
   payLines: r.payLines as unknown as PayLine[],
   proof: r.proof as 'otp' | 'photo' | null,
+});
+const toPhoto = (r: Prisma.RiderPhotoGetPayload<object>): RiderPhotoRecord => ({
+  ...r,
+  kind: r.kind as RiderPhotoKind,
+  status: r.status as RiderPhotoRecord['status'],
 });
 const toOffer = (r: Prisma.DispatchOfferGetPayload<object>): OfferRecord => ({
   ...r,
@@ -308,6 +336,28 @@ export class PrismaDispatchRepository extends DispatchRepository {
         orderBy: { offeredAt: 'asc' },
       })
     ).map(toOffer);
+  }
+
+  async createPhoto(p: Omit<RiderPhotoRecord, 'createdAt'>) {
+    return toPhoto(await this.prisma.riderPhoto.create({ data: p }));
+  }
+
+  async photo(id: string) {
+    const r = await this.prisma.riderPhoto.findUnique({ where: { id } });
+    return r ? toPhoto(r) : null;
+  }
+
+  async updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>) {
+    const n = await this.prisma.riderPhoto.updateMany({ where: { id }, data: patch });
+    return n.count ? this.photo(id) : null;
+  }
+
+  async riderPhotos(riderUserId: string, kind?: RiderPhotoKind) {
+    const rows = await this.prisma.riderPhoto.findMany({
+      where: { riderUserId, status: 'ready', ...(kind ? { kind } : {}) },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map(toPhoto);
   }
 }
 
@@ -496,6 +546,35 @@ export class InMemoryDispatchRepository extends DispatchRepository {
       [...this.offers.values()]
         .filter((o) => o.riderUserId === riderUserId && o.state === 'offered')
         .sort((a, b) => a.offeredAt.getTime() - b.offeredAt.getTime()),
+    );
+  }
+
+  private readonly photos = new Map<string, RiderPhotoRecord>();
+
+  async createPhoto(p: Omit<RiderPhotoRecord, 'createdAt'>) {
+    const row: RiderPhotoRecord = { ...p, createdAt: new Date() };
+    this.photos.set(p.id, row);
+    return structuredClone(row);
+  }
+
+  async photo(id: string) {
+    const r = this.photos.get(id);
+    return r ? structuredClone(r) : null;
+  }
+
+  async updatePhoto(id: string, patch: Partial<Pick<RiderPhotoRecord, 'status' | 'key'>>) {
+    const r = this.photos.get(id);
+    if (!r) return null;
+    const next = { ...r, ...patch };
+    this.photos.set(id, next);
+    return structuredClone(next);
+  }
+
+  async riderPhotos(riderUserId: string, kind?: RiderPhotoKind) {
+    return structuredClone(
+      [...this.photos.values()]
+        .filter((p) => p.riderUserId === riderUserId && p.status === 'ready' && (!kind || p.kind === kind))
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime()),
     );
   }
 }

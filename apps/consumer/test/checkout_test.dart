@@ -213,6 +213,8 @@ void main() {
     await settle(tester, 20);
     expect(find.byKey(const ValueKey('tracking')), findsOneWidget);
     expect(find.text('Demo Rider 2 · Santha rider'), findsOneWidget);
+    // ADR-030: the rider marked "arrived at the customer".
+    expect(find.text('Your delivery partner is at your door. Keep your OTP ready.'), findsOneWidget);
     final otp = (h.backend.tracking!['deliveryOtp'] as String).split('').join(' ');
     expect(find.text('Delivery OTP $otp'), findsOneWidget);
     expect(find.textContaining('On time · promised by'), findsOneWidget);
@@ -225,6 +227,26 @@ void main() {
 
     await tapVisible(tester, find.byKey(const ValueKey('call-courier')));
     expect(dialled.last, h.backend.tracking!['courier']['callNumber']);
+  });
+
+  testWidgets('ADR-030: a no-contact delivery shows the door photo on the order', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.tracking = {...fixture('tracking_picked_up'), 'orderId': o['id'], 'state': 'delivered', 'proofPhotoUrl': '/v1/dev/private?key=private%2Friders%2Fx.webp&exp=1&sig=ab'};
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+    expect(find.byKey(const ValueKey('door-photo')), findsOneWidget);
+    expect(find.text('Left at your door. This is the photo your delivery partner took.'), findsOneWidget);
+    final img = tester.widget<Image>(find.descendant(of: find.byKey(const ValueKey('door-photo')), matching: find.byType(Image)));
+    expect((img.image as NetworkImage).url, startsWith('http://api.test/v1/dev/private?')); // resolved against the API
   });
 
   testWidgets("ADR-026: couldn't deliver — the order explains it and the courier can still be called", (tester) async {

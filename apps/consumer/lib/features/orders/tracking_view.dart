@@ -67,6 +67,8 @@ class TrackingSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final t = ref.watch(trackingProvider(orderId)).value;
+    // Left at the door (ADR-030): the photo the courier took stays on the order.
+    if (t != null && t.state == DeliveryState.delivered && t.proofPhotoUrl != null) return _DoorPhoto(url: ref.read(apiClientProvider).resolve(t.proofPhotoUrl!));
     if (t == null || t.state == DeliveryState.delivered || t.state == DeliveryState.cancelled) return const SizedBox.shrink();
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
@@ -106,6 +108,16 @@ class TrackingSection extends ConsumerWidget {
         ] else if (t.state == DeliveryState.failed) ...[
           if (t.courier != null) _CourierCard(tracking: t, storeName: storeName),
         ] else ...[
+          if (t.state == DeliveryState.pickedUp && t.arrivedDropAt != null) ...[
+            _Panel(
+              child: Row(children: [
+                const Icon(Icons.door_front_door, color: SanthaColors.leaf),
+                const SizedBox(width: SanthaSpacing.s2),
+                Expanded(child: Text(l.courierAtDoor, key: const ValueKey('at-door'), style: text.titleSmall)),
+              ]),
+            ),
+            const SizedBox(height: SanthaSpacing.s3),
+          ],
           _EtaCard(tracking: t),
           const SizedBox(height: SanthaSpacing.s3),
           if (t.courier != null) _CourierCard(tracking: t, storeName: storeName),
@@ -264,4 +276,36 @@ class _Panel extends StatelessWidget {
     ),
     child: child,
   );
+}
+
+/// The door photo of a no-contact delivery (ADR-030). The link is short-lived; reopening the order fetches a new one.
+class _DoorPhoto extends StatelessWidget {
+  const _DoorPhoto({required this.url});
+  final String url;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return _Panel(
+      child: Column(
+        key: const ValueKey('door-photo'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l.leftAtDoor, style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: SanthaSpacing.s2),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(SanthaRadius.md),
+            child: Image.network(
+              url,
+              height: 220,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              semanticLabel: l.leftAtDoor,
+              errorBuilder: (_, _, _) => const SizedBox(height: 40, child: Icon(Icons.broken_image, color: SanthaColors.slate)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

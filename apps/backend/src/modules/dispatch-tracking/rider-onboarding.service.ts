@@ -4,18 +4,26 @@ import { DomainError } from '../../common/errors/domain-error';
 import { isVehicleNumber, normalizeVehicleNumber } from '../identity-kyc/domain/kyc-formats';
 import { type KycActor, type KycCheckRecord, KycService } from '../identity-kyc/kyc.service';
 import { NotificationsService } from '../notifications/notifications.service';
-import { DispatchRepository, type RiderRecord, type RiderStatus } from './dispatch.repository';
+import { DispatchRepository, type RiderPhotoRecord, type RiderRecord, type RiderStatus } from './dispatch.repository';
+import { RiderPhotosService } from './rider-photos.service';
 import { DispatchService, type OpsActor } from './dispatch.service';
 
 /** Vehicles a rider can deliver on. A cycle needs no registration number or driving licence. */
 export const RIDER_VEHICLES = ['bike', 'scooter', 'electric', 'cycle'] as const;
 export type RiderVehicle = (typeof RIDER_VEHICLES)[number];
 
-export type RiderStepKey = 'profile' | 'identity' | 'driving_licence' | 'bank';
+export type RiderStepKey = 'profile' | 'selfie' | 'identity' | 'driving_licence' | 'bank';
+
+/** Which sign-up photos are in (ADR-030). */
+export interface RiderSignupPhotos {
+  selfie: RiderPhotoRecord | null;
+  licence: RiderPhotoRecord | null;
+}
 
 export interface RiderOnboardingView {
   rider: RiderRecord;
   checks: KycCheckRecord[];
+  photos: RiderSignupPhotos;
   steps: Array<{ key: RiderStepKey; done: boolean }>;
   /** Details can be changed only before submitting, or after a rejection. */
   editable: boolean;
@@ -25,13 +33,16 @@ const EDITABLE: RiderStatus[] = ['draft', 'rejected'];
 const needsLicence = (vehicle: string) => vehicle !== 'cycle';
 
 /** Which onboarding steps are done (ADR-029). Aadhaar or PAN proves identity; ops check the licence by eye. */
-export function riderSteps(r: RiderRecord, checks: KycCheckRecord[]): Array<{ key: RiderStepKey; done: boolean }> {
+export function riderSteps(r: RiderRecord, checks: KycCheckRecord[], photos: RiderSignupPhotos): Array<{ key: RiderStepKey; done: boolean }> {
   const ok = (kind: KycCheckRecord['kind'], allowPending = false) =>
     checks.some((c) => c.kind === kind && (c.status === 'verified' || (allowPending && c.status === 'pending')));
   return [
     { key: 'profile', done: r.name.trim().length >= 2 && (!needsLicence(r.vehicle) || !!r.vehicleNumber) },
+    // A clear photo of the rider's face, so customers and stores know who is coming.
+    { key: 'selfie', done: !!photos.selfie },
     { key: 'identity', done: ok('aadhaar') || ok('pan') },
-    { key: 'driving_licence', done: !needsLicence(r.vehicle) || ok('driving_licence', true) },
+    // The number, and a photo of the card for ops to compare.
+    { key: 'driving_licence', done: !needsLicence(r.vehicle) || (ok('driving_licence', true) && !!photos.licence) },
     { key: 'bank', done: ok('bank') },
   ];
 }
@@ -48,8 +59,14 @@ export class RiderOnboardingService {
     private readonly dispatch: DispatchService,
     private readonly kyc: KycService,
     private readonly notifications: NotificationsService,
+    private readonly photos: RiderPhotosService,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
+
+  private async signupPhotos(userId: string): Promise<RiderSignupPhotos> {
+    const [selfie, licence] = await Promise.all([this.photos.latest(userId, 'selfie'), this.photos.latest(userId, 'licence')]);
+    return { selfie, licence };
+  }
 
   async view(userId: string): Promise<RiderOnboardingView> {
     return this.build(await this.dispatch.rider(userId));
@@ -78,7 +95,8 @@ export class RiderOnboardingService {
   async submit(userId: string): Promise<RiderOnboardingView> {
     const r = await this.editable(userId);
     const checks = await this.kyc.list({ type: 'rider', id: r.userId });
-    const missing = riderSteps(r, checks).filter((s) => !s.done).map((s) => s.key);
+    const photos = await this.signupPhotos(r.userId);
+    const missing = riderSteps(r, checks, photos).filter((s) => !s.done).map((s) => s.key);
     if (missing.length) throw new DomainError('CHECKLIST_INCOMPLETE', 'Finish all the steps before submitting.', { missing });
     const next = await this.repo.updateRider(r.userId, { status: 'submitted', submittedAt: this.clock(), statusNote: null });
     await this.repo.appendAudit({
@@ -89,7 +107,7 @@ export class RiderOnboardingService {
       before: { status: r.status },
       after: { status: 'submitted' },
     });
-    return { rider: next!, checks, steps: riderSteps(next!, checks), editable: false };
+    return { rider: next!, checks, photos, steps: riderSteps(next!, checks, photos), editable: false };
   }
 
   // ───────── ops console ─────────
@@ -109,7 +127,7 @@ export class RiderOnboardingService {
     if (r.status !== 'submitted' && r.status !== 'suspended')
       throw new DomainError('INVALID_STATE', `This rider is ${r.status}.`, { status: r.status });
     if (r.status === 'submitted') {
-      const missing = riderSteps(r, await this.kyc.list({ type: 'rider', id: r.userId })).filter((s) => !s.done);
+      const missing = riderSteps(r, await this.kyc.list({ type: 'rider', id: r.userId }), await this.signupPhotos(r.userId)).filter((s) => !s.done);
       if (missing.length)
         throw new DomainError('CHECKLIST_INCOMPLETE', 'This rider has incomplete or failed checks.', {
           missing: missing.map((s) => s.key),
@@ -167,6 +185,7 @@ export class RiderOnboardingService {
 
   private async build(r: RiderRecord): Promise<RiderOnboardingView> {
     const checks = await this.kyc.list({ type: 'rider', id: r.userId });
-    return { rider: r, checks, steps: riderSteps(r, checks), editable: EDITABLE.includes(r.status) };
+    const photos = await this.signupPhotos(r.userId);
+    return { rider: r, checks, photos, steps: riderSteps(r, checks, photos), editable: EDITABLE.includes(r.status) };
   }
 }

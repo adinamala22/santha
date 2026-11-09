@@ -171,6 +171,17 @@ class _JobPageState extends ConsumerState<JobPage> {
           ]),
         ),
       ),
+      const SizedBox(height: SanthaSpacing.s3),
+      // At the door (ADR-030): tell the customer, then a waiting timer.
+      if (j.arrivedDropAt == null)
+        SanthaButton(
+          key: const ValueKey('arrived-drop'),
+          label: l.arrivedCustomer,
+          variant: SanthaButtonVariant.outline,
+          onPressed: _busy ? null : () => _run(ctl.arrivedDrop, clearCode: false),
+        )
+      else
+        _WaitingAtDoor(since: j.arrivedDropAt!),
       const SizedBox(height: SanthaSpacing.s4),
       _CodeField(key: const ValueKey('delivery-otp'), controller: _code, label: l.otpLabel),
       Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text(l.otpHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
@@ -206,6 +217,16 @@ class _JobPageState extends ConsumerState<JobPage> {
                 _run(() => ctl.delivered(_code.text.trim(), cash));
               },
       ),
+      if (j.photoProofAllowed && j.arrivedDropAt != null) ...[
+        const SizedBox(height: SanthaSpacing.s3),
+        SanthaButton(
+          key: const ValueKey('deliver-photo'),
+          label: l.deliverWithPhoto,
+          variant: SanthaButtonVariant.outline,
+          onPressed: _busy ? null : () => _deliverWithPhoto(),
+        ),
+        Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text(l.deliverWithPhotoHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
+      ],
       const SizedBox(height: SanthaSpacing.s3),
       SanthaButton(
         key: const ValueKey('couldnt-deliver'),
@@ -214,6 +235,13 @@ class _JobPageState extends ConsumerState<JobPage> {
         onPressed: _busy ? null : () => _reportFailed(l, j),
       ),
     ];
+  }
+
+  /// Door photo instead of the OTP (ADR-030): the back camera, then upload and mark delivered.
+  Future<void> _deliverWithPhoto() async {
+    final picked = await ref.read(photoTakerProvider)();
+    if (picked == null || !mounted) return;
+    await _run(() => ref.read(jobProvider(widget.id).notifier).deliveredWithPhoto(picked));
   }
 
   /// Couldn't deliver (ADR-026): pick why, optionally say what happened.
@@ -262,6 +290,29 @@ class _JobPageState extends ConsumerState<JobPage> {
         const SizedBox(height: SanthaSpacing.s6),
         SanthaButton(label: l.backHome, onPressed: () => context.canPop() ? context.pop() : context.go('/')),
       ];
+}
+
+/// Time waiting at the customer's door; after 5 minutes, what to do next.
+class _WaitingAtDoor extends ConsumerWidget {
+  const _WaitingAtDoor({required this.since});
+  final DateTime since;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = AppLocalizations.of(context);
+    final now = ref.watch(riderNowProvider).value ?? DateTime.now();
+    final waited = now.difference(since);
+    final long = waited >= const Duration(minutes: 5);
+    return Container(
+      key: const ValueKey('waiting-at-door'),
+      padding: const EdgeInsets.all(SanthaSpacing.s3),
+      decoration: BoxDecoration(color: long ? SanthaColors.marigold100 : SanthaColors.etaBg, borderRadius: BorderRadius.circular(SanthaRadius.md)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.waitingAtDoor(countdown(waited)), style: Theme.of(context).textTheme.titleSmall),
+        if (long) Text(l.waitingLongHint, key: const ValueKey('waiting-long'), style: Theme.of(context).textTheme.bodySmall),
+      ]),
+    );
+  }
 }
 
 /// Cash typed by the rider, in paise: "1,200", "₹ 1200.50" and "1200" all read; anything else is null.

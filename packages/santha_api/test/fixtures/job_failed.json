@@ -39,5 +39,7 @@
  "deliveredAt": null,
  "pickupCodeRequired": true,
  "failedReason": "no_answer",
- "failedAt": "2026-11-05T09:41:00.000Z"
+ "failedAt": "2026-11-05T09:41:00.000Z",
+ "arrivedDropAt": "2026-11-07T06:10:00.000Z",
+ "photoProofAllowed": false
 }

@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:rider/features/home/data/rider_controller.dart';
 import 'package:rider/features/home/presentation/job_page.dart';
@@ -19,7 +21,7 @@ RiderOffer testOffer({String id = 'o1', int expiresInSec = 24}) => RiderOffer(
       dropDistanceM: 1100,
     );
 
-Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt, FailedReason? failedReason}) => Job(
+Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = 'PREPARING', int codDuePaise = 15600, DateTime? arrivedAt, FailedReason? failedReason, DateTime? arrivedDropAt, bool photoProofAllowed = false}) => Job(
       id: 'j1',
       orderId: 'ord1',
       code: 'SN4821',
@@ -42,6 +44,8 @@ Job testJob({DeliveryState state = DeliveryState.assigned, String orderState = '
       pickupCodeRequired: true,
       arrivedAt: arrivedAt,
       failedReason: failedReason,
+      arrivedDropAt: arrivedDropAt,
+      photoProofAllowed: photoProofAllowed,
     );
 
 /// In-memory rider backend with the rules the screens rely on (codes, readiness, expiry).
@@ -89,6 +93,9 @@ class FakeRiderApi extends RiderApi {
 
   // ── onboarding (ADR-029), with the server's rules ──
   String onbName = 'Rider';
+  bool selfie = false;
+  bool licencePhoto = false;
+  int photoSeq = 0;
   RiderVehicle onbVehicle = RiderVehicle.bike;
   String? onbPlate;
   final checks = <KycKind, KycCheck>{};
@@ -108,12 +115,41 @@ class FakeRiderApi extends RiderApi {
       editable: status == RiderStatus.draft || status == RiderStatus.rejected,
       steps: [
         RiderStep('profile', onbName != 'Rider' && (!onbVehicle.needsLicence || onbPlate != null)),
+        RiderStep('selfie', selfie),
         RiderStep('identity', ok(KycKind.aadhaar) || ok(KycKind.pan)),
-        RiderStep('driving_licence', !onbVehicle.needsLicence || ok(KycKind.drivingLicence, pending: true)),
+        RiderStep('driving_licence', !onbVehicle.needsLicence || (ok(KycKind.drivingLicence, pending: true) && licencePhoto)),
         RiderStep('bank', ok(KycKind.bank)),
       ],
       checks: checks.values.toList(),
+      hasSelfie: selfie,
+      hasLicencePhoto: licencePhoto,
     );
+  }
+
+  @override
+  Future<String> uploadPhoto(Uint8List bytes, {required String kind, required String contentType, String? fulfilmentId}) async {
+    calls.add('photo $kind${fulfilmentId == null ? '' : ' $fulfilmentId'}');
+    if (kind == 'selfie') selfie = true;
+    if (kind == 'licence') licencePhoto = true;
+    return 'ph${++photoSeq}';
+  }
+
+  @override
+  Future<Job> arrivedDrop(String id) async {
+    calls.add('arrived-drop');
+    final j = _get(id);
+    final next = testJob(state: j.state, orderState: j.orderState, codDuePaise: j.codDuePaise, arrivedDropAt: testNow, photoProofAllowed: j.photoProofAllowed);
+    _put(next);
+    return next;
+  }
+
+  @override
+  Future<Job> deliveredWithPhoto(String id, String photoId) async {
+    calls.add('delivered-photo $photoId');
+    final j = testJob(state: DeliveryState.delivered, orderState: 'DELIVERED');
+    _put(j);
+    deliveries += 1;
+    return j;
   }
 
   @override
@@ -293,4 +329,5 @@ List<Override> riderOverrides(FakeRiderApi Function(SanthaApiClient) make, {requ
       offerAlertProvider.overrideWithValue(() => rings?.n++),
       locationSourceProvider.overrideWithValue(() async => const Point(14.455, 79.992)),
       launcherProvider.overrideWithValue((uri) async => launched?.add(uri)),
+      photoTakerProvider.overrideWithValue(({bool front = false}) async => PickedPhoto(Uint8List.fromList([1, 2, 3]), front ? 'image/png' : 'image/jpeg')),
     ];

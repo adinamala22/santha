@@ -39,6 +39,8 @@ export interface FakeApp {
    * presigned URL (in-memory storage in fake mode), complete. Returns the processed media.
    */
   uploadPhoto: (s: Session, purpose: 'item' | 'store', image?: Buffer) => Promise<{ id: string; status: string; thumbUrl: string; mediumUrl: string }>;
+  /** Rider photo round trip (ADR-030): selfie / licence card, or a door photo for a delivery on the way. */
+  uploadRiderPhoto: (s: Session, kind: 'selfie' | 'licence' | 'delivery', fulfilmentId?: string) => Promise<{ id: string; kind: string; status: string }>;
   /** Moves the fake-mode dev clock forward. */
   advanceClock: (hours: number) => Promise<Date>;
   /** First seeded person with the role (see src/dev/seed-data.ts). */
@@ -114,6 +116,12 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     return (await http().post(`/v1/merchants/me/media/${t.body.media.id}/complete`).set(s.headers).expect(200)).body;
   };
 
+  const uploadRiderPhoto: FakeApp['uploadRiderPhoto'] = async (s, kind, fulfilmentId) => {
+    const t = await http().post('/v1/riders/me/photos').set(s.headers).send({ kind, contentType: 'image/png', ...(fulfilmentId ? { fulfilmentId } : {}) }).expect(201);
+    await http().put(t.body.upload.url).set('Content-Type', 'image/png').send(await testImage()).expect(200);
+    return (await http().post(`/v1/riders/me/photos/${t.body.photo.id}/complete`).set(s.headers).expect(200)).body;
+  };
+
   const advanceClock = async (hours: number): Promise<Date> => {
     const r = await http().post('/v1/dev/clock').send({ hours }).expect(200);
     return new Date(r.body.now);
@@ -131,6 +139,7 @@ export async function bootFakeApp(extraEnv: Record<string, string> = {}): Promis
     signIn,
     opsSignIn,
     uploadPhoto,
+    uploadRiderPhoto,
     advanceClock,
     seeded,
     close: async () => {

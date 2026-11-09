@@ -941,6 +941,28 @@ model Rider {
   @@map("riders")
 }
 
+/// Private rider photos (ADR-030): selfie and licence card at sign-up, door photo as proof of delivery.
+/// Stored under private/ (never public); shown through short-lived signed links.
+model RiderPhoto {
+  id            String   @id @db.Uuid
+  riderUserId   String   @map("rider_user_id") @db.Uuid
+  /// selfie | licence | delivery
+  kind          String
+  /// The delivery a door photo belongs to.
+  fulfilmentId  String?  @map("fulfilment_id") @db.Uuid
+  /// uploading | ready
+  status        String
+  contentType   String   @map("content_type")
+  originalKey   String   @map("original_key")
+  /// The processed image (private, WebP).
+  key           String?
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([riderUserId, kind])
+  @@index([fulfilmentId])
+  @@map("rider_photos")
+}
+
 /// How one order reaches the customer: the store's staff (self), a Santha rider, or a 3PL partner.
 model Fulfilment {
   id                String    @id @db.Uuid
@@ -980,6 +1002,8 @@ model Fulfilment {
   requestedAt       DateTime  @default(now()) @map("requested_at") @db.Timestamptz(6)
   assignedAt        DateTime? @map("assigned_at") @db.Timestamptz(6)
   arrivedAt         DateTime? @map("arrived_at") @db.Timestamptz(6)
+  /// The courier reached the customer's door (waiting timer; photo proof needs it).
+  arrivedDropAt     DateTime? @map("arrived_drop_at") @db.Timestamptz(6)
   pickedUpAt        DateTime? @map("picked_up_at") @db.Timestamptz(6)
   deliveredAt       DateTime? @map("delivered_at") @db.Timestamptz(6)
   /// Couldn't deliver (ADR-026): when the courier reported it.

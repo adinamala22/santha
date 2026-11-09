@@ -5017,6 +5017,49 @@
         ]
       }
     },
+    "/v1/jobs/{id}/arrived-drop": {
+      "post": {
+        "operationId": "RiderController_arrivedDrop",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "At the customer's door: the customer is told; starts the waiting timer (ADR-030)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JobViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
     "/v1/jobs/{id}/picked-up": {
       "post": {
         "operationId": "RiderController_pickedUp",
@@ -5827,6 +5870,94 @@
         ],
         "tags": [
           "ops"
+        ]
+      }
+    },
+    "/v1/riders/me/photos": {
+      "post": {
+        "operationId": "RiderOnboardingController_photo",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiderPhotoRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Presigned upload (PUT the bytes to upload.url, then complete). Selfie / licence card while signing up; a door photo for a delivery on the way (ADR-030)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderPhotoTicketDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
+        ]
+      }
+    },
+    "/v1/riders/me/photos/{id}/complete": {
+      "post": {
+        "operationId": "RiderOnboardingController_photoDone",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Checks and stores the photo privately",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiderPhotoDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "riders"
         ]
       }
     },
@@ -24089,6 +24220,15 @@
                   "type": "string",
                   "description": "ISO-8601 timestamp",
                   "nullable": true
+                },
+                "arrivedDropAt": {
+                  "type": "string",
+                  "description": "When the courier marked arrived at the customer's door (ADR-030)",
+                  "nullable": true
+                },
+                "photoProofAllowed": {
+                  "type": "boolean",
+                  "description": "A door photo may replace the OTP: prepaid, up to ₹2,000, after arriving (ADR-030)"
                 }
               },
               "required": [
@@ -24112,7 +24252,9 @@
                 "deliveredAt",
                 "pickupCodeRequired",
                 "failedReason",
-                "failedAt"
+                "failedAt",
+                "arrivedDropAt",
+                "photoProofAllowed"
               ],
               "additionalProperties": false
             }
@@ -24442,6 +24584,15 @@
             "type": "string",
             "description": "ISO-8601 timestamp",
             "nullable": true
+          },
+          "arrivedDropAt": {
+            "type": "string",
+            "description": "When the courier marked arrived at the customer's door (ADR-030)",
+            "nullable": true
+          },
+          "photoProofAllowed": {
+            "type": "boolean",
+            "description": "A door photo may replace the OTP: prepaid, up to ₹2,000, after arriving (ADR-030)"
           }
         },
         "required": [
@@ -24465,7 +24616,9 @@
           "deliveredAt",
           "pickupCodeRequired",
           "failedReason",
-          "failedAt"
+          "failedAt",
+          "arrivedDropAt",
+          "photoProofAllowed"
         ],
         "additionalProperties": false
       },
@@ -24681,6 +24834,16 @@
           },
           "canCancelNoCourier": {
             "type": "boolean"
+          },
+          "arrivedDropAt": {
+            "type": "string",
+            "description": "The courier is at the door",
+            "nullable": true
+          },
+          "proofPhotoUrl": {
+            "type": "string",
+            "description": "Delivered with a door photo: a short-lived link to it (ADR-030)",
+            "nullable": true
           }
         },
         "required": [
@@ -24695,7 +24858,9 @@
           "promisedAt",
           "etaAt",
           "fallbackStage",
-          "canCancelNoCourier"
+          "canCancelNoCourier",
+          "arrivedDropAt",
+          "proofPhotoUrl"
         ],
         "additionalProperties": false
       },
@@ -25498,6 +25663,140 @@
           "reason"
         ]
       },
+      "RiderPhotoRequestDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "selfie",
+              "licence",
+              "delivery"
+            ]
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/jpeg",
+              "image/png",
+              "image/webp"
+            ]
+          },
+          "fulfilmentId": {
+            "description": "Required for a door photo (kind delivery)",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          }
+        },
+        "required": [
+          "kind",
+          "contentType"
+        ]
+      },
+      "RiderPhotoTicketDto_Output": {
+        "type": "object",
+        "properties": {
+          "photo": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "selfie",
+                  "licence",
+                  "delivery"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "uploading",
+                  "ready"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "kind",
+              "status"
+            ],
+            "additionalProperties": false
+          },
+          "upload": {
+            "type": "object",
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string",
+                "enum": [
+                  "PUT"
+                ]
+              },
+              "headers": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "string"
+                }
+              },
+              "expiresAt": {
+                "type": "string",
+                "description": "ISO-8601 timestamp"
+              }
+            },
+            "required": [
+              "url",
+              "method",
+              "headers",
+              "expiresAt"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "photo",
+          "upload"
+        ],
+        "additionalProperties": false
+      },
+      "RiderPhotoDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "selfie",
+              "licence",
+              "delivery"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "uploading",
+              "ready"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "status"
+        ],
+        "additionalProperties": false
+      },
       "RiderOnboardingDto_Output": {
         "type": "object",
         "properties": {
@@ -25544,6 +25843,7 @@
                   "type": "string",
                   "enum": [
                     "profile",
+                    "selfie",
                     "identity",
                     "driving_licence",
                     "bank"
@@ -25648,6 +25948,23 @@
               "additionalProperties": false
             }
           },
+          "photos": {
+            "type": "object",
+            "properties": {
+              "selfie": {
+                "type": "boolean"
+              },
+              "licence": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "selfie",
+              "licence"
+            ],
+            "additionalProperties": false,
+            "description": "Which sign-up photos are in (ADR-030)"
+          },
           "submittedAt": {
             "type": "string",
             "description": "ISO-8601 timestamp",
@@ -25663,6 +25980,7 @@
           "editable",
           "steps",
           "checks",
+          "photos",
           "submittedAt"
         ],
         "additionalProperties": false
@@ -25839,6 +26157,7 @@
                   "type": "string",
                   "enum": [
                     "profile",
+                    "selfie",
                     "identity",
                     "driving_licence",
                     "bank"
@@ -25943,6 +26262,23 @@
               "additionalProperties": false
             }
           },
+          "photos": {
+            "type": "object",
+            "properties": {
+              "selfie": {
+                "type": "boolean"
+              },
+              "licence": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "selfie",
+              "licence"
+            ],
+            "additionalProperties": false,
+            "description": "Which sign-up photos are in (ADR-030)"
+          },
           "submittedAt": {
             "type": "string",
             "description": "ISO-8601 timestamp",
@@ -25967,6 +26303,16 @@
             "type": "string",
             "description": "ISO-8601 timestamp",
             "nullable": true
+          },
+          "selfieUrl": {
+            "description": "Short-lived link (5 min)",
+            "type": "string",
+            "nullable": true
+          },
+          "licenceUrl": {
+            "description": "Short-lived link (5 min) to the licence card photo",
+            "type": "string",
+            "nullable": true
           }
         },
         "required": [
@@ -25978,12 +26324,15 @@
           "editable",
           "steps",
           "checks",
+          "photos",
           "submittedAt",
           "userId",
           "phoneMasked",
           "online",
           "rating",
-          "decidedAt"
+          "decidedAt",
+          "selfieUrl",
+          "licenceUrl"
         ],
         "additionalProperties": false
       },

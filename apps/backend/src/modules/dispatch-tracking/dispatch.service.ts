@@ -52,6 +52,7 @@ import {
 } from './dispatch.repository';
 import type { FAILED_REASONS } from './dto/dispatch.dto';
 import { RiderLocations } from './rider-locations';
+import { RiderPhotosService } from './rider-photos.service';
 
 export const OFFER_SEC = 30;
 const RETRY_SEC = 30;
@@ -61,6 +62,9 @@ const T_FALLBACK = 'dispatch.fallback';
 const key = (fulfilmentId: string, t: 'offer' | 'retry' | 'fallback') => `fulfilment:${fulfilmentId}:${t}`;
 
 type OrderRecord = NonNullable<Awaited<ReturnType<OrdersService['get']>>>;
+
+/** Door-photo proof is allowed for prepaid orders up to ₹2,000 (ADR-030). */
+export const PHOTO_PROOF_MAX_PAISE = 200_000;
 
 const IST_MS = 330 * 60_000;
 /** Start of the IST day containing `now`. */
@@ -114,6 +118,7 @@ export class DispatchService implements OnModuleInit {
     private readonly notifications: NotificationsService,
     private readonly threePl: ThreePlProvider,
     private readonly calls: CallMaskingProvider,
+    private readonly photos: RiderPhotosService,
     private readonly timers: Timers,
     private readonly bus: EventBus,
     @Inject(ENV) private readonly env: Env,
@@ -200,6 +205,7 @@ export class DispatchService implements OnModuleInit {
       requestedAt: now,
       assignedAt: mode === 'self' ? now : null,
       arrivedAt: null,
+      arrivedDropAt: null,
       pickedUpAt: null,
       deliveredAt: null,
       failedAt: null,
@@ -587,6 +593,31 @@ export class DispatchService implements OnModuleInit {
     return (await this.repo.updateFulfilment(f.id, 'assigned', { arrivedAt: this.clock() })) ?? f;
   }
 
+  /** The rider is at the customer's door: the customer is told, and the app starts a waiting timer (ADR-030). */
+  async arrivedDrop(f: FulfilmentRecord): Promise<FulfilmentRecord> {
+    if (f.arrivedDropAt || f.state !== 'picked_up') return f;
+    const next = await this.repo.updateFulfilment(f.id, 'picked_up', { arrivedDropAt: this.clock() });
+    if (!next) return f;
+    const c = await this.ctx(next);
+    await this.notifications.notify(
+      'customer.courier_arrived',
+      { userId: c.order.userId },
+      { code: c.order.code },
+      { orderId: f.orderId, merchantId: f.merchantId },
+      { data: { kind: 'order', orderId: f.orderId } },
+    );
+    this.notifications.toRoom(`user:${c.order.userId}`, 'order.updated', { orderId: f.orderId, type: 'fulfilment.arrived_drop' });
+    return next;
+  }
+
+  /**
+   * Door photo instead of the OTP (ADR-030): only prepaid orders up to PHOTO_PROOF_MAX_PAISE, and only after the
+   * rider marked "arrived at the customer". Cash orders always need the OTP (the cash is handed over anyway).
+   */
+  photoProofAllowed(order: { paymentMethod: string; totalPaise: number }): boolean {
+    return order.paymentMethod !== 'cod' && order.totalPaise <= PHOTO_PROOF_MAX_PAISE;
+  }
+
   async pickedUp(
     f: FulfilmentRecord,
     actor: 'rider' | 'staff',
@@ -638,16 +669,21 @@ export class DispatchService implements OnModuleInit {
   ): Promise<FulfilmentRecord> {
     if (f.state !== 'picked_up')
       throw new DomainError('INVALID_STATE', 'Pick up the order first.', { state: f.state });
-    // Audit B1: a photo id was taken on trust, so any UUID skipped the customer's OTP. No courier can upload a
-    // delivery photo yet, so none is accepted until photo proof ships with an ownership check.
-    if (proof.photoMediaId)
-      throw new DomainError('VALIDATION_FAILED', "Ask the customer for the 4-digit OTP in their app.", { field: 'otp' });
-    if (proof.otp !== f.deliveryOtp)
+    const c = await this.ctx(f);
+    if (proof.photoMediaId) {
+      // Audit B1 / ADR-030: the photo must be this rider's door photo for this job, and photo proof must apply.
+      if (actor !== 'rider' || !actorId)
+        throw new DomainError('VALIDATION_FAILED', 'Ask the customer for the 4-digit OTP in their app.', { field: 'otp' });
+      if (!this.photoProofAllowed(c.order))
+        throw new DomainError('VALIDATION_FAILED', "This order needs the customer's OTP.", { field: 'otp' });
+      if (!f.arrivedDropAt)
+        throw new DomainError('INVALID_STATE', 'Mark "Arrived at the customer" first.');
+      await this.photos.deliveryProof(actorId, f.id, proof.photoMediaId);
+    } else if (proof.otp !== f.deliveryOtp)
       throw new DomainError(
         'WRONG_CODE',
         'That OTP is not right. Ask the customer for the 4-digit code in their app.',
       );
-    const c = await this.ctx(f);
     const codDue =
       c.order.paymentMethod === 'cod' ? Math.max(0, c.order.totalPaise - c.order.refundedPaise) : 0;
     if (codDue > 0 && proof.codCollectedPaise === undefined)

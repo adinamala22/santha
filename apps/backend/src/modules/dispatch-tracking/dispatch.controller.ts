@@ -99,6 +99,13 @@ export class RiderController {
     return this.views.job(await this.dispatch.arrived(await this.dispatch.riderJob(u.userId, id)), 'rider');
   }
 
+  @Post('jobs/:id/arrived-drop')
+  @HttpCode(200)
+  @ZodResponse({ type: JobViewDto, description: "At the customer's door: the customer is told; starts the waiting timer (ADR-030)" })
+  async arrivedDrop(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
+    return this.views.job(await this.dispatch.arrivedDrop(await this.dispatch.riderJob(u.userId, id)), 'rider');
+  }
+
   @Post('jobs/:id/picked-up')
   @HttpCode(200)
   @ZodResponse({ type: JobViewDto, description: '422 WRONG_CODE; 409 NOT_READY while the store is packing' })

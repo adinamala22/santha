@@ -21,6 +21,7 @@ dependencies:
   santha_ui: any
   geolocator: ^14.0.2
   url_launcher: ^6.3.1
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:

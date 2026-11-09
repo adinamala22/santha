@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { appSignIn, call, freshPhone, HAS_OPS, opsSignIn } from '../support/target';
+import { appSignIn, call, freshPhone, HAS_OPS, opsSignIn, uploadRiderPhoto } from '../support/target';
 
 /**
  * Rider onboarding (ADR-029, rider audit B2), fake + live: a new rider cannot go online; they fill the steps in the
@@ -18,8 +18,10 @@ test('a new rider signs up; ops send back, then approve; the rider can go online
 
   const name = `E2E Rider ${Date.now() % 100000}`;
   await call(request, 'put', '/riders/me/profile', { headers: rider, data: { name, vehicle: 'bike', vehicleNumber: 'AP 26 AB 4321' } });
+  await uploadRiderPhoto(request, rider, 'selfie');
   await call(request, 'put', '/riders/me/kyc/pan', { headers: rider, data: { pan: 'ABCPK1234K', name } });
   await call(request, 'put', '/riders/me/kyc/driving-licence', { headers: rider, data: { number: 'AP26 2019 0012345' } });
+  await uploadRiderPhoto(request, rider, 'licence');
   await call(request, 'put', '/riders/me/kyc/bank', { headers: rider, data: { accountNumber: '123456789012', ifsc: 'SBIN0001234', holderName: name } });
   expect((await call(request, 'post', '/riders/me/submit', { headers: rider, status: 200 })).status).toBe('submitted');
   const userId = (await call(request, 'get', '/me', { headers: rider })).id as string;
@@ -31,6 +33,9 @@ test('a new rider signs up; ops send back, then approve; the rider can go online
   await expect(page.getByTestId('rider-steps')).toContainText('Driving licence');
   await expect(page.getByTestId('rider-check-driving_licence')).toContainText('AP2620190012345');
   await expect(page.getByText('Check the driving licence number against the card')).toBeVisible();
+  // The selfie and the card are shown from private, short-lived links (ADR-030).
+  await expect(page.getByTestId('rider-photos').getByRole('img', { name: 'Selfie' })).toBeVisible();
+  await expect.poll(async () => page.getByTestId('rider-photos').getByRole('img', { name: 'Licence card' }).evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
 
   // Sending back needs a reason the rider will see.
   await page.getByRole('button', { name: 'Send back' }).click();

@@ -107,4 +107,19 @@ void main() {
     expect(o.check(KycKind.bank)?.status, KycStatus.failed);
     expect(o.check(KycKind.aadhaar), isNull);
   });
+
+  test('ADR-030: arrived at the customer, photo proof, and the door photo on tracking', () {
+    final j = Job.fromJson(fixture('job_assigned'));
+    expect(j.arrivedDropAt, isNull);
+    expect(j.photoProofAllowed, isTrue);
+    expect(Job.fromJson(fixture('job_failed')).arrivedDropAt, DateTime.utc(2026, 11, 7, 6, 10));
+    final t = Tracking.fromJson(fixture('tracking_picked_up'));
+    expect(t.arrivedDropAt, isNotNull);
+    expect(t.proofPhotoUrl, isNull);
+    expect(t.withLocation(const Point(14.4, 79.9), null).arrivedDropAt, t.arrivedDropAt);
+    final o = RiderOnboarding.fromJson(fixture('rider_onboarding'));
+    expect(o.hasSelfie, isTrue);
+    expect(o.hasLicencePhoto, isFalse);
+    expect(o.done('selfie'), isTrue);
+  });
 }
