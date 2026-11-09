@@ -113,7 +113,7 @@ export async function newCustomer(request: APIRequestContext, at = SEED.dargamit
 }
 
 /** Places a COD order of atta at the kirana (works on test, where payments are Razorpay sandbox). */
-export async function placeCodOrder(request: APIRequestContext, customer: { headers: Headers; addressId: string }) {
+export async function placeCodOrder(request: APIRequestContext, customer: { headers: Headers; addressId: string }, tipPaise = 0) {
   const store = await call(request, 'get', `/stores/${SEED.kirana.id}?lat=${SEED.dargamitta.lat}&lng=${SEED.dargamitta.lng}`);
   const atta = store.items.find((i: { name: string }) => i.name === 'Annapoorna Chakki Atta');
   expect(atta, 'seeded item Annapoorna Chakki Atta').toBeTruthy();
@@ -121,7 +121,7 @@ export async function placeCodOrder(request: APIRequestContext, customer: { head
   const q = await call(request, 'post', '/cart/price', { headers: customer.headers, data: { addressId: customer.addressId, when: { mode: 'asap' } }, status: 200 });
   return call<{ id: string; code: string; state: string; totalPaise: number }>(request, 'post', '/orders', {
     headers: { ...customer.headers, 'Idempotency-Key': `e2e-${TARGET}-${Date.now()}-${Math.random()}` },
-    data: { quoteId: q.quoteId, paymentMethod: 'cod' },
+    data: { quoteId: q.quoteId, paymentMethod: 'cod', ...(tipPaise ? { tipPaise } : {}) },
   });
 }
 

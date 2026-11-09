@@ -6,6 +6,8 @@ import 'package:santha_core/santha_core.dart';
 
 import 'rider_test.dart' show pumpRider;
 import 'support/fake_rider.dart';
+import 'package:rider/features/home/presentation/copy.dart';
+import 'package:rider/l10n/gen/app_localizations.dart';
 
 /// Rider audit 2026-11-07: onboarding (B2, ADR-029) and the app-side bug fixes (B3–B8).
 void main() {
@@ -266,5 +268,30 @@ void main() {
     expect(find.byKey(const ValueKey('day-2026-10-27')), findsOneWidget);
     final rows = tester.widgetList<Padding>(find.byWidgetPredicate((w) => w.key is ValueKey<String> && (w.key! as ValueKey<String>).value.startsWith('day-'))).map((w) => (w.key! as ValueKey<String>).value).toList();
     expect(rows.first, 'day-2026-11-02'); // newest first
+  });
+
+  testWidgets('ADR-032: incentive progress, an earned bonus, and the cash limit line', (tester) async {
+    await pumpRider(
+      tester,
+      make: (c) => FakeRiderApi(c, cashInHandPaise: 40000, cashLimitPaise: 200000, incentives: const [
+        Incentive(weekly: false, deliveries: 10, bonusPaise: 15000, done: 4, achieved: false),
+        Incentive(weekly: true, deliveries: 50, bonusPaise: 100000, done: 50, achieved: true),
+      ]),
+    );
+    expect(find.text('Today: 4 of 10 deliveries for a ₹150 bonus'), findsOneWidget);
+    expect(find.text('Bonus earned: ₹1000. It comes with your payout.'), findsOneWidget);
+    expect(find.text('Cash limit: ₹2000'), findsOneWidget);
+    expect(find.byKey(const ValueKey('cash-limit')), findsNothing);
+  });
+
+  testWidgets('ADR-032: at the cash limit the rider is told prepaid orders only; Telugu', (tester) async {
+    await pumpRider(tester, locale: 'te', make: (c) => FakeRiderApi(c, cashInHandPaise: 210000, cashLimitPaise: 200000));
+    expect(find.byKey(const ValueKey('cash-limit')), findsOneWidget);
+    expect(find.textContaining('మీ దగ్గర ₹2100 నగదు ఉంది (పరిమితి ₹2000)'), findsOneWidget);
+  });
+
+  test('ADR-032: a tip shows as its own pay line', () async {
+    final l = await AppLocalizations.delegate.load(const Locale('en'));
+    expect(l.payLine(const PayLine('tip', 2000)), '₹20 tip');
   });
 }

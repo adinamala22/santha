@@ -5953,6 +5953,51 @@
         ]
       }
     },
+    "/v1/ops/riders/{id}/cash-deposits": {
+      "post": {
+        "operationId": "OpsDispatchController_cashDeposit",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CashDepositDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Cash the rider handed over (ADR-032): lowers cash in hand, credited in the payout; audited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CashDepositViewDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/ops/sos/{id}/resolve": {
       "post": {
         "operationId": "OpsDispatchController_resolveSos",
@@ -10488,13 +10533,57 @@
                           "minimum": 0,
                           "maximum": 9007199254740991,
                           "description": "integer paise"
+                        },
+                        "cashLimitPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "integer paise",
+                          "default": null,
+                          "nullable": true
+                        },
+                        "incentives": {
+                          "default": [],
+                          "maxItems": 6,
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "deliveries": {
+                                "type": "integer",
+                                "minimum": 1,
+                                "maximum": 200
+                              },
+                              "bonusPaise": {
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991,
+                                "description": "integer paise"
+                              },
+                              "period": {
+                                "type": "string",
+                                "enum": [
+                                  "day",
+                                  "week"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "deliveries",
+                              "bonusPaise",
+                              "period"
+                            ],
+                            "additionalProperties": false
+                          }
                         }
                       },
                       "required": [
                         "basePaise",
                         "perKmPaise",
                         "waitPerMinPaise",
-                        "batchBonusPaise"
+                        "batchBonusPaise",
+                        "cashLimitPaise",
+                        "incentives"
                       ],
                       "additionalProperties": false
                     },
@@ -11138,13 +11227,57 @@
                     "minimum": 0,
                     "maximum": 9007199254740991,
                     "description": "integer paise"
+                  },
+                  "cashLimitPaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise",
+                    "default": null,
+                    "nullable": true
+                  },
+                  "incentives": {
+                    "default": [],
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "deliveries": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "bonusPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "integer paise"
+                        },
+                        "period": {
+                          "type": "string",
+                          "enum": [
+                            "day",
+                            "week"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "deliveries",
+                        "bonusPaise",
+                        "period"
+                      ],
+                      "additionalProperties": false
+                    }
                   }
                 },
                 "required": [
                   "basePaise",
                   "perKmPaise",
                   "waitPerMinPaise",
-                  "batchBonusPaise"
+                  "batchBonusPaise",
+                  "cashLimitPaise",
+                  "incentives"
                 ],
                 "additionalProperties": false
               },
@@ -11747,13 +11880,57 @@
                       "minimum": 0,
                       "maximum": 9007199254740991,
                       "description": "integer paise"
+                    },
+                    "cashLimitPaise": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "integer paise",
+                      "default": null,
+                      "nullable": true
+                    },
+                    "incentives": {
+                      "default": [],
+                      "maxItems": 6,
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "deliveries": {
+                            "type": "integer",
+                            "minimum": 1,
+                            "maximum": 200
+                          },
+                          "bonusPaise": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991,
+                            "description": "integer paise"
+                          },
+                          "period": {
+                            "type": "string",
+                            "enum": [
+                              "day",
+                              "week"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "deliveries",
+                          "bonusPaise",
+                          "period"
+                        ],
+                        "additionalProperties": false
+                      }
                     }
                   },
                   "required": [
                     "basePaise",
                     "perKmPaise",
                     "waitPerMinPaise",
-                    "batchBonusPaise"
+                    "batchBonusPaise",
+                    "cashLimitPaise",
+                    "incentives"
                   ],
                   "additionalProperties": false
                 },
@@ -12350,6 +12527,47 @@
                     "minimum": 0,
                     "maximum": 9007199254740991,
                     "description": "integer paise"
+                  },
+                  "cashLimitPaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise",
+                    "default": null,
+                    "nullable": true
+                  },
+                  "incentives": {
+                    "default": [],
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "deliveries": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "bonusPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "integer paise"
+                        },
+                        "period": {
+                          "type": "string",
+                          "enum": [
+                            "day",
+                            "week"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "deliveries",
+                        "bonusPaise",
+                        "period"
+                      ]
+                    }
                   }
                 },
                 "required": [
@@ -12917,6 +13135,47 @@
                     "minimum": 0,
                     "maximum": 9007199254740991,
                     "description": "integer paise"
+                  },
+                  "cashLimitPaise": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991,
+                    "description": "integer paise",
+                    "default": null,
+                    "nullable": true
+                  },
+                  "incentives": {
+                    "default": [],
+                    "maxItems": 6,
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "deliveries": {
+                          "type": "integer",
+                          "minimum": 1,
+                          "maximum": 200
+                        },
+                        "bonusPaise": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991,
+                          "description": "integer paise"
+                        },
+                        "period": {
+                          "type": "string",
+                          "enum": [
+                            "day",
+                            "week"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "deliveries",
+                        "bonusPaise",
+                        "period"
+                      ]
+                    }
                   }
                 },
                 "required": [
@@ -13519,13 +13778,57 @@
                 "minimum": 0,
                 "maximum": 9007199254740991,
                 "description": "integer paise"
+              },
+              "cashLimitPaise": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 9007199254740991,
+                "description": "integer paise",
+                "default": null,
+                "nullable": true
+              },
+              "incentives": {
+                "default": [],
+                "maxItems": 6,
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "deliveries": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "maximum": 200
+                    },
+                    "bonusPaise": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991,
+                      "description": "integer paise"
+                    },
+                    "period": {
+                      "type": "string",
+                      "enum": [
+                        "day",
+                        "week"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "deliveries",
+                    "bonusPaise",
+                    "period"
+                  ],
+                  "additionalProperties": false
+                }
               }
             },
             "required": [
               "basePaise",
               "perKmPaise",
               "waitPerMinPaise",
-              "batchBonusPaise"
+              "batchBonusPaise",
+              "cashLimitPaise",
+              "incentives"
             ],
             "additionalProperties": false
           },
@@ -21150,6 +21453,12 @@
             "maxLength": 300,
             "description": "Delivery instructions, e.g. \"Ring the bell twice\"",
             "nullable": true
+          },
+          "tipPaise": {
+            "description": "Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers",
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 50000
           }
         },
         "required": [
@@ -21690,6 +21999,12 @@
             "minimum": -9007199254740991,
             "maximum": 9007199254740991
           },
+          "tipPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Tip for the delivery partner, included in totalPaise (ADR-032)"
+          },
           "refundedPaise": {
             "type": "integer",
             "minimum": -9007199254740991,
@@ -21840,6 +22155,7 @@
           "taxPaise",
           "discountPaise",
           "totalPaise",
+          "tipPaise",
           "refundedPaise",
           "outcomeReason",
           "canCancel",
@@ -22392,6 +22708,12 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
+                "tipPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "Tip for the delivery partner, included in totalPaise (ADR-032)"
+                },
                 "refundedPaise": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -22546,6 +22868,7 @@
                 "taxPaise",
                 "discountPaise",
                 "totalPaise",
+                "tipPaise",
                 "refundedPaise",
                 "outcomeReason",
                 "canCancel",
@@ -24046,7 +24369,56 @@
             "type": "integer",
             "minimum": -9007199254740991,
             "maximum": 9007199254740991,
-            "description": "COD cash collected this payout period; the next payout deducts it"
+            "description": "COD cash collected this payout period less cash deposited; the next payout deducts it"
+          },
+          "cashLimitPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "At this much cash in hand the rider gets prepaid orders only; null = no limit (ADR-032)",
+            "nullable": true
+          },
+          "incentives": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "period": {
+                  "type": "string",
+                  "enum": [
+                    "day",
+                    "week"
+                  ]
+                },
+                "deliveries": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "bonusPaise": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "done": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "achieved": {
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "period",
+                "deliveries",
+                "bonusPaise",
+                "done",
+                "achieved"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Delivery targets with bonuses and progress today / this week (ADR-032)"
           },
           "acceptancePct": {
             "type": "integer",
@@ -24083,7 +24455,8 @@
                         "base",
                         "distance",
                         "wait",
-                        "batch"
+                        "batch",
+                        "tip"
                       ]
                     },
                     "amountPaise": {
@@ -24287,7 +24660,8 @@
                           "base",
                           "distance",
                           "wait",
-                          "batch"
+                          "batch",
+                          "tip"
                         ]
                       },
                       "amountPaise": {
@@ -24396,6 +24770,8 @@
           "statusNote",
           "today",
           "cashInHandPaise",
+          "cashLimitPaise",
+          "incentives",
           "acceptancePct",
           "offer",
           "jobs"
@@ -24488,7 +24864,8 @@
                           "base",
                           "distance",
                           "wait",
-                          "batch"
+                          "batch",
+                          "tip"
                         ]
                       },
                       "amountPaise": {
@@ -24751,7 +25128,8 @@
                     "base",
                     "distance",
                     "wait",
-                    "batch"
+                    "batch",
+                    "tip"
                   ]
                 },
                 "amountPaise": {
@@ -25934,6 +26312,54 @@
           "reason"
         ]
       },
+      "CashDepositDto": {
+        "type": "object",
+        "properties": {
+          "amountPaise": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 10000000
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 300
+          }
+        },
+        "required": [
+          "amountPaise"
+        ]
+      },
+      "CashDepositViewDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "amountPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "createdAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp"
+          },
+          "cashInHandPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "id",
+          "amountPaise",
+          "createdAt",
+          "cashInHandPaise"
+        ],
+        "additionalProperties": false
+      },
       "ResolveSosDto": {
         "type": "object",
         "properties": {
@@ -26643,6 +27069,19 @@
           "phoneForOps": {
             "type": "string",
             "description": "Full phone number, so ops can call the rider back (ops roles only)"
+          },
+          "cashInHandPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "COD cash this payout period less deposits (ADR-032)"
+          },
+          "cashLimitPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "null = no limit",
+            "nullable": true
           }
         },
         "required": [
@@ -26664,7 +27103,9 @@
           "selfieUrl",
           "licenceUrl",
           "openSos",
-          "phoneForOps"
+          "phoneForOps",
+          "cashInHandPaise",
+          "cashLimitPaise"
         ],
         "additionalProperties": false
       },

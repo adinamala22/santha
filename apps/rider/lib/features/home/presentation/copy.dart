@@ -15,6 +15,7 @@ extension RiderCopy on AppLocalizations {
         'base' => payBase(rupees(p.amountPaise)),
         'distance' => payDistance(rupees(p.amountPaise)),
         'wait' => payWait(rupees(p.amountPaise)),
+        'tip' => payTip(rupees(p.amountPaise)),
         _ => payBatch(rupees(p.amountPaise)),
       };
 

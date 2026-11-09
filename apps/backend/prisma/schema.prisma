@@ -729,6 +729,8 @@ model Order {
   taxPaise       Int           @map("tax_paise")
   discountPaise  Int           @map("discount_paise")
   totalPaise     Int           @map("total_paise")
+  /// Tip for the delivery partner chosen at checkout (ADR-032); included in totalPaise, 100% to whoever delivers.
+  tipPaise       Int           @default(0) @map("tip_paise")
   promoCode      String?       @map("promo_code")
   /// The quote the customer accepted: the bill of record.
   quote          Json
@@ -981,6 +983,19 @@ model RiderSos {
   @@index([resolvedAt])
   @@index([riderUserId])
   @@map("rider_sos")
+}
+
+/// Cash a rider handed over to Santha (ADR-032): lowers cash in hand; credited back in the payout.
+model RiderCashDeposit {
+  id          String   @id @db.Uuid
+  riderUserId String   @map("rider_user_id") @db.Uuid
+  amountPaise Int      @map("amount_paise")
+  note        String?
+  recordedBy  String   @map("recorded_by") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([riderUserId, createdAt])
+  @@map("rider_cash_deposits")
 }
 
 /// How one order reaches the customer: the store's staff (self), a Santha rider, or a 3PL partner.

@@ -1908,6 +1908,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/riders/{id}/cash-deposits": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["OpsDispatchController_cashDeposit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ops/sos/{id}/resolve": {
         parameters: {
             query?: never;
@@ -3379,6 +3395,19 @@ export interface components {
                         waitPerMinPaise: number;
                         /** @description integer paise */
                         batchBonusPaise: number;
+                        /**
+                         * @description integer paise
+                         * @default null
+                         */
+                        cashLimitPaise: number | null;
+                        /** @default [] */
+                        incentives: {
+                            deliveries: number;
+                            /** @description integer paise */
+                            bonusPaise: number;
+                            /** @enum {string} */
+                            period: "day" | "week";
+                        }[];
                     };
                     discovery: {
                         /**
@@ -3540,6 +3569,19 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                    /**
+                     * @description integer paise
+                     * @default null
+                     */
+                    cashLimitPaise: number | null;
+                    /** @default [] */
+                    incentives: {
+                        deliveries: number;
+                        /** @description integer paise */
+                        bonusPaise: number;
+                        /** @enum {string} */
+                        period: "day" | "week";
+                    }[];
                 };
                 discovery: {
                     /**
@@ -3691,6 +3733,19 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                    /**
+                     * @description integer paise
+                     * @default null
+                     */
+                    cashLimitPaise: number | null;
+                    /** @default [] */
+                    incentives: {
+                        deliveries: number;
+                        /** @description integer paise */
+                        bonusPaise: number;
+                        /** @enum {string} */
+                        period: "day" | "week";
+                    }[];
                 };
                 discovery: {
                     /**
@@ -3842,6 +3897,19 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                    /**
+                     * @description integer paise
+                     * @default null
+                     */
+                    cashLimitPaise: number | null;
+                    /** @default [] */
+                    incentives: {
+                        deliveries: number;
+                        /** @description integer paise */
+                        bonusPaise: number;
+                        /** @enum {string} */
+                        period: "day" | "week";
+                    }[];
                 };
                 /**
                  * @default {
@@ -4010,6 +4078,19 @@ export interface components {
                     waitPerMinPaise: number;
                     /** @description integer paise */
                     batchBonusPaise: number;
+                    /**
+                     * @description integer paise
+                     * @default null
+                     */
+                    cashLimitPaise: number | null;
+                    /** @default [] */
+                    incentives: {
+                        deliveries: number;
+                        /** @description integer paise */
+                        bonusPaise: number;
+                        /** @enum {string} */
+                        period: "day" | "week";
+                    }[];
                 };
                 /**
                  * @default {
@@ -4184,6 +4265,19 @@ export interface components {
                 waitPerMinPaise: number;
                 /** @description integer paise */
                 batchBonusPaise: number;
+                /**
+                 * @description integer paise
+                 * @default null
+                 */
+                cashLimitPaise: number | null;
+                /** @default [] */
+                incentives: {
+                    deliveries: number;
+                    /** @description integer paise */
+                    bonusPaise: number;
+                    /** @enum {string} */
+                    period: "day" | "week";
+                }[];
             };
             discovery: {
                 /**
@@ -5903,6 +5997,8 @@ export interface components {
             paymentMethod: "online" | "cod";
             /** @description Delivery instructions, e.g. "Ring the bell twice" */
             instructions?: string | null;
+            /** @description Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers */
+            tipPaise?: number;
         };
         OrderDto_Output: {
             /** Format: uuid */
@@ -6015,6 +6111,8 @@ export interface components {
             taxPaise: number;
             discountPaise: number;
             totalPaise: number;
+            /** @description Tip for the delivery partner, included in totalPaise (ADR-032) */
+            tipPaise: number;
             refundedPaise: number;
             outcomeReason: string | null;
             canCancel: boolean;
@@ -6160,6 +6258,8 @@ export interface components {
                 taxPaise: number;
                 discountPaise: number;
                 totalPaise: number;
+                /** @description Tip for the delivery partner, included in totalPaise (ADR-032) */
+                tipPaise: number;
                 refundedPaise: number;
                 outcomeReason: string | null;
                 canCancel: boolean;
@@ -6559,8 +6659,19 @@ export interface components {
                 earningsPaise: number;
                 onlineMin: number;
             };
-            /** @description COD cash collected this payout period; the next payout deducts it */
+            /** @description COD cash collected this payout period less cash deposited; the next payout deducts it */
             cashInHandPaise: number;
+            /** @description At this much cash in hand the rider gets prepaid orders only; null = no limit (ADR-032) */
+            cashLimitPaise: number | null;
+            /** @description Delivery targets with bonuses and progress today / this week (ADR-032) */
+            incentives: {
+                /** @enum {string} */
+                period: "day" | "week";
+                deliveries: number;
+                bonusPaise: number;
+                done: number;
+                achieved: boolean;
+            }[];
             /** @description Offers accepted ÷ shown, in %; null before the first offer */
             acceptancePct: number | null;
             offer: {
@@ -6571,7 +6682,7 @@ export interface components {
                 payPaise: number;
                 payLines: {
                     /** @enum {string} */
-                    code: "base" | "distance" | "wait" | "batch";
+                    code: "base" | "distance" | "wait" | "batch" | "tip";
                     amountPaise: number;
                 }[];
                 pickup: {
@@ -6614,7 +6725,7 @@ export interface components {
                 payPaise: number;
                 payLines: {
                     /** @enum {string} */
-                    code: "base" | "distance" | "wait" | "batch";
+                    code: "base" | "distance" | "wait" | "batch" | "tip";
                     amountPaise: number;
                 }[];
                 callNumber: string;
@@ -6657,7 +6768,7 @@ export interface components {
                 payPaise: number;
                 payLines: {
                     /** @enum {string} */
-                    code: "base" | "distance" | "wait" | "batch";
+                    code: "base" | "distance" | "wait" | "batch" | "tip";
                     amountPaise: number;
                 }[];
             }[];
@@ -6717,7 +6828,7 @@ export interface components {
             payPaise: number;
             payLines: {
                 /** @enum {string} */
-                code: "base" | "distance" | "wait" | "batch";
+                code: "base" | "distance" | "wait" | "batch" | "tip";
                 amountPaise: number;
             }[];
             callNumber: string;
@@ -6993,6 +7104,18 @@ export interface components {
             refund: boolean;
             reason: string;
         };
+        CashDepositDto: {
+            amountPaise: number;
+            note?: string;
+        };
+        CashDepositViewDto_Output: {
+            /** Format: uuid */
+            id: string;
+            amountPaise: number;
+            /** @description ISO-8601 timestamp */
+            createdAt: string;
+            cashInHandPaise: number;
+        };
         ResolveSosDto: {
             note?: string;
         };
@@ -7169,6 +7292,10 @@ export interface components {
             } | null;
             /** @description Full phone number, so ops can call the rider back (ops roles only) */
             phoneForOps: string;
+            /** @description COD cash this payout period less deposits (ADR-032) */
+            cashInHandPaise: number;
+            /** @description null = no limit */
+            cashLimitPaise: number | null;
         };
         RiderApproveDto: {
             note?: string;
@@ -11283,6 +11410,32 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsDeliveryDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_cashDeposit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CashDepositDto"];
+            };
+        };
+        responses: {
+            /** @description Cash the rider handed over (ADR-032): lowers cash in hand, credited in the payout; audited */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CashDepositViewDto_Output"];
                 };
             };
         };

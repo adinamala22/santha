@@ -161,6 +161,8 @@ export class OpsRidersController {
       licenceUrl: await this.photos.url(v.photos.licence),
       openSos: await this.openSos(v.rider.userId),
       phoneForOps: (await this.auth.me(v.rider.userId)).phone,
+      cashInHandPaise: await this.dispatch.cashInHand(v.rider),
+      cashLimitPaise: (await this.dispatch.riderPayFor(v.rider)).cashLimitPaise,
     };
   }
 

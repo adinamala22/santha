@@ -278,7 +278,7 @@ class _OrderDetailPageState extends ConsumerState<OrderDetailPage> {
                 ]),
               ),
             const SizedBox(height: SanthaSpacing.s3),
-            BillView(bill: value.bill),
+            BillView(bill: value.bill, tipPaise: value.tipPaise),
             const SizedBox(height: SanthaSpacing.s4),
             Text(
               value.paymentMethod == PaymentMethodChoice.cod ? l.payOnDelivery(rupees(value.totalPaise)) : (value.payment?.status == 'captured' ? l.paidOnline : l.payOnline),

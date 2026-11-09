@@ -41,7 +41,7 @@ test.describe.serial('journey: delivered by a rider', () => {
     await call(request, 'post', '/riders/me/location', { headers: rider, data: north(store, 300), status: 204 });
 
     const customer = await newCustomer(request);
-    const order = await placeCodOrder(request, customer);
+    const order = await placeCodOrder(request, customer, 2_000); // with a ₹20 tip (ADR-032)
     await call(request, 'post', `/orders/${order.id}/accept`, { headers: owner, data: { fulfilmentMode: 'rider' }, status: 200 });
 
     // Dispatch runs from the order event (BullMQ on test): wait for the offer.
@@ -65,7 +65,9 @@ test.describe.serial('journey: delivered by a rider', () => {
     expect(atDoor).toMatchObject({ photoProofAllowed: false, arrivedDropAt: expect.any(String) });
     const otp = (await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer.headers })).deliveryOtp;
     expect((await call(request, 'get', `/orders/${order.id}/tracking`, { headers: customer.headers })).arrivedDropAt).toBe(atDoor.arrivedDropAt);
-    await call(request, 'post', `/jobs/${job.id}/delivered`, { headers: rider, data: { otp, codCollectedPaise: order.totalPaise }, status: 200 });
+    const done = await call(request, 'post', `/jobs/${job.id}/delivered`, { headers: rider, data: { otp, codCollectedPaise: order.totalPaise }, status: 200 });
+    // The tip is collected with the cash and paid 100% to the rider (ADR-032).
+    expect(done.payLines).toEqual(expect.arrayContaining([{ code: 'tip', amountPaise: 2_000 }]));
     expect((await call(request, 'get', `/orders/${order.id}`, { headers: customer.headers })).state).toBe('DELIVERED');
 
     await call(request, 'post', `/orders/${order.id}/rating`, { headers: customer.headers, data: { storeStars: 4, riderStars: 5 } });

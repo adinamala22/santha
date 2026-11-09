@@ -60,6 +60,15 @@ class HomePage extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s6),
                   child: Text(h.online ? l.waitingOffers : l.offlineHint, key: const ValueKey('idle'), textAlign: TextAlign.center, style: const TextStyle(color: SanthaColors.slate)),
                 ),
+              // Cash limit (ADR-032): at the limit only prepaid orders come until the cash is deposited.
+              if (h.atCashLimit)
+                Container(
+                  key: const ValueKey('cash-limit'),
+                  margin: const EdgeInsets.only(bottom: SanthaSpacing.s3),
+                  padding: const EdgeInsets.all(SanthaSpacing.s3),
+                  decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.md)),
+                  child: Text(l.cashLimitReached(rupees(h.cashInHandPaise), rupees(h.cashLimitPaise!))),
+                ),
               if (h.online && ref.watch(riderLocationOffProvider))
                 Padding(padding: const EdgeInsets.only(bottom: SanthaSpacing.s3), child: Text(l.locationOff, style: const TextStyle(color: SanthaColors.chilli))),
               _TodayCard(home: h),
@@ -180,6 +189,27 @@ class _TodayCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
               child: Text(l.cashInHand(rupees(home.cashInHandPaise)), key: const ValueKey('cash-in-hand'), style: text.bodyMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ),
+          if (home.cashLimitPaise != null && !home.atCashLimit)
+            Padding(
+              padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
+              child: Text(l.cashLimitLine(rupees(home.cashLimitPaise!)), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            ),
+          // Incentives (ADR-032): progress to each delivery target.
+          for (final (i, inc) in home.incentives.indexed)
+            Padding(
+              key: ValueKey('incentive-$i'),
+              padding: const EdgeInsets.only(bottom: SanthaSpacing.s2),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(
+                  inc.achieved
+                      ? l.incentiveDone(rupees(inc.bonusPaise))
+                      : (inc.weekly ? l.incentiveWeek(inc.done, inc.deliveries, rupees(inc.bonusPaise)) : l.incentiveDay(inc.done, inc.deliveries, rupees(inc.bonusPaise))),
+                  style: text.bodyMedium?.copyWith(color: inc.achieved ? SanthaColors.leaf : SanthaColors.ink, fontWeight: inc.achieved ? FontWeight.w600 : null),
+                ),
+                const SizedBox(height: SanthaSpacing.s1),
+                LinearProgressIndicator(value: inc.done / inc.deliveries, minHeight: 6, color: SanthaColors.leaf, backgroundColor: SanthaColors.white),
+              ]),
             ),
           if (home.acceptancePct != null)
             Padding(

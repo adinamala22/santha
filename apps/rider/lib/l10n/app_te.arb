@@ -205,5 +205,11 @@
   "sosFailed": "సంతకు అలర్ట్ పంపలేకపోయాం (నెట్‌వర్క్ లేదు). వెంటనే సహాయం కావాలంటే 112కు కాల్ చేయండి.",
   "weekTitle": "గత 7 రోజులు",
   "weekTotal": "{count} డెలివరీల నుండి {amount}",
-  "weekDay": "{amount} · {count}"
+  "weekDay": "{amount} · {count}",
+  "payTip": "{amount} టిప్",
+  "cashLimitReached": "మీ దగ్గర {amount} నగదు ఉంది (పరిమితి {limit}). సంతకు నగదు జమ చేసే వరకు ముందే చెల్లించిన ఆర్డర్లు మాత్రమే వస్తాయి.",
+  "cashLimitLine": "నగదు పరిమితి: {limit}",
+  "incentiveDay": "ఈరోజు: {bonus} బోనస్ కోసం {target}లో {done} డెలివరీలు",
+  "incentiveWeek": "ఈ వారం: {bonus} బోనస్ కోసం {target}లో {done} డెలివరీలు",
+  "incentiveDone": "బోనస్ సంపాదించారు: {bonus}. ఇది మీ చెల్లింపుతో వస్తుంది."
 }

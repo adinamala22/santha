@@ -61,6 +61,9 @@ String codMessage(AppLocalizations l, CodOption c) => switch (c.reason) {
 /// Checkout (wireframe 05): address, delivery time, coupon, bill, payment method, place order.
 /// The local cart is synced to the server, priced into a quote, and the order is placed at
 /// exactly that quote (POST /orders with an Idempotency-Key kept for retries of this attempt).
+/// Tip choices at checkout, in paise (ADR-032).
+const tipChoices = [0, 1000, 2000, 3000, 5000];
+
 class CheckoutPage extends ConsumerStatefulWidget {
   const CheckoutPage({super.key});
 
@@ -74,6 +77,8 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
   final _promoField = TextEditingController();
   final _instructions = TextEditingController();
   PaymentMethodChoice _method = PaymentMethodChoice.online;
+  /// Tip for the delivery partner (ADR-032), on top of the bill; 100% to whoever delivers.
+  int _tipPaise = 0;
   Checkout? _quote;
   Object? _error;
   bool _loading = true;
@@ -154,7 +159,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
     setState(() => _placing = true);
     final analytics = ref.read(analyticsProvider);
     try {
-      var order = await ref.read(checkoutApiProvider).placeOrder(quoteId: q.quoteId, method: _method, idempotencyKey: _idemKey!, instructions: _instructions.text);
+      var order = await ref.read(checkoutApiProvider).placeOrder(quoteId: q.quoteId, method: _method, idempotencyKey: _idemKey!, instructions: _instructions.text, tipPaise: _tipPaise);
       if (order.state == OrderState.awaitingPayment && order.payment != null) {
         if (!mounted) return;
         final paid = await payForOrder(context, ref, order);
@@ -242,7 +247,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
               _Section(title: kitchen ? l.deliverySlot : l.deliveryTime, child: kitchen ? _SlotPicker(merchantId: cart.merchantId!, onChanged: () => _reprice()) : Text(l.asapLabel, style: text.bodyMedium)),
               _Section(title: l.couponLabel, child: _couponField(l, q)),
               if (q != null && q.problems.isNotEmpty) _ProblemsCard(problems: q.problems),
-              if (q != null) _Section(title: l.billDetails, child: BillView(bill: q.bill)),
+              if (q != null) _Section(title: l.billDetails, child: BillView(bill: q.bill, tipPaise: _tipPaise)),
               if (q != null)
                 _Section(
                   title: l.paymentMethod,
@@ -270,6 +275,26 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                     ]),
                   ),
                 ),
+              if (q != null)
+                _Section(
+                  title: l.tipTitle,
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text(l.tipNote, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+                    const SizedBox(height: SanthaSpacing.s2),
+                    Wrap(spacing: SanthaSpacing.s2, children: [
+                      for (final t in tipChoices)
+                        ChoiceChip(
+                          key: ValueKey('tip-$t'),
+                          label: Text(t == 0 ? l.tipNone : '+${rupees(t)}'),
+                          selected: _tipPaise == t,
+                          onSelected: (_) {
+                            setState(() => _tipPaise = t);
+                            ref.read(analyticsProvider).track('tip_selected', {'tip_paise': t});
+                          },
+                        ),
+                    ]),
+                  ]),
+                ),
               TextField(
                 controller: _instructions,
                 maxLength: 300,
@@ -283,7 +308,7 @@ class _CheckoutPageState extends ConsumerState<CheckoutPage> {
                 padding: const EdgeInsets.fromLTRB(SanthaSpacing.s5, SanthaSpacing.s2, SanthaSpacing.s5, SanthaSpacing.s3),
                 child: SanthaButton(
                   key: const ValueKey('place-order'),
-                  label: _method == PaymentMethodChoice.cod ? l.placeOrderCod(rupees(q.bill.totalPaise)) : l.payAndPlace(rupees(q.bill.totalPaise)),
+                  label: _method == PaymentMethodChoice.cod ? l.placeOrderCod(rupees(q.bill.totalPaise + _tipPaise)) : l.payAndPlace(rupees(q.bill.totalPaise + _tipPaise)),
                   loading: _placing || _loading,
                   onPressed: q.placeable && address != null ? _place : null,
                 ),

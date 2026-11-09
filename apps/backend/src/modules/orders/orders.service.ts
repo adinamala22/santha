@@ -211,7 +211,7 @@ export class OrdersService implements OnModuleInit {
    * new bill (QUOTE_CHANGED). COD orders are PLACED at once; online orders wait for payment
    * (AWAITING_PAYMENT) and carry the checkout payload for the payment sheet.
    */
-  async place(userId: string, idempotencyKey: string | undefined, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined }): Promise<{ view: OrderView; replayed: boolean }> {
+  async place(userId: string, idempotencyKey: string | undefined, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined }): Promise<{ view: OrderView; replayed: boolean }> {
     const { value, replayed } = await this.idempotency.run('orders', userId, idempotencyKey, body, async () => {
       // Durable backstop if the idempotency cache was lost: the key is unique per user in the DB.
       const existing = await this.repo.getByIdempotencyKey(userId, idempotencyKey!);
@@ -221,7 +221,7 @@ export class OrdersService implements OnModuleInit {
     return { view: await this.view(userId, value), replayed };
   }
 
-  private async placeNew(userId: string, key: string, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined }): Promise<string> {
+  private async placeNew(userId: string, key: string, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined }): Promise<string> {
     const q = await this.pricing.getQuote<QuoteSnapshot>(body.quoteId);
     if (!q || q.userId !== userId) throw new DomainError('NOT_FOUND', 'Quote not found');
     if (q.expiresAt <= this.clock()) throw new DomainError('QUOTE_EXPIRED', 'Prices may have changed. Please review your bill again.');
@@ -267,7 +267,9 @@ export class OrdersService implements OnModuleInit {
         feesPaise: fresh.bill.feesPaise,
         taxPaise: fresh.bill.taxPaise,
         discountPaise: fresh.bill.discountPaise,
-        totalPaise: fresh.bill.totalPaise,
+        // The tip sits on top of the bill (no fees or GST on it) and goes to whoever delivers (ADR-032).
+        totalPaise: fresh.bill.totalPaise + (body.tipPaise ?? 0),
+        tipPaise: body.tipPaise ?? 0,
         promoCode: promo?.code ?? null,
         quote: { ...fresh, quoteId: undefined, expiresAt: undefined },
         idempotencyKey: key,

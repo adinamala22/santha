@@ -64,6 +64,8 @@ export class OpsRiderDto extends createZodDto(
       .nullable()
       .describe('An SOS not yet resolved (ADR-031)'),
     phoneForOps: z.string().describe('Full phone number, so ops can call the rider back (ops roles only)'),
+    cashInHandPaise: z.number().int().describe('COD cash this payout period less deposits (ADR-032)'),
+    cashLimitPaise: z.number().int().nullable().describe('null = no limit'),
   }),
 ) {}
 

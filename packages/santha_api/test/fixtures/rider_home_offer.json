@@ -41,6 +41,23 @@
  },
  "cashInHandPaise": 48000,
  "acceptancePct": 75,
+ "cashLimitPaise": 200000,
+ "incentives": [
+  {
+   "period": "day",
+   "deliveries": 10,
+   "bonusPaise": 15000,
+   "done": 4,
+   "achieved": false
+  },
+  {
+   "period": "week",
+   "deliveries": 50,
+   "bonusPaise": 100000,
+   "done": 50,
+   "achieved": true
+  }
+ ],
  "offer": {
   "id": "10064a67-0b15-48f2-a2f6-7b3f7dd81f9b",
   "expiresAt": "2026-11-02T16:27:46.914Z",

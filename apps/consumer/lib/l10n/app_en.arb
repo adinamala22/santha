@@ -1048,5 +1048,9 @@
   "topic_delivery": "A delivery",
   "topic_app": "The app",
   "courierAtDoor": "Your delivery partner is at your door. Keep your OTP ready.",
-  "leftAtDoor": "Left at your door. This is the photo your delivery partner took."
+  "leftAtDoor": "Left at your door. This is the photo your delivery partner took.",
+  "tipTitle": "Tip your delivery partner",
+  "tipNote": "100% of the tip goes to the person who brings your order.",
+  "tipNone": "No tip",
+  "billTip": "Tip for your delivery partner"
 }

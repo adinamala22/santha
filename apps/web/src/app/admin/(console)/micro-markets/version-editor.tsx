@@ -166,6 +166,29 @@ export function VersionEditor({
             {(Object.keys(k.riderPayFields) as Array<keyof typeof k.riderPayFields>).map((f) => (
               <Field key={f} label={k.riderPayFields[f]} name={`riderPay.${f}`} step="0.01" defaultValue={paiseToRupeeInput(template.riderPay[f])} />
             ))}
+            <Field
+              label={k.cashLimit}
+              name="riderPay.cashLimitPaise"
+              step="0.01"
+              optional
+              hint={k.cashLimitHint}
+              defaultValue={template.riderPay.cashLimitPaise == null ? '' : paiseToRupeeInput(template.riderPay.cashLimitPaise)}
+            />
+          </div>
+          {/* Incentives (ADR-032): a delivery target and its bonus, per day or per week. */}
+          <p className="mt-4 text-sm font-medium text-ink">{k.incentives}</p>
+          <p className="text-xs text-slate">{k.incentivesHint}</p>
+          <div className="mt-2 space-y-2" data-testid="incentives">
+            {Array.from({ length: 4 }, (_, i) => template.riderPay.incentives?.[i] ?? null).map((inc, i) => (
+              <div key={i} className="grid grid-cols-[1fr_1fr_8rem] gap-2">
+                <input aria-label={`${k.incentiveDeliveries} ${i + 1}`} name={`incentive.${i}.deliveries`} type="number" min={0} step="1" defaultValue={inc?.deliveries ?? ''} className={input} />
+                <input aria-label={`${k.incentiveBonus} ${i + 1}`} name={`incentive.${i}.bonus`} type="number" min={0} step="0.01" defaultValue={inc ? paiseToRupeeInput(inc.bonusPaise) : ''} className={input} />
+                <select aria-label={`${k.incentivePeriod} ${i + 1}`} name={`incentive.${i}.period`} defaultValue={inc?.period ?? 'day'} className={input}>
+                  <option value="day">{k.perDay}</option>
+                  <option value="week">{k.perWeek}</option>
+                </select>
+              </div>
+            ))}
           </div>
         </Section>
         <Section title={k.cod}>
