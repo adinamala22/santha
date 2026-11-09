@@ -88,3 +88,6 @@ It is compared with what quick-commerce delivery-partner apps commonly offer, su
   - photo proof of delivery;
   - rider selfie and licence-card uploads;
   - arrived at the customer, with a waiting timer.
+- Next steps 2 and 3 are done (ADR-031), in the PR `feat/rider-sos-earnings`:
+  - SOS, with 112 and the ops live board;
+  - earnings for the last 7 days.

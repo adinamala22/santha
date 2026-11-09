@@ -122,4 +122,14 @@ void main() {
     expect(o.hasLicencePhoto, isFalse);
     expect(o.done('selfie'), isTrue);
   });
+
+  test('ADR-031: 7-day earnings, oldest first', () {
+    final w = RiderWeek.fromJson(fixture('rider_week'));
+    expect(w.days, hasLength(7));
+    expect(w.days.first.date, DateTime.utc(2026, 11, 1));
+    expect(w.days.last.date, DateTime.utc(2026, 11, 7));
+    expect(w.totalPaise, w.days.fold<int>(0, (s, d) => s + d.earnedPaise));
+    expect(w.deliveries, 4);
+    expect(w.days[3].cashPaise, 31200);
+  });
 }

@@ -297,4 +297,7 @@ final earningsProvider = FutureProvider.autoDispose<RiderEarnings>((ref) {
   return ref.watch(riderApiProvider).earnings();
 });
 
+/// The last 7 IST days (ADR-031).
+final weekProvider = FutureProvider.autoDispose<RiderWeek>((ref) => ref.watch(riderApiProvider).earningsWeek());
+
 final payoutsProvider = FutureProvider.autoDispose<List<Payout>>((ref) => ref.watch(riderApiProvider).payouts());

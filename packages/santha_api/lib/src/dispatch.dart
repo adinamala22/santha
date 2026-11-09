@@ -370,6 +370,27 @@ class RiderEarnings {
   final List<Earning> deliveries;
 }
 
+/// One IST day of the 7-day earnings summary.
+class EarningDay {
+  const EarningDay(this.date, this.deliveries, this.earnedPaise, this.cashPaise);
+  factory EarningDay.fromJson(Json j) => EarningDay(DateTime.parse('${j['date']}T00:00:00Z'), j['deliveries'] as int, j['earnedPaise'] as int, j['cashPaise'] as int);
+  /// The IST calendar date (midnight UTC of that date; use only the y/m/d).
+  final DateTime date;
+  final int deliveries;
+  final int earnedPaise;
+  final int cashPaise;
+}
+
+/// GET /v1/riders/me/earnings/week: the last 7 IST days, oldest first.
+class RiderWeek {
+  const RiderWeek(this.totalPaise, this.deliveries, this.days);
+  factory RiderWeek.fromJson(Json j) =>
+      RiderWeek(j['totalPaise'] as int, j['deliveries'] as int, [for (final d in j['days'] as List) EarningDay.fromJson(d as Json)]);
+  final int totalPaise;
+  final int deliveries;
+  final List<EarningDay> days;
+}
+
 /// Rider app API. Errors: OFFER_EXPIRED (409), WRONG_CODE (422), NOT_READY (409).
 class RiderApi {
   RiderApi(this.client, {Dio? uploader}) : _uploader = uploader ?? Dio();
@@ -441,6 +462,15 @@ class RiderApi {
         );
         await _dio.post<Json>('/v1/riders/me/photos/$id/complete');
         return id;
+      });
+
+  Future<RiderWeek> earningsWeek() => _call(() async => RiderWeek.fromJson((await _dio.get<Json>('/v1/riders/me/earnings/week')).data!));
+
+  /// SOS (ADR-031): alerts Santha ops with the position and the delivery in hand. Returns the alert id; pressing
+  /// again returns the open alert.
+  Future<String> sos({double? lat, double? lng, bool called112 = false}) => _call(() async {
+        final r = await _dio.post<Json>('/v1/riders/me/sos', data: {'lat': ?lat, 'lng': ?lng, 'called112': called112});
+        return r.data!['id'] as String;
       });
 
   /// At the customer's door (ADR-030): the customer is told; the job shows when.

@@ -10,6 +10,7 @@ import { opsGet, opsLocale } from '@/lib/ops/server';
 import { forceSelf, reassignOrder } from './actions';
 import { AutoRefresh, type LivePoint, LiveMap } from './live-map';
 import { FailedDeliveryActions } from './failed-delivery-actions';
+import { SosDetails } from './sos-actions';
 import { ReassignForm } from './reassign-form';
 
 export const metadata = { title: 'Live orders' };
@@ -54,10 +55,22 @@ export default async function LivePage() {
           ) : (
             <ul className="space-y-3" data-testid="attention">
               {live.attention.map((a, i) => (
-                <li key={`${a.kind}-${a.orderId ?? a.merchantName}-${i}`} className={`rounded-md p-3 ${a.kind === 'auto_paused' ? 'bg-sky' : 'bg-marigold-100'}`}>
-                  <p className="text-ink">
-                    {fill(c.attention[a.kind], { code: a.code ?? '', min: a.minutes, store: a.merchantName, stage: c.stages[(a.stage ?? 'none') as keyof typeof c.stages] ?? a.stage ?? '' })}
+                <li
+                  key={`${a.kind}-${a.sos?.id ?? a.orderId ?? a.merchantName}-${i}`}
+                  data-testid={a.sos ? `sos-${a.sos.id}` : undefined}
+                  className={`rounded-md p-3 ${a.kind === 'rider_sos' ? 'border-2 border-chilli bg-chilli/10' : a.kind === 'auto_paused' ? 'bg-sky' : 'bg-marigold-100'}`}
+                >
+                  <p className={a.kind === 'rider_sos' ? 'font-semibold text-chilli' : 'text-ink'}>
+                    {fill(c.attention[a.kind], {
+                      code: a.code ?? '',
+                      min: a.minutes,
+                      store: a.merchantName,
+                      stage: c.stages[(a.stage ?? 'none') as keyof typeof c.stages] ?? a.stage ?? '',
+                      rider: a.sos?.riderName ?? '',
+                      order: a.code ? fill(c.sosOrder, { code: a.code }) : '',
+                    })}
                   </p>
+                  {a.sos ? <SosDetails sos={a.sos} locale={locale} /> : null}
                   {a.orderId ? (
                     <Link href={`/admin/orders/${a.orderId}`} className="text-sm text-indigo hover:underline s-focus">
                       {c.view} ›

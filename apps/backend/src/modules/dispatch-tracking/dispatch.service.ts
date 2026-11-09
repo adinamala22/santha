@@ -43,7 +43,7 @@ import {
   score,
   travelMin,
 } from './domain/dispatch';
-import {
+import { type RiderSosRecord,
   ACTIVE_STATES,
   DispatchRepository,
   type FulfilmentRecord,
@@ -942,6 +942,75 @@ export class DispatchService implements OnModuleInit {
     const since = r.payoutCadence === 'daily' ? today : new Date(today.getTime() - ((dow + 6) % 7) * 86_400_000);
     const delivered = await this.repo.deliveredForRider(r.userId, since);
     return delivered.filter((f) => f.mode === 'rider').reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0);
+  }
+
+  /** The last 7 IST days including today, oldest first: deliveries, pay and COD cash per day. */
+  async earningsWeek(userId: string): Promise<Array<{ date: string; deliveries: number; earnedPaise: number; cashPaise: number }>> {
+    const today = istDayStart(this.clock());
+    const since = new Date(today.getTime() - 6 * 86_400_000);
+    const delivered = (await this.repo.deliveredForRider(userId, since)).filter((f) => f.mode === 'rider');
+    return Array.from({ length: 7 }, (_, i) => {
+      const start = new Date(since.getTime() + i * 86_400_000);
+      const end = new Date(start.getTime() + 86_400_000);
+      const day = delivered.filter((f) => f.deliveredAt! >= start && f.deliveredAt! < end);
+      return {
+        date: new Date(start.getTime() + IST_MS).toISOString().slice(0, 10),
+        deliveries: day.length,
+        earnedPaise: day.reduce((s, f) => s + f.riderPayPaise, 0),
+        cashPaise: day.reduce((s, f) => s + (f.codCollectedPaise ?? 0), 0),
+      };
+    });
+  }
+
+  // ───────────── SOS (ADR-031) ─────────────
+
+  /**
+   * The rider pressed SOS: one open alert per rider (pressing again returns it), with the delivery in hand and
+   * the best position we have. Ops see it on the live board until they resolve it. Audited.
+   */
+  async sos(riderUserId: string, input: { lat?: number | undefined; lng?: number | undefined; called112?: boolean | undefined }): Promise<RiderSosRecord> {
+    const open = (await this.repo.openSos(riderUserId))[0];
+    if (open) return open;
+    const job = (await this.repo.activeFulfilments({ riderUserId }))[0] ?? null;
+    const pos = input.lat != null && input.lng != null ? { lat: input.lat, lng: input.lng } : await this.locations.get(riderUserId);
+    const s = await this.repo.createSos({
+      id: randomUUID(),
+      riderUserId,
+      fulfilmentId: job?.id ?? null,
+      lat: pos?.lat ?? null,
+      lng: pos?.lng ?? null,
+      called112: !!input.called112,
+    });
+    await this.repo.appendAudit({
+      entity: 'rider',
+      entityId: riderUserId,
+      action: 'rider.sos',
+      actorId: riderUserId,
+      after: { sosId: s.id, fulfilmentId: s.fulfilmentId, called112: s.called112, lat: s.lat, lng: s.lng },
+    });
+    this.logger.warn({ sosId: s.id, riderUserId, fulfilmentId: s.fulfilmentId }, 'rider SOS');
+    return s;
+  }
+
+  async resolveSos(id: string, actor: OpsActor, note: string | null): Promise<RiderSosRecord> {
+    const s = await this.repo.sos(id);
+    if (!s) throw new DomainError('NOT_FOUND', 'Alert not found');
+    const done = await this.repo.resolveSos(id, actor.userId, note, this.clock());
+    if (!done) throw new DomainError('INVALID_STATE', 'This alert was already resolved.');
+    await this.repo.appendAudit({
+      entity: 'rider',
+      entityId: s.riderUserId,
+      action: 'rider.sos_resolved',
+      actorId: actor.userId,
+      requestId: actor.requestId,
+      before: { sosId: id },
+      after: { note },
+    });
+    return done;
+  }
+
+  openSos(): Promise<RiderSosRecord[]> {
+    return this.repo.openSos();
   }
 
   async earnings(userId: string): Promise<{ deliveries: FulfilmentRecord[]; totalPaise: number }> {

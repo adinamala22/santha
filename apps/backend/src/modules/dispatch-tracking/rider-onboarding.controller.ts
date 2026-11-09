@@ -14,6 +14,7 @@ import {
 } from '../merchant-catalogue/dto/merchants.dto';
 import { RIDER_STATUSES, type RiderPhotoRecord, type RiderRecord, type RiderStatus } from './dispatch.repository';
 import { RiderPhotosService } from './rider-photos.service';
+import { DispatchService } from './dispatch.service';
 import {
   DrivingLicenceDto,
   OpsRiderDto,
@@ -133,6 +134,7 @@ export class OpsRidersController {
     private readonly onboarding: RiderOnboardingService,
     private readonly auth: AuthService,
     private readonly photos: RiderPhotosService,
+    private readonly dispatch: DispatchService,
   ) {}
 
   private async row(r: RiderRecord) {
@@ -157,7 +159,17 @@ export class OpsRidersController {
       ...(await this.row(v.rider)),
       selfieUrl: await this.photos.url(v.photos.selfie),
       licenceUrl: await this.photos.url(v.photos.licence),
+      openSos: await this.openSos(v.rider.userId),
+      phoneForOps: (await this.auth.me(v.rider.userId)).phone,
     };
+  }
+
+  private async openSos(userId: string) {
+    const s = (await this.dispatch.openSos()).find((x) => x.riderUserId === userId);
+    if (!s) return null;
+    const f = s.fulfilmentId ? await this.dispatch.fulfilmentById(s.fulfilmentId) : null;
+    const code = f ? ((await this.dispatch.context(f)).order.code ?? null) : null;
+    return { id: s.id, createdAt: s.createdAt.toISOString(), lat: s.lat, lng: s.lng, called112: s.called112, orderCode: code };
   }
 
   @Get()

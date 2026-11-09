@@ -442,5 +442,35 @@
   },
   "waitingLongHint": "Call the customer again. If they still don't answer, report Couldn't deliver.",
   "deliverWithPhoto": "Leave at the door with a photo",
-  "deliverWithPhotoHint": "Only if the customer asked for no contact. Place the order safely at the door and take a photo that shows it; the customer sees the photo."
+  "deliverWithPhotoHint": "Only if the customer asked for no contact. Place the order safely at the door and take a photo that shows it; the customer sees the photo.",
+  "cancel": "Cancel",
+  "sosTitle": "Emergency help",
+  "sosBody": "In danger, hurt or in an accident? Call 112 for police, ambulance or fire. Santha support is alerted with your location either way.",
+  "sosCall112": "Call 112",
+  "sosAlertOnly": "Alert Santha only",
+  "sosSent": "Santha support has been alerted and will call you.",
+  "sosFailed": "Could not alert Santha (no network). Call 112 if you need help now.",
+  "weekTitle": "Last 7 days",
+  "weekTotal": "{amount} from {count} deliveries",
+  "@weekTotal": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekDay": "{amount} · {count}",
+  "@weekDay": {
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }
