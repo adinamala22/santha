@@ -319,3 +319,20 @@ export class OpsLiveDto extends createZodDto(
   }),
 ) {}
 export class OpsDeliveryDto extends createZodDto(OpsDeliverySchema) {}
+
+/** What happened at the door, for disputes (ADR-033). The photo link is short-lived and for ops only. */
+export class OpsDeliveryProofDto extends createZodDto(
+  z.object({
+    orderId: z.uuid(),
+    mode: z.enum(['self', 'rider', 'tpl']).nullable(),
+    state: z.enum(['searching', 'assigned', 'picked_up', 'delivered', 'failed', 'cancelled']).nullable(),
+    courier: z.string().nullable(),
+    arrivedDropAt: iso.nullable(),
+    deliveredAt: iso.nullable(),
+    failedAt: iso.nullable(),
+    waitedMinutes: int.nullable().describe('From the courier reaching the door to the delivery or the failed attempt'),
+    proof: z.enum(['otp', 'photo']).nullable().describe('How the handover was confirmed'),
+    photoUrl: z.string().nullable().describe('The door photo: a link that expires in 5 minutes'),
+    codCollectedPaise: int.nullable(),
+  }),
+) {}

@@ -15,6 +15,14 @@ describe('parseEnv', () => {
     expect(env.JWT_REFRESH_TTL_SEC).toBe(30 * 24 * 3600);
   });
 
+  it('OPS_ALERT_PHONES (ADR-034) takes a comma-separated list with country codes and refuses anything else', () => {
+    expect(parseEnv(base).OPS_ALERT_PHONES).toBe('');
+    expect(() => parseEnv({ ...base, OPS_ALERT_PHONES: '+919811100001, +919811100002' })).not.toThrow();
+    expect(() => parseEnv({ ...base, OPS_ALERT_PHONES: '9811100001' })).toThrow(/OPS_ALERT_PHONES/);
+    expect(() => parseEnv({ ...base, OPS_ALERT_PHONES: '+91 98111 00001' })).toThrow(/OPS_ALERT_PHONES/);
+    expect(() => parseEnv({ ...base, OPS_SOS_REPAGE_SEC: '-1' })).toThrow(/OPS_SOS_REPAGE_SEC/);
+  });
+
   it('fails with a readable message on missing values', () => {
     expect(() => parseEnv({})).toThrow(/JWT_ACCESS_SECRET/);
     expect(() => parseEnv({ ...base, DATABASE_URL: undefined })).toThrow(/DATABASE_URL: required when DATA_STORE=postgres/);

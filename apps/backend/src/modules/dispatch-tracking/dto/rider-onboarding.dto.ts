@@ -60,7 +60,15 @@ export class OpsRiderDto extends createZodDto(
     selfieUrl: z.string().nullable().describe('Short-lived link (5 min)'),
     licenceUrl: z.string().nullable().describe('Short-lived link (5 min) to the licence card photo'),
     openSos: z
-      .object({ id: z.uuid(), createdAt: iso, lat: z.number().nullable(), lng: z.number().nullable(), called112: z.boolean(), orderCode: z.string().nullable() })
+      .object({
+        id: z.uuid(),
+        createdAt: iso,
+        lat: z.number().nullable(),
+        lng: z.number().nullable(),
+        called112: z.boolean(),
+        orderCode: z.string().nullable(),
+        paging: z.object({ phones: z.number().int(), reached: z.number().int(), at: iso.nullable() }).describe('On-call phones set, reached by the latest page, and when (ADR-034)'),
+      })
       .nullable()
       .describe('An SOS not yet resolved (ADR-031)'),
     phoneForOps: z.string().describe('Full phone number, so ops can call the rider back (ops roles only)'),

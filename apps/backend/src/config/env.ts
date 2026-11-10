@@ -19,6 +19,18 @@ const EnvObject = z.object({
     LAUNCH_STAGE: z.enum(['prelaunch', 'live']).default('live'),
     /** Ops console second factor. off (password only) is allowed only before launch (ADR-024). */
     OPS_LOGIN_OTP: z.enum(['required', 'off']).default('required'),
+    /**
+     * Phones Santha pages (an SMS and an automated call each) when a rider presses SOS, comma-separated with the
+     * country code, e.g. +919876543210 (ADR-034). Empty: nobody is paged and ops rely on the console alone.
+     */
+    OPS_ALERT_PHONES: z
+      .string()
+      .default('')
+      .refine((v) => v.split(',').map((x) => x.trim()).filter(Boolean).every((x) => /^\+\d{10,15}$/.test(x)), 'comma-separated phone numbers like +919876543210'),
+    /** Language of the on-call SOS page. */
+    OPS_ALERT_LOCALE: z.enum(['en', 'te']).default('en'),
+    /** Page again when an SOS is still open after this many seconds (0 = never). */
+    OPS_SOS_REPAGE_SEC: z.coerce.number().int().min(0).max(3600).default(180),
     PORT: z.coerce.number().int().positive().default(4000),
     LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace']).default('info'),
     CORS_ORIGINS: z.string().default('http://localhost:3000'),

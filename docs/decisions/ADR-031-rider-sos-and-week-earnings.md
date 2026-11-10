@@ -19,7 +19,7 @@
   - ops resolve it there with a note of what happened (`POST /v1/ops/sos/:id/resolve`, audited as `rider.sos_resolved`; resolving twice gives 409);
   - the resolve form is on the rider page because the live board refreshes itself and would reset a half-written note.
 - **The rider's full phone number** is shown to ops roles on the rider page so they can call back in an emergency. Masking rules apply between customers, stores and riders, not to Santha ops.
-- **Not yet:** paging an on-call phone (SMS or call) when an SOS arrives. Today ops must have the console open. Add `OPS_ALERT_PHONE` with the call-masking provider once on-call duty is staffed.
+- Paging an on-call phone (SMS and call) when an SOS arrives is done in ADR-034 (`OPS_ALERT_PHONES`).
 
 ## 7-day earnings
 

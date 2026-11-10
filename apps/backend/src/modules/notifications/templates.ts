@@ -107,6 +107,15 @@ export const TEMPLATES = {
     en: { title: 'Your rider account is paused', body: '{reason} Contact Santha support in the app.' },
     te: { title: 'మీ రైడర్ ఖాతా నిలిపివేయబడింది', body: '{reason} యాప్‌లో సంత సపోర్ట్‌ను సంప్రదించండి.' },
   },
+  // Santha on-call page when a rider presses SOS (ADR-034)
+  'ops.rider_sos': {
+    en: { title: 'Santha SOS', body: 'Rider {rider} pressed SOS. {where} Call them on {phone}, then open the ops console.' },
+    te: { title: 'సంత SOS', body: 'రైడర్ {rider} SOS నొక్కారు. {where} {phone}కు కాల్ చేసి, ఆపై ఆప్స్ కన్సోల్ తెరవండి.' },
+  },
+  'ops.rider_sos_again': {
+    en: { title: 'Santha SOS still open', body: 'The SOS from rider {rider} is still open after {minutes} min. Call them on {phone} and resolve it in the ops console.' },
+    te: { title: 'సంత SOS ఇంకా తెరిచే ఉంది', body: 'రైడర్ {rider} SOS {minutes} నిమిషాల తర్వాత కూడా తెరిచే ఉంది. {phone}కు కాల్ చేసి, ఆప్స్ కన్సోల్‌లో పరిష్కరించండి.' },
+  },
   'support.reply': {
     en: { title: 'Santha support replied', body: 'Open the app to read the reply and continue the chat.' },
     te: { title: 'సంత సపోర్ట్ సమాధానం ఇచ్చింది', body: 'సమాధానం చదవడానికి, చాట్ కొనసాగించడానికి యాప్ తెరవండి.' },

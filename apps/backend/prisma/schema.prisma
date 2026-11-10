@@ -981,6 +981,9 @@ model RiderSos {
   resolvedAt   DateTime? @map("resolved_at") @db.Timestamptz(6)
   resolvedBy   String?   @map("resolved_by") @db.Uuid
   note         String?
+  /// On-call phones reached by the latest page (ADR-034), and when.
+  pagedCount   Int       @default(0) @map("paged_count")
+  pagedAt      DateTime? @map("paged_at") @db.Timestamptz(6)
 
   @@index([resolvedAt])
   @@index([riderUserId])

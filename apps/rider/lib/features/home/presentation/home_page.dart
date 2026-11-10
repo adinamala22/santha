@@ -11,6 +11,7 @@ import '../../../l10n/gen/app_localizations.dart';
 import '../../onboarding/onboarding_view.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import 'offline_banner.dart';
 import 'sos.dart';
 import '../../../support.dart';
 
@@ -53,6 +54,7 @@ class HomePage extends ConsumerWidget {
             key: const ValueKey('rider-home'),
             padding: const EdgeInsets.all(SanthaSpacing.s4),
             children: [
+              const OfflineBanner(),
               if (h.offer != null) _OfferCard(offer: h.offer!),
               for (final j in h.jobs) _JobTile(job: j),
               if (h.offer == null && h.jobs.isEmpty)

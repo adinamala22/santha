@@ -65,6 +65,9 @@ export interface RiderSosRecord {
   resolvedAt: Date | null;
   resolvedBy: string | null;
   note: string | null;
+  /** On-call phones reached by the last page (ADR-034), and when. */
+  pagedCount: number;
+  pagedAt: Date | null;
 }
 
 /** Cash a rider handed over to Santha (ADR-032). */
@@ -188,12 +191,14 @@ export abstract class DispatchRepository {
   /** Deposits from `since` (inclusive), oldest first. */
   abstract deposits(riderUserId: string, since: Date): Promise<RiderCashDepositRecord[]>;
 
-  abstract createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>): Promise<RiderSosRecord>;
+  abstract createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note' | 'pagedCount' | 'pagedAt'>): Promise<RiderSosRecord>;
   abstract sos(id: string): Promise<RiderSosRecord | null>;
   /** Open SOS alerts (all riders, or one), oldest first. */
   abstract openSos(riderUserId?: string): Promise<RiderSosRecord[]>;
   /** Compare-and-set: only an open alert is resolved; null when it already was. */
   abstract resolveSos(id: string, by: string, note: string | null, at: Date): Promise<RiderSosRecord | null>;
+  /** Remember how many on-call phones the latest page reached (ADR-034). */
+  abstract markSosPaged(id: string, count: number, at: Date): Promise<void>;
 }
 
 const asStates = (e: FulfilmentState | readonly FulfilmentState[]) => (typeof e === 'string' ? [e] : [...e]);
@@ -387,7 +392,7 @@ export class PrismaDispatchRepository extends DispatchRepository {
     return n.count ? this.photo(id) : null;
   }
 
-  createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>) {
+  createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note' | 'pagedCount' | 'pagedAt'>) {
     return this.prisma.riderSos.create({ data: s });
   }
 
@@ -405,6 +410,10 @@ export class PrismaDispatchRepository extends DispatchRepository {
 
   openSos(riderUserId?: string) {
     return this.prisma.riderSos.findMany({ where: { resolvedAt: null, ...(riderUserId ? { riderUserId } : {}) }, orderBy: { createdAt: 'asc' } });
+  }
+
+  async markSosPaged(id: string, count: number, at: Date) {
+    await this.prisma.riderSos.updateMany({ where: { id }, data: { pagedCount: count, pagedAt: at } });
   }
 
   async resolveSos(id: string, by: string, note: string | null, at: Date) {
@@ -644,8 +653,8 @@ export class InMemoryDispatchRepository extends DispatchRepository {
 
   private readonly sosRows = new Map<string, RiderSosRecord>();
 
-  async createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note'>) {
-    const row: RiderSosRecord = { ...s, createdAt: new Date(), resolvedAt: null, resolvedBy: null, note: null };
+  async createSos(s: Omit<RiderSosRecord, 'createdAt' | 'resolvedAt' | 'resolvedBy' | 'note' | 'pagedCount' | 'pagedAt'>) {
+    const row: RiderSosRecord = { ...s, createdAt: new Date(), resolvedAt: null, resolvedBy: null, note: null, pagedCount: 0, pagedAt: null };
     this.sosRows.set(s.id, row);
     return structuredClone(row);
   }
@@ -661,6 +670,11 @@ export class InMemoryDispatchRepository extends DispatchRepository {
         .filter((s) => !s.resolvedAt && (!riderUserId || s.riderUserId === riderUserId))
         .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()),
     );
+  }
+
+  async markSosPaged(id: string, count: number, at: Date) {
+    const r = this.sosRows.get(id);
+    if (r) this.sosRows.set(id, { ...r, pagedCount: count, pagedAt: at });
   }
 
   async resolveSos(id: string, by: string, note: string | null, at: Date) {
