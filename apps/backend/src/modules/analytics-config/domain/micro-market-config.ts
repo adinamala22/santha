@@ -140,7 +140,7 @@ export const DEFAULT_CONFIG: Omit<MicroMarketConfig, 'polygon'> = {
   },
   cod: { enabled: true, maxOrderPaise: 150000, allowedTypes: ['retail', 'fashion'] },
   sla: { merchantAcceptSec: 20, merchantAcceptHardSec: 120, etaBufferMin: 8, riderFallbackMin: 5, staleCatalogueHours: 72 },
-  riderPay: { basePaise: 3000, perKmPaise: 700, waitPerMinPaise: 100, batchBonusPaise: 1500, cashLimitPaise: null, incentives: [] },
+  riderPay: { basePaise: 3000, perKmPaise: 500, waitPerMinPaise: 100, batchBonusPaise: 1500, cashLimitPaise: null, incentives: [] },
   discovery: DEFAULT_DISCOVERY,
 };
 
