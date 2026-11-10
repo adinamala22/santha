@@ -150,22 +150,24 @@ export interface RiderDelivery {
 }
 
 /**
- * Rider payout = delivery pay (tips included) + incentive bonuses − COD cash collected + cash already deposited with
+ * Rider payout = delivery pay (tips included) + incentive bonuses + tips paid after the delivery (ADR-037) − COD cash collected + cash already deposited with
  * Santha + adjustments (may be negative: the rider owes cash). ADR-032 adds incentives and deposits.
  */
-export function computeRiderPayout(deliveries: readonly RiderDelivery[], adjustmentsPaise = 0, extra: { incentivesPaise?: number; depositsPaise?: number } = {}) {
+export function computeRiderPayout(deliveries: readonly RiderDelivery[], adjustmentsPaise = 0, extra: { incentivesPaise?: number; depositsPaise?: number; lateTipsPaise?: number } = {}) {
   const earned = deliveries.reduce((s, d) => s + d.payPaise, 0);
   const cash = deliveries.reduce((s, d) => s + d.codCollectedPaise, 0);
   const incentives = extra.incentivesPaise ?? 0;
   const deposits = extra.depositsPaise ?? 0;
+  const lateTips = extra.lateTipsPaise ?? 0;
   return {
     deliveries: deliveries.length,
     earnedPaise: earned,
     incentivesPaise: incentives,
+    lateTipsPaise: lateTips,
     cashHeldPaise: cash,
     depositsPaise: deposits,
     adjustmentsPaise,
-    netPaise: earned + incentives - cash + deposits + adjustmentsPaise,
+    netPaise: earned + incentives + lateTips - cash + deposits + adjustmentsPaise,
   };
 }
 

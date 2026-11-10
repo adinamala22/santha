@@ -207,13 +207,16 @@ export class SettlementService implements OnModuleInit {
       const delivered = (await this.dispatch.deliveredForRider(r.userId, start)).filter((f) => f.deliveredAt! < end && f.mode === 'rider');
       const carried = await this.carried('rider', r.userId, start);
       const deposits = await this.dispatch.depositsFor(r.userId, start, end);
-      if (!delivered.length && !carried && !deposits.length) continue;
+      // Tips paid after the delivery (ADR-037) are credited in the period they were paid, 100% to the rider.
+      const lateTips = await this.dispatch.lateTipsFor(r.userId, start, end);
+      if (!delivered.length && !carried && !deposits.length && !lateTips.length) continue;
       const lines: RiderDelivery[] = [];
       for (const f of delivered) lines.push({ orderId: f.orderId, code: (await this.orders.get(f.orderId))?.code ?? '', payPaise: f.riderPayPaise, codCollectedPaise: f.codCollectedPaise ?? 0 });
       const incentives = await this.dispatch.incentivesEarned(r, start, end);
       const p = computeRiderPayout(lines, carried?.netPaise ?? 0, {
         incentivesPaise: incentives.reduce((s, i) => s + i.bonusPaise, 0),
         depositsPaise: deposits.reduce((s, d) => s + d.amountPaise, 0),
+        lateTipsPaise: lateTips.reduce((s, t) => s + t.amountPaise, 0),
       });
       const payout = await this.save(run, 'rider', r.userId, null, p.earnedPaise, p.netPaise, lines, { ...p }, 0, 0);
       if (carried) await this.repo.updatePayout(carried.id, { transferRef: `carried:${payout.id}` });
@@ -262,7 +265,7 @@ export class SettlementService implements OnModuleInit {
     } else {
       out.push('Order          Pay        COD cash held');
       for (const l of p.lines as RiderDelivery[]) out.push(`${l.code.padEnd(14)} ${rs(l.payPaise).padStart(10)} ${rs(l.codCollectedPaise).padStart(14)}`);
-      out.push('', `Earned ${rs(t.earnedPaise ?? 0)}   Incentives ${rs(t.incentivesPaise ?? 0)}   Cash held ${rs(t.cashHeldPaise ?? 0)}   Deposited ${rs(t.depositsPaise ?? 0)}   Carried ${rs(t.adjustmentsPaise ?? 0)}`);
+      out.push('', `Earned ${rs(t.earnedPaise ?? 0)}   Incentives ${rs(t.incentivesPaise ?? 0)}   Tips after delivery ${rs(t.lateTipsPaise ?? 0)}   Cash held ${rs(t.cashHeldPaise ?? 0)}   Deposited ${rs(t.depositsPaise ?? 0)}   Carried ${rs(t.adjustmentsPaise ?? 0)}`);
     }
     out.push('', `NET PAYABLE ${rs(p.netPaise)}${p.netPaise <= 0 ? '  (nothing to transfer; a negative balance is carried to the next payout)' : ''}`);
     const key = `statements/${p.partyType}/${p.partyId}/${istDate(p.periodStart)}-${p.id.slice(0, 8)}.pdf`;

@@ -172,6 +172,26 @@ export function paymentsRepositoryContract(name: string, make: () => Promise<Pay
       expect((await repo.intentForOrder(i.orderId))!.id).toBe(i.id);
     });
 
+    it('ADR-037: a tip payment is captured once, found by order and provider order, and listed by rider and day', async () => {
+      const repo = await make();
+      const rider = randomUUID();
+      const t = await repo.transaction((tx) => tx.insertTip({ id: randomUUID(), orderId: randomUUID(), userId: randomUUID(), riderUserId: rider, microMarketId: randomUUID(), amountPaise: 2000, currency: 'INR', provider: 'mock', providerOrderId: `order_${randomUUID()}` }));
+      expect(t.status).toBe('created');
+      await repo.transaction((tx) => tx.noteTipFailure(t.id, 'declined'));
+      expect((await repo.getTip(t.id))!.failureReason).toBe('declined');
+      expect(await repo.capturedTipsForRider(rider, new Date(0), new Date(Date.now() + 60_000))).toEqual([]);
+      const at = new Date();
+      expect(await repo.transaction((tx) => tx.markTipCaptured(t.id, 'pay_t1', at))).toBe(true);
+      expect(await repo.transaction((tx) => tx.markTipCaptured(t.id, 'pay_t2', at))).toBe(false);
+      expect(await repo.tipByProviderOrder(t.providerOrderId)).toMatchObject({ status: 'captured', providerPaymentId: 'pay_t1' });
+      expect((await repo.tipsForOrder(t.orderId)).map((x) => x.id)).toEqual([t.id]);
+      expect((await repo.capturedTipsForRider(rider, new Date(at.getTime() - 1000), new Date(at.getTime() + 1000))).map((x) => x.id)).toEqual([t.id]);
+      expect(await repo.capturedTipsForRider(rider, new Date(at.getTime() + 1000), new Date(at.getTime() + 2000))).toEqual([]); // outside the window
+      expect((await repo.capturedTipsBetween(new Date(at.getTime() - 1000), new Date(at.getTime() + 1000))).some((x) => x.id === t.id)).toBe(true);
+      // The provider order id is unique.
+      await expect(repo.transaction((tx) => tx.insertTip({ id: randomUUID(), orderId: t.orderId, userId: t.userId, riderUserId: rider, microMarketId: t.microMarketId, amountPaise: 1000, currency: 'INR', provider: 'mock', providerOrderId: t.providerOrderId }))).rejects.toBeTruthy();
+    });
+
     it('webhooks dedupe on (provider, event id); wallet balance sums entries', async () => {
       const repo = await make();
       const evt = `evt_${randomUUID()}`;

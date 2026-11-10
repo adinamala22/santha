@@ -48,6 +48,11 @@ class FakeBackend implements HttpClientAdapter {
   /// The choice saved on the delivery address (ADR-036).
   bool savedLeaveAtDoor = false;
 
+  /// Tip after delivery (ADR-037): what the server says, and what was sent / paid.
+  bool tipAllowed = true;
+  int tippedPaise = 0;
+  Map<String, dynamic>? lastTipBody;
+
   // M6 state: the tracking response (null → 404 until the store accepts).
   Map<String, dynamic>? tracking;
   bool cancelledNoCourier = false;
@@ -166,6 +171,23 @@ class FakeBackend implements HttpClientAdapter {
           return (201, _rating()!);
         })(),
       final r when r.startsWith('GET /v1/orders/') && r.endsWith('/rating') => (200, {'rating': _rating()}),
+      final r when r.startsWith('GET /v1/orders/') && r.endsWith('/tip') => (200, {
+          'canTip': tipAllowed && tippedPaise == 0,
+          'reason': tippedPaise > 0 ? 'already_tipped' : (tipAllowed ? 'ok' : 'window_closed'),
+          'until': null,
+          'tippedPaise': tippedPaise,
+          'choicesPaise': [1000, 2000, 3000, 5000, 10000],
+          'minPaise': 1000,
+          'maxPaise': 20000,
+        }),
+      final r when r.startsWith('POST /v1/orders/') && r.endsWith('/tip') => (() {
+          lastTipBody = Map<String, dynamic>.from(o.data as Map);
+          return (200, {'intentId': 'tip-1', 'provider': 'mock', 'providerOrderId': 'order_tip_1', 'keyId': null, 'amountPaise': lastTipBody!['amountPaise'], 'currency': 'INR', 'status': 'created', 'lastFailure': null});
+        })(),
+      'POST /v1/dev/tips/tip-1/succeed' => (() {
+          tippedPaise = lastTipBody!['amountPaise'] as int;
+          return (200, {'intentId': 'tip-1', 'provider': 'mock', 'providerOrderId': 'order_tip_1', 'keyId': null, 'amountPaise': tippedPaise, 'currency': 'INR', 'status': 'captured', 'lastFailure': null});
+        })(),
       final r when r.startsWith('GET /v1/orders/') => (200, _order()),
       final r when r.startsWith('POST /v1/orders/') && r.endsWith('/cancel') => _order()['state'] == 'PLACED'
           ? (200, (() {
@@ -365,7 +387,8 @@ Future<Harness> pumpAtHome(WidgetTester tester, {String locale = 'en', Map<Strin
 
 /// Taps a widget after scrolling it into view (the test font is wider than Poppins).
 Future<void> tapVisible(WidgetTester tester, Finder f) async {
-  await tester.ensureVisible(f);
+  // Centre it: at the edge it can sit under a pinned app bar and the tap would hit that instead.
+  await Scrollable.ensureVisible(tester.element(f), alignment: 0.5);
   await settle(tester, 4);
   await tester.tap(f);
   await settle(tester);

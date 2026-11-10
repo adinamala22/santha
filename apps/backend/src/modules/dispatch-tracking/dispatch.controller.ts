@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiHeader, ApiTags } from '@nestjs/swagger';
 import { ZodResponse } from 'nestjs-zod';
 import { type AuthUser, CurrentUser, Public, RequestId, Roles } from '../../common/auth/decorators';
 import { DomainError } from '../../common/errors/domain-error';
+import { PaymentDto } from '../orders/dto/orders.dto';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { DispatchService } from './dispatch.service';
 import { DispatchViews } from './dispatch.views';
@@ -33,6 +34,8 @@ import {
   StatementPreviewDto,
   StatementQueryDto,
   TrackingDto,
+  StartTipDto,
+  TipOfferDto,
 } from './dto/dispatch.dto';
 
 /** Rider app: status, location, offers and jobs. */
@@ -250,6 +253,19 @@ export class TrackingController {
   })
   tracking(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
     return this.views.tracking(u.userId, id);
+  }
+
+  @Get(':id/tip')
+  @ZodResponse({ type: TipOfferDto, description: 'Whether the customer can still tip the delivery partner after delivery, and the amounts (ADR-037)' })
+  tipOffer(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() u: AuthUser) {
+    return this.dispatch.tipOffer(u.userId, id);
+  }
+
+  @Post(':id/tip')
+  @HttpCode(200)
+  @ZodResponse({ type: PaymentDto, description: 'Starts a tip payment for a delivered order; pay it like an order, then confirm with POST /tips/{id}/confirm (ADR-037)' })
+  startTip(@Param('id', ParseUUIDPipe) id: string, @Body() b: StartTipDto, @CurrentUser() u: AuthUser) {
+    return this.dispatch.startTip(u.userId, id, b.amountPaise);
   }
 
   @Post(':id/cancel-no-courier')

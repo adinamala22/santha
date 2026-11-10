@@ -311,6 +311,30 @@ class Checkout {
 
 enum PaymentMethodChoice { online, cod }
 
+/// Whether the customer can still tip the delivery partner after delivery (ADR-037).
+class TipOffer {
+  const TipOffer({required this.canTip, required this.reason, required this.tippedPaise, required this.choicesPaise, required this.minPaise, required this.maxPaise, this.until});
+  factory TipOffer.fromJson(Json j) => TipOffer(
+        canTip: j['canTip'] as bool,
+        reason: j['reason'] as String,
+        until: _date(j['until']),
+        tippedPaise: j['tippedPaise'] as int,
+        choicesPaise: (j['choicesPaise'] as List).map((e) => e as int).toList(),
+        minPaise: j['minPaise'] as int,
+        maxPaise: j['maxPaise'] as int,
+      );
+
+  final bool canTip;
+
+  /// ok | not_delivered | no_rider | window_closed | already_tipped
+  final String reason;
+  final DateTime? until;
+  final int tippedPaise;
+  final List<int> choicesPaise;
+  final int minPaise;
+  final int maxPaise;
+}
+
 /// What the payment sheet needs (Razorpay checkout, or the dev mock sheet).
 class PaymentCheckout {
   const PaymentCheckout({
@@ -322,8 +346,9 @@ class PaymentCheckout {
     required this.status,
     this.keyId,
     this.lastFailure,
+    this.tip = false,
   });
-  factory PaymentCheckout.fromJson(Json j) => PaymentCheckout(
+  factory PaymentCheckout.fromJson(Json j, {bool tip = false}) => PaymentCheckout(
         intentId: j['intentId'] as String,
         provider: j['provider'] as String,
         providerOrderId: j['providerOrderId'] as String,
@@ -332,7 +357,11 @@ class PaymentCheckout {
         currency: j['currency'] as String,
         status: j['status'] as String,
         lastFailure: j['lastFailure'] as String?,
+        tip: tip,
       );
+
+  /// A tip paid after delivery (ADR-037): confirmed on /v1/tips, not /v1/payments.
+  final bool tip;
   final String intentId;
   /// razorpay | mock
   final String provider;

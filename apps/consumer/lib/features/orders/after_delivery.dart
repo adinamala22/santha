@@ -8,6 +8,7 @@ import '../../data/format.dart';
 import '../../data/order_providers.dart';
 import '../../data/providers.dart';
 import '../../l10n/gen/app_localizations.dart';
+import '../checkout/payment_sheet.dart';
 import 'tracking_view.dart';
 
 Duration? _noRetry(int retryCount, Object error) => null;
@@ -30,6 +31,9 @@ final issuesProvider = FutureProvider.autoDispose.family<List<Issue>, String>(re
 /// The customer's rating of this order (null until rated), so a rated order is not offered the stars again.
 final myRatingProvider = FutureProvider.autoDispose.family<OrderRating?, String>(retry: _noRetry, (ref, orderId) => ref.watch(checkoutApiProvider).myRating(orderId));
 
+/// Whether the delivery partner can still be tipped for this order (ADR-037); null until known.
+final tipOfferProvider = FutureProvider.autoDispose.family<TipOffer, String>(retry: _noRetry, (ref, orderId) => ref.watch(checkoutApiProvider).tipOffer(orderId));
+
 /// After delivery (M7): rate the store (and rider) once, and report a problem within the window.
 class AfterDelivery extends ConsumerStatefulWidget {
   const AfterDelivery({super.key, required this.order});
@@ -44,6 +48,7 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
   int _rider = 0;
   bool _rated = false;
   bool _sending = false;
+  bool _tipping = false;
   final _comment = TextEditingController();
 
   @override
@@ -76,11 +81,60 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
     messenger.showSnackBar(SnackBar(content: Text(l.rateThanks)));
   }
 
+  /// Tip after delivery (ADR-037): its own payment, 100% to the rider, within 24 hours of the delivery.
+  Future<void> _tip(int amountPaise) async {
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    setState(() => _tipping = true);
+    try {
+      final api = ref.read(checkoutApiProvider);
+      ref.read(analyticsProvider).track('tip_after_delivery_started', {'order_id': widget.order.id, 'amount_paise': amountPaise});
+      final payment = await api.startTip(widget.order.id, amountPaise);
+      if (!mounted) return;
+      final outcome = await ref.read(paymentSheetProvider).pay(context, widget.order, payment);
+      if (outcome is Paid) {
+        ref.read(analyticsProvider).track('tip_after_delivery_paid', {'order_id': widget.order.id, 'amount_paise': amountPaise});
+        messenger.showSnackBar(SnackBar(content: Text(l.tipLaterThanks)));
+      } else if (outcome is PaymentFailed) {
+        messenger.showSnackBar(SnackBar(content: Text(l.tipLaterNotPaid)));
+      }
+    } on ApiException {
+      messenger.showSnackBar(SnackBar(content: Text(l.tipLaterNotPaid)));
+    } finally {
+      ref.invalidate(tipOfferProvider(widget.order.id));
+      if (mounted) setState(() => _tipping = false);
+    }
+  }
+
+  Widget _tipSection(AppLocalizations l, TextTheme text, TipOffer offer) {
+    if (offer.tippedPaise > 0) {
+      return Padding(
+        padding: const EdgeInsets.only(bottom: SanthaSpacing.s4),
+        child: Text(l.tipLaterDone(rupees(offer.tippedPaise)), key: const ValueKey('tip-later-done'), style: text.bodyMedium?.copyWith(color: SanthaColors.leaf)),
+      );
+    }
+    if (!offer.canTip) return const SizedBox.shrink();
+    return Padding(
+      key: const ValueKey('tip-later'),
+      padding: const EdgeInsets.only(bottom: SanthaSpacing.s4),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text(l.tipLaterTitle, style: text.titleMedium),
+        Text(l.tipLaterNote, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+        const SizedBox(height: SanthaSpacing.s2),
+        Wrap(spacing: SanthaSpacing.s2, children: [
+          for (final t in offer.choicesPaise)
+            ActionChip(key: ValueKey('tip-later-$t'), label: Text(rupees(t)), onPressed: _tipping ? null : () => _tip(t)),
+        ]),
+      ]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context);
     final text = Theme.of(context).textTheme;
     final issues = ref.watch(issuesProvider(widget.order.id)).value ?? const [];
+    final tipOffer = ref.watch(tipOfferProvider(widget.order.id)).value;
     final riderDelivered = ref.watch(trackingProvider(widget.order.id)).value?.mode == DeliveryMode.rider;
     final mine = ref.watch(myRatingProvider(widget.order.id));
     // Until we know whether the order is rated, show neither the stars nor "Your rating".
@@ -116,6 +170,7 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
         ],
         const SizedBox(height: SanthaSpacing.s4),
       ],
+      if (tipOffer != null) _tipSection(l, text, tipOffer),
       for (final i in issues) _IssueOutcome(issue: i),
       if (canReportIssue(widget.order))
         SanthaButton(

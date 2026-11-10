@@ -1053,6 +1053,12 @@
   "tipNote": "100% of the tip goes to the person who brings your order.",
   "tipNone": "No tip",
   "billTip": "Tip for your delivery partner",
+  "tipLaterTitle": "Say thanks with a tip",
+  "tipLaterNote": "100% goes to the person who delivered your order. You can tip within 24 hours of delivery.",
+  "tipLaterDone": "You tipped {amount}. Thank you!",
+  "@tipLaterDone": {"placeholders": {"amount": {"type": "String"}}},
+  "tipLaterThanks": "Thank you! Your tip is on its way to your delivery partner.",
+  "tipLaterNotPaid": "The tip was not paid.",
   "leaveAtDoorTitle": "Leave at my door",
   "leaveAtDoorNote": "Prepaid orders only. Your delivery partner leaves the order at your door and sends you a photo.",
   "leaveAtDoorSave": "Leave my prepaid orders at the door"

@@ -836,6 +836,29 @@ model PaymentIntent {
   @@map("payment_intents")
 }
 
+/// A tip paid after the delivery (ADR-037): its own payment, 100% to the rider who delivered. Not part of the order bill.
+model TipPayment {
+  id                String        @id @db.Uuid
+  orderId           String        @map("order_id") @db.Uuid
+  userId            String        @map("user_id") @db.Uuid
+  riderUserId       String        @map("rider_user_id") @db.Uuid
+  microMarketId     String        @map("micro_market_id") @db.Uuid
+  amountPaise       Int           @map("amount_paise")
+  currency          String        @default("INR")
+  provider          String
+  providerOrderId   String        @unique @map("provider_order_id")
+  providerPaymentId String?       @map("provider_payment_id")
+  status            PaymentStatus
+  failureReason     String?       @map("failure_reason")
+  capturedAt        DateTime?     @map("captured_at") @db.Timestamptz(6)
+  createdAt         DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime      @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@index([orderId])
+  @@index([riderUserId, capturedAt])
+  @@map("tip_payments")
+}
+
 /// Raw provider webhooks, stored after signature verification and deduped by provider event id.
 model WebhookEvent {
   id              String    @id @default(uuid()) @db.Uuid

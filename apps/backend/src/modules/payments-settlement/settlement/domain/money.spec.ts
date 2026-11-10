@@ -46,13 +46,20 @@ describe('merchant payout', () => {
 describe('rider payout', () => {
   it('pay minus COD cash in hand; can go negative', () => {
     expect(computeRiderPayout([{ orderId: 'a', code: 'A', payPaise: 4_400, codCollectedPaise: 0 }, { orderId: 'b', code: 'B', payPaise: 5_000, codCollectedPaise: 20_000 }])).toEqual({
-      deliveries: 2, earnedPaise: 9_400, incentivesPaise: 0, cashHeldPaise: 20_000, depositsPaise: 0, adjustmentsPaise: 0, netPaise: -10_600,
+      deliveries: 2, earnedPaise: 9_400, incentivesPaise: 0, lateTipsPaise: 0, cashHeldPaise: 20_000, depositsPaise: 0, adjustmentsPaise: 0, netPaise: -10_600,
     });
   });
 
   it('ADR-032: incentive bonuses add; cash already deposited with Santha is not deducted twice', () => {
     const p = computeRiderPayout([{ orderId: 'b', code: 'B', payPaise: 5_000, codCollectedPaise: 20_000 }], 0, { incentivesPaise: 15_000, depositsPaise: 20_000 });
     expect(p).toMatchObject({ earnedPaise: 5_000, incentivesPaise: 15_000, cashHeldPaise: 20_000, depositsPaise: 20_000, netPaise: 20_000 });
+  });
+
+  it('ADR-037: tips paid after the delivery are added in full to the rider payout', () => {
+    const p = computeRiderPayout([{ orderId: 'a', code: 'A', payPaise: 4_400, codCollectedPaise: 0 }], 0, { lateTipsPaise: 3_000 });
+    expect(p).toMatchObject({ earnedPaise: 4_400, lateTipsPaise: 3_000, netPaise: 7_400 });
+    // A rider whose only income in the period is a late tip still gets a payout line.
+    expect(computeRiderPayout([], 0, { lateTipsPaise: 2_000 })).toMatchObject({ deliveries: 0, earnedPaise: 0, netPaise: 2_000 });
   });
 
   it("ADR-032: the tip is the store's only when its own staff delivered", () => {

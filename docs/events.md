@@ -61,3 +61,5 @@ Rider photos and door proof (ADR-030). Client (rider app): **arrived_customer**(
 Rider SOS and week earnings (ADR-031). Client (rider app): **sos_pressed**(called_112, has_location). Server: audit rider.sos (sosId, fulfilmentId, called112, position) and rider.sos_resolved (note); live board attention kind rider_sos (first in the list until resolved). GET /v1/riders/me/earnings/week has no event.
 
 Tips, incentives and the cash limit (ADR-032). Client (consumer app): **tip_selected**(tip_paise) at checkout; order_placed totals include the tip. Server: rider pay line code `tip`; audit rider.cash_deposit (amountPaise, note); rider payout totals incentivesPaise and depositsPaise; merchant statement column tipPaise (self delivery). Config: micro-market riderPay.cashLimitPaise and riderPay.incentives (versioned).
+
+Tip after delivery (ADR-037). Client (consumer app): **tip_after_delivery_started**(order_id, amount_paise) when a tip amount is chosen, **tip_after_delivery_paid**(order_id, amount_paise) when it is paid. Server events: tip.intent_created, tip.captured (the rider is notified; the payout adds lateTipsPaise).

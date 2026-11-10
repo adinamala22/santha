@@ -320,6 +320,22 @@ export class OpsLiveDto extends createZodDto(
 ) {}
 export class OpsDeliveryDto extends createZodDto(OpsDeliverySchema) {}
 
+/** Tip after delivery (ADR-037). */
+export class TipOfferDto extends createZodDto(
+  z.object({
+    canTip: z.boolean(),
+    reason: z
+      .enum(['ok', 'not_delivered', 'no_rider', 'window_closed', 'already_tipped'])
+      .describe('Why not: not delivered yet, delivered by the store own staff, more than 24 h ago, or already tipped'),
+    until: iso.nullable().describe('The last moment a tip can be paid'),
+    tippedPaise: int.describe('Tips already paid for this order after delivery'),
+    choicesPaise: z.array(int),
+    minPaise: int,
+    maxPaise: int,
+  }),
+) {}
+
+export class StartTipDto extends createZodDto(z.object({ amountPaise: int.min(1000).max(20_000).describe('Tip for the delivery partner, in paise (Rs 10 to Rs 200)') })) {}
 /** What happened at the door, for disputes (ADR-033). The photo link is short-lived and for ops only. */
 export class OpsDeliveryProofDto extends createZodDto(
   z.object({

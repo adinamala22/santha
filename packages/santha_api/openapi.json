@@ -4522,6 +4522,67 @@
         ]
       }
     },
+    "/v1/tips/{id}/confirm": {
+      "post": {
+        "operationId": "PaymentsController_confirmTip",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmPaymentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Tip payment sheet success callback (signature verified); same shape as an order payment (ADR-037)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "payments"
+        ]
+      }
+    },
     "/v1/wallet": {
       "get": {
         "operationId": "PaymentsController_wallet",
@@ -5573,6 +5634,100 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/TrackingDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      }
+    },
+    "/v1/orders/{id}/tip": {
+      "get": {
+        "operationId": "TrackingController_tipOffer",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "Whether the customer can still tip the delivery partner after delivery, and the amounts (ADR-037)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TipOfferDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "orders"
+        ]
+      },
+      "post": {
+        "operationId": "TrackingController_startTip",
+        "parameters": [
+          {
+            "name": "X-Device-Id",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartTipDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "default": {
+            "description": "Starts a tip payment for a delivered order; pay it like an order, then confirm with POST /tips/{id}/confirm (ADR-037)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentDto_Output"
                 }
               }
             }
@@ -24183,8 +24338,8 @@
             "type": "string"
           },
           "keyId": {
-            "type": "string",
             "description": "Razorpay key id for the checkout SDK (null for the mock)",
+            "type": "string",
             "nullable": true
           },
           "amountPaise": {
@@ -25548,6 +25703,78 @@
           "proofPhotoUrl"
         ],
         "additionalProperties": false
+      },
+      "TipOfferDto_Output": {
+        "type": "object",
+        "properties": {
+          "canTip": {
+            "type": "boolean"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "ok",
+              "not_delivered",
+              "no_rider",
+              "window_closed",
+              "already_tipped"
+            ],
+            "description": "Why not: not delivered yet, delivered by the store own staff, more than 24 h ago, or already tipped"
+          },
+          "until": {
+            "type": "string",
+            "description": "The last moment a tip can be paid",
+            "nullable": true
+          },
+          "tippedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "Tips already paid for this order after delivery"
+          },
+          "choicesPaise": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "minPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "maxPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "canTip",
+          "reason",
+          "until",
+          "tippedPaise",
+          "choicesPaise",
+          "minPaise",
+          "maxPaise"
+        ],
+        "additionalProperties": false
+      },
+      "StartTipDto": {
+        "type": "object",
+        "properties": {
+          "amountPaise": {
+            "type": "integer",
+            "minimum": 1000,
+            "maximum": 20000,
+            "description": "Tip for the delivery partner, in paise (Rs 10 to Rs 200)"
+          }
+        },
+        "required": [
+          "amountPaise"
+        ]
       },
       "MerchantDeliveryListDto_Output": {
         "type": "object",

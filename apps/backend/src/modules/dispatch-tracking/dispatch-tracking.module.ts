@@ -16,6 +16,7 @@ import { IdentityKycModule } from '../identity-kyc/identity-kyc.module';
 import { MerchantCatalogueModule } from '../merchant-catalogue/merchant-catalogue.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { OrdersModule } from '../orders/orders.module';
+import { PaymentsSettlementModule } from '../payments-settlement/payments-settlement.module';
 import {
   MerchantDeliveriesController,
   OpsDispatchController,
@@ -47,6 +48,7 @@ import { RiderPhotosService } from './rider-photos.service';
     AnalyticsConfigModule,
     IdentityKycModule,
     NotificationsModule,
+    PaymentsSettlementModule,
   ],
   controllers: [
     RiderController,

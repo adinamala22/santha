@@ -5,7 +5,7 @@ import type { Env } from '../../config/env';
 import { FakeSinks } from '../../infra/fake/fake-sinks';
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { MockPaymentsProvider, PaymentsProvider, RazorpayProvider } from '../../infra/providers/payments/payments.provider';
-import { DevPaymentsController, PaymentsController, WebhooksController } from './payments.controller';
+import { DevPaymentsController, DevTipsController, PaymentsController, WebhooksController } from './payments.controller';
 import { InMemoryPaymentsRepository, PaymentsRepository, PrismaPaymentsRepository } from './payments.repository';
 import { PaymentsService } from './payments.service';
 
@@ -16,7 +16,7 @@ import { PaymentsService } from './payments.service';
  * Owns payment_intents, webhook_events, wallet_entries.
  */
 @Module({
-  controllers: [PaymentsController, WebhooksController, DevPaymentsController],
+  controllers: [PaymentsController, WebhooksController, DevPaymentsController, DevTipsController],
   providers: [
     PaymentsService,
     IdempotencyService,

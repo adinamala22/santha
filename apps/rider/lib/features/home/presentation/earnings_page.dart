@@ -49,7 +49,10 @@ class EarningsPage extends ConsumerWidget {
               key: ValueKey('payout-${p.id}'),
               child: ListTile(
                 title: Text(l.payoutPeriod(day(p.periodStart), day(p.periodEnd.subtract(const Duration(seconds: 1))), rupees(p.netPaise))),
-                subtitle: Text(l.payoutBreakdown(rupees(p.total('earnedPaise')), rupees(p.total('cashHeldPaise')))),
+                subtitle: Text([
+                  l.payoutBreakdown(rupees(p.total('earnedPaise')), rupees(p.total('cashHeldPaise'))),
+                  if (p.total('lateTipsPaise') > 0) l.payoutLateTips(rupees(p.total('lateTipsPaise'))),
+                ].join('\n')),
               ),
             ),
         ]),

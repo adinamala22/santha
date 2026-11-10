@@ -1364,6 +1364,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/tips/{id}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["PaymentsController_confirmTip"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/wallet": {
         parameters: {
             query?: never;
@@ -1758,6 +1774,22 @@ export interface paths {
         get: operations["TrackingController_tracking"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/orders/{id}/tip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["TrackingController_tipOffer"];
+        put?: never;
+        post: operations["TrackingController_startTip"];
         delete?: never;
         options?: never;
         head?: never;
@@ -6952,6 +6984,25 @@ export interface components {
             /** @description Delivered with a door photo: a short-lived link to it (ADR-030) */
             proofPhotoUrl: string | null;
         };
+        TipOfferDto_Output: {
+            canTip: boolean;
+            /**
+             * @description Why not: not delivered yet, delivered by the store own staff, more than 24 h ago, or already tipped
+             * @enum {string}
+             */
+            reason: "ok" | "not_delivered" | "no_rider" | "window_closed" | "already_tipped";
+            /** @description The last moment a tip can be paid */
+            until: string | null;
+            /** @description Tips already paid for this order after delivery */
+            tippedPaise: number;
+            choicesPaise: number[];
+            minPaise: number;
+            maxPaise: number;
+        };
+        StartTipDto: {
+            /** @description Tip for the delivery partner, in paise (Rs 10 to Rs 200) */
+            amountPaise: number;
+        };
         MerchantDeliveryListDto_Output: {
             items: {
                 /** Format: uuid */
@@ -10629,6 +10680,35 @@ export interface operations {
             };
         };
     };
+    PaymentsController_confirmTip: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+                "Idempotency-Key": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ConfirmPaymentDto"];
+            };
+        };
+        responses: {
+            /** @description Tip payment sheet success callback (signature verified); same shape as an order payment (ADR-037) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto_Output"];
+                };
+            };
+        };
+    };
     PaymentsController_wallet: {
         parameters: {
             query?: never;
@@ -11264,6 +11344,58 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TrackingDto_Output"];
+                };
+            };
+        };
+    };
+    TrackingController_tipOffer: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Whether the customer can still tip the delivery partner after delivery, and the amounts (ADR-037) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TipOfferDto_Output"];
+                };
+            };
+        };
+    };
+    TrackingController_startTip: {
+        parameters: {
+            query?: never;
+            header: {
+                "X-Device-Id": string;
+            };
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartTipDto"];
+            };
+        };
+        responses: {
+            /** @description Starts a tip payment for a delivered order; pay it like an order, then confirm with POST /tips/{id}/confirm (ADR-037) */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentDto_Output"];
                 };
             };
         };
