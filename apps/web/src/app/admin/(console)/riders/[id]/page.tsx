@@ -66,6 +66,15 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
                 {fill(lc.sosCallRider, { phone: r.phoneForOps })}
               </a>
             </li>
+            <li data-testid="sos-paging">
+              {r.openSos.paging.phones === 0
+                ? lc.sosPagedNone
+                : !r.openSos.paging.at
+                  ? lc.sosPagedPending
+                  : r.openSos.paging.reached === 0
+                    ? lc.sosPagedFailed
+                    : fill(lc.sosPaged, { reached: r.openSos.paging.reached, phones: r.openSos.paging.phones, time: dateTime(r.openSos.paging.at, locale) })}
+            </li>
             <li>
               {r.openSos.lat != null && r.openSos.lng != null ? (
                 <a href={sosMapUrl(r.openSos.lat, r.openSos.lng)} target="_blank" rel="noreferrer" className="text-indigo hover:underline s-focus">

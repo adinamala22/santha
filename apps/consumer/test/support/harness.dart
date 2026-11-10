@@ -45,6 +45,8 @@ class FakeBackend implements HttpClientAdapter {
 
   /// Fee rows added to the priced bill (e.g. the beyond-radius charge, ADR-022).
   List<Map<String, dynamic>> extraFees = [];
+  /// The choice saved on the delivery address (ADR-036).
+  bool savedLeaveAtDoor = false;
 
   /// Tip after delivery (ADR-037): what the server says, and what was sent / paid.
   bool tipAllowed = true;
@@ -127,6 +129,7 @@ class FakeBackend implements HttpClientAdapter {
       'PUT /v1/cart' => (200, fixture('cart')),
       'POST /v1/cart/price' => (200, (() {
           final q = fixture(cartMerchantId == kitchenId ? 'checkout_kitchen' : 'checkout_retail');
+          (q['address'] as Map<String, dynamic>)['leaveAtDoor'] = savedLeaveAtDoor;
           if (extraFees.isNotEmpty) (q['bill']['fees'] as List).insertAll(1, extraFees);
           return q;
         })()),

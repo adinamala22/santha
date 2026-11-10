@@ -537,5 +537,14 @@
     }
   },
   "payoutLateTips": "Tips paid after delivery: {amount}",
-  "@payoutLateTips": {"placeholders": {"amount": {"type": "String"}}}
+  "@payoutLateTips": {"placeholders": {"amount": {"type": "String"}}},
+  "leaveAtDoorRider": "The customer said: leave the order at the door. Put it down safely, take a photo of it at the door and use \"Deliver with photo\". No need to wait.",
+  "savedCopyBanner": "No internet. This is what was saved on this phone {minutes} min ago. Marking a step needs internet.",
+  "@savedCopyBanner": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  }
 }

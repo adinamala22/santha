@@ -95,6 +95,19 @@ describe('Door-photo proof and arrived at the customer (ADR-030, fake mode)', ()
     const t = (await http().get(`/v1/orders/${o.id}/tracking`).set(c.headers).expect(200)).body;
     expect(t.proofPhotoUrl).toMatch(/^\/v1\/dev\/private\?/);
     expect((await http().get(t.proofPhotoUrl).expect(200)).headers['content-type']).toBe('image/webp');
+
+    // Ops see the same evidence in a dispute (ADR-033): how it was confirmed, the door times and the photo.
+    const evidence = (await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).set(ops).expect(200)).body;
+    expect(evidence).toMatchObject({ orderId: o.id, state: 'delivered', proof: 'photo', arrivedDropAt: arrived.arrivedDropAt, failedAt: null });
+    expect(evidence.deliveredAt).toEqual(expect.any(String));
+    expect(evidence.waitedMinutes).toBeGreaterThanOrEqual(0);
+    expect(evidence.photoUrl).toMatch(/^\/v1\/dev\/private\?/);
+    expect((await http().get(evidence.photoUrl).expect(200)).headers['content-type']).toBe('image/webp');
+    // Only ops roles: not the customer, the rider or the store, and not without a sign-in.
+    await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).expect(401);
+    await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).set(c.headers).expect(403);
+    await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).set(rider.headers).expect(403);
+    await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).set(owner.headers).expect(403);
   });
 
   it("another rider's photo, or a photo from another job, does not count", async () => {
@@ -138,6 +151,8 @@ describe('Door-photo proof and arrived at the customer (ADR-030, fake mode)', ()
     expect(refused.body.error.details.field).toBe('otp');
     const otp = (await http().get(`/v1/orders/${o.id}/tracking`).set(c.headers).expect(200)).body.deliveryOtp;
     await deliver(jobId, rider, { otp, codCollectedPaise: o.totalPaise }).expect(200);
+    const cash = (await http().get(`/v1/ops/orders/${o.id}/delivery-proof`).set(ops).expect(200)).body;
+    expect(cash).toMatchObject({ proof: 'otp', photoUrl: null, codCollectedPaise: o.totalPaise });
     expect((await http().get(`/v1/orders/${o.id}/tracking`).set(c.headers).expect(200)).body.proofPhotoUrl).toBeNull();
   });
 

@@ -36,7 +36,8 @@ class CheckoutApi {
 
   /// Places the order at the quoted bill. Reuse [idempotencyKey] when retrying the same attempt.
   /// [tipPaise]: a tip for the delivery partner, added on top of the bill (ADR-032).
-  Future<Order> placeOrder({required String quoteId, required PaymentMethodChoice method, required String idempotencyKey, String? instructions, int tipPaise = 0}) => _call(() async {
+  /// [leaveAtDoor]: leave a prepaid order at the door (ADR-036); null keeps the choice saved on the address.
+  Future<Order> placeOrder({required String quoteId, required PaymentMethodChoice method, required String idempotencyKey, String? instructions, int tipPaise = 0, bool? leaveAtDoor}) => _call(() async {
         final r = await _dio.post<Json>(
           '/v1/orders',
           data: {
@@ -44,6 +45,7 @@ class CheckoutApi {
             'paymentMethod': method.name,
             if (instructions != null && instructions.trim().isNotEmpty) 'instructions': instructions.trim(),
             if (tipPaise > 0) 'tipPaise': tipPaise,
+            'leaveAtDoor': ?leaveAtDoor,
           },
           options: Options(headers: {'Idempotency-Key': idempotencyKey}),
         );

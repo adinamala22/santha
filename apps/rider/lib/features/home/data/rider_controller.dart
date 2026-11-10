@@ -9,8 +9,12 @@ import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
+import 'offline_rider_api.dart';
 
-final riderApiProvider = Provider<RiderApi>((ref) => RiderApi(ref.watch(apiClientProvider)));
+/// The rider API with a saved copy of the deliveries in hand for when the network drops (ADR-035).
+final riderApiProvider = Provider<RiderApi>(
+  (ref) => OfflineRiderApi(ref.watch(apiClientProvider), () => ref.read(riderCacheProvider.future), (since) => ref.read(riderOfflineProvider.notifier).set(since)),
+);
 
 /// Current position, or null when location is off / not allowed. Tests override it.
 typedef LocationSource = Future<Point?> Function();

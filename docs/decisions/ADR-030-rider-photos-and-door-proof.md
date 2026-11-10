@@ -40,4 +40,4 @@
   - rider app: `arrived_customer`, and `delivered(verification: photo)`;
   - template: `customer.courier_arrived`.
 - Riders already in review need a selfie, and a licence photo unless they ride a cycle, before ops can approve them. Approved riders are not affected.
-- Not yet: a customer setting for "always leave at the door" (today the rider decides with the customer on a call), and showing door photos to ops in disputes (they can be fetched from the order's tracking).
+- Done later: the customer setting for "leave at the door" is ADR-036, and door evidence for ops is ADR-033.

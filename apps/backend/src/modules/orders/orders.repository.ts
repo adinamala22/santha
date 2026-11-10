@@ -18,6 +18,8 @@ export interface OrderAddress {
   landmark: string | null;
   pincode: string | null;
   location: { lat: number; lng: number };
+  /** Leave the order at the door (ADR-036): from the saved address, or the customer's choice at checkout. Prepaid only. */
+  leaveAtDoor?: boolean;
 }
 
 export interface OrderLineRecord {

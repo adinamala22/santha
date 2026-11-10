@@ -102,6 +102,7 @@ export const JobViewSchema = z.object({
     landmark: z.string().nullable(),
     lat: z.number(),
     lng: z.number(),
+    leaveAtDoor: z.boolean().describe('The customer is happy for the order to be left at the door (ADR-036)'),
   }),
   instructions: z.string().nullable(),
   itemCount: int,
@@ -335,3 +336,19 @@ export class TipOfferDto extends createZodDto(
 ) {}
 
 export class StartTipDto extends createZodDto(z.object({ amountPaise: int.min(1000).max(20_000).describe('Tip for the delivery partner, in paise (Rs 10 to Rs 200)') })) {}
+/** What happened at the door, for disputes (ADR-033). The photo link is short-lived and for ops only. */
+export class OpsDeliveryProofDto extends createZodDto(
+  z.object({
+    orderId: z.uuid(),
+    mode: z.enum(['self', 'rider', 'tpl']).nullable(),
+    state: z.enum(['searching', 'assigned', 'picked_up', 'delivered', 'failed', 'cancelled']).nullable(),
+    courier: z.string().nullable(),
+    arrivedDropAt: iso.nullable(),
+    deliveredAt: iso.nullable(),
+    failedAt: iso.nullable(),
+    waitedMinutes: int.nullable().describe('From the courier reaching the door to the delivery or the failed attempt'),
+    proof: z.enum(['otp', 'photo']).nullable().describe('How the handover was confirmed'),
+    photoUrl: z.string().nullable().describe('The door photo: a link that expires in 5 minutes'),
+    codCollectedPaise: int.nullable(),
+  }),
+) {}

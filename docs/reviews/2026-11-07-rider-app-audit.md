@@ -93,6 +93,5 @@ It is compared with what quick-commerce delivery-partner apps commonly offer, su
   - earnings for the last 7 days.
 - Tips at checkout, incentives, and a cash limit set by ops (off by default) are done (ADR-032), in the PR `feat/rider-tips-incentives`.
 - UPI QR at the door: not wanted.
-- Still open:
-  - (done: tipping after delivery, ADR-037);
-  - the offline job cache.
+- Tipping after delivery is done (ADR-037), in the PR `feat/tip-after-delivery`.
+- The offline job cache is done (ADR-035).

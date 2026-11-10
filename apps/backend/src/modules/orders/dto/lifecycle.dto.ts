@@ -160,7 +160,7 @@ export class OpsOrderDetailDto extends createZodDto(
   OpsOrderSchema.extend({
     lines: z.array(LineSchema),
     bill: z.unknown(),
-    address: z.object({ line: z.string(), landmark: z.string().nullable() }),
+    address: z.object({ line: z.string(), landmark: z.string().nullable(), leaveAtDoor: z.boolean().describe('Leave at the door (ADR-036)') }),
     instructions: z.string().nullable(),
     history: z.array(z.object({ from: z.string().nullable(), to: z.string(), actorType: z.string(), actorId: z.string().nullable(), reason: z.string().nullable(), at: iso })),
     payment: z.object({ status: z.string(), provider: z.string(), providerOrderId: z.string(), providerPaymentId: z.string().nullable(), amountPaise: int, failureReason: z.string().nullable() }).nullable(),
@@ -196,7 +196,7 @@ export const toOpsOrderDetailDto = (
   ...toOpsOrderDto(o, merchantName),
   lines: linesOut(o),
   bill: (o.quote as { bill?: unknown }).bill ?? null,
-  address: { line: o.address.line, landmark: o.address.landmark },
+  address: { line: o.address.line, landmark: o.address.landmark, leaveAtDoor: !!o.address.leaveAtDoor },
   instructions: o.instructions,
   history: history.map((h) => ({ from: h.from, to: h.to, actorType: h.actorType, actorId: h.actorId, reason: h.reason, at: h.at.toISOString() })),
   payment: payment && { status: payment.status, provider: payment.provider, providerOrderId: payment.providerOrderId, providerPaymentId: payment.providerPaymentId, amountPaise: payment.amountPaise, failureReason: payment.failureReason },

@@ -5938,6 +5938,41 @@
         ]
       }
     },
+    "/v1/ops/orders/{id}/delivery-proof": {
+      "get": {
+        "operationId": "OpsDispatchController_deliveryProof",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": "How the order was handed over: OTP or door photo, door times, cash (ADR-033). The photo link expires in 5 minutes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OpsDeliveryProofDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "ops"
+        ]
+      }
+    },
     "/v1/ops/orders/{id}/reassign": {
       "post": {
         "operationId": "OpsDispatchController_reassign",
@@ -9880,6 +9915,9 @@
                 "isDefault": {
                   "type": "boolean"
                 },
+                "leaveAtDoor": {
+                  "type": "boolean"
+                },
                 "serviceable": {
                   "type": "boolean"
                 },
@@ -9920,6 +9958,7 @@
                 "pincode",
                 "location",
                 "isDefault",
+                "leaveAtDoor",
                 "serviceable",
                 "microMarket"
               ],
@@ -9986,6 +10025,10 @@
           },
           "isDefault": {
             "type": "boolean"
+          },
+          "leaveAtDoor": {
+            "description": "Prepaid orders to this address may be left at the door (ADR-036)",
+            "type": "boolean"
           }
         },
         "required": [
@@ -10048,6 +10091,9 @@
           "isDefault": {
             "type": "boolean"
           },
+          "leaveAtDoor": {
+            "type": "boolean"
+          },
           "serviceable": {
             "type": "boolean"
           },
@@ -10088,6 +10134,7 @@
           "pincode",
           "location",
           "isDefault",
+          "leaveAtDoor",
           "serviceable",
           "microMarket"
         ],
@@ -10146,6 +10193,10 @@
             ]
           },
           "isDefault": {
+            "type": "boolean"
+          },
+          "leaveAtDoor": {
+            "description": "Prepaid orders to this address may be left at the door (ADR-036)",
             "type": "boolean"
           }
         }
@@ -21140,6 +21191,10 @@
                   "lng"
                 ],
                 "additionalProperties": false
+              },
+              "leaveAtDoor": {
+                "description": "Leave at the door (ADR-036): prepaid orders only",
+                "type": "boolean"
               }
             },
             "required": [
@@ -21609,6 +21664,10 @@
             "description": "Delivery instructions, e.g. \"Ring the bell twice\"",
             "nullable": true
           },
+          "leaveAtDoor": {
+            "description": "Leave the order at the door (ADR-036); prepaid only, defaults to the choice saved on the address",
+            "type": "boolean"
+          },
           "tipPaise": {
             "description": "Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers",
             "type": "integer",
@@ -21766,6 +21825,10 @@
                   "lng"
                 ],
                 "additionalProperties": false
+              },
+              "leaveAtDoor": {
+                "description": "Leave at the door (ADR-036): prepaid orders only",
+                "type": "boolean"
               }
             },
             "required": [
@@ -22473,6 +22536,10 @@
                         "lng"
                       ],
                       "additionalProperties": false
+                    },
+                    "leaveAtDoor": {
+                      "description": "Leave at the door (ADR-036): prepaid orders only",
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -24037,11 +24104,16 @@
                   "string",
                   "null"
                 ]
+              },
+              "leaveAtDoor": {
+                "type": "boolean",
+                "description": "Leave at the door (ADR-036)"
               }
             },
             "required": [
               "line",
-              "landmark"
+              "landmark",
+              "leaveAtDoor"
             ],
             "additionalProperties": false
           },
@@ -24772,6 +24844,10 @@
                     },
                     "lng": {
                       "type": "number"
+                    },
+                    "leaveAtDoor": {
+                      "type": "boolean",
+                      "description": "The customer is happy for the order to be left at the door (ADR-036)"
                     }
                   },
                   "required": [
@@ -24779,7 +24855,8 @@
                     "line",
                     "landmark",
                     "lat",
-                    "lng"
+                    "lng",
+                    "leaveAtDoor"
                   ],
                   "additionalProperties": false
                 },
@@ -25242,6 +25319,10 @@
               },
               "lng": {
                 "type": "number"
+              },
+              "leaveAtDoor": {
+                "type": "boolean",
+                "description": "The customer is happy for the order to be left at the door (ADR-036)"
               }
             },
             "required": [
@@ -25249,7 +25330,8 @@
               "line",
               "landmark",
               "lat",
-              "lng"
+              "lng",
+              "leaveAtDoor"
             ],
             "additionalProperties": false
           },
@@ -26390,6 +26472,100 @@
         ],
         "additionalProperties": false
       },
+      "OpsDeliveryProofDto_Output": {
+        "type": "object",
+        "properties": {
+          "orderId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "self",
+              "rider",
+              "tpl",
+              null
+            ],
+            "nullable": true
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "searching",
+              "assigned",
+              "picked_up",
+              "delivered",
+              "failed",
+              "cancelled",
+              null
+            ],
+            "nullable": true
+          },
+          "courier": {
+            "type": "string",
+            "nullable": true
+          },
+          "arrivedDropAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "deliveredAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "failedAt": {
+            "type": "string",
+            "description": "ISO-8601 timestamp",
+            "nullable": true
+          },
+          "waitedMinutes": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "description": "From the courier reaching the door to the delivery or the failed attempt",
+            "nullable": true
+          },
+          "proof": {
+            "type": "string",
+            "enum": [
+              "otp",
+              "photo",
+              null
+            ],
+            "description": "How the handover was confirmed",
+            "nullable": true
+          },
+          "photoUrl": {
+            "type": "string",
+            "description": "The door photo: a link that expires in 5 minutes",
+            "nullable": true
+          },
+          "codCollectedPaise": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991,
+            "nullable": true
+          }
+        },
+        "required": [
+          "orderId",
+          "mode",
+          "state",
+          "courier",
+          "arrivedDropAt",
+          "deliveredAt",
+          "failedAt",
+          "waitedMinutes",
+          "proof",
+          "photoUrl",
+          "codCollectedPaise"
+        ],
+        "additionalProperties": false
+      },
       "ReassignDto": {
         "type": "object",
         "properties": {
@@ -27279,6 +27455,33 @@
                   "string",
                   "null"
                 ]
+              },
+              "paging": {
+                "type": "object",
+                "properties": {
+                  "phones": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "reached": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "at": {
+                    "type": "string",
+                    "description": "ISO-8601 timestamp",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "phones",
+                  "reached",
+                  "at"
+                ],
+                "additionalProperties": false,
+                "description": "On-call phones set, reached by the latest page, and when (ADR-034)"
               }
             },
             "required": [
@@ -27287,7 +27490,8 @@
               "lat",
               "lng",
               "called112",
-              "orderCode"
+              "orderCode",
+              "paging"
             ],
             "additionalProperties": false,
             "description": "An SOS not yet resolved (ADR-031)",

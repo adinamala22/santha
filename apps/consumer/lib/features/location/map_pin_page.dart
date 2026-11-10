@@ -63,6 +63,7 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
   final _line = TextEditingController();
   final _landmark = TextEditingController();
   var _label = AddressLabel.home;
+  bool _leaveAtDoor = false;
   bool _busy = false;
   bool _notServiceable = false;
   String? _error;
@@ -89,7 +90,7 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
     });
     try {
       final loc = save
-          ? await saveAddressAndUse(ref, AddressInput(label: _label, line: _line.text.trim(), landmark: _landmark.text.trim(), location: _centre))
+          ? await saveAddressAndUse(ref, AddressInput(label: _label, line: _line.text.trim(), landmark: _landmark.text.trim(), location: _centre, leaveAtDoor: _leaveAtDoor))
           : await ref.read(locationControllerProvider.notifier).set(_centre, _fix != null ? LocationSource.gps : LocationSource.pin);
       if (!mounted) return;
       if (widget.returnOnDone && context.canPop()) {
@@ -207,6 +208,15 @@ class _MapPinPageState extends ConsumerState<MapPinPage> {
                 ),
                 const SizedBox(height: SanthaSpacing.s2),
                 TextFormField(controller: _landmark, decoration: InputDecoration(labelText: l.addressLandmark)),
+                SwitchListTile(
+                  key: const ValueKey('address-leave-at-door'),
+                  contentPadding: EdgeInsets.zero,
+                  activeThumbColor: SanthaColors.indigo,
+                  title: Text(l.leaveAtDoorSave),
+                  subtitle: Text(l.leaveAtDoorNote),
+                  value: _leaveAtDoor,
+                  onChanged: (v) => setState(() => _leaveAtDoor = v),
+                ),
                 if (_error != null) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s2), child: Text(_error!, style: text.bodySmall?.copyWith(color: SanthaColors.chilli))),
                 if (_notServiceable) const Padding(padding: EdgeInsets.only(top: SanthaSpacing.s3), child: NotServiceableCard()),
                 const SizedBox(height: SanthaSpacing.s3),

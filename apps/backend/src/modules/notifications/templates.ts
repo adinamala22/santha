@@ -112,6 +112,15 @@ export const TEMPLATES = {
     en: { title: 'You got a tip: {amount}', body: 'The customer of order {code} tipped you {amount}. It comes with your next payout. Thank you!' },
     te: { title: 'మీకు టిప్ వచ్చింది: {amount}', body: 'ఆర్డర్ {code} కస్టమర్ మీకు {amount} టిప్ ఇచ్చారు. ఇది మీ తదుపరి చెల్లింపుతో వస్తుంది. ధన్యవాదాలు!' },
   },
+  // Santha on-call page when a rider presses SOS (ADR-034)
+  'ops.rider_sos': {
+    en: { title: 'Santha SOS', body: 'Rider {rider} pressed SOS. {where} Call them on {phone}, then open the ops console.' },
+    te: { title: 'సంత SOS', body: 'రైడర్ {rider} SOS నొక్కారు. {where} {phone}కు కాల్ చేసి, ఆపై ఆప్స్ కన్సోల్ తెరవండి.' },
+  },
+  'ops.rider_sos_again': {
+    en: { title: 'Santha SOS still open', body: 'The SOS from rider {rider} is still open after {minutes} min. Call them on {phone} and resolve it in the ops console.' },
+    te: { title: 'సంత SOS ఇంకా తెరిచే ఉంది', body: 'రైడర్ {rider} SOS {minutes} నిమిషాల తర్వాత కూడా తెరిచే ఉంది. {phone}కు కాల్ చేసి, ఆప్స్ కన్సోల్‌లో పరిష్కరించండి.' },
+  },
   'support.reply': {
     en: { title: 'Santha support replied', body: 'Open the app to read the reply and continue the chat.' },
     te: { title: 'సంత సపోర్ట్ సమాధానం ఇచ్చింది', body: 'సమాధానం చదవడానికి, చాట్ కొనసాగించడానికి యాప్ తెరవండి.' },

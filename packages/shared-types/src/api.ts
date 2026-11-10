@@ -1876,6 +1876,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/ops/orders/{id}/delivery-proof": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["OpsDispatchController_deliveryProof"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/ops/orders/{id}/reassign": {
         parameters: {
             query?: never;
@@ -3232,6 +3248,7 @@ export interface components {
                     lng: number;
                 };
                 isDefault: boolean;
+                leaveAtDoor: boolean;
                 serviceable: boolean;
                 microMarket: {
                     /** Format: uuid */
@@ -3256,6 +3273,8 @@ export interface components {
                 lng: number;
             };
             isDefault?: boolean;
+            /** @description Prepaid orders to this address may be left at the door (ADR-036) */
+            leaveAtDoor?: boolean;
         };
         AddressDto_Output: {
             /** Format: uuid */
@@ -3271,6 +3290,7 @@ export interface components {
                 lng: number;
             };
             isDefault: boolean;
+            leaveAtDoor: boolean;
             serviceable: boolean;
             microMarket: {
                 /** Format: uuid */
@@ -3294,6 +3314,8 @@ export interface components {
                 lng: number;
             };
             isDefault?: boolean;
+            /** @description Prepaid orders to this address may be left at the door (ADR-036) */
+            leaveAtDoor?: boolean;
         };
         MicroMarketListDto_Output: {
             cities: {
@@ -5927,6 +5949,8 @@ export interface components {
                     lat: number;
                     lng: number;
                 };
+                /** @description Leave at the door (ADR-036): prepaid orders only */
+                leaveAtDoor?: boolean;
             };
             when: {
                 /** @enum {string} */
@@ -6029,6 +6053,8 @@ export interface components {
             paymentMethod: "online" | "cod";
             /** @description Delivery instructions, e.g. "Ring the bell twice" */
             instructions?: string | null;
+            /** @description Leave the order at the door (ADR-036); prepaid only, defaults to the choice saved on the address */
+            leaveAtDoor?: boolean;
             /** @description Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers */
             tipPaise?: number;
         };
@@ -6069,6 +6095,8 @@ export interface components {
                     lat: number;
                     lng: number;
                 };
+                /** @description Leave at the door (ADR-036): prepaid orders only */
+                leaveAtDoor?: boolean;
             };
             instructions: string | null;
             lines: {
@@ -6216,6 +6244,8 @@ export interface components {
                         lat: number;
                         lng: number;
                     };
+                    /** @description Leave at the door (ADR-036): prepaid orders only */
+                    leaveAtDoor?: boolean;
                 };
                 instructions: string | null;
                 lines: {
@@ -6580,6 +6610,8 @@ export interface components {
             address: {
                 line: string;
                 landmark: string | null;
+                /** @description Leave at the door (ADR-036) */
+                leaveAtDoor: boolean;
             };
             instructions: string | null;
             history: {
@@ -6750,6 +6782,8 @@ export interface components {
                     landmark: string | null;
                     lat: number;
                     lng: number;
+                    /** @description The customer is happy for the order to be left at the door (ADR-036) */
+                    leaveAtDoor: boolean;
                 };
                 instructions: string | null;
                 itemCount: number;
@@ -6853,6 +6887,8 @@ export interface components {
                 landmark: string | null;
                 lat: number;
                 lng: number;
+                /** @description The customer is happy for the order to be left at the door (ADR-036) */
+                leaveAtDoor: boolean;
             };
             instructions: string | null;
             itemCount: number;
@@ -7119,6 +7155,31 @@ export interface components {
                 activeJobs: number;
             }[];
         };
+        OpsDeliveryProofDto_Output: {
+            /** Format: uuid */
+            orderId: string;
+            /** @enum {string|null} */
+            mode: "self" | "rider" | "tpl" | null;
+            /** @enum {string|null} */
+            state: "searching" | "assigned" | "picked_up" | "delivered" | "failed" | "cancelled" | null;
+            courier: string | null;
+            /** @description ISO-8601 timestamp */
+            arrivedDropAt: string | null;
+            /** @description ISO-8601 timestamp */
+            deliveredAt: string | null;
+            /** @description ISO-8601 timestamp */
+            failedAt: string | null;
+            /** @description From the courier reaching the door to the delivery or the failed attempt */
+            waitedMinutes: number | null;
+            /**
+             * @description How the handover was confirmed
+             * @enum {string|null}
+             */
+            proof: "otp" | "photo" | null;
+            /** @description The door photo: a link that expires in 5 minutes */
+            photoUrl: string | null;
+            codCollectedPaise: number | null;
+        };
         ReassignDto: {
             /** Format: uuid */
             riderUserId: string;
@@ -7340,6 +7401,13 @@ export interface components {
                 lng: number | null;
                 called112: boolean;
                 orderCode: string | null;
+                /** @description On-call phones set, reached by the latest page, and when (ADR-034) */
+                paging: {
+                    phones: number;
+                    reached: number;
+                    /** @description ISO-8601 timestamp */
+                    at: string | null;
+                };
             } | null;
             /** @description Full phone number, so ops can call the rider back (ops roles only) */
             phoneForOps: string;
@@ -11444,6 +11512,28 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["OpsLiveDto_Output"];
+                };
+            };
+        };
+    };
+    OpsDispatchController_deliveryProof: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description How the order was handed over: OTP or door photo, door times, cash (ADR-033). The photo link expires in 5 minutes. */
+            default: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OpsDeliveryProofDto_Output"];
                 };
             };
         };

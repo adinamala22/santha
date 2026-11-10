@@ -17,6 +17,7 @@ manager that injects environment variables. Use different values in test and pro
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`, `RAZORPAY_WEBHOOK_SECRET` | **test** keys `rzp_test_…` | **live** keys | Razorpay dashboard |
 | `MSG91_AUTH_KEY`, `MSG91_TEMPLATE_ID` | optional | required | MSG91 + DLT template |
 | `WHATSAPP_ACCESS_TOKEN` | only with `whatsappProvider: cloud` | only with `whatsappProvider: cloud` | Meta Business Suite → System users → Generate token (`whatsapp_business_messaging`), never-expiring (docs/integrations/whatsapp-otp.md) |
+| `OPS_ALERT_PHONES` | on-call numbers, e.g. `+919876543210,+919876543211` | required before launch | the people on call for rider SOS (ADR-034); private numbers, so only in `.env` |
 | `FCM_SERVICE_ACCOUNT_B64` | optional | required | Firebase service account JSON, base64 |
 | `GOOGLE_MAPS_SERVER_KEY` | optional | required | Google Cloud console (restrict to the server IP) |
 | `POSTHOG_KEY` | optional | optional | PostHog project |
