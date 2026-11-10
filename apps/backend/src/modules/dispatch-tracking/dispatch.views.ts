@@ -46,6 +46,7 @@ export class DispatchViews {
         name: o.address.name,
         line: o.address.line,
         landmark: o.address.landmark,
+        leaveAtDoor: !!o.address.leaveAtDoor,
         lat: c.drop.lat,
         lng: c.drop.lng,
       },

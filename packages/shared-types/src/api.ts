@@ -3216,6 +3216,7 @@ export interface components {
                     lng: number;
                 };
                 isDefault: boolean;
+                leaveAtDoor: boolean;
                 serviceable: boolean;
                 microMarket: {
                     /** Format: uuid */
@@ -3240,6 +3241,8 @@ export interface components {
                 lng: number;
             };
             isDefault?: boolean;
+            /** @description Prepaid orders to this address may be left at the door (ADR-036) */
+            leaveAtDoor?: boolean;
         };
         AddressDto_Output: {
             /** Format: uuid */
@@ -3255,6 +3258,7 @@ export interface components {
                 lng: number;
             };
             isDefault: boolean;
+            leaveAtDoor: boolean;
             serviceable: boolean;
             microMarket: {
                 /** Format: uuid */
@@ -3278,6 +3282,8 @@ export interface components {
                 lng: number;
             };
             isDefault?: boolean;
+            /** @description Prepaid orders to this address may be left at the door (ADR-036) */
+            leaveAtDoor?: boolean;
         };
         MicroMarketListDto_Output: {
             cities: {
@@ -5911,6 +5917,8 @@ export interface components {
                     lat: number;
                     lng: number;
                 };
+                /** @description Leave at the door (ADR-036): prepaid orders only */
+                leaveAtDoor?: boolean;
             };
             when: {
                 /** @enum {string} */
@@ -6013,6 +6021,8 @@ export interface components {
             paymentMethod: "online" | "cod";
             /** @description Delivery instructions, e.g. "Ring the bell twice" */
             instructions?: string | null;
+            /** @description Leave the order at the door (ADR-036); prepaid only, defaults to the choice saved on the address */
+            leaveAtDoor?: boolean;
             /** @description Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers */
             tipPaise?: number;
         };
@@ -6053,6 +6063,8 @@ export interface components {
                     lat: number;
                     lng: number;
                 };
+                /** @description Leave at the door (ADR-036): prepaid orders only */
+                leaveAtDoor?: boolean;
             };
             instructions: string | null;
             lines: {
@@ -6200,6 +6212,8 @@ export interface components {
                         lat: number;
                         lng: number;
                     };
+                    /** @description Leave at the door (ADR-036): prepaid orders only */
+                    leaveAtDoor?: boolean;
                 };
                 instructions: string | null;
                 lines: {
@@ -6564,6 +6578,8 @@ export interface components {
             address: {
                 line: string;
                 landmark: string | null;
+                /** @description Leave at the door (ADR-036) */
+                leaveAtDoor: boolean;
             };
             instructions: string | null;
             history: {
@@ -6734,6 +6750,8 @@ export interface components {
                     landmark: string | null;
                     lat: number;
                     lng: number;
+                    /** @description The customer is happy for the order to be left at the door (ADR-036) */
+                    leaveAtDoor: boolean;
                 };
                 instructions: string | null;
                 itemCount: number;
@@ -6837,6 +6855,8 @@ export interface components {
                 landmark: string | null;
                 lat: number;
                 lng: number;
+                /** @description The customer is happy for the order to be left at the door (ADR-036) */
+                leaveAtDoor: boolean;
             };
             instructions: string | null;
             itemCount: number;

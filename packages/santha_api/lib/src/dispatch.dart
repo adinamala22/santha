@@ -122,6 +122,7 @@ class Job {
     this.failedAt,
     this.arrivedDropAt,
     this.photoProofAllowed = false,
+    this.leaveAtDoor = false,
   });
   factory Job.fromJson(Json j) {
     final s = j['store'] as Json;
@@ -155,6 +156,7 @@ class Job {
       failedAt: _date(j['failedAt']),
       arrivedDropAt: _date(j['arrivedDropAt']),
       photoProofAllowed: (j['photoProofAllowed'] as bool?) ?? false,
+      leaveAtDoor: (d['leaveAtDoor'] as bool?) ?? false,
     );
   }
   final String id;
@@ -191,6 +193,9 @@ class Job {
 
   /// A door photo may replace the OTP (prepaid, up to Rs 2,000, after arriving).
   final bool photoProofAllowed;
+
+  /// The customer is happy for the order to be left at the door (ADR-036; prepaid only).
+  final bool leaveAtDoor;
   bool get ready => orderState == 'READY';
 }
 

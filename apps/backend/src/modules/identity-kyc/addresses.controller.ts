@@ -16,6 +16,7 @@ const AddressInputSchema = z.object({
   pincode: z.string().regex(/^\d{6}$/).nullable().optional(),
   location: latLng,
   isDefault: z.boolean().optional(),
+  leaveAtDoor: z.boolean().optional().describe('Prepaid orders to this address may be left at the door (ADR-036)'),
 });
 export class AddressInputDto extends createZodDto(AddressInputSchema) {}
 export class AddressPatchDto extends createZodDto(AddressInputSchema.partial()) {}
@@ -29,6 +30,7 @@ const AddressSchema = z.object({
   pincode: z.string().nullable(),
   location: latLng,
   isDefault: z.boolean(),
+  leaveAtDoor: z.boolean(),
   serviceable: z.boolean(),
   microMarket: z.object({ id: z.uuid(), slug: z.string(), name: z.string(), nameTe: z.string() }).nullable(),
 });
@@ -44,6 +46,7 @@ const toDto = (v: AddressView) => ({
   pincode: v.address.pincode,
   location: v.address.location,
   isDefault: v.address.isDefault,
+  leaveAtDoor: v.address.leaveAtDoor,
   serviceable: !!v.microMarket,
   microMarket: v.microMarket,
 });

@@ -271,6 +271,7 @@ class Checkout {
     this.merchantNameTe,
     this.promo,
     this.slotStartsAt,
+    this.leaveAtDoor = false,
   });
   factory Checkout.fromJson(Json j) {
     final m = j['merchant'] as Json;
@@ -288,6 +289,7 @@ class Checkout {
       placeable: j['placeable'] as bool,
       cod: CodOption(available: cod['available'] as bool, reason: cod['reason'] as String?, maxOrderPaise: cod['maxOrderPaise'] as int),
       slotStartsAt: _date((j['when'] as Json)['startsAt']),
+      leaveAtDoor: ((j['address'] as Json?)?['leaveAtDoor'] as bool?) ?? false,
     );
   }
   final String quoteId;
@@ -302,6 +304,9 @@ class Checkout {
   final bool placeable;
   final CodOption cod;
   final DateTime? slotStartsAt;
+
+  /// The choice saved on the address: the default for this order (ADR-036).
+  final bool leaveAtDoor;
 }
 
 enum PaymentMethodChoice { online, cod }

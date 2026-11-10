@@ -9760,6 +9760,9 @@
                 "isDefault": {
                   "type": "boolean"
                 },
+                "leaveAtDoor": {
+                  "type": "boolean"
+                },
                 "serviceable": {
                   "type": "boolean"
                 },
@@ -9800,6 +9803,7 @@
                 "pincode",
                 "location",
                 "isDefault",
+                "leaveAtDoor",
                 "serviceable",
                 "microMarket"
               ],
@@ -9866,6 +9870,10 @@
           },
           "isDefault": {
             "type": "boolean"
+          },
+          "leaveAtDoor": {
+            "description": "Prepaid orders to this address may be left at the door (ADR-036)",
+            "type": "boolean"
           }
         },
         "required": [
@@ -9928,6 +9936,9 @@
           "isDefault": {
             "type": "boolean"
           },
+          "leaveAtDoor": {
+            "type": "boolean"
+          },
           "serviceable": {
             "type": "boolean"
           },
@@ -9968,6 +9979,7 @@
           "pincode",
           "location",
           "isDefault",
+          "leaveAtDoor",
           "serviceable",
           "microMarket"
         ],
@@ -10026,6 +10038,10 @@
             ]
           },
           "isDefault": {
+            "type": "boolean"
+          },
+          "leaveAtDoor": {
+            "description": "Prepaid orders to this address may be left at the door (ADR-036)",
             "type": "boolean"
           }
         }
@@ -21020,6 +21036,10 @@
                   "lng"
                 ],
                 "additionalProperties": false
+              },
+              "leaveAtDoor": {
+                "description": "Leave at the door (ADR-036): prepaid orders only",
+                "type": "boolean"
               }
             },
             "required": [
@@ -21489,6 +21509,10 @@
             "description": "Delivery instructions, e.g. \"Ring the bell twice\"",
             "nullable": true
           },
+          "leaveAtDoor": {
+            "description": "Leave the order at the door (ADR-036); prepaid only, defaults to the choice saved on the address",
+            "type": "boolean"
+          },
           "tipPaise": {
             "description": "Tip for the delivery partner (ADR-032): added to the total, 100% to whoever delivers",
             "type": "integer",
@@ -21646,6 +21670,10 @@
                   "lng"
                 ],
                 "additionalProperties": false
+              },
+              "leaveAtDoor": {
+                "description": "Leave at the door (ADR-036): prepaid orders only",
+                "type": "boolean"
               }
             },
             "required": [
@@ -22353,6 +22381,10 @@
                         "lng"
                       ],
                       "additionalProperties": false
+                    },
+                    "leaveAtDoor": {
+                      "description": "Leave at the door (ADR-036): prepaid orders only",
+                      "type": "boolean"
                     }
                   },
                   "required": [
@@ -23917,11 +23949,16 @@
                   "string",
                   "null"
                 ]
+              },
+              "leaveAtDoor": {
+                "type": "boolean",
+                "description": "Leave at the door (ADR-036)"
               }
             },
             "required": [
               "line",
-              "landmark"
+              "landmark",
+              "leaveAtDoor"
             ],
             "additionalProperties": false
           },
@@ -24652,6 +24689,10 @@
                     },
                     "lng": {
                       "type": "number"
+                    },
+                    "leaveAtDoor": {
+                      "type": "boolean",
+                      "description": "The customer is happy for the order to be left at the door (ADR-036)"
                     }
                   },
                   "required": [
@@ -24659,7 +24700,8 @@
                     "line",
                     "landmark",
                     "lat",
-                    "lng"
+                    "lng",
+                    "leaveAtDoor"
                   ],
                   "additionalProperties": false
                 },
@@ -25122,6 +25164,10 @@
               },
               "lng": {
                 "type": "number"
+              },
+              "leaveAtDoor": {
+                "type": "boolean",
+                "description": "The customer is happy for the order to be left at the door (ADR-036)"
               }
             },
             "required": [
@@ -25129,7 +25175,8 @@
               "line",
               "landmark",
               "lat",
-              "lng"
+              "lng",
+              "leaveAtDoor"
             ],
             "additionalProperties": false
           },

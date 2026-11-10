@@ -159,6 +159,18 @@ class _JobPageState extends ConsumerState<JobPage> {
             const SizedBox(height: SanthaSpacing.s1),
             Text([j.dropLine, ?j.dropLandmark].join(', '), key: const ValueKey('drop-address'), style: text.bodyMedium?.copyWith(color: SanthaColors.slate)),
             if (j.instructions != null) Text(l.noteLabel(j.instructions!), style: text.bodyMedium?.copyWith(color: SanthaColors.indigo)),
+            if (j.leaveAtDoor)
+              Container(
+                key: const ValueKey('leave-at-door'),
+                margin: const EdgeInsets.only(top: SanthaSpacing.s2),
+                padding: const EdgeInsets.all(SanthaSpacing.s3),
+                decoration: BoxDecoration(color: SanthaColors.leaf.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(SanthaRadius.md)),
+                child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  const Icon(Icons.door_front_door_outlined, color: SanthaColors.leaf),
+                  const SizedBox(width: SanthaSpacing.s2),
+                  Expanded(child: Text(l.leaveAtDoorRider)),
+                ]),
+              ),
             const SizedBox(height: SanthaSpacing.s3),
             Row(children: [
               Expanded(
@@ -185,7 +197,7 @@ class _JobPageState extends ConsumerState<JobPage> {
           onPressed: _busy ? null : () => _run(ctl.arrivedDrop, clearCode: false),
         )
       else
-        _WaitingAtDoor(since: j.arrivedDropAt!),
+        _WaitingAtDoor(since: j.arrivedDropAt!, leaveAtDoor: j.leaveAtDoor),
       const SizedBox(height: SanthaSpacing.s4),
       _CodeField(key: const ValueKey('delivery-otp'), controller: _code, label: l.otpLabel),
       Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text(l.otpHint, style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
@@ -298,15 +310,18 @@ class _JobPageState extends ConsumerState<JobPage> {
 
 /// Time waiting at the customer's door; after 5 minutes, what to do next.
 class _WaitingAtDoor extends ConsumerWidget {
-  const _WaitingAtDoor({required this.since});
+  const _WaitingAtDoor({required this.since, this.leaveAtDoor = false});
   final DateTime since;
+
+  /// The customer said to leave it at the door: no waiting hint, the rider can leave it (ADR-036).
+  final bool leaveAtDoor;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l = AppLocalizations.of(context);
     final now = ref.watch(riderNowProvider).value ?? DateTime.now();
     final waited = now.difference(since);
-    final long = waited >= const Duration(minutes: 5);
+    final long = !leaveAtDoor && waited >= const Duration(minutes: 5);
     return Container(
       key: const ValueKey('waiting-at-door'),
       padding: const EdgeInsets.all(SanthaSpacing.s3),

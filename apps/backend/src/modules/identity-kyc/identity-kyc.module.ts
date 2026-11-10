@@ -71,6 +71,7 @@ export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'lis
       location: { lat: c.lat + a.offset.lat, lng: c.lng + a.offset.lng },
       microMarketId: ids.get(a.microMarketSlug) ?? null,
       isDefault: a.isDefault,
+      leaveAtDoor: false,
       createdAt: SEED_EFFECTIVE_FROM,
       updatedAt: SEED_EFFECTIVE_FROM,
     };

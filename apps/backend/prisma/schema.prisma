@@ -28,6 +28,8 @@ model Address {
   location      Unsupported("geography(Point, 4326)")?
   microMarketId String?                                @map("micro_market_id") @db.Uuid
   isDefault     Boolean                                @default(false) @map("is_default")
+  /// The customer is happy for a prepaid order to be left at the door (ADR-036); the default for new orders to this address.
+  leaveAtDoor   Boolean                                @default(false) @map("leave_at_door")
   createdAt     DateTime                               @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt     DateTime                               @updatedAt @map("updated_at") @db.Timestamptz(6)
 

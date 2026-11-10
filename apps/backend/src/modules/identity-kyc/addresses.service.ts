@@ -14,6 +14,7 @@ export interface AddressInput {
   pincode?: string | null | undefined;
   location: LatLng;
   isDefault?: boolean | undefined;
+  leaveAtDoor?: boolean | undefined;
 }
 
 export interface AddressView {
@@ -53,6 +54,7 @@ export class AddressesService {
         location: input.location,
         microMarketId: hit?.market.id ?? null,
         isDefault: makeDefault,
+        leaveAtDoor: !!input.leaveAtDoor,
       });
       if (makeDefault) await tx.setDefault(userId, a.id);
       return { ...a, isDefault: makeDefault };
@@ -68,6 +70,7 @@ export class AddressesService {
     if (input.line !== undefined) patch.line = input.line.trim();
     if (input.landmark !== undefined) patch.landmark = input.landmark?.trim() || null;
     if (input.pincode !== undefined) patch.pincode = input.pincode?.trim() || null;
+    if (input.leaveAtDoor !== undefined) patch.leaveAtDoor = input.leaveAtDoor;
     if (input.location) {
       patch.location = input.location;
       patch.microMarketId = (await this.markets.resolve(input.location))?.market.id ?? null;

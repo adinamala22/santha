@@ -409,4 +409,35 @@ void main() {
     expect(h.backend.lastOrderBody?['tipPaise'], 2000);
     expect(h.events, contains('tip_selected'));
   });
+
+  testWidgets('ADR-036: leave at the door is offered for prepaid orders, off by default, and sent with the order', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart});
+    await openCheckout(tester);
+    final sw = find.byKey(const ValueKey('leave-at-door'));
+    await tester.scrollUntilVisible(sw, 300, scrollable: find.byType(Scrollable).first);
+    expect(tester.widget<SwitchListTile>(sw).value, false);
+    expect(find.text('Leave at my door'), findsOneWidget);
+    await tester.tap(sw);
+    await settle(tester, 4);
+    expect(tester.widget<SwitchListTile>(sw).value, true);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    expect(h.backend.lastOrderBody?['leaveAtDoor'], true);
+  });
+
+  testWidgets('ADR-036: the choice saved on the address is the default; cash orders do not offer it', (tester) async {
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, prepare: (b) => b.savedLeaveAtDoor = true);
+    await openCheckout(tester);
+    final sw = find.byKey(const ValueKey('leave-at-door'));
+    await tester.scrollUntilVisible(sw, 300, scrollable: find.byType(Scrollable).first);
+    expect(tester.widget<SwitchListTile>(sw).value, true); // from the saved address
+
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    expect(sw, findsNothing); // cash is collected at the door
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    expect(h.backend.lastOrderBody?.containsKey('leaveAtDoor'), false);
+  });
 }

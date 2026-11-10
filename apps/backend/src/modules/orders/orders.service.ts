@@ -145,7 +145,7 @@ export class OrdersService implements OnModuleInit {
     const expiresAt = new Date(now.getTime() + this.env.QUOTE_TTL_MIN * 60_000);
     const checkout: Omit<Checkout, 'quoteId' | 'expiresAt'> = {
       merchant: { id: m.id, name: m.name, nameTe: m.nameTe, type: m.type },
-      address: { addressId: a.id, label: a.label, name: a.name, line: a.line, landmark: a.landmark, pincode: a.pincode, location: a.location },
+      address: { addressId: a.id, label: a.label, name: a.name, line: a.line, landmark: a.landmark, pincode: a.pincode, location: a.location, leaveAtDoor: a.leaveAtDoor },
       when,
       bill: priced.quote,
       promo: priced.promo,
@@ -211,7 +211,7 @@ export class OrdersService implements OnModuleInit {
    * new bill (QUOTE_CHANGED). COD orders are PLACED at once; online orders wait for payment
    * (AWAITING_PAYMENT) and carry the checkout payload for the payment sheet.
    */
-  async place(userId: string, idempotencyKey: string | undefined, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined }): Promise<{ view: OrderView; replayed: boolean }> {
+  async place(userId: string, idempotencyKey: string | undefined, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined; leaveAtDoor?: boolean | undefined }): Promise<{ view: OrderView; replayed: boolean }> {
     const { value, replayed } = await this.idempotency.run('orders', userId, idempotencyKey, body, async () => {
       // Durable backstop if the idempotency cache was lost: the key is unique per user in the DB.
       const existing = await this.repo.getByIdempotencyKey(userId, idempotencyKey!);
@@ -221,7 +221,7 @@ export class OrdersService implements OnModuleInit {
     return { view: await this.view(userId, value), replayed };
   }
 
-  private async placeNew(userId: string, key: string, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined }): Promise<string> {
+  private async placeNew(userId: string, key: string, body: { quoteId: string; paymentMethod: 'online' | 'cod'; instructions?: string | null | undefined; tipPaise?: number | undefined; leaveAtDoor?: boolean | undefined }): Promise<string> {
     const q = await this.pricing.getQuote<QuoteSnapshot>(body.quoteId);
     if (!q || q.userId !== userId) throw new DomainError('NOT_FOUND', 'Quote not found');
     if (q.expiresAt <= this.clock()) throw new DomainError('QUOTE_EXPIRED', 'Prices may have changed. Please review your bill again.');
@@ -261,7 +261,8 @@ export class OrdersService implements OnModuleInit {
         slotId: when.mode === 'slot' ? when.slotId : null,
         slotDate: when.mode === 'slot' ? when.date : null,
         slotStartsAt: when.mode === 'slot' ? (when.startsAt ?? null) : null,
-        address: fresh.address,
+        // Leave-at-door is for prepaid orders only: cash is collected at the door (ADR-036).
+        address: { ...fresh.address, leaveAtDoor: !cod && (body.leaveAtDoor ?? fresh.address.leaveAtDoor ?? false) },
         instructions: body.instructions?.trim() || null,
         itemsPaise: fresh.bill.itemsPaise,
         feesPaise: fresh.bill.feesPaise,

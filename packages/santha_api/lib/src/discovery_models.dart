@@ -565,6 +565,7 @@ class Address {
     this.landmark,
     this.pincode,
     this.microMarket,
+    this.leaveAtDoor = false,
   });
 
   factory Address.fromJson(Json j) => Address(
@@ -576,6 +577,7 @@ class Address {
         pincode: j['pincode'] as String?,
         location: LatLng.fromJson(j['location'] as Json),
         isDefault: j['isDefault'] as bool,
+        leaveAtDoor: j['leaveAtDoor'] as bool? ?? false,
         serviceable: j['serviceable'] as bool,
         microMarket: j['microMarket'] == null ? null : MicroMarketRef.fromJson(j['microMarket'] as Json),
       );
@@ -590,11 +592,14 @@ class Address {
   final bool isDefault;
   final bool serviceable;
   final MicroMarketRef? microMarket;
+
+  /// Prepaid orders to this address may be left at the door (ADR-036).
+  final bool leaveAtDoor;
 }
 
 /// Body for creating / editing an address.
 class AddressInput {
-  const AddressInput({required this.label, required this.line, required this.location, this.name, this.landmark, this.pincode, this.isDefault});
+  const AddressInput({required this.label, required this.line, required this.location, this.name, this.landmark, this.pincode, this.isDefault, this.leaveAtDoor});
   final AddressLabel label;
   final String line;
   final LatLng location;
@@ -602,6 +607,7 @@ class AddressInput {
   final String? landmark;
   final String? pincode;
   final bool? isDefault;
+  final bool? leaveAtDoor;
   Json toJson() => {
         'label': label.name,
         'line': line,
@@ -610,6 +616,7 @@ class AddressInput {
         if (landmark != null && landmark!.isNotEmpty) 'landmark': landmark,
         if (pincode != null && pincode!.isNotEmpty) 'pincode': pincode,
         'isDefault': ?isDefault,
+        'leaveAtDoor': ?leaveAtDoor,
       };
 }
 
