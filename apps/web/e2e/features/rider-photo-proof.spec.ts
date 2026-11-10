@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { API, appSignIn, call, LIVE, newCustomer, openAllDay, SEED, uploadRiderPhoto, type Headers } from '../support/target';
+import { API, appSignIn, call, HAS_OPS, LIVE, newCustomer, openAllDay, opsSignIn, SEED, uploadRiderPhoto, type Headers } from '../support/target';
 
 /**
  * Door-photo proof (ADR-030), fake only: a prepaid order needs the payment to succeed, which only the fake backend can
@@ -24,7 +24,7 @@ test.describe.serial('feature: door-photo proof of delivery', () => {
     await restoreHours?.(request);
   });
 
-  test('prepaid order left at the door with a photo; the customer sees it', async ({ request }) => {
+  test('prepaid order left at the door with a photo; the customer and ops see it', async ({ request, page }) => {
     const me = await call(request, 'get', '/merchants/me', { headers: owner });
     const store = me.merchant.location as { lat: number; lng: number };
     await call(request, 'put', '/riders/me/status', { headers: rider, data: { online: true, zones: [me.merchant.microMarketId ?? me.microMarket.id] } });
@@ -58,5 +58,14 @@ test.describe.serial('feature: door-photo proof of delivery', () => {
     const img = await request.get(`${new URL(API).origin}${t.proofPhotoUrl}`);
     expect(img.status()).toBe(200);
     expect(img.headers()['content-type']).toBe('image/webp');
+
+    // Ops see the same evidence on the order page (ADR-033): how it was confirmed, and the photo itself.
+    test.skip(!HAS_OPS, 'needs ops credentials');
+    await opsSignIn(page, `/admin/orders/${order.id}`);
+    await expect(page.getByTestId('door-evidence')).toBeVisible();
+    await expect(page.getByTestId('door-proof')).toContainText('door photo');
+    const shot = page.getByTestId('door-photo');
+    await expect(shot).toBeVisible();
+    await expect.poll(() => shot.evaluate((i: HTMLImageElement) => i.naturalWidth)).toBeGreaterThan(0);
   });
 });

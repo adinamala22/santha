@@ -1,10 +1,11 @@
-import type { OpsOrderDetail } from '@santha/shared-types';
+import type { OpsDeliveryProof, OpsOrderDetail } from '@santha/shared-types';
 import Link from 'next/link';
 import { Card, Chip, PageHeader, tableCls } from '@/components/admin/ui';
 import { fill } from '@/i18n/console';
 import { orderCopy, stateTone } from '@/i18n/orders';
 import { dateTime, rupees } from '@/lib/format';
-import { opsGet, opsLocale } from '@/lib/ops/server';
+import { mediaSrc } from '@/lib/media';
+import { opsApi, opsGet, opsLocale } from '@/lib/ops/server';
 import { FailedDeliveryActions } from '../../live/failed-delivery-actions';
 
 export const metadata = { title: 'Order' };
@@ -15,6 +16,8 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   const o = orderCopy(locale);
   const { id } = await params;
   const x = await opsGet<OpsOrderDetail>(`/v1/ops/orders/${id}`);
+  const doorRes = await opsApi<OpsDeliveryProof>(`/v1/ops/orders/${id}/delivery-proof`);
+  const door = doorRes.ok ? doorRes.data : null;
   const stateLabel = (s: string) => o.states[s as keyof typeof o.states] ?? s;
 
   return (
@@ -63,6 +66,51 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
               {x.payment.failureReason ? ` · ${x.payment.failureReason}` : ''}
             </p>
           ) : null}
+        </Card>
+
+        <Card title={o.detail.door.title}>
+          <div data-testid="door-evidence" className="space-y-2 text-sm">
+            {!door || !door.state ? (
+              <p className="text-slate">{o.detail.door.none}</p>
+            ) : (
+              <>
+                {door.courier ? (
+                  <p className="text-ink">
+                    {o.detail.door.courier}: {door.courier}
+                  </p>
+                ) : null}
+                {door.arrivedDropAt ? (
+                  <p className="text-slate">
+                    {o.detail.door.arrived}: {dateTime(door.arrivedDropAt, locale)}
+                  </p>
+                ) : null}
+                {door.deliveredAt ? (
+                  <p className="text-slate">
+                    {o.detail.door.delivered}: {dateTime(door.deliveredAt, locale)}
+                  </p>
+                ) : null}
+                {door.failedAt ? (
+                  <p className="text-chilli">
+                    {o.detail.door.failed}: {dateTime(door.failedAt, locale)}
+                  </p>
+                ) : null}
+                {door.waitedMinutes != null ? <p className="text-slate">{fill(o.detail.door.waited, { minutes: String(door.waitedMinutes) })}</p> : null}
+                <p className="text-ink" data-testid="door-proof">
+                  {o.detail.door.proofLabel}: {o.detail.door.proof[(door.proof ?? 'none') as 'otp' | 'photo' | 'none']}
+                </p>
+                {door.codCollectedPaise != null ? <p className="text-slate">{fill(o.detail.door.cash, { amount: rupees(door.codCollectedPaise) })}</p> : null}
+                {door.proof === 'photo' && door.photoUrl ? (
+                  <figure>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- private, short-lived link from the API (ADR-033) */}
+                    <img data-testid="door-photo" src={mediaSrc(door.photoUrl) ?? door.photoUrl} alt={o.detail.door.photoAlt} className="aspect-[4/3] w-full max-w-sm rounded-md bg-sky object-cover" />
+                    <figcaption className="mt-1 text-xs text-slate">{o.detail.door.photoNote}</figcaption>
+                  </figure>
+                ) : door.proof === 'otp' ? (
+                  <p className="text-slate">{o.detail.door.noPhoto}</p>
+                ) : null}
+              </>
+            )}
+          </div>
         </Card>
 
         <Card title={o.detail.timeline}>

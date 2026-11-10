@@ -75,6 +75,7 @@ export type MerchantOrderList = Schemas['MerchantOrderListDto_Output'];
 export type OpsOrderList = Schemas['OpsOrderListDto_Output'];
 export type OpsOrderDetail = Schemas['OpsOrderDetailDto_Output'];
 export type OpsOrder = OpsOrderList['items'][number];
+export type OpsDeliveryProof = Schemas['OpsDeliveryProofDto_Output'];
 
 /** Error envelope returned by every non-2xx response. */
 export interface ApiError {
