@@ -7330,6 +7330,13 @@ export interface components {
                 lng: number | null;
                 called112: boolean;
                 orderCode: string | null;
+                /** @description On-call phones set, reached by the latest page, and when (ADR-034) */
+                paging: {
+                    phones: number;
+                    reached: number;
+                    /** @description ISO-8601 timestamp */
+                    at: string | null;
+                };
             } | null;
             /** @description Full phone number, so ops can call the rider back (ops roles only) */
             phoneForOps: string;

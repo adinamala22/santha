@@ -58,6 +58,7 @@ export const OFFER_SEC = 30;
 const RETRY_SEC = 30;
 const T_OFFER = 'dispatch.offer_expired';
 const T_RETRY = 'dispatch.search_retry';
+const T_SOS_REPAGE = 'dispatch.sos_repage';
 const T_FALLBACK = 'dispatch.fallback';
 const key = (fulfilmentId: string, t: 'offer' | 'retry' | 'fallback') => `fulfilment:${fulfilmentId}:${t}`;
 
@@ -138,6 +139,7 @@ export class DispatchService implements OnModuleInit {
     this.timers.register(T_OFFER, (d) => this.onOfferExpired(d.offerId as string));
     this.timers.register(T_RETRY, (d) => this.search(d.fulfilmentId as string));
     this.timers.register(T_FALLBACK, (d) => this.fallback(d.fulfilmentId as string));
+    this.timers.register(T_SOS_REPAGE, (d) => this.pageSos(d.sosId as string, 'again'));
   }
 
   // ───────────── config & context ─────────────
@@ -1067,7 +1069,32 @@ export class DispatchService implements OnModuleInit {
       after: { sosId: s.id, fulfilmentId: s.fulfilmentId, called112: s.called112, lat: s.lat, lng: s.lng },
     });
     this.logger.warn({ sosId: s.id, riderUserId, fulfilmentId: s.fulfilmentId }, 'rider SOS');
+    // Page the on-call phones without making the rider wait for the SMS and call providers (ADR-034).
+    void this.pageSos(s.id, 'first').catch((err: Error) => this.logger.error({ sosId: s.id, err: err.message }, 'SOS page failed'));
     return s;
+  }
+
+  /**
+   * SMS + automated call to the on-call phones (OPS_ALERT_PHONES). The first page goes out when the SOS is raised;
+   * if it is still open after OPS_SOS_REPAGE_SEC the same phones are paged once more (ADR-034).
+   */
+  private async pageSos(sosId: string, round: 'first' | 'again'): Promise<void> {
+    const s = await this.repo.sos(sosId);
+    if (!s || s.resolvedAt) return;
+    if (!this.notifications.onCallPhones().length) {
+      this.logger.warn({ sosId }, 'rider SOS raised but OPS_ALERT_PHONES is empty: nobody was paged');
+      return;
+    }
+    const rider = await this.rider(s.riderUserId);
+    const phone = (await this.auth.me(s.riderUserId)).phone;
+    const job = s.fulfilmentId ? await this.repo.fulfilment(s.fulfilmentId) : null;
+    const order = job ? await this.orders.get(job.orderId) : null;
+    const where = [order ? `Order ${order.code}.` : 'No delivery in hand.', s.lat != null && s.lng != null ? `Map: https://maps.google.com/?q=${s.lat},${s.lng}.` : 'No location.'].join(' ');
+    const minutes = Math.max(1, Math.round((this.clock().getTime() - s.createdAt.getTime()) / 60_000));
+    const reached = await this.notifications.pageOnCall(round === 'first' ? 'ops.rider_sos' : 'ops.rider_sos_again', { rider: rider.name, phone, where, minutes }, { userId: s.riderUserId });
+    await this.repo.markSosPaged(sosId, reached, this.clock());
+    if (round === 'first' && this.env.OPS_SOS_REPAGE_SEC > 0)
+      await this.timers.schedule(`sos:${sosId}`, T_SOS_REPAGE, new Date(this.clock().getTime() + this.env.OPS_SOS_REPAGE_SEC * 1000), { sosId });
   }
 
   async resolveSos(id: string, actor: OpsActor, note: string | null): Promise<RiderSosRecord> {
@@ -1075,6 +1102,7 @@ export class DispatchService implements OnModuleInit {
     if (!s) throw new DomainError('NOT_FOUND', 'Alert not found');
     const done = await this.repo.resolveSos(id, actor.userId, note, this.clock());
     if (!done) throw new DomainError('INVALID_STATE', 'This alert was already resolved.');
+    await this.timers.cancel(`sos:${id}`);
     await this.repo.appendAudit({
       entity: 'rider',
       entityId: s.riderUserId,
@@ -1085,6 +1113,11 @@ export class DispatchService implements OnModuleInit {
       after: { note },
     });
     return done;
+  }
+
+  /** How many on-call phones are set to be paged for an SOS. */
+  onCallPhoneCount(): number {
+    return this.notifications.onCallPhones().length;
   }
 
   openSos(): Promise<RiderSosRecord[]> {

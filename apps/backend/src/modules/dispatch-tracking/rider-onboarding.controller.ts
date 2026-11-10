@@ -171,7 +171,15 @@ export class OpsRidersController {
     if (!s) return null;
     const f = s.fulfilmentId ? await this.dispatch.fulfilmentById(s.fulfilmentId) : null;
     const code = f ? ((await this.dispatch.context(f)).order.code ?? null) : null;
-    return { id: s.id, createdAt: s.createdAt.toISOString(), lat: s.lat, lng: s.lng, called112: s.called112, orderCode: code };
+    return {
+      id: s.id,
+      createdAt: s.createdAt.toISOString(),
+      lat: s.lat,
+      lng: s.lng,
+      called112: s.called112,
+      orderCode: code,
+      paging: { phones: this.dispatch.onCallPhoneCount(), reached: s.pagedCount, at: iso(s.pagedAt) },
+    };
   }
 
   @Get()
