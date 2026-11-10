@@ -39,8 +39,7 @@ class HomePage extends ConsumerWidget {
             icon: Badge(isLabelVisible: ref.watch(supportUnreadProvider) > 0, label: Text('${ref.watch(supportUnreadProvider)}'), child: const Icon(Icons.support_agent)),
             onPressed: () => Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => SupportInboxPage(strings: supportStrings(l), topics: supportTopics))),
           ),
-          IconButton(tooltip: l.switchLanguage, icon: const Icon(Icons.translate), onPressed: () => ref.read(localeControllerProvider.notifier).toggle()),
-          IconButton(key: const ValueKey('sign-out'), tooltip: l.signOut, icon: const Icon(Icons.logout), onPressed: () => _signOut(context, ref)),
+          IconButton(key: const ValueKey('open-profile'), tooltip: l.profileTitle, icon: const Icon(Icons.account_circle), onPressed: () => context.push('/profile')),
         ],
       ),
       body: home.when(
@@ -318,27 +317,6 @@ class _Retry extends StatelessWidget {
           ]),
         ),
       );
-}
-
-/// Signing out goes offline first (so the online time stops counting); with a delivery in hand it is refused
-/// (audit B4).
-Future<void> _signOut(BuildContext context, WidgetRef ref) async {
-  final l = AppLocalizations.of(context);
-  final h = ref.read(riderHomeProvider).value;
-  if (h != null && h.jobs.isNotEmpty) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(l.signOutBlocked)));
-    return;
-  }
-  if (h?.online ?? false) {
-    try {
-      await ref.read(riderHomeProvider.notifier).goOffline();
-    } catch (_) {
-      // No network: sign out anyway; the server stops offering once positions go stale.
-    }
-  }
-  await ref.read(authControllerProvider.notifier).signOut();
 }
 
 /// Runs a home action; a failure shows a message instead of an uncaught error.

@@ -6,6 +6,7 @@ import 'package:santha_ui/santha_ui.dart';
 
 import '../features/auth/presentation/login_page.dart';
 import '../features/home/presentation/earnings_page.dart';
+import '../features/home/presentation/profile_page.dart';
 import '../features/home/presentation/home_page.dart';
 import '../features/home/presentation/job_page.dart';
 
@@ -38,6 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: Routes.home, builder: (context, state) => const HomePage()),
       GoRoute(path: '/job/:id', builder: (context, state) => JobPage(id: state.pathParameters['id']!)),
       GoRoute(path: '/earnings', builder: (context, state) => const EarningsPage()),
+      GoRoute(path: '/profile', builder: (context, state) => const ProfilePage()),
     ],
   );
 });
