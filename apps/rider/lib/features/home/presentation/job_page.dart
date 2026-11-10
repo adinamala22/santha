@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../l10n/gen/app_localizations.dart';
 import '../data/rider_controller.dart';
 import 'copy.dart';
+import 'offline_banner.dart';
 import 'sos.dart';
 import '../../../support.dart';
 
@@ -92,6 +93,7 @@ class _JobPageState extends ConsumerState<JobPage> {
           ),
         ),
         data: (j) => ListView(padding: const EdgeInsets.all(SanthaSpacing.s4), children: [
+          const OfflineBanner(),
           if (j.state == DeliveryState.delivered)
             ..._done(l)
           else if (j.state == DeliveryState.failed)
