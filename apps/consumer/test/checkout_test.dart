@@ -302,6 +302,33 @@ void main() {
     expect(find.byKey(const ValueKey('tracking')), findsNothing);
   });
 
+  testWidgets('ADR-039: when the store staff delivered, the delivery can be rated too', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.tracking = {...fixture('tracking_picked_up'), 'orderId': o['id'], 'mode': 'self'};
+    h.backend.orderPatch = {'state': 'OUT_FOR_DELIVERY'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'OUT_FOR_DELIVERY'});
+    await settle(tester, 20);
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('stars-store-5')), 300, scrollable: find.byType(Scrollable).first);
+    await tapVisible(tester, find.byKey(const ValueKey('stars-store-5')));
+    await tapVisible(tester, find.byKey(const ValueKey('stars-rider-4')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('send-rating')));
+    await settle(tester, 10);
+    expect(h.backend.rating!['storeStars'], 5);
+    expect(h.backend.rating!['riderStars'], 4);
+  });
+
   testWidgets('M7: after delivery — rate once, report a missing item and see the wallet refund at once', (tester) async {
     final realtime = FakeRealtime();
     final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);

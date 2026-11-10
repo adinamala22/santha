@@ -135,7 +135,9 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
     final text = Theme.of(context).textTheme;
     final issues = ref.watch(issuesProvider(widget.order.id)).value ?? const [];
     final tipOffer = ref.watch(tipOfferProvider(widget.order.id)).value;
-    final riderDelivered = ref.watch(trackingProvider(widget.order.id)).value?.mode == DeliveryMode.rider;
+    // The delivery is rated when a Santha rider or the store's own staff brought it (ADR-039).
+    final mode = ref.watch(trackingProvider(widget.order.id)).value?.mode;
+    final riderDelivered = mode == DeliveryMode.rider || mode == DeliveryMode.self;
     final mine = ref.watch(myRatingProvider(widget.order.id));
     // Until we know whether the order is rated, show neither the stars nor "Your rating".
     final existing = mine.value;

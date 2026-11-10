@@ -138,7 +138,8 @@ export class IssuesService implements OnModuleInit {
   async rate(userId: string, orderId: string, input: { storeStars: number; riderStars?: number | undefined; comment?: string | undefined }): Promise<RatingRecord> {
     const { order, fulfilment } = await this.ownedDelivered(userId, orderId);
     const riderUserId = fulfilment?.mode === 'rider' ? fulfilment.riderUserId : null;
-    const riderStars = riderUserId ? (input.riderStars ?? null) : null;
+    // Delivery stars (column rider_stars) are taken for a Santha rider and for the store's own staff (ADR-039); only a rider's average is kept.
+    const riderStars = fulfilment?.mode === 'rider' || fulfilment?.mode === 'self' ? (input.riderStars ?? null) : null;
     const comment = input.comment?.trim() || null;
     // Comments are screened (M8): contact details, links or abuse wait for a person.
     const screened = screenReview(comment);
