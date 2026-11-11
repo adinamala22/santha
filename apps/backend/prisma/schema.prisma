@@ -303,7 +303,7 @@ model Merchant {
   landmark          String?
   pincode           String?
   location          Unsupported("geography(Point, 4326)")?
-  radiusM           Int                                    @default(5000) @map("radius_m")
+  radiusM           Int                                    @default(7000) @map("radius_m")
   /// "Deliver anywhere" (ADR-022): delivers itself to any address in its city, beyond its radius too.
   deliversAnywhere  Boolean                                @default(false) @map("delivers_anywhere")
   hours             Json?
