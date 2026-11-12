@@ -81,21 +81,21 @@ describe('batching', () => {
 });
 
 describe('rider pay', () => {
-  const cfg = { basePaise: 3000, perKmPaise: 700, waitPerMinPaise: 100, batchBonusPaise: 1500 };
-  it('base + distance rounded up to 0.1 km', () => {
-    expect(riderPay(cfg, { tripM: 2000 })).toEqual({
-      totalPaise: 4400,
-      lines: [
-        { code: 'base', amountPaise: 3000 },
-        { code: 'distance', amountPaise: 1400 },
-      ],
-    });
-    expect(riderPay(cfg, { tripM: 2010 }).lines[1]!.amountPaise).toBe(1470);
+  const cfg = { basePaise: 3000, perKmPaise: 500, waitPerMinPaise: 100, batchBonusPaise: 1500 };
+  it('the base covers the first 5 km (ADR-038)', () => {
+    for (const tripM of [500, 2000, 5000]) {
+      expect(riderPay(cfg, { tripM })).toEqual({ totalPaise: 3000, lines: [{ code: 'base', amountPaise: 3000 }, { code: 'distance', amountPaise: 0 }] });
+    }
+  });
+  it('each km beyond 5 km adds Rs 5, rounded up to 0.1 km', () => {
+    expect(riderPay(cfg, { tripM: 6000 }).totalPaise).toBe(3500);
+    expect(riderPay(cfg, { tripM: 8000 }).totalPaise).toBe(3000 + 1500);
+    expect(riderPay(cfg, { tripM: 5010 }).lines[1]!.amountPaise).toBe(50);
   });
   it('waiting beyond 5 minutes and batching are paid', () => {
     const p = riderPay(cfg, { tripM: 1000, waitMin: 9.5, batched: true });
     expect(p.lines.map((l) => l.code)).toEqual(['base', 'distance', 'wait', 'batch']);
-    expect(p.totalPaise).toBe(3000 + 700 + 400 + 1500);
+    expect(p.totalPaise).toBe(3000 + 0 + 400 + 1500);
   });
 });
 

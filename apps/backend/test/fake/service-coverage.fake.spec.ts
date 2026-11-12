@@ -69,7 +69,7 @@ describe('Service coverage (fake mode)', () => {
     // Area borders do not limit delivery (ADR-021): Magunta Layout is within the kirana's 5 km.
     const magunta = SEED_MICRO_MARKETS.find((m) => m.slug === 'magunta-layout')!.centre;
     let page = (await http().get(`/v1/stores/${kirana.id}?${at(magunta)}`).expect(200)).body;
-    expect(page).toMatchObject({ deliversHere: true, notDeliveringReason: null, deliveryRadiusM: 5000, beyondRadiusSurchargePaise: null, store: { deliverable: true, beyondRadius: false } });
+    expect(page).toMatchObject({ deliversHere: true, notDeliveringReason: null, deliveryRadiusM: 7000, beyondRadiusSurchargePaise: null, store: { deliverable: true, beyondRadius: false } });
     page = (await http().get(`/v1/stores/${kirana.id}?${at(out)}`).expect(200)).body;
     expect(page.notDeliveringReason).toBe('outside_service_area');
 
@@ -84,7 +84,7 @@ describe('Service coverage (fake mode)', () => {
     page = (await http().get(`/v1/stores/${kirana.id}?${at(far)}`).expect(200)).body;
     expect(page).toMatchObject({ deliversHere: true, notDeliveringReason: null, deliveryRadiusM: 1000, beyondRadiusSurchargePaise: 3000, store: { beyondRadius: true } });
     const audit = (await http().get(`/v1/ops/audit?entity=merchant&entityId=${kirana.id}`).set(ops.headers).expect(200)).body.items as Array<{ action: string; before: unknown; after: unknown }>;
-    expect(audit[0]).toMatchObject({ action: 'radius_changed', before: { radiusM: 5000 }, after: { radiusM: 1000, reason: 'Only one delivery boy' } });
-    await http().put(`/v1/ops/merchants/${kirana.id}/radius`).set(ops.headers).send({ radiusM: 5000, reason: 'back to normal' }).expect(200);
+    expect(audit[0]).toMatchObject({ action: 'radius_changed', before: { radiusM: 7000 }, after: { radiusM: 1000, reason: 'Only one delivery boy' } });
+    await http().put(`/v1/ops/merchants/${kirana.id}/radius`).set(ops.headers).send({ radiusM: 7000, reason: 'back to normal' }).expect(200);
   });
 });

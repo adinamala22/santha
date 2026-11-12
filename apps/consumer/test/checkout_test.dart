@@ -58,7 +58,7 @@ void main() {
       {'code': 'beyond_radius', 'amountPaise': 3000, 'waivedPaise': 0},
     ];
     await openCheckout(tester);
-    expect(find.text('Extra delivery charge (far from the store)'), findsOneWidget);
+    expect(find.text('Long distance charge'), findsOneWidget);
     expect(find.text('₹30'), findsOneWidget);
   });
 

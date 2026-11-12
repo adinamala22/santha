@@ -120,8 +120,11 @@ export interface PayLine {
   amountPaise: number;
 }
 
+/** The base pay covers the first 5 km of the trip; only the km beyond it are paid per km (ADR-038). */
+export const RIDER_PAY_INCLUDED_KM = 5;
+
 /**
- * Deterministic rider pay: base + per-km on store → drop (rounded up to 0.1 km) + waiting at the store
+ * Deterministic rider pay: base (covers the first 5 km) + per-km beyond that on store → drop (rounded up to 0.1 km) + waiting at the store
  * beyond 5 free minutes + a batch bonus for the second order of a trip. Integer paise.
  */
 export function riderPay(
@@ -131,7 +134,7 @@ export function riderPay(
   const km10 = Math.ceil(input.tripM / 100); // tenths of a km
   const lines: PayLine[] = [
     { code: 'base', amountPaise: cfg.basePaise },
-    { code: 'distance', amountPaise: Math.round((km10 * cfg.perKmPaise) / 10) },
+    { code: 'distance', amountPaise: Math.round((Math.max(0, km10 - RIDER_PAY_INCLUDED_KM * 10) * cfg.perKmPaise) / 10) },
   ];
   const paidWait = Math.max(0, Math.floor(input.waitMin ?? 0) - 5);
   if (paidWait > 0) lines.push({ code: 'wait', amountPaise: paidWait * cfg.waitPerMinPaise });

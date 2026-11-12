@@ -336,7 +336,7 @@ class MerchantStore extends MemoryStore<MemState> {
             landmark: null,
             pincode: null,
             location: null,
-            radiusM: 5000,
+            radiusM: 7000,
             deliversAnywhere: false,
             hours: null,
             movPaise: 0,
