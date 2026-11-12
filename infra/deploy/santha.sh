@@ -11,6 +11,8 @@
 #   ./santha.sh import <file.csv>                import products into the master catalogue
 #   ./santha.sh backup                           pg_dump → gzip → backup bucket (or ./backups when none), prune old
 #   ./santha.sh restore <object>                 restore a dump from the backup bucket (asks for confirmation)
+#   ./santha.sh watch                            health check (api, web, search, last backup); alerts; heals search (ADR-042)
+#   ./santha.sh install-cron                     (run once with sudo) nightly backup + a health check every 5 minutes
 #   ./santha.sh tag [backend|web]                print the deployed tag (used to promote test → prod)
 #   ./santha.sh status | logs [service]
 set -euo pipefail
@@ -125,8 +127,10 @@ db_url() {
 }
 pg() { docker run --rm -i --network "santha-${SANTHA_ENV}_default" -e PGCONNECT_TIMEOUT=10 imresamu/postgis:16-3.4 "$@"; }
 s3() {
+  # BACKUP_S3_ENDPOINT is for non-AWS buckets (Spaces, GCS); leave it empty for a bucket on Amazon S3 itself.
+  local ep=(); [ -n "${BACKUP_S3_ENDPOINT:-}" ] && ep=(--endpoint-url "${BACKUP_S3_ENDPOINT}")
   docker run --rm -i -e AWS_ACCESS_KEY_ID="${BACKUP_S3_ACCESS_KEY:?}" -e AWS_SECRET_ACCESS_KEY="${BACKUP_S3_SECRET_KEY:?}" \
-    -e AWS_DEFAULT_REGION=ap-south-1 amazon/aws-cli --endpoint-url "${BACKUP_S3_ENDPOINT:?}" "$@"
+    -e AWS_DEFAULT_REGION="${BACKUP_S3_REGION:-ap-south-1}" amazon/aws-cli "${ep[@]}" "$@"
 }
 
 backup() {
@@ -151,6 +155,58 @@ backup() {
     ts="${f#santha-${SANTHA_ENV}-}"; ts="${ts%.sql.gz}"
     if [[ -n "$ts" && "$ts" < "$cutoff" ]]; then s3 s3 rm "s3://${BACKUP_S3_BUCKET}/${SANTHA_ENV}/${f}" >/dev/null; echo "Pruned ${f}"; fi
   done
+}
+
+# Sends one alert line. ALERT_TELEGRAM_BOT_TOKEN + ALERT_TELEGRAM_CHAT_ID (recommended: free, instant on a phone) and/or
+# ALERT_WEBHOOK_URL (any URL that takes {"text": "..."}: Slack, Discord-compatible, n8n). With neither, it only logs.
+alert() {
+  local msg="[santha ${SANTHA_ENV}] $1"
+  echo "ALERT: $msg" >&2
+  if [ -n "${ALERT_TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${ALERT_TELEGRAM_CHAT_ID:-}" ]; then
+    curl -fsS -m 10 "https://api.telegram.org/bot${ALERT_TELEGRAM_BOT_TOKEN}/sendMessage" \
+      --data-urlencode "chat_id=${ALERT_TELEGRAM_CHAT_ID}" --data-urlencode "text=${msg}" >/dev/null || true
+  fi
+  if [ -n "${ALERT_WEBHOOK_URL:-}" ]; then
+    curl -fsS -m 10 -H 'Content-Type: application/json' -d "{\"text\":\"${msg//\"/\'}\"}" "${ALERT_WEBHOOK_URL}" >/dev/null || true
+  fi
+}
+
+# Newest backup age in hours (999 when none).
+backup_age_hours() {
+  local newest=""
+  if [ -z "${BACKUP_S3_BUCKET:-}" ]; then
+    newest="$(ls -1t backups/santha-"${SANTHA_ENV}"-*.sql.gz 2>/dev/null | head -1 || true)"
+    [ -n "$newest" ] && echo $(( ( $(date +%s) - $(stat -c %Y "$newest") ) / 3600 )) || echo 999
+  else
+    newest="$(s3 s3 ls "s3://${BACKUP_S3_BUCKET}/${SANTHA_ENV}/" 2>/dev/null | awk '{print $1" "$2}' | sort | tail -1 || true)"
+    [ -n "$newest" ] && echo $(( ( $(date +%s) - $(date -d "$newest" +%s) ) / 3600 )) || echo 999
+  fi
+}
+
+# One pass of health checks. Alerts once per problem per state change (a marker file keeps it from repeating every
+# 5 minutes). Heals what it safely can: an empty search index after a Typesense restart is rebuilt (ADR-042).
+watch_once() {
+  local problems=() state=".watch-state"
+  curl -fsS -m 10 -o /dev/null "https://${API_DOMAIN}/v1/health/ready" || problems+=("api not ready")
+  curl -fsS -m 10 -o /dev/null "https://${WEB_DOMAIN}/" || problems+=("website not answering")
+  if ! dc exec -T typesense curl -fsS -m 5 http://localhost:8108/health >/dev/null 2>&1; then
+    dc up -d typesense >/dev/null 2>&1 || true
+    sleep 15
+    if dc exec -T typesense curl -fsS -m 5 http://localhost:8108/health >/dev/null 2>&1; then
+      dc run --rm tools pnpm search:reindex >/dev/null 2>&1 && problems+=("search was down: restarted and reindexed") || problems+=("search is down and could not be restarted")
+    else
+      problems+=("search is down and could not be restarted")
+    fi
+  fi
+  local age; age="$(backup_age_hours)"
+  [ "$age" -le 30 ] || problems+=("last backup is ${age}h old")
+  local now="${problems[*]:-ok}"
+  local before; before="$(cat "$state" 2>/dev/null || echo ok)"
+  if [ "$now" != "$before" ]; then
+    if [ "$now" = ok ]; then alert "recovered: all checks pass"; else alert "${now}"; fi
+    echo "$now" > "$state"
+  fi
+  [ "$now" = ok ] && echo "ok" || { echo "problems: $now"; return 1; }
 }
 
 record_tag() { # part tag
@@ -223,6 +279,19 @@ case "$cmd" in
     dc run --rm -v "$(realpath "$f"):/tmp/import.csv:ro" tools pnpm catalogue:import /tmp/import.csv "$@"
     ;;
   backup) backup ;;
+  watch) watch_once ;;
+  install-cron)
+    [ "$(id -u)" = 0 ] || { echo "Run with sudo: sudo ./santha.sh install-cron" >&2; exit 1; }
+    dir="$(pwd)"; user="$(stat -c %U "$dir")"
+    cat > "/etc/cron.d/santha-${SANTHA_ENV}" <<CRON
+# Santha ${SANTHA_ENV} (ADR-042): nightly database backup at 02:30 IST (21:00 UTC), health check every 5 minutes.
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+0 21 * * * ${user} cd ${dir} && ./santha.sh backup >> ${dir}/cron-backup.log 2>&1
+*/5 * * * * ${user} cd ${dir} && ./santha.sh watch >> ${dir}/cron-watch.log 2>&1
+CRON
+    chmod 644 "/etc/cron.d/santha-${SANTHA_ENV}"
+    echo "Installed /etc/cron.d/santha-${SANTHA_ENV} (runs as ${user})."
+    ;;
   restore)
     obj="${1:?usage: ./santha.sh restore <object key, e.g. prod/santha-prod-20261103T000000Z.sql.gz>}"
     echo "This REPLACES the ${SANTHA_ENV} database with ${obj}. The API and worker stop meanwhile."
@@ -237,5 +306,5 @@ case "$cmd" in
     ;;
   status) echo "Environment ${SANTHA_ENV}: backend ${BACKEND_TAG}, web ${WEB_TAG}"; dc ps ;;
   logs) dc logs -f --tail=200 "$@" ;;
-  *) sed -n '2,16p' "$0" ;;
+  *) sed -n '2,19p' "$0" ;;
 esac

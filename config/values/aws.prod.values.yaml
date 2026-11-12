@@ -8,6 +8,10 @@ deploy:
   webRedirects: www.santhaapp.com   # → https://santhaapp.com
 
 backend:
+  # Photos: an AWS S3 bucket in Mumbai (ADR-042). AWS takes virtual-hosted URLs, which the backend derives from the bucket.
+  s3Endpoint: https://s3.ap-south-1.amazonaws.com
+  s3Region: ap-south-1
+  s3Bucket: santha-prod-media
   # Pre-launch: only the website (leads, downloads flag, store pages) and the ops console are served; the apps'
   # endpoints answer "launching soon". So no live payment, KYC, SMS, push or maps accounts are needed yet.
   launchStage: prelaunch
@@ -19,3 +23,6 @@ backend:
   paymentsProvider: mock
   pushProvider: mock
   mapsProvider: mock
+
+web:
+  mediaOrigin: https://santha-prod-media.s3.ap-south-1.amazonaws.com   # photos are served from the bucket's own address

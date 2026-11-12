@@ -35,6 +35,9 @@ export abstract class ObjectStorage {
 /** Objects under this prefix are never public: served only through presignGet. */
 export const PRIVATE_PREFIX = 'private/';
 
+/** True when the endpoint is Amazon S3 itself: it takes virtual-hosted style (`<bucket>.s3.<region>.amazonaws.com`), not path style. */
+export const isAwsS3 = (endpoint: string | undefined): boolean => !!endpoint && /(^|\.)amazonaws\.com\/?$/.test(new URL(endpoint).host);
+
 @Injectable()
 export class S3ObjectStorage extends ObjectStorage {
   private readonly logger = new Logger('S3ObjectStorage');
@@ -45,7 +48,7 @@ export class S3ObjectStorage extends ObjectStorage {
     super();
     this.client = new S3Client({
       region: env.S3_REGION,
-      ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT, forcePathStyle: true } : {}),
+      ...(env.S3_ENDPOINT ? { endpoint: env.S3_ENDPOINT, forcePathStyle: !isAwsS3(env.S3_ENDPOINT) } : {}),
       ...(env.S3_ACCESS_KEY && env.S3_SECRET_KEY ? { credentials: { accessKeyId: env.S3_ACCESS_KEY, secretAccessKey: env.S3_SECRET_KEY } } : {}),
     });
   }
@@ -110,7 +113,8 @@ export class S3ObjectStorage extends ObjectStorage {
   }
 
   publicUrl(key: string): string {
-    const base = this.env.CDN_BASE_URL ?? `${this.env.S3_ENDPOINT ?? ''}/${this.env.S3_BUCKET ?? ''}`;
+    const aws = isAwsS3(this.env.S3_ENDPOINT) && this.env.S3_BUCKET ? `https://${this.env.S3_BUCKET}.s3.${this.env.S3_REGION}.amazonaws.com` : null;
+    const base = this.env.CDN_BASE_URL ?? aws ?? `${this.env.S3_ENDPOINT ?? ''}/${this.env.S3_BUCKET ?? ''}`;
     return `${base.replace(/\/$/, '')}/${key}`;
   }
 }
