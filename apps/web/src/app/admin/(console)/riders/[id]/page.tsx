@@ -183,6 +183,11 @@ export default async function RiderPage({ params }: { params: Promise<{ id: stri
                 ))}
               </tbody>
             </table>
+            {r.checks.some((k) => k.provider === 'manual') ? (
+              <div className="mt-4" data-testid="manual-kyc-note">
+                <Notice>{mc.manualKyc}</Notice>
+              </div>
+            ) : null}
             {r.checks.some((k) => k.kind === 'driving_licence' && k.status === 'pending') ? (
               <div className="mt-4">
                 <Notice>{c.licenceReview}</Notice>

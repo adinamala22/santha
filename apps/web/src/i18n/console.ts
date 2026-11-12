@@ -96,6 +96,7 @@ export const consoleMessages = {
         driving_licence: 'Driving licence',
       },
       kycStatus: { pending: 'Pending', verified: 'Verified', failed: 'Failed' },
+      manualKyc: 'These numbers were typed by the applicant and no authority has checked them. Compare each one with the original document before you approve.',
       drugLicenceReview: 'Check the licence number against the State Drugs Control register before approving.',
       checklist: 'Onboarding steps',
       steps: {
@@ -329,6 +330,7 @@ export const consoleMessages = {
         driving_licence: 'డ్రైవింగ్ లైసెన్స్',
       },
       kycStatus: { pending: 'పెండింగ్', verified: 'ధృవీకరించారు', failed: 'విఫలమైంది' },
+      manualKyc: 'ఈ నంబర్లను దరఖాస్తుదారు టైప్ చేశారు; ఏ అధికారి తనిఖీ చేయలేదు. ఆమోదించే ముందు ప్రతిదాన్ని అసలు పత్రంతో సరిపోల్చండి.',
       drugLicenceReview: 'ఆమోదించే ముందు లైసెన్స్ నంబర్‌ను రాష్ట్ర డ్రగ్స్ కంట్రోల్ రిజిస్టర్‌తో సరిచూడండి.',
       checklist: 'ఆన్‌బోర్డింగ్ దశలు',
       steps: {
