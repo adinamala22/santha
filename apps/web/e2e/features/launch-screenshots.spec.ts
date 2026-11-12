@@ -43,8 +43,8 @@ test.describe.serial('launch screenshots: public site', () => {
       const res = await page.goto(path);
       expect(res?.status(), path).toBe(200);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      await shot(page, `phone-${name}`, { full: true }); // the picture first, so a failure below still leaves the evidence
       expect(overflow, `${path} scrolls sideways on a phone`).toBeLessThanOrEqual(1);
-      await shot(page, `phone-${name}`, { full: true });
     }
     await ctx.close();
   });
