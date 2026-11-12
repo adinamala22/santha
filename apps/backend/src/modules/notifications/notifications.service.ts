@@ -126,6 +126,34 @@ export class NotificationsService implements OnModuleInit {
     if (opts.whatsapp && user && (await this.repo.whatsappOptIn(user.id))) await this.sendMessage('whatsapp', user.phone, `${msg.title}. ${msg.body}`, template, locale, logCtx);
   }
 
+  /** True when the on-call Telegram group is configured (OPS_ALERT_TELEGRAM_*). */
+  telegramConfigured(): boolean {
+    return !!this.env.OPS_ALERT_TELEGRAM_BOT_TOKEN && !!this.env.OPS_ALERT_TELEGRAM_CHAT_ID;
+  }
+
+  /** How many places an SOS page goes: each on-call phone, plus the Telegram group when set. */
+  onCallTargets(): number {
+    return this.onCallPhones().length + (this.telegramConfigured() ? 1 : 0);
+  }
+
+  /** Sends one message to the on-call Telegram group. False when not configured or Telegram refused it; never throws. */
+  async telegramAlert(text: string): Promise<boolean> {
+    if (!this.telegramConfigured()) return false;
+    try {
+      const res = await fetch(`https://api.telegram.org/bot${this.env.OPS_ALERT_TELEGRAM_BOT_TOKEN}/sendMessage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: this.env.OPS_ALERT_TELEGRAM_CHAT_ID, text }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (!res.ok) this.logger.warn({ status: res.status }, 'Telegram alert refused');
+      return res.ok;
+    } catch (err) {
+      this.logger.warn({ err: (err as Error).message }, 'Telegram alert failed');
+      return false;
+    }
+  }
+
   /** The phones to page for an SOS (OPS_ALERT_PHONES). */
   onCallPhones(): string[] {
     return this.env.OPS_ALERT_PHONES.split(',').map((x) => x.trim()).filter(Boolean);
@@ -140,6 +168,7 @@ export class NotificationsService implements OnModuleInit {
     const { title, body } = render(template, locale, vars);
     const text = `${title}. ${body}`;
     let reached = 0;
+    if (await this.telegramAlert(text)) reached += 1;
     for (const phone of this.onCallPhones()) {
       const logCtx = { userId: ctx.userId ?? null, merchantId: null, orderId: null };
       const sms = await this.sendMessage('sms', phone, text, template, locale, logCtx).catch(() => false);

@@ -1147,7 +1147,7 @@ export class DispatchService implements OnModuleInit {
   private async pageSos(sosId: string, round: 'first' | 'again'): Promise<void> {
     const s = await this.repo.sos(sosId);
     if (!s || s.resolvedAt) return;
-    if (!this.notifications.onCallPhones().length) {
+    if (!this.notifications.onCallTargets()) {
       this.logger.warn({ sosId }, 'rider SOS raised but OPS_ALERT_PHONES is empty: nobody was paged');
       return;
     }
@@ -1183,7 +1183,7 @@ export class DispatchService implements OnModuleInit {
 
   /** How many on-call phones are set to be paged for an SOS. */
   onCallPhoneCount(): number {
-    return this.notifications.onCallPhones().length;
+    return this.notifications.onCallTargets();
   }
 
   openSos(): Promise<RiderSosRecord[]> {

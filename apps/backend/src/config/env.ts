@@ -27,6 +27,12 @@ const EnvObject = z.object({
       .string()
       .default('')
       .refine((v) => v.split(',').map((x) => x.trim()).filter(Boolean).every((x) => /^\+\d{10,15}$/.test(x)), 'comma-separated phone numbers like +919876543210'),
+    /**
+     * Telegram group for the same SOS page (ADR-043): free, reaches every phone in the group at once, and works while
+     * SMS and voice providers are still mocks. Bot token only in the server .env.
+     */
+    OPS_ALERT_TELEGRAM_BOT_TOKEN: z.string().optional(),
+    OPS_ALERT_TELEGRAM_CHAT_ID: z.string().optional(),
     /** Language of the on-call SOS page. */
     OPS_ALERT_LOCALE: z.enum(['en', 'te']).default('en'),
     /** Page again when an SOS is still open after this many seconds (0 = never). */
