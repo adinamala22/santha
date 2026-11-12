@@ -79,7 +79,8 @@ void main() {
     addTearDown(container.dispose);
   });
 
-  Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 20));
+  // Generous: CI machines are slow, and a fixed 20 ms made this suite flaky.
+  Future<void> settle() => Future<void>.delayed(const Duration(milliseconds: 250));
 
   test('after sign-in the phone registers its token; a rotated token is sent again; sign-out unregisters first', () async {
     container.read(pushSyncProvider);
