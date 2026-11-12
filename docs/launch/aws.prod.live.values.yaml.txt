@@ -1,0 +1,12 @@
+# The live block for config/values/aws.prod.values.yaml (docs/launch/go-live.md step 3).
+# Replace the pre-launch lines under `backend:` (launchStage, opsLoginOtp, the mock providers) with this.
+# A test (src/config/live-values.spec.ts) checks it boots with dummy secrets.
+backend:
+  launchStage: live
+  otpProvider: none
+  kycProvider: manual
+  paymentsProvider: razorpay
+  pushProvider: fcm
+  mapsProvider: google
+  whatsappProvider: cloud
+  whatsappPhoneNumberId: "000000000000000"   # replace with the Phone number ID from WhatsApp Manager
