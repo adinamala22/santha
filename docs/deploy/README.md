@@ -259,6 +259,28 @@ backend. Prod uses a managed database; give tools a read-only user there.
    - Then redeploy the backend and rebuild the apps.
 6. iOS needs a Mac or a macOS CI runner plus an Apple developer account. It is not set up yet. Push on iOS also needs an APNs key in Firebase.
 
+## 6. Production photos on Amazon S3, backups and alerts (ADR-042)
+Owner steps, once, in the AWS console (region **Asia Pacific (Mumbai) ap-south-1**):
+
+1. **Photos bucket** `santha-prod-media`.
+   - Block Public Access: leave **on** for everything except "Block public access to buckets and objects granted through new public bucket or access point policies" (turn that one **off**).
+   - Bucket policy: public read of `media/*` only. `private/*` (KYC and door photos) stays closed and is served by short-lived signed links.
+     ```json
+     {"Version":"2012-10-17","Statement":[{"Sid":"PublicReadMedia","Effect":"Allow","Principal":"*","Action":"s3:GetObject","Resource":"arn:aws:s3:::santha-prod-media/media/*"}]}
+     ```
+   - CORS (so the apps and the website can upload with a signed link):
+     ```json
+     [{"AllowedMethods":["PUT","GET"],"AllowedOrigins":["*"],"AllowedHeaders":["*"],"MaxAgeSeconds":3000}]
+     ```
+2. **IAM user** `santha-prod-media` with this policy only, then create an access key (these are `S3_ACCESS_KEY` and `S3_SECRET_KEY` in the prod `.env`):
+   ```json
+   {"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":["s3:GetObject","s3:PutObject","s3:DeleteObject"],"Resource":"arn:aws:s3:::santha-prod-media/*"},{"Effect":"Allow","Action":"s3:ListBucket","Resource":"arn:aws:s3:::santha-prod-media"}]}
+   ```
+3. **Backups bucket** `santha-prod-backups`: Block Public Access fully **on**, versioning on, and a lifecycle rule that expires objects after 35 days. A second IAM user `santha-prod-backups` with put, get, list and delete on that bucket only. Its keys are `BACKUP_S3_ACCESS_KEY` and `BACKUP_S3_SECRET_KEY`; set `BACKUP_S3_BUCKET=santha-prod-backups` and leave `BACKUP_S3_ENDPOINT` empty.
+4. The values already point there (`aws.prod.values.yaml`: `s3Endpoint`, `s3Bucket`, web `mediaOrigin`). If you choose other bucket names, change them in that file.
+5. On the server, as the deploy user, in `/opt/santha-prod`: `./santha.sh backup` once, then `sudo ./santha.sh install-cron` (nightly backup at 02:30 IST and a health check every five minutes).
+6. Alerts: add `ALERT_TELEGRAM_BOT_TOKEN` and `ALERT_TELEGRAM_CHAT_ID` (or `ALERT_WEBHOOK_URL`) to `.env`, then `./santha.sh watch` prints `ok`. Add an outside monitor (UptimeRobot) for `https://api.santhaapp.com/v1/health/ready`, because the watchdog runs on the server it watches.
+
 ## What is still missing before real users
 See `docs/launch/launch-checklist.md`. In particular:
 - Firebase config in the apps for push notifications (§5 step 5);
