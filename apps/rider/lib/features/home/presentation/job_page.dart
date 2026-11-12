@@ -207,6 +207,8 @@ class _JobPageState extends ConsumerState<JobPage> {
         decoration: BoxDecoration(color: SanthaColors.marigold100, borderRadius: BorderRadius.circular(SanthaRadius.md)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(j.codDuePaise > 0 ? l.collectCod(rupees(j.codDuePaise)) : l.prepaid, key: const ValueKey('cod'), style: text.titleSmall),
+          // The field's label floats above its box; without a gap it was drawn over the line above (found on the emulator).
+          if (j.codDuePaise > 0) const SizedBox(height: SanthaSpacing.s4),
           if (j.codDuePaise > 0)
             TextField(
               key: const ValueKey('cash-collected'),

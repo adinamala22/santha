@@ -164,6 +164,15 @@ void main() {
     expect(cashPaise('12.345'), isNull);
   });
 
+  testWidgets('the "collect cash" line does not overlap the cash field label (seen on the emulator)', (tester) async {
+    await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 24590)]));
+    await tapKey(tester, 'job-j1');
+    final line = tester.getRect(find.byKey(const ValueKey('cod')));
+    final field = tester.getRect(find.byKey(const ValueKey('cash-collected')));
+    // The label floats above the field box, about one text line, so the field must start at least that far below the line.
+    expect(field.top - line.bottom, greaterThanOrEqualTo(14));
+  });
+
   testWidgets('B5: unreadable cash is not sent as ₹0; "1,560" is sent as ₹1560', (tester) async {
     final (_, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true, jobs: [testJob(state: DeliveryState.pickedUp, orderState: 'OUT_FOR_DELIVERY', codDuePaise: 156000)]));
     await tapKey(tester, 'job-j1');
