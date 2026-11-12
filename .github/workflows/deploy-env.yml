@@ -55,9 +55,10 @@ jobs:
     name: ${{ inputs.component }} → ${{ inputs.environment == 'prod' && 'PROD' || 'QA' }}
     needs: resolve
     runs-on: ubuntu-latest
-    # One deploy at a time per environment, whichever part (backend and web share the server's stack).
+    # One deploy at a time per part and environment. A group holds one waiting run, so a shared group let a queued web
+    # deploy cancel a waiting backend deploy (ADR-044); backend and web take turns on the server via santha.sh's lock.
     concurrency:
-      group: santha-deploy-${{ inputs.environment }}
+      group: santha-deploy-${{ inputs.environment }}-${{ inputs.component }}
       cancel-in-progress: false
     environment:
       name: ${{ inputs.environment }}
