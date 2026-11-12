@@ -119,6 +119,8 @@ void main() {
     expect(api.calls.where((c) => c.startsWith('status')), isEmpty);
     expect(api.online, isTrue);
 
+    await tester.tap(find.byKey(const ValueKey('open-profile')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('sign-out')));
     await tester.pumpAndSettle();
     expect(find.text('Finish your delivery before signing out.'), findsOneWidget);
@@ -127,11 +129,30 @@ void main() {
 
   testWidgets('B4: signing out while online goes offline first', (tester) async {
     final (container, api) = await pumpRider(tester, make: (c) => FakeRiderApi(c, online: true));
+    await tester.tap(find.byKey(const ValueKey('open-profile')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const ValueKey('sign-out')));
     await tester.pumpAndSettle();
     expect(api.calls, contains('status false '));
     expect(api.online, isFalse);
     expect(container.read(authControllerProvider), isA<AuthSignedOut>());
+  });
+
+  testWidgets('ADR-040: the profile shows the rider, the customers\' rating and the language and sign-out controls', (tester) async {
+    await pumpRider(tester, make: (c) => FakeRiderApi(c, acceptancePct: 82));
+    expect(find.byKey(const ValueKey('sign-out')), findsNothing); // no longer on the home bar
+    await tester.tap(find.byKey(const ValueKey('open-profile')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('rider-profile')), findsOneWidget);
+    expect(find.text('My profile'), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-name')), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-vehicle')), findsOneWidget);
+    expect(find.byKey(const ValueKey('profile-rating')), findsOneWidget);
+    expect(find.text('You accepted 82% of offers'), findsOneWidget);
+    // Language switches in place.
+    await tester.tap(find.byKey(const ValueKey('profile-language')));
+    await tester.pumpAndSettle();
+    expect(find.text('నా ప్రొఫైల్'), findsOneWidget);
   });
 
   test('B5: cash is read with commas, spaces and the rupee sign; anything else is refused', () {

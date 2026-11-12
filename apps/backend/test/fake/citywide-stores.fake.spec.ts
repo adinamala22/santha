@@ -13,7 +13,7 @@ import { SEED_MERCHANTS, SEED_MICRO_MARKETS } from '../../src/dev/seed-data';
 import { FakeSinks } from '../../src/infra/fake/fake-sinks';
 import { bootFakeApp, type FakeApp, type Session } from './harness';
 
-const kirana = SEED_MERCHANTS.find((m) => m.name === 'Ramesh Stores')!; // Dargamitta, 5 km radius
+const kirana = SEED_MERCHANTS.find((m) => m.name === 'Ramesh Stores')!; // Dargamitta, 7 km radius (ADR-038)
 const centre = (slug: string) => SEED_MICRO_MARKETS.find((m) => m.slug === slug)!.centre;
 const at = (p: { lat: number; lng: number }) => `lat=${p.lat}&lng=${p.lng}`;
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -47,8 +47,11 @@ describe('City-wide stores and the Open switch (fake mode)', () => {
   }, 60_000);
   afterAll(() => fake?.close());
 
-  it('ACCEPTANCE: every live store of the city is listed and delivers; beyond the 5 km radius it is marked for the extra charge', async () => {
-    expect(SEED_MERCHANTS.every((m) => m.radiusM === 5000)).toBe(true); // every store reset to 5 km (ADR-022)
+  it('ACCEPTANCE: every live store of the city is listed and delivers; beyond its radius it is marked for the extra charge', async () => {
+    expect(SEED_MERCHANTS.every((m) => m.radiusM === 7000)).toBe(true); // every store delivers up to 7 km (ADR-038)
+    // Vedayapalem is ~5.3 km away: inside 7 km, so only a 5 km store charges extra there.
+    expect((await card(centre('vedayapalem')))).toMatchObject({ beyondRadius: false });
+    await http().put(`/v1/ops/merchants/${kirana.id}/radius`).set(ops.headers).send({ radiusM: 5000, reason: 'test: a 5 km store' }).expect(200);
     const live = SEED_MERCHANTS.filter((m) => m.status === 'live' && m.type === 'retail');
     const stores = (await http().get(`/v1/feed?${at(centre('vedayapalem'))}&tab=stores`).expect(200)).body.stores as Card[];
     expect(stores.map((s) => s.name).sort()).toEqual(live.map((m) => m.name).sort());

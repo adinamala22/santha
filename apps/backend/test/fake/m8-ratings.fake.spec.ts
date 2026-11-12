@@ -133,4 +133,14 @@ describe('Ratings & reviews (fake mode)', () => {
     await http().get('/v1/stores/not-a-uuid/reviews').expect(400);
     expect((await http().get(`/v1/stores/${kirana.id}/reviews?limit=1`).expect(200)).body.items).toHaveLength(1);
   });
+
+  it('the delivery by the store staff can be rated too (ADR-039); it is kept on the rating, not on any rider', async () => {
+    const c = await customer('9876502150');
+    const o = await order(c); // delivered by the store staff
+    await http().post(`/v1/orders/${o.id}/rating`).set(c.headers).send({ storeStars: 5, riderStars: 4 }).expect(201);
+    const mine = (await http().get(`/v1/orders/${o.id}/rating`).set(c.headers).expect(200)).body.rating;
+    expect(mine).toMatchObject({ storeStars: 5, riderStars: 4 });
+    const ev = fake.app.get(FakeSinks).events.find((e) => e.type === 'rating.submitted' && e.aggregate.id === o.id)!;
+    expect(ev.payload).toMatchObject({ rider_user_id: null, rider_stars: 4 });
+  });
 });

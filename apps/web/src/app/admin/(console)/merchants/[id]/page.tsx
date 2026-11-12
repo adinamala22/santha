@@ -131,6 +131,11 @@ export default async function MerchantPage({ params }: { params: Promise<{ id: s
                 ))}
               </tbody>
             </table>
+            {view.kyc.some((k) => k.provider === 'manual') ? (
+              <div className="mt-4" data-testid="manual-kyc-note">
+                <Notice>{c.manualKyc}</Notice>
+              </div>
+            ) : null}
             {view.kyc.some((k) => k.kind === 'drug_licence' && k.status === 'pending') ? (
               <div className="mt-4">
                 <Notice>{c.drugLicenceReview}</Notice>

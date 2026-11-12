@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { parseEnv } from '../../config/env';
-import { MockSmsProvider } from '../../infra/providers/sms/sms.provider';
+import { MockSmsProvider, NoSmsProvider } from '../../infra/providers/sms/sms.provider';
 import { MockWhatsAppOtpProvider, WhatsAppOtpProvider, WhatsAppSendError } from '../../infra/providers/whatsapp/whatsapp-otp.provider';
 import { FlagsService } from '../analytics-config/flags.service';
 import { OtpDeliveryService } from './otp-delivery.service';
@@ -90,5 +90,15 @@ describe('OtpDeliveryService', () => {
       throw new Error('sms down');
     };
     await expect(svc.send(await svc.plan('d1'), PHONE, '482913', 'en')).rejects.toThrow('sms down');
+  });
+  it('ADR-041: with no SMS provider WhatsApp is the only channel, and a failure is reported, not hidden', async () => {
+    const cloud = new FakeCloud();
+    const e = parseEnv({ ...process.env, ...ON });
+    const svc = new OtpDeliveryService(new NoSmsProvider(), cloud, new FlagsService(e), e);
+    const plan = await svc.plan('d1');
+    expect(plan).toEqual({ channels: ['whatsapp'], allMock: false });
+    expect(await svc.send(plan, PHONE, '482913', 'en')).toBe('whatsapp');
+    cloud.fail = new WhatsAppSendError('Message undeliverable', 131026);
+    await expect(svc.send(plan, PHONE, '482913', 'en')).rejects.toThrow('undeliverable');
   });
 });

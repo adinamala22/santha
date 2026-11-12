@@ -546,5 +546,9 @@
         "type": "int"
       }
     }
-  }
+  },
+  "profileTitle": "My profile",
+  "profileRatingTitle": "Your rating and numbers",
+  "profileEarnings": "Earnings and payouts",
+  "profileLanguage": "Language"
 }

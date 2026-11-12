@@ -60,7 +60,8 @@ const EnvObject = z.object({
     JWT_ACCESS_TTL_SEC: z.coerce.number().int().positive().default(15 * 60),
     JWT_REFRESH_TTL_SEC: z.coerce.number().int().positive().default(30 * 24 * 3600),
 
-    OTP_PROVIDER: z.enum(['mock', 'msg91']).default('mock'),
+    /** none = no SMS: login codes go on WhatsApp only (ADR-041). */
+    OTP_PROVIDER: z.enum(['mock', 'msg91', 'none']).default('mock'),
     /** Fixed code for the mock provider so device testing is easy. Ignored unless OTP_PROVIDER=mock. */
     MOCK_OTP_CODE: z
       .string()
@@ -74,7 +75,7 @@ const EnvObject = z.object({
     OTP_LIMIT_PER_IP_HOUR: z.coerce.number().int().positive().default(30),
     MSG91_AUTH_KEY: z.string().optional(),
     /** KYC/verification provider (PAN, Aadhaar, GSTIN, FSSAI, penny-drop). */
-    KYC_PROVIDER: z.enum(['mock', 'digio']).default('mock'),
+    KYC_PROVIDER: z.enum(['mock', 'digio', 'manual']).default('mock'),
     MSG91_TEMPLATE_ID: z.string().optional(),
 
     /**
@@ -203,6 +204,8 @@ export const EnvSchema = EnvObject
     if (env.WHATSAPP_PROVIDER === 'cloud')
       for (const k of ['WHATSAPP_ACCESS_TOKEN', 'WHATSAPP_PHONE_NUMBER_ID'] as const)
         if (!env[k]) ctx.addIssue({ code: 'custom', path: [k], message: 'required when WHATSAPP_PROVIDER=cloud' });
+    if (env.OTP_PROVIDER === 'none' && env.WHATSAPP_PROVIDER !== 'cloud')
+      ctx.addIssue({ code: 'custom', path: ['WHATSAPP_PROVIDER'], message: 'OTP_PROVIDER=none sends codes on WhatsApp only, so WHATSAPP_PROVIDER must be cloud' });
     if (env.OTP_PROVIDER === 'msg91' && (!env.MSG91_AUTH_KEY || !env.MSG91_TEMPLATE_ID))
       ctx.addIssue({ code: 'custom', path: ['MSG91_AUTH_KEY'], message: 'MSG91_AUTH_KEY and MSG91_TEMPLATE_ID required' });
     if (env.DATA_STORE === 'memory') {

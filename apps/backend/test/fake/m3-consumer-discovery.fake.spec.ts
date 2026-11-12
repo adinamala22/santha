@@ -93,6 +93,10 @@ describe('M3 · consumer discovery backend (fake mode)', () => {
   });
 
   it('store page from far away in the city: delivers, beyond the radius at an extra charge (ADR-022)', async () => {
+    const ops = await fake.opsSignIn();
+    // Vedayapalem is ~5.3 km away: inside the 7 km default, beyond a 5 km store (ADR-038).
+    expect((await http().get(`/v1/stores/${kirana.id}?${q(centre('vedayapalem'))}`).expect(200)).body).toMatchObject({ deliversHere: true, store: { beyondRadius: false } });
+    await http().put(`/v1/ops/merchants/${kirana.id}/radius`).set(ops.headers).send({ radiusM: 5000, reason: 'test: a 5 km store' }).expect(200);
     const r = await http().get(`/v1/stores/${kirana.id}?${q(centre('vedayapalem'))}`).expect(200);
     expect(r.body).toMatchObject({ deliversHere: true, notDeliveringReason: null, beyondRadiusSurchargePaise: 3000, store: { beyondRadius: true } });
   });

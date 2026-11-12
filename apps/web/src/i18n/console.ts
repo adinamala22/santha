@@ -96,6 +96,7 @@ export const consoleMessages = {
         driving_licence: 'Driving licence',
       },
       kycStatus: { pending: 'Pending', verified: 'Verified', failed: 'Failed' },
+      manualKyc: 'These numbers were typed by the applicant and no authority has checked them. Compare each one with the original document before you approve.',
       drugLicenceReview: 'Check the licence number against the State Drugs Control register before approving.',
       checklist: 'Onboarding steps',
       steps: {
@@ -204,7 +205,7 @@ export const consoleMessages = {
         staleCatalogueHours: 'Catalogue stale after (h)',
       },
       riderPay: 'Rider pay (₹)',
-      riderPayFields: { basePaise: 'Base per order', perKmPaise: 'Per km', waitPerMinPaise: 'Wait per minute', batchBonusPaise: 'Batch bonus' },
+      riderPayFields: { basePaise: 'Base per order', perKmPaise: 'Per km beyond 5 km', waitPerMinPaise: 'Wait per minute', batchBonusPaise: 'Batch bonus' },
       cashLimit: 'Cash limit per rider (₹)',
       cashLimitHint: 'Blank = no limit. At the limit a rider gets prepaid orders only until they deposit the cash.',
       incentives: 'Incentives',
@@ -329,6 +330,7 @@ export const consoleMessages = {
         driving_licence: 'డ్రైవింగ్ లైసెన్స్',
       },
       kycStatus: { pending: 'పెండింగ్', verified: 'ధృవీకరించారు', failed: 'విఫలమైంది' },
+      manualKyc: 'ఈ నంబర్లను దరఖాస్తుదారు టైప్ చేశారు; ఏ అధికారి తనిఖీ చేయలేదు. ఆమోదించే ముందు ప్రతిదాన్ని అసలు పత్రంతో సరిపోల్చండి.',
       drugLicenceReview: 'ఆమోదించే ముందు లైసెన్స్ నంబర్‌ను రాష్ట్ర డ్రగ్స్ కంట్రోల్ రిజిస్టర్‌తో సరిచూడండి.',
       checklist: 'ఆన్‌బోర్డింగ్ దశలు',
       steps: {
@@ -437,7 +439,7 @@ export const consoleMessages = {
         staleCatalogueHours: 'కేటలాగ్ పాతబడే సమయం (గం)',
       },
       riderPay: 'రైడర్ చెల్లింపు (₹)',
-      riderPayFields: { basePaise: 'ఆర్డర్‌కు బేస్', perKmPaise: 'కి.మీ.కు', waitPerMinPaise: 'నిమిషానికి వేచి ఉండటం', batchBonusPaise: 'బ్యాచ్ బోనస్' },
+      riderPayFields: { basePaise: 'ఆర్డర్‌కు బేస్', perKmPaise: '5 కి.మీ. తర్వాత కి.మీ.కు', waitPerMinPaise: 'నిమిషానికి వేచి ఉండటం', batchBonusPaise: 'బ్యాచ్ బోనస్' },
       cashLimit: 'రైడర్‌కు నగదు పరిమితి (₹)',
       cashLimitHint: 'ఖాళీగా ఉంటే పరిమితి లేదు. పరిమితికి చేరితే నగదు జమ చేసే వరకు ముందే చెల్లించిన ఆర్డర్లు మాత్రమే వస్తాయి.',
       incentives: 'ప్రోత్సాహకాలు',

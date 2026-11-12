@@ -15,8 +15,8 @@ import { buildSeedKyc } from '../../dev/seed-records';
 import { hashPassword } from './domain/secrets';
 import { PrismaService } from '../../infra/prisma/prisma.service';
 import { FakeSinks } from '../../infra/fake/fake-sinks';
-import { DigioKycProvider, KycProvider, MockKycProvider } from '../../infra/providers/kyc/kyc.provider';
-import { MockSmsProvider, Msg91SmsProvider, SmsProvider } from '../../infra/providers/sms/sms.provider';
+import { DigioKycProvider, KycProvider, ManualKycProvider, MockKycProvider } from '../../infra/providers/kyc/kyc.provider';
+import { MockSmsProvider, Msg91SmsProvider, NoSmsProvider, SmsProvider } from '../../infra/providers/sms/sms.provider';
 import { CloudWhatsAppOtpProvider, MockWhatsAppOtpProvider, WhatsAppOtpProvider } from '../../infra/providers/whatsapp/whatsapp-otp.provider';
 import { REDIS } from '../../infra/redis/redis.module';
 import { OtpDeliveryService } from './otp-delivery.service';
@@ -110,7 +110,7 @@ export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'lis
     {
       provide: SmsProvider,
       inject: [ENV],
-      useFactory: (env: Env) => (env.OTP_PROVIDER === 'msg91' ? new Msg91SmsProvider() : new MockSmsProvider()),
+      useFactory: (env: Env) => (env.OTP_PROVIDER === 'msg91' ? new Msg91SmsProvider() : env.OTP_PROVIDER === 'none' ? new NoSmsProvider() : new MockSmsProvider()),
     },
     {
       provide: WhatsAppOtpProvider,
@@ -130,7 +130,7 @@ export async function buildSeedAddresses(markets: Pick<MicroMarketsService, 'lis
     {
       provide: KycProvider,
       inject: [ENV],
-      useFactory: (env: Env) => (env.KYC_PROVIDER === 'digio' ? new DigioKycProvider() : new MockKycProvider()),
+      useFactory: (env: Env) => (env.KYC_PROVIDER === 'digio' ? new DigioKycProvider() : env.KYC_PROVIDER === 'manual' ? new ManualKycProvider() : new MockKycProvider()),
     },
     { provide: APP_GUARD, useClass: AuthGuard },
   ],

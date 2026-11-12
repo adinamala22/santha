@@ -51,10 +51,10 @@ test.describe.serial('journey: order → delivery → rating', () => {
     // Letters only: digit runs look like phone numbers and the screen holds the review for moderation.
     const tag = Math.random().toString(36).replace(/[^a-z]/g, '').slice(0, 8);
     const comment = `E2E review ${tag}: fresh atta, quick delivery`;
-    await call(request, 'post', `/orders/${order.id}/rating`, { headers: customer.headers, data: { storeStars: 5, comment } });
+    await call(request, 'post', `/orders/${order.id}/rating`, { headers: customer.headers, data: { storeStars: 5, riderStars: 4, comment } }); // the store's own staff delivered: the delivery is rated too (ADR-039)
     const dup = await request.post(`${API}/orders/${order.id}/rating`, { headers: customer.headers, data: { storeStars: 4 } });
     expect(dup.status()).toBe(409);
-    expect((await call(request, 'get', `/orders/${order.id}/rating`, { headers: customer.headers })).rating).toMatchObject({ storeStars: 5, comment });
+    expect((await call(request, 'get', `/orders/${order.id}/rating`, { headers: customer.headers })).rating).toMatchObject({ storeStars: 5, riderStars: 4, comment });
 
     const reviews = await call(request, 'get', `/stores/${SEED.kirana.id}/reviews?limit=50`);
     expect(reviews.summary.count).toBeGreaterThanOrEqual(1);
