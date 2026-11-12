@@ -80,16 +80,32 @@ export async function call<T = any>(
   return (text ? JSON.parse(text) : undefined) as T;
 }
 
-/** Ops console sign-in (email + password, then the phone code). */
+/**
+ * The ops session of this run. The console allows 10 sign-ins per email per hour (OPS_LOGIN_LIMIT_PER_EMAIL_HOUR), and
+ * the suite has far more specs than that, so it signs in once and the other specs reuse the cookies. Without this the
+ * live specs failed at the "One-time code" step with "Too many attempts" (HTTP 429).
+ */
+let opsCookies: Awaited<ReturnType<ReturnType<Page["context"]>["cookies"]>> | null = null;
+
+/** Ops console sign-in (email + password, then the phone code); reuses this run's session after the first time. */
 export async function opsSignIn(page: Page, next = '/admin') {
+  if (opsCookies) {
+    await page.context().addCookies(opsCookies);
+    await page.goto(next);
+    await page.waitForLoadState('networkidle');
+    if (!/\/admin\/login/.test(page.url())) return;
+    opsCookies = null; // expired or revoked: sign in again below
+  }
   await page.goto(`/admin/login${next !== '/admin' ? `?next=${encodeURIComponent(next)}` : ''}`);
   await page.waitForLoadState('networkidle');
   await page.getByLabel('Work email').fill(OPS.email);
   await page.getByLabel('Password').fill(OPS.password);
   await page.getByRole('button', { name: 'Continue' }).click();
+  await expect(page.getByLabel('One-time code'), 'the console asks for the one-time code (a 429 here means too many sign-ins this hour)').toBeVisible();
   await page.getByLabel('One-time code').fill(OTP);
   await page.getByRole('button', { name: 'Verify and sign in' }).click();
   await expect(page).not.toHaveURL(/\/admin\/login/);
+  opsCookies = await page.context().cookies();
 }
 
 /** The store open around the clock for the test; returns a function that puts its hours back (pass the hook's own request). */

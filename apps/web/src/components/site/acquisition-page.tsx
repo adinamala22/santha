@@ -31,8 +31,8 @@ export function AcquisitionPage({ kind, lang, path, downloads = false }: { kind:
             <p className="mt-6 max-w-3xl text-lg text-ondarkmuted md:text-xl">{prelaunchStore ? s.sub : a.sub}</p>
           </div>
         </section>
-        <section className="mx-auto grid max-w-6xl gap-12 px-6 py-16 md:grid-cols-2">
-          <div className="space-y-6">
+        <section className="mx-auto grid max-w-6xl grid-cols-[minmax(0,1fr)] gap-12 px-6 py-16 md:grid-cols-2">
+          <div className="min-w-0 space-y-6">
             {prelaunchStore ? (
               <div data-testid="store-miss" className="rounded-xl border-l-4 border-marigold bg-sky p-6">
                 <h2 className="text-xl font-bold text-indigo">{s.missTitle}</h2>
@@ -50,7 +50,7 @@ export function AcquisitionPage({ kind, lang, path, downloads = false }: { kind:
               ))}
             </ul>
           </div>
-          <div className="rounded-xl border border-indigo-100 p-8 shadow-sm">{kind === 'store' ? <StoreLeadForm lang={lang} prelaunch={prelaunchStore} /> : <LeadForm kind={kind} lang={lang} />}</div>
+          <div className="min-w-0 rounded-xl border border-indigo-100 p-8 shadow-sm">{kind === 'store' ? <StoreLeadForm lang={lang} prelaunch={prelaunchStore} /> : <LeadForm kind={kind} lang={lang} />}</div>
         </section>
       </main>
       <SiteFooter lang={lang} />
