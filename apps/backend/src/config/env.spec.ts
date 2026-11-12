@@ -39,6 +39,25 @@ describe('parseEnv', () => {
     expect(() => parseEnv({ ...base, APP_ENV: 'production' })).toThrow(/mock OTP is not allowed[\s\S]*JWT_ACCESS_SECRET/);
   });
 
+  it('ADR-041: production can use manual KYC and WhatsApp-only OTP, but WhatsApp-only needs the cloud sender', () => {
+    const live = {
+      ...base,
+      APP_ENV: 'production',
+      JWT_ACCESS_SECRET: 'x'.repeat(40),
+      JWT_REFRESH_SECRET: 'y'.repeat(40),
+      PAYMENTS_PROVIDER: 'razorpay',
+      RAZORPAY_KEY_ID: 'k',
+      RAZORPAY_KEY_SECRET: 's',
+      RAZORPAY_WEBHOOK_SECRET: 'w',
+      KYC_PROVIDER: 'manual',
+      OTP_PROVIDER: 'none',
+    };
+    expect(() => parseEnv(live)).toThrow(/WHATSAPP_PROVIDER must be cloud/);
+    const ok = parseEnv({ ...live, WHATSAPP_PROVIDER: 'cloud', WHATSAPP_ACCESS_TOKEN: 't', WHATSAPP_PHONE_NUMBER_ID: '1' });
+    expect(ok.OTP_PROVIDER).toBe('none');
+    expect(ok.KYC_PROVIDER).toBe('manual');
+  });
+
   it('ADR-024: pre-launch production runs without live payments, KYC or SMS, and only then on password-only ops login', () => {
     const strong = { ...base, APP_ENV: 'production', JWT_ACCESS_SECRET: 'x'.repeat(40), JWT_REFRESH_SECRET: 'y'.repeat(40) };
     const prelaunch = { ...strong, LAUNCH_STAGE: 'prelaunch', OPS_LOGIN_OTP: 'off' };
