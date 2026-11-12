@@ -226,6 +226,12 @@ deploy_backend() {
 }
 
 cmd="${1:-help}"; shift || true
+# One deploy or rollback at a time on this stack (backend and web share it). The CI groups are per part, so a
+# queued website deploy no longer cancels a waiting backend deploy (ADR-044); this lock makes them take turns here.
+case "$cmd" in
+  deploy|rollback) exec 9>.deploy.lock; flock -w 1800 9 || { echo "Another deploy has held the lock for 30 minutes; giving up." >&2; exit 1; } ;;
+esac
+
 case "$cmd" in
   deploy)
     TAG="${1:?usage: ./santha.sh deploy <tag> [all|backend|web]}"
