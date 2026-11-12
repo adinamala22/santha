@@ -84,6 +84,46 @@ export class MockKycProvider extends KycProvider {
   }
 }
 
+/**
+ * Manual review (KYC_PROVIDER=manual, ADR-041): no vendor is called. The number is format-checked by the caller and
+ * recorded as the applicant typed it, and ops compare it with the original documents before approving the
+ * merchant or rider. Every check carries `details.manual = true` so the console can say so. The Aadhaar step
+ * records only the masked number; its OTP is not checked by anyone, so ops must see the card.
+ */
+@Injectable()
+export class ManualKycProvider extends KycProvider {
+  readonly name = 'manual';
+
+  private ok(details?: Record<string, unknown>): KycResult {
+    return { ok: true, providerRef: `manual-${randomUUID()}`, details: { ...details, manual: true } };
+  }
+
+  async verifyPan(): Promise<KycResult> {
+    return this.ok();
+  }
+
+  async startAadhaarOtp(): Promise<{ requestId: string }> {
+    return { requestId: `manual-aadhaar-${randomUUID()}` };
+  }
+
+  async verifyAadhaarOtp({ requestId, otp }: { requestId: string; otp: string }): Promise<KycResult> {
+    if (!/^\d{6}$/.test(otp)) return { ok: false, providerRef: requestId, failureReason: 'Enter the 6-digit code.' };
+    return this.ok();
+  }
+
+  async verifyGstin(): Promise<KycResult> {
+    return this.ok();
+  }
+
+  async verifyFssai(): Promise<KycResult> {
+    return this.ok();
+  }
+
+  async pennyDrop(): Promise<KycResult> {
+    return this.ok();
+  }
+}
+
 /** Live provider — contract and sandbox keys are a launch task (tech plan §11). Fails loudly until wired. */
 @Injectable()
 export class DigioKycProvider extends KycProvider {

@@ -36,7 +36,9 @@ export class OtpDeliveryService {
     const flagOn = await this.flags.isEnabled('whatsapp_otp', { distinctId: `device:${deviceId}` });
     const whatsappUsable = flagOn && !(this.env.APP_ENV === 'production' && this.whatsapp.name === 'mock');
     if (flagOn && !whatsappUsable) this.logger.warn('whatsapp_otp is on but WHATSAPP_PROVIDER=mock in production; using SMS');
-    const channels: OtpChannel[] = whatsappUsable ? ['whatsapp', 'sms'] : ['sms'];
+    // OTP_PROVIDER=none has no SMS to fall back on (ADR-041): WhatsApp is the only channel.
+    const smsFallback = this.sms.name !== 'none';
+    const channels: OtpChannel[] = whatsappUsable ? (smsFallback ? ['whatsapp', 'sms'] : ['whatsapp']) : ['sms'];
     const allMock = channels.every((c) => (c === 'whatsapp' ? this.whatsapp.name === 'mock' : this.sms.name === 'mock'));
     return { channels, allMock };
   }

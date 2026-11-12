@@ -43,3 +43,16 @@ export class Msg91SmsProvider extends SmsProvider {
     throw new DomainError('PROVIDER_UNAVAILABLE', 'SMS provider is not available. Please try again later.');
   }
 }
+
+/**
+ * No SMS at all (OTP_PROVIDER=none, ADR-041): login codes travel on WhatsApp only. Asking it to send fails with a
+ * typed error, so a code that could not go on WhatsApp is reported to the user instead of silently lost.
+ */
+@Injectable()
+export class NoSmsProvider extends SmsProvider {
+  readonly name = 'none';
+
+  async sendOtp(): Promise<void> {
+    throw new DomainError('PROVIDER_UNAVAILABLE', 'We could not send the code on WhatsApp. Check the number is on WhatsApp and try again.');
+  }
+}
