@@ -54,7 +54,7 @@ jobs:
       - uses: actions/setup-java@v4
         with: { distribution: temurin, java-version: '21' }
       - uses: subosito/flutter-action@v2
-        with: { channel: stable, cache: true }
+        with: { channel: stable, flutter-version: '3.47.9', cache: true }
       - name: Read the values file
         run: |
           f="config/values/${SANTHA_ENV}.values.yaml"
