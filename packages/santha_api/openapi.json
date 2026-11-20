@@ -8262,7 +8262,7 @@
         ],
         "responses": {
           "default": {
-            "description": "Rating summary and published reviews, newest first",
+            "description": "Rating summary, published reviews (newest first) and the rating of every rated item",
             "content": {
               "application/json": {
                 "schema": {
@@ -29862,11 +29862,40 @@
               ],
               "additionalProperties": false
             }
+          },
+          "itemRatings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "avg": {
+                  "type": "number"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "itemId",
+                "avg",
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Average stars and count of every rated item (ADR-045)"
           }
         },
         "required": [
           "summary",
-          "items"
+          "items",
+          "itemRatings"
         ],
         "additionalProperties": false
       },

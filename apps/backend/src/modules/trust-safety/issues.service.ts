@@ -201,6 +201,11 @@ export class IssuesService implements OnModuleInit {
     return this.repo.averages({ merchantId });
   }
 
+  /** Every rated item of a store with its average and count (ADR-045): the store owner's view of which items customers like. */
+  async itemRatingsFor(merchantId: string): Promise<Array<{ itemId: string; avg: number; count: number }>> {
+    return [...(await this.repo.itemRatings(merchantId))].map(([itemId, r]) => ({ itemId, avg: r.avg, count: r.count }));
+  }
+
   /** Average, count and 1–5 star breakdown (hidden reviews excluded). Feeds the search index and store pages. */
   storeSummary(merchantId: string) {
     return this.repo.storeSummary(merchantId);

@@ -10,6 +10,15 @@ final catalogueApiProvider = Provider<CatalogueApi>((ref) => CatalogueApi(ref.wa
 /// Platform categories for this store's type (FR-DIS-3), names in en + te.
 final categoriesProvider = FutureProvider<List<Category>>((ref) => ref.watch(catalogueApiProvider).categories());
 
+/// What customers rated each item (ADR-045), by item id; empty until something is rated or if it cannot be loaded.
+final itemRatingsProvider = FutureProvider.autoDispose<Map<String, ItemRatingStat>>((ref) async {
+  try {
+    return (await ComplianceApi(ref.watch(apiClientProvider)).merchantReviews()).itemRatings;
+  } on ApiException {
+    return const <String, ItemRatingStat>{};
+  }
+});
+
 enum CatalogueFilter { all, out, stale, held, hidden }
 
 class CatalogueState {

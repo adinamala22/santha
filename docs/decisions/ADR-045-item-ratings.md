@@ -21,11 +21,14 @@ for a star rating on items too.
   (`GET /v1/stores/{id}`) returns `rating` (average, one decimal, or null) and `ratingCount` for every item. Feed and search
   cards are unchanged. Search-discovery reads item ratings through `ItemRatings`, registered by trust-safety at
   start-up, like `StoreRatings`, so the module graph stays acyclic and a failure shows items as unrated.
+- **Merchant app.** The store owner sees each item's stars and count in the catalogue, and Earnings lists the rated items with
+  the lowest average first ("What customers say about your items"). `GET /v1/merchants/me/reviews` gains `itemRatings`
+  (item id, average, count). No new endpoint, no per-item comments.
 - **Consumer app.** The after-delivery screen lists the received items under the store stars, each with five stars;
   "Your rating" shows them afterwards; item tiles and the item sheet show the average and count.
 
 ## Consequences
 - Item stars are not moderated (no text) and are not hidden when ops hides the order's review; if abuse appears, add a
   moderation flag per rating.
-- The rider and merchant apps are unchanged. The merchant app can show item ratings later from the same table.
+- The rider app is unchanged. Ops does not see item ratings yet; add it from the same table if needed.
 - Event `rating.submitted` gains `item_ratings` (the number of items rated). The search index does not use it.

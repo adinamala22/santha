@@ -79,7 +79,13 @@ const RatingSummarySchema = z.object({
   count: z.number().int(),
   distribution: z.array(z.number().int()).length(5).describe('Counts for 1, 2, 3, 4 and 5 stars'),
 });
-class MerchantReviewListDto extends createZodDto(z.object({ summary: RatingSummarySchema, items: z.array(ReviewSchema) })) {}
+class MerchantReviewListDto extends createZodDto(
+  z.object({
+    summary: RatingSummarySchema,
+    items: z.array(ReviewSchema),
+    itemRatings: z.array(z.object({ itemId: z.uuid(), avg: z.number(), count: z.number().int() })).describe('Average stars and count of every rated item (ADR-045)'),
+  }),
+) {}
 const PublicReviewSchema = z.object({ storeStars: z.number().int(), comment: z.string().nullable(), reply: z.string().nullable(), replyAt: iso.nullable(), createdAt: iso });
 class StoreReviewsDto extends createZodDto(z.object({ summary: RatingSummarySchema, items: z.array(PublicReviewSchema) })) {}
 const toPublicReview = (r: RatingRecord) => ({ storeStars: r.storeStars, comment: r.comment, reply: r.reply, replyAt: r.replyAt?.toISOString() ?? null, createdAt: r.createdAt.toISOString() });
@@ -192,11 +198,11 @@ export class MerchantReviewsController {
   ) {}
 
   @Get()
-  @ZodResponse({ type: MerchantReviewListDto, description: 'Rating summary and published reviews, newest first' })
+  @ZodResponse({ type: MerchantReviewListDto, description: 'Rating summary, published reviews (newest first) and the rating of every rated item' })
   async list(@CurrentUser() u: AuthUser) {
     const m = await this.merchants.ownedBy(u.userId);
-    const [summary, items] = await Promise.all([this.issues.storeSummary(m.id), this.compliance.reviewsForMerchant(m.id)]);
-    return { summary, items: items.map(toReview) };
+    const [summary, items, itemRatings] = await Promise.all([this.issues.storeSummary(m.id), this.compliance.reviewsForMerchant(m.id), this.issues.itemRatingsFor(m.id)]);
+    return { summary, items: items.map(toReview), itemRatings };
   }
 
   @Post(':orderId/reply')

@@ -88,6 +88,19 @@ describe('Item ratings (fake mode)', () => {
     expect(other).toMatchObject({ rating: null, ratingCount: 0 });
   });
 
+  it('the store owner sees every rated item with its average and count (GET /merchants/me/reviews)', async () => {
+    const atta = await named('Annapoorna Chakki Atta');
+    const rice = await named('Annapoorna Basmati Rice');
+    const body = (await http().get('/v1/merchants/me/reviews').set(owner.headers).expect(200)).body;
+    const by = new Map((body.itemRatings as Array<{ itemId: string; avg: number; count: number }>).map((r) => [r.itemId, r]));
+    expect(by.get(atta.id)).toEqual({ itemId: atta.id, avg: 2.5, count: 2 });
+    expect(by.get(rice.id)).toEqual({ itemId: rice.id, avg: 5, count: 1 });
+    expect(body.itemRatings.length).toBe(2); // only items somebody rated
+    // Customers and strangers cannot read it.
+    const c = await customer('9876503108');
+    await http().get('/v1/merchants/me/reviews').set(c.headers).expect(403);
+  });
+
   it('item stars are optional: a rating with no itemStars still works and has none', async () => {
     const c = await customer('9876503103');
     const o = await delivered(c);
