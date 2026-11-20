@@ -62,4 +62,25 @@ void main() {
     expect(const CartLineInput(itemId: 'i', variantId: 'v', quantity: 2).toJson()['substitution'], 'call_me');
     expect(newIdempotencyKey(), matches(RegExp(r'^[A-Za-z0-9_:.-]{8,100}$')));
   });
+
+  test('ADR-045: an order rating carries item stars, and order lines carry the item ids', () {
+    final r = OrderRating.fromJson({
+      'orderId': 'o1',
+      'storeStars': 5,
+      'riderStars': null,
+      'comment': null,
+      'itemStars': [
+        {'itemId': 'i1', 'stars': 4},
+        {'itemId': 'i2', 'stars': 1},
+      ],
+      'createdAt': '2026-11-20T08:00:00.000Z',
+    });
+    expect(r.itemStars.map((s) => (s.itemId, s.stars)), [('i1', 4), ('i2', 1)]);
+    expect(ItemStar(itemId: 'i1', stars: 4).toJson(), {'itemId': 'i1', 'stars': 4});
+    // Older servers send no item stars.
+    expect(OrderRating.fromJson({'orderId': 'o1', 'storeStars': 3, 'createdAt': '2026-11-20T08:00:00.000Z'}).itemStars, isEmpty);
+    final o = Order.fromJson(fixture('order_placed'));
+    expect(o.lines.first.itemId, isNotNull);
+    expect(o.lines.first.substituteItemId, isNull);
+  });
 }

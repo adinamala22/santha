@@ -66,6 +66,15 @@ class StoreReview {
   final DateTime createdAt;
 }
 
+/// A rated item of the store (ADR-045): average stars and how many customers rated it.
+class ItemRatingStat {
+  const ItemRatingStat({required this.itemId, required this.avg, required this.count});
+  factory ItemRatingStat.fromJson(Json j) => ItemRatingStat(itemId: j['itemId'] as String, avg: (j['avg'] as num).toDouble(), count: j['count'] as int);
+  final String itemId;
+  final double avg;
+  final int count;
+}
+
 /// Shared by all three apps.
 class ComplianceApi {
   ComplianceApi(this.client);
@@ -99,11 +108,12 @@ class ComplianceApi {
   /// Merchant app: published reviews and replies.
   Future<List<StoreReview>> storeReviews() async => (await merchantReviews()).items;
 
-  /// Merchant app: the store's rating summary (1–5 breakdown) and its published reviews.
-  Future<({RatingSummary summary, List<StoreReview> items})> merchantReviews() => _call(() async {
+  /// Merchant app: the store's rating summary (1–5 breakdown), its published reviews and the rating of each rated item by item id (ADR-045).
+  Future<({RatingSummary summary, List<StoreReview> items, Map<String, ItemRatingStat> itemRatings})> merchantReviews() => _call(() async {
         final r = await _dio.get<Json>('/v1/merchants/me/reviews');
         final s = r.data!['summary'] as Json?;
-        return (summary: s == null ? RatingSummary.empty : RatingSummary.fromJson(s), items: _items(r, StoreReview.fromJson));
+        final stats = ((r.data!['itemRatings'] as List?) ?? const []).map((x) => ItemRatingStat.fromJson(x as Json));
+        return (summary: s == null ? RatingSummary.empty : RatingSummary.fromJson(s), items: _items(r, StoreReview.fromJson), itemRatings: {for (final x in stats) x.itemId: x});
       });
 
   Future<StoreReview> replyToReview(String orderId, String text) =>

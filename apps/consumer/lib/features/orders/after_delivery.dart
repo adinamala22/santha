@@ -46,6 +46,8 @@ class AfterDelivery extends ConsumerStatefulWidget {
 class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
   int _store = 0;
   int _rider = 0;
+  /// Stars per item id (ADR-045); items left at 0 are not sent.
+  final _itemStars = <String, int>{};
   bool _rated = false;
   bool _sending = false;
   bool _tipping = false;
@@ -63,8 +65,9 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
     final comment = _comment.text.trim();
     setState(() => _sending = true);
     try {
-      await ref.read(checkoutApiProvider).rate(widget.order.id, storeStars: _store, riderStars: riderDelivered && _rider > 0 ? _rider : null, comment: comment.isEmpty ? null : comment);
-      ref.read(analyticsProvider).track('rating_submitted', {'order_id': widget.order.id, 'store_stars': _store, 'rider_stars': _rider, 'has_comment': comment.isNotEmpty});
+      final itemStars = [for (final e in _itemStars.entries) if (e.value > 0) ItemStar(itemId: e.key, stars: e.value)];
+      await ref.read(checkoutApiProvider).rate(widget.order.id, storeStars: _store, riderStars: riderDelivered && _rider > 0 ? _rider : null, comment: comment.isEmpty ? null : comment, itemStars: itemStars);
+      ref.read(analyticsProvider).track('rating_submitted', {'order_id': widget.order.id, 'store_stars': _store, 'rider_stars': _rider, 'has_comment': comment.isNotEmpty, 'item_ratings': itemStars.length});
     } on ApiException catch (e) {
       if (e.code != 'ALREADY_EXISTS') {
         if (mounted) setState(() => _sending = false);
@@ -144,13 +147,21 @@ class _AfterDeliveryState extends ConsumerState<AfterDelivery> {
     final canRate = !_rated && mine.hasValue && existing == null;
     return Column(key: const ValueKey('after-delivery'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       if (existing != null) ...[
-        _YourRating(rating: existing),
+        _YourRating(rating: existing, order: widget.order),
         const SizedBox(height: SanthaSpacing.s4),
       ],
       if (canRate) ...[
         Text(l.rateTitle, style: text.titleMedium),
         _Stars(key: const ValueKey('stars-store'), label: l.rateStore, value: _store, onChanged: (v) => setState(() => _store = v)),
         if (riderDelivered) _Stars(key: const ValueKey('stars-rider'), label: l.rateRider, value: _rider, onChanged: (v) => setState(() => _rider = v)),
+        if (ratableItems(widget.order).isNotEmpty) ...[
+          const SizedBox(height: SanthaSpacing.s2),
+          Text(l.rateItemsTitle, key: const ValueKey('rate-items'), style: text.titleSmall),
+          Text(l.rateItemsNote, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+          for (final it in ratableItems(widget.order))
+            _ItemStars(key: ValueKey('stars-item-${it.id}'), name: it.name, value: _itemStars[it.id] ?? 0, onChanged: (v) => setState(() => _itemStars[it.id] = v)),
+          const SizedBox(height: SanthaSpacing.s2),
+        ],
         if (_store > 0) ...[
           TextField(
             key: const ValueKey('rating-comment'),
@@ -230,9 +241,32 @@ class _IssueOutcome extends StatelessWidget {
   }
 }
 
+/// An item of the order the customer can rate (ADR-045): kept lines, or the item the store swapped in. One entry per item.
+class RatableItem {
+  const RatableItem(this.id, this.name);
+  final String id;
+  final String name;
+}
+
+List<RatableItem> ratableItems(Order o) {
+  final seen = <String>{};
+  final out = <RatableItem>[];
+  for (final l in o.lines) {
+    final id = switch (l.status) {
+      'removed' => null,
+      'substituted' => l.substituteItemId,
+      _ => l.itemId,
+    };
+    if (id == null || !seen.add(id)) continue;
+    out.add(RatableItem(id, l.status == 'substituted' ? (l.substituteName ?? l.name) : l.name));
+  }
+  return out;
+}
+
 class _YourRating extends StatelessWidget {
-  const _YourRating({required this.rating});
+  const _YourRating({required this.rating, required this.order});
   final OrderRating rating;
+  final Order order;
 
   @override
   Widget build(BuildContext context) {
@@ -250,7 +284,39 @@ class _YourRating extends StatelessWidget {
           Expanded(child: Text(l.rateRider)),
           StarRow(value: r.toDouble(), semanticLabel: l.rateStars(r)),
         ]),
+      for (final s in rating.itemStars)
+        Row(key: ValueKey('your-item-${s.itemId}'), children: [
+          Expanded(child: Text(ratableItems(order).where((x) => x.id == s.itemId).firstOrNull?.name ?? '', style: text.bodySmall)),
+          StarRow(value: s.stars.toDouble(), size: 14, semanticLabel: l.rateStars(s.stars)),
+        ]),
       if (rating.comment case final c?) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: Text('“$c”', style: text.bodySmall?.copyWith(color: SanthaColors.slate))),
+    ]);
+  }
+}
+
+/// One item with its five stars: the name on top (it can be long), the stars below.
+class _ItemStars extends StatelessWidget {
+  const _ItemStars({super.key, required this.name, required this.value, required this.onChanged});
+  final String name;
+  final int value;
+  final ValueChanged<int> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s2), child: Text(name, maxLines: 2, overflow: TextOverflow.ellipsis)),
+      Row(children: [
+        for (var i = 1; i <= 5; i++)
+          IconButton(
+            key: ValueKey('${(key as ValueKey<String>).value}-$i'),
+            tooltip: l.rateItemStars(name, i),
+            visualDensity: VisualDensity.compact,
+            icon: Icon(i <= value ? Icons.star : Icons.star_border, color: SanthaColors.marigold),
+            // Tap the same star again to clear it.
+            onPressed: () => onChanged(i == value ? 0 : i),
+          ),
+      ]),
     ]);
   }
 }

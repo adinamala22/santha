@@ -154,6 +154,25 @@ void main() {
     expect(h.analytics.events.where((e) => e.$1 == 'feed_viewed').last.$2['top_rated'], isTrue);
   });
 
+  testWidgets('ADR-045: store items show what customers rated them, the item sheet shows the stars; unrated items show nothing', (tester) async {
+    final h = await pumpAtHome(tester);
+    h.backend.itemRatings = {'40000000-0000-4000-8000-201000000001': (avg: 4.5, count: 12)};
+    await tapVisible(tester, find.text('Ramesh Stores'));
+    await tester.tap(find.byKey(const ValueKey('chip-staples')));
+    await settle(tester);
+    final atta = find.byKey(const ValueKey('item-40000000-0000-4000-8000-201000000001'));
+    await tester.scrollUntilVisible(atta, 300, scrollable: vertical);
+    await settle(tester, 4);
+    expect(find.descendant(of: atta, matching: find.text('★ 4.5 (12)')), findsOneWidget);
+    final rice = find.byKey(const ValueKey('item-40000000-0000-4000-8000-201000000003'));
+    await tester.scrollUntilVisible(rice, 300, scrollable: vertical);
+    expect(find.descendant(of: rice, matching: find.byKey(const ValueKey('item-rating'))), findsNothing);
+    await tester.tap(atta);
+    await settle(tester, 10);
+    expect(find.byKey(const ValueKey('item-sheet-rating')), findsOneWidget);
+    expect(find.text('4.5 · 12 ratings'), findsOneWidget);
+  });
+
   testWidgets('store page: rating opens the breakdown and published reviews with the store reply', (tester) async {
     final h = await pumpAtHome(tester);
     h.backend.kiranaRating = (avg: 4.0, count: 3);

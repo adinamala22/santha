@@ -79,5 +79,24 @@ export function reviewModerationContract(name: string, make: () => Promise<Issue
       expect(await repo.storeSummary(merchantId)).toEqual({ avg: 4.33, count: 3, distribution: [0, 0, 0, 2, 1] });
       expect(await repo.storeSummary(randomUUID())).toMatchObject({ count: 0 });
     });
+
+    it('item stars (ADR-045): saved with the order rating, read back, averaged per item; a refused second rating saves none', async () => {
+      const repo = await make();
+      const merchantId = randomUUID();
+      const [atta, rice] = [randomUUID(), randomUUID()];
+      expect(await repo.itemRatings(merchantId)).toEqual(new Map());
+      const o1 = randomUUID();
+      expect(await repo.addRating({ orderId: o1, userId: randomUUID(), merchantId, riderUserId: null, storeStars: 5, riderStars: null, comment: null }, [], [{ itemId: atta, stars: 4 }, { itemId: rice, stars: 5 }])).toBe(true);
+      expect((await repo.itemStars(o1)).sort((x, y) => x.itemId.localeCompare(y.itemId))).toEqual([{ itemId: atta, stars: 4 }, { itemId: rice, stars: 5 }].sort((x, y) => x.itemId.localeCompare(y.itemId)));
+      const o2 = randomUUID();
+      await repo.addRating({ orderId: o2, userId: randomUUID(), merchantId, riderUserId: null, storeStars: 3, riderStars: null, comment: null }, [], [{ itemId: atta, stars: 1 }]);
+      // The same order again: refused, and its item stars are not added.
+      expect(await repo.addRating({ orderId: o2, userId: randomUUID(), merchantId, riderUserId: null, storeStars: 1, riderStars: null, comment: null }, [], [{ itemId: rice, stars: 1 }])).toBe(false);
+      const by = await repo.itemRatings(merchantId);
+      expect(by.get(atta)).toEqual({ avg: 2.5, count: 2 });
+      expect(by.get(rice)).toEqual({ avg: 5, count: 1 });
+      expect(await repo.itemStars(randomUUID())).toEqual([]);
+      expect(await repo.itemRatings(randomUUID())).toEqual(new Map());
+    });
   });
 }

@@ -260,6 +260,7 @@ class ProductTile extends StatelessWidget {
     this.imageUrl,
     this.foodMark,
     this.badge,
+    this.ratingLabel,
     this.onTap,
   });
 
@@ -272,6 +273,9 @@ class ProductTile extends StatelessWidget {
 
   /// e.g. "Low stock" / "Check stock".
   final String? badge;
+
+  /// e.g. "★ 4.5 (12)": what customers rated this item (ADR-045). Hidden until the item is rated.
+  final String? ratingLabel;
   final VoidCallback? onTap;
 
   @override
@@ -292,7 +296,12 @@ class ProductTile extends StatelessWidget {
               if (foodMark != null) ...[Padding(padding: const EdgeInsets.only(top: 2), child: foodMark), const SizedBox(width: 4)],
               Expanded(child: Text(name, style: text.bodySmall?.copyWith(fontWeight: FontWeight.w500, color: SanthaColors.ink), maxLines: 2, overflow: TextOverflow.ellipsis)),
             ]),
-            if (badge != null) Text(badge!, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.labelSmall?.copyWith(color: SanthaColors.marigold600)),
+            // The item's rating and its badge share one line, so a tile with both is no taller than one with a badge only.
+            if (ratingLabel != null || badge != null)
+              Wrap(spacing: SanthaSpacing.s2, children: [
+                if (ratingLabel != null) Text(ratingLabel!, key: const ValueKey('item-rating'), maxLines: 1, overflow: TextOverflow.ellipsis, style: text.labelSmall?.copyWith(color: SanthaColors.slate, fontWeight: FontWeight.w600)),
+                if (badge != null) Text(badge!, maxLines: 1, overflow: TextOverflow.ellipsis, style: text.labelSmall?.copyWith(color: SanthaColors.marigold600)),
+              ]),
             const Spacer(),
             // Price, MRP and ADD stack (wireframe 03) so three tiles fit across a 360 dp phone.
             Wrap(crossAxisAlignment: WrapCrossAlignment.end, spacing: SanthaSpacing.s1, children: [

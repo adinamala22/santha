@@ -125,6 +125,8 @@ const StoreItemSchema = ItemCardSchema.extend({
   onMenuToday: z.boolean().describe('Home kitchens: on today\'s menu'),
   dailyCapacity: z.number().int().nullable().describe('Portions per day (left = capacity − ordered, from M4)'),
   special: z.boolean().describe("Today's special"),
+  rating: z.number().nullable().describe('Average stars (1 decimal) customers gave this item, null until rated (ADR-045)'),
+  ratingCount: z.number().int().describe('How many customers rated this item'),
 });
 const OccurrenceSchema = z.object({
   slotId: z.uuid(),

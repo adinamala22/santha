@@ -41,6 +41,18 @@ export interface RatingRecord {
   createdAt: Date;
 }
 
+/** One item the customer rated on an order (ADR-045). */
+export interface ItemStar {
+  itemId: string;
+  stars: number;
+}
+
+/** An item's average and count across all customers. */
+export interface ItemRatingSummary {
+  avg: number;
+  count: number;
+}
+
 export type RatingPatch = Partial<Pick<RatingRecord, 'status' | 'flagReason' | 'reply' | 'replyAt'>>;
 
 /** A store's rating: average and count of store stars (hidden reviews excluded) and the 1–5 star breakdown. */
@@ -66,7 +78,11 @@ export abstract class IssuesRepository {
   abstract updateIssue(id: string, patch: Partial<Pick<IssueRecord, 'status' | 'decision' | 'refundId' | 'decidedAt'>>): Promise<IssueRecord | null>;
   abstract issues(q: { orderId?: string; userId?: string; merchantId?: string; statuses?: readonly IssueStatus[]; since?: Date; limit: number }): Promise<IssueRecord[]>;
   /** False when the order already has a rating. `events` commit with the row (outbox). */
-  abstract addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events?: NewEvent[]): Promise<boolean>;
+  abstract addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events?: NewEvent[], itemStars?: readonly ItemStar[]): Promise<boolean>;
+  /** The item stars given with this order's rating. */
+  abstract itemStars(orderId: string): Promise<ItemStar[]>;
+  /** Average and count of every rated item of a store, by item id (ADR-045). */
+  abstract itemRatings(merchantId: string): Promise<Map<string, ItemRatingSummary>>;
   abstract updateRating(orderId: string, patch: RatingPatch, events?: NewEvent[]): Promise<RatingRecord | null>;
   /** Newest first. */
   abstract ratings(q: { merchantId?: string; statuses?: readonly RatingRecord['status'][]; limit: number }): Promise<RatingRecord[]>;
@@ -114,10 +130,11 @@ export class PrismaIssuesRepository extends IssuesRepository {
     return rows.map(asIssue);
   }
 
-  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events: NewEvent[] = []) {
+  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events: NewEvent[] = [], itemStars: readonly ItemStar[] = []) {
     try {
       await this.prisma.$transaction(async (tx) => {
         await tx.rating.create({ data: r });
+        if (itemStars.length) await tx.itemRating.createMany({ data: itemStars.map((i) => ({ orderId: r.orderId, itemId: i.itemId, merchantId: r.merchantId, userId: r.userId, stars: i.stars })) });
         for (const e of events) await appendToOutbox(tx, e);
       });
       return true;
@@ -129,6 +146,16 @@ export class PrismaIssuesRepository extends IssuesRepository {
 
   async rating(orderId: string) {
     return (await this.prisma.rating.findUnique({ where: { orderId } })) as RatingRecord | null;
+  }
+
+  async itemStars(orderId: string) {
+    const rows = await this.prisma.itemRating.findMany({ where: { orderId }, orderBy: { itemId: 'asc' } });
+    return rows.map((x) => ({ itemId: x.itemId, stars: x.stars }));
+  }
+
+  async itemRatings(merchantId: string) {
+    const g = await this.prisma.itemRating.groupBy({ by: ['itemId'], where: { merchantId }, _avg: { stars: true }, _count: { _all: true } });
+    return new Map(g.map((x) => [x.itemId, { avg: Math.round((x._avg.stars ?? 0) * 10) / 10, count: x._count._all }]));
   }
 
   async updateRating(orderId: string, patch: RatingPatch, events: NewEvent[] = []) {
@@ -167,6 +194,7 @@ export class PrismaIssuesRepository extends IssuesRepository {
 export class InMemoryIssuesRepository extends IssuesRepository {
   private readonly rows: IssueRecord[] = [];
   private readonly ratingRows = new Map<string, RatingRecord>();
+  private readonly itemRows: Array<ItemStar & { orderId: string; merchantId: string }> = [];
 
   /** Fake mode passes the sinks so rating events reach their consumers (the search index); unit tests may omit them. */
   constructor(private readonly sinks?: FakeSinks) {
@@ -213,8 +241,9 @@ export class InMemoryIssuesRepository extends IssuesRepository {
     );
   }
 
-  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events: NewEvent[] = []) {
+  async addRating(r: Omit<RatingRecord, 'createdAt' | 'status' | 'flagReason' | 'reply' | 'replyAt'> & Partial<Pick<RatingRecord, 'status' | 'flagReason'>>, events: NewEvent[] = [], itemStars: readonly ItemStar[] = []) {
     if (this.ratingRows.has(r.orderId)) return false;
+    for (const i of itemStars) this.itemRows.push({ orderId: r.orderId, merchantId: r.merchantId, itemId: i.itemId, stars: i.stars });
     const last = Math.max(0, ...[...this.ratingRows.values()].map((x) => x.createdAt.getTime()));
     this.ratingRows.set(r.orderId, { status: 'visible', flagReason: null, reply: null, replyAt: null, ...r, createdAt: new Date(Math.max(Date.now(), last + 1)) });
     await this.emit(events);
@@ -241,6 +270,16 @@ export class InMemoryIssuesRepository extends IssuesRepository {
 
   async rating(orderId: string) {
     return structuredClone(this.ratingRows.get(orderId) ?? null);
+  }
+
+  async itemStars(orderId: string) {
+    return this.itemRows.filter((x) => x.orderId === orderId).map((x) => ({ itemId: x.itemId, stars: x.stars })).sort((a, b) => a.itemId.localeCompare(b.itemId));
+  }
+
+  async itemRatings(merchantId: string) {
+    const by = new Map<string, number[]>();
+    for (const x of this.itemRows) if (x.merchantId === merchantId) by.set(x.itemId, [...(by.get(x.itemId) ?? []), x.stars]);
+    return new Map([...by].map(([id, st]) => [id, { avg: Math.round((st.reduce((a, b) => a + b, 0) / st.length) * 10) / 10, count: st.length }]));
   }
 
   async averages(q: { merchantId?: string; riderUserId?: string }) {

@@ -852,6 +852,15 @@
   "issueWindowClosed": "The time to report a problem with this order has passed.",
   "issueAlreadyReported": "You already reported this problem.",
   "rateTitle": "How was it?",
+  "rateItemsTitle": "Rate the items",
+  "rateItemsNote": "Optional. Your stars help others choose.",
+  "rateItemStars": "{item}: {count} of 5 stars",
+  "@rateItemStars": {
+    "placeholders": {
+      "item": {"type": "String"},
+      "count": {"type": "int"}
+    }
+  },
   "rateStore": "The store",
   "rateRider": "The delivery",
   "rateStars": "{count} of 5 stars",

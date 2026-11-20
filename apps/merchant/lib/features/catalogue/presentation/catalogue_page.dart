@@ -192,6 +192,7 @@ class _ItemTile extends ConsumerWidget {
     final text = Theme.of(context).textTheme;
     final thumb = item.images.where((m) => m.thumbUrl != null).firstOrNull?.thumbUrl ?? item.imageUrl;
     final client = ref.read(apiClientProvider);
+    final stat = ref.watch(itemRatingsProvider).value?[item.id];
     final badges = <(String, Color)>[
       if (item.status == ItemStatus.inReview) (l.catHeld, SanthaColors.chilli),
       if (item.status == ItemStatus.hidden) (l.catHidden, SanthaColors.slate),
@@ -222,6 +223,15 @@ class _ItemTile extends ConsumerWidget {
                   Text(item.name, style: text.titleSmall, maxLines: 2, overflow: TextOverflow.ellipsis),
                   if (item.nameTe != null) Text(item.nameTe!, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
                   const SizedBox(height: SanthaSpacing.s1),
+                  if (stat != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: SanthaSpacing.s1),
+                      child: Row(key: ValueKey('item-rating-${item.id}'), children: [
+                        StarRow(value: stat.avg, size: 14, semanticLabel: l.ratedOutOf5(stat.avg.toStringAsFixed(1))),
+                        const SizedBox(width: SanthaSpacing.s1),
+                        Text('${stat.avg.toStringAsFixed(1)} · ${l.ratingsCount(stat.count)}', style: text.labelSmall?.copyWith(color: SanthaColors.slate)),
+                      ]),
+                    ),
                   Text(
                     [rupees(item.minPricePaise), if (item.variants.length > 1) l.catSizes(item.variants.length), categoryName(context, categories, item.categorySlug)].join(' · '),
                     style: text.bodySmall,

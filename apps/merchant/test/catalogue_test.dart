@@ -3,15 +3,18 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/misc.dart' show Override;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:merchant/features/catalogue/data/catalogue_controller.dart';
 import 'package:merchant/features/catalogue/presentation/scan_page.dart';
 import 'package:merchant/features/catalogue/presentation/slots_page.dart' show slotDayLabel;
+import 'package:merchant/features/orders/presentation/reviews_view.dart' show complianceApiProvider;
 import 'package:merchant/l10n/gen/app_localizations.dart';
 import 'package:santha_api/santha_api.dart';
 import 'package:santha_core/santha_core.dart';
 
 import 'onboarding_test.dart' show FakeMerchantApi, pumpSignedIn;
+import 'support/fake_orders.dart' show FakeComplianceApi;
 
 Map<String, dynamic> _variant(String id, String label, int price, {int? mrp, String stock = 'in', String unit = 'g', num qty = 500}) =>
     {'id': id, 'label': label, 'unit': unit, 'unitQty': qty, 'pricePaise': price, 'mrpPaise': mrp, 'stock': stock};
@@ -156,7 +159,7 @@ class FakeCatalogueApi extends CatalogueApi {
   }
 }
 
-Future<(ProviderContainer, FakeCatalogueApi)> pumpCatalogue(WidgetTester tester, {List<Map<String, dynamic>>? items, String type = 'retail', String locale = 'en'}) async {
+Future<(ProviderContainer, FakeCatalogueApi)> pumpCatalogue(WidgetTester tester, {List<Map<String, dynamic>>? items, String type = 'retail', String locale = 'en', List<Override> extra = const []}) async {
   late FakeCatalogueApi api;
   final (container, _) = await pumpSignedIn(
     tester,
@@ -166,6 +169,7 @@ Future<(ProviderContainer, FakeCatalogueApi)> pumpCatalogue(WidgetTester tester,
       catalogueApiProvider.overrideWith((ref) => api = FakeCatalogueApi(ref.watch(apiClientProvider), items ?? [_item('i1', 'Toor Dal'), _item('i2', 'Moong Dal', stock: 'low')])),
       scannerCameraProvider.overrideWithValue(false), // no camera in widget tests: typed entry
       photoPickerProvider.overrideWithValue(({required bool camera}) async => PickedPhoto(Uint8List.fromList(List.filled(64, 1)), 'image/jpeg')),
+      ...extra,
     ],
   );
   await tester.tap(find.text(locale == 'te' ? 'మరిన్ని' : 'More'));
@@ -201,6 +205,41 @@ void main() {
     expect(find.text('Moong Dal'), findsNothing);
     final events = (container.read(analyticsProvider) as DebugAnalytics).events.map((e) => e.$1);
     expect(events, contains('catalogue_stock_changed'));
+  });
+
+  testWidgets('ADR-045: items show what customers rated them; unrated items show nothing', (tester) async {
+    await pumpCatalogue(tester, extra: [
+      itemRatingsProvider.overrideWith((ref) async => {'i1': const ItemRatingStat(itemId: 'i1', avg: 4.5, count: 12)}),
+    ]);
+    expect(find.byKey(const ValueKey('item-rating-i1')), findsOneWidget);
+    expect(find.text('4.5 · 12 ratings'), findsOneWidget);
+    expect(find.byKey(const ValueKey('item-rating-i2')), findsNothing);
+  });
+
+  testWidgets('ADR-045: Earnings lists the rated items with the lowest average first; with none rated it says so', (tester) async {
+    late FakeComplianceApi reviews;
+    await pumpSignedIn(
+      tester,
+      view: FakeMerchantApi.build(status: 'live', microMarket: {'id': 'mm1', 'slug': 'dargamitta', 'name': 'Dargamitta', 'nameTe': 'దర్గామిట్ట'}),
+      overrides: [
+        catalogueApiProvider.overrideWith((ref) => FakeCatalogueApi(ref.watch(apiClientProvider), [_item('i1', 'Toor Dal'), _item('i2', 'Moong Dal'), _item('i3', 'Rice')])),
+        complianceApiProvider.overrideWith((ref) => reviews = FakeComplianceApi(ref.watch(apiClientProvider), [])
+          ..itemStats.addAll(const [
+            ItemRatingStat(itemId: 'i1', avg: 4.5, count: 12),
+            ItemRatingStat(itemId: 'i2', avg: 2.0, count: 3),
+            ItemRatingStat(itemId: 'gone', avg: 1.0, count: 9), // not in the catalogue any more: left out
+          ])),
+      ],
+    );
+    await tester.tap(find.text('Earnings'));
+    await tester.pumpAndSettle();
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('item-stat-i2')), 200, scrollable: find.byType(Scrollable).last);
+    expect(find.byKey(const ValueKey('item-stat-i1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('item-stat-gone')), findsNothing);
+    expect(find.byKey(const ValueKey('item-ratings-empty')), findsNothing);
+    // Lowest first: Moong Dal (2.0) sits above Toor Dal (4.5).
+    expect(tester.getTopLeft(find.byKey(const ValueKey('item-stat-i2'))).dy, lessThan(tester.getTopLeft(find.byKey(const ValueKey('item-stat-i1'))).dy));
+    expect(reviews.itemStats, hasLength(3));
   });
 
   testWidgets('items Santha built wait for approval; approve all puts them live', (tester) async {

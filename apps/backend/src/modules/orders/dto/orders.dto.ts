@@ -150,7 +150,7 @@ const OrderSchema = z.object({
   instructions: z.string().nullable(),
   lines: z.array(
     z.object({ itemId: z.uuid(), variantId: z.uuid(), name: z.string(), variantLabel: z.string(), quantity: int, unitPricePaise: int, mrpPaise: int.nullable(), linePaise: int, substitution: z.string(),
-      status: z.enum(['ok', 'removed', 'substituted']), substituteName: z.string().nullable(), substituteVariantLabel: z.string().nullable(), refundPaise: int }),
+      status: z.enum(['ok', 'removed', 'substituted']), substituteName: z.string().nullable(), substituteVariantLabel: z.string().nullable(), substituteItemId: z.uuid().nullable().describe('The item the store swapped in; this is the one to rate (ADR-045)'), refundPaise: int }),
   ),
   bill: BillSchema,
   itemsPaise: int,
@@ -254,6 +254,7 @@ export const toOrderDto = (v: OrderView) => {
       status: l.status ?? 'ok',
       substituteName: l.substituteName ?? null,
       substituteVariantLabel: l.substituteVariantLabel ?? null,
+      substituteItemId: l.substituteItemId ?? null,
       refundPaise: l.refundPaise ?? 0,
     })),
     bill: billOut(q.bill),

@@ -92,4 +92,15 @@ void main() {
     expect(f.stores.first.eta.scheduled, isFalse);
     expect(f.stores.first.eta.minMin, greaterThan(0));
   });
+
+  test('ADR-045: store items carry their rating, unrated by default, and it survives the offline cache round trip', () {
+    final p = StorePage.fromJson(fixture('store_kirana'));
+    expect(p.items.first.rating, isNull);
+    expect(p.items.first.ratingCount, 0);
+    final json = {...p.items.first.toJson(), 'rating': 4.5, 'ratingCount': 12};
+    final item = StoreItem.fromJson(json);
+    expect(item.rating, 4.5);
+    expect(item.ratingCount, 12);
+    expect(StoreItem.fromJson(item.toJson()).rating, 4.5);
+  });
 }

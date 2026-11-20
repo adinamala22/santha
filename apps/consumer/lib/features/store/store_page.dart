@@ -189,7 +189,7 @@ class _StorePageScreenState extends ConsumerState<StorePageScreen> {
                 maxCrossAxisExtent: 140,
                 mainAxisSpacing: SanthaSpacing.s3,
                 crossAxisSpacing: SanthaSpacing.s3,
-                mainAxisExtent: 222,
+                mainAxisExtent: 236,
               ),
               itemCount: items.length,
               itemBuilder: (_, i) => _RetailTile(page: p, item: items[i], onOpen: () => _openSheet(p, items[i])),
@@ -441,6 +441,7 @@ class _RetailTile extends ConsumerWidget {
       imageUrl: media(c.imageUrl),
       foodMark: foodMarkFor(context, c.foodMark),
       badge: out ? l.outOfStock : (c.stale ? l.checkStock : (item.stock == StockState.low ? l.lowStock : (c.variantCount > 1 ? l.sizesCount(c.variantCount) : null))),
+      ratingLabel: item.rating == null || item.ratingCount == 0 ? null : l.ratingWithCount(item.rating!.toStringAsFixed(1), item.ratingCount),
       onTap: onOpen,
       add: CartAddButton(
         source: 'store',
@@ -475,6 +476,7 @@ class _KitchenRow extends ConsumerWidget {
     final sub = [
       c.variantLabel,
       ?mark,
+      if (item.rating != null && item.ratingCount > 0) l.ratingWithCount(item.rating!.toStringAsFixed(1), item.ratingCount),
       if (item.dailyCapacity != null) l.portionsLeft(item.dailyCapacity!),
       if (item.special) l.special,
       if (!item.onMenuToday) l.notOnMenuToday,

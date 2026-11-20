@@ -105,8 +105,8 @@ class CheckoutApi {
       _call(() async => ((await _dio.get<Json>('/v1/orders/$orderId/issues')).data!['items'] as List).map((i) => Issue.fromJson(i as Json)).toList());
 
   /// Rate a delivered order once (store, and the rider when a rider delivered).
-  Future<void> rate(String orderId, {required int storeStars, int? riderStars, String? comment}) =>
-      _call(() => _dio.post<void>('/v1/orders/$orderId/rating', data: {'storeStars': storeStars, 'riderStars': ?riderStars, 'comment': ?comment}));
+  Future<void> rate(String orderId, {required int storeStars, int? riderStars, String? comment, List<ItemStar> itemStars = const []}) => _call(() => _dio.post<void>('/v1/orders/$orderId/rating',
+      data: {'storeStars': storeStars, 'riderStars': ?riderStars, 'comment': ?comment, if (itemStars.isNotEmpty) 'itemStars': itemStars.map((i) => i.toJson()).toList()}));
 
   /// Your rating of this order, or null if you have not rated it yet.
   Future<OrderRating?> myRating(String orderId) => _call(() async {

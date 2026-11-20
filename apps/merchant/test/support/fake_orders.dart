@@ -228,15 +228,18 @@ class FakeComplianceApi extends ComplianceApi {
   final List<Map<String, dynamic>> rows;
   final replies = <String>[];
 
+  /// Item ratings the store sees (ADR-045).
+  final List<ItemRatingStat> itemStats = [];
+
   @override
-  Future<({RatingSummary summary, List<StoreReview> items})> merchantReviews() async {
+  Future<({RatingSummary summary, List<StoreReview> items, Map<String, ItemRatingStat> itemRatings})> merchantReviews() async {
     final dist = [0, 0, 0, 0, 0];
     for (final r in rows) {
       dist[(r['storeStars'] as int) - 1]++;
     }
     final n = rows.length;
     final avg = n == 0 ? null : rows.fold<int>(0, (s, r) => s + (r['storeStars'] as int)) / n;
-    return (summary: RatingSummary(avg: avg, count: n, distribution: dist), items: rows.map(StoreReview.fromJson).toList());
+    return (summary: RatingSummary(avg: avg, count: n, distribution: dist), items: rows.map(StoreReview.fromJson).toList(), itemRatings: {for (final r in itemStats) r.itemId: r});
   }
 
   @override

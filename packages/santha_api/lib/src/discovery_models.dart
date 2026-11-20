@@ -365,6 +365,8 @@ class StoreItem {
     this.leadTimeMin,
     this.maxPerOrder,
     this.dailyCapacity,
+    this.rating,
+    this.ratingCount = 0,
   });
 
   factory StoreItem.fromJson(Json j) => StoreItem(
@@ -378,6 +380,8 @@ class StoreItem {
         onMenuToday: j['onMenuToday'] as bool,
         dailyCapacity: j['dailyCapacity'] as int?,
         special: j['special'] as bool,
+        rating: (j['rating'] as num?)?.toDouble(),
+        ratingCount: j['ratingCount'] as int? ?? 0,
       );
 
   final ItemCard card;
@@ -390,6 +394,10 @@ class StoreItem {
   final bool onMenuToday;
   final int? dailyCapacity;
   final bool special;
+
+  /// Average stars customers gave this item (one decimal), null until it is rated (ADR-045).
+  final double? rating;
+  final int ratingCount;
 
   String get id => card.id;
 
@@ -404,6 +412,8 @@ class StoreItem {
         'onMenuToday': onMenuToday,
         'dailyCapacity': dailyCapacity,
         'special': special,
+        'rating': rating,
+        'ratingCount': ratingCount,
       };
 }
 

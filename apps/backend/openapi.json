@@ -8262,7 +8262,7 @@
         ],
         "responses": {
           "default": {
-            "description": "Rating summary and published reviews, newest first",
+            "description": "Rating summary, published reviews (newest first) and the rating of every rated item",
             "content": {
               "application/json": {
                 "schema": {
@@ -20079,6 +20079,19 @@
                 "special": {
                   "type": "boolean",
                   "description": "Today's special"
+                },
+                "rating": {
+                  "description": "Average stars (1 decimal) customers gave this item, null until rated (ADR-045)",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ratingCount": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991,
+                  "description": "How many customers rated this item"
                 }
               },
               "required": [
@@ -20105,7 +20118,9 @@
                 "variants",
                 "onMenuToday",
                 "dailyCapacity",
-                "special"
+                "special",
+                "rating",
+                "ratingCount"
               ],
               "additionalProperties": false
             }
@@ -21911,6 +21926,13 @@
                     "null"
                   ]
                 },
+                "substituteItemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                  "description": "The item the store swapped in; this is the one to rate (ADR-045)",
+                  "nullable": true
+                },
                 "refundPaise": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -21930,6 +21952,7 @@
                 "status",
                 "substituteName",
                 "substituteVariantLabel",
+                "substituteItemId",
                 "refundPaise"
               ],
               "additionalProperties": false
@@ -22624,6 +22647,13 @@
                           "null"
                         ]
                       },
+                      "substituteItemId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                        "description": "The item the store swapped in; this is the one to rate (ADR-045)",
+                        "nullable": true
+                      },
                       "refundPaise": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -22643,6 +22673,7 @@
                       "status",
                       "substituteName",
                       "substituteVariantLabel",
+                      "substituteItemId",
                       "refundPaise"
                     ],
                     "additionalProperties": false
@@ -28991,6 +29022,30 @@
           "comment": {
             "type": "string",
             "maxLength": 500
+          },
+          "itemStars": {
+            "description": "Stars for the items you received, one entry per item (ADR-045)",
+            "maxItems": 50,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "stars": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                }
+              },
+              "required": [
+                "itemId",
+                "stars"
+              ]
+            }
           }
         },
         "required": [
@@ -29020,6 +29075,29 @@
             "type": "string",
             "nullable": true
           },
+          "itemStars": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "stars": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "itemId",
+                "stars"
+              ],
+              "additionalProperties": false
+            }
+          },
           "createdAt": {
             "type": "string"
           }
@@ -29029,6 +29107,7 @@
           "storeStars",
           "riderStars",
           "comment",
+          "itemStars",
           "createdAt"
         ],
         "additionalProperties": false
@@ -29061,6 +29140,29 @@
                   "null"
                 ]
               },
+              "itemStars": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "itemId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "stars": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": [
+                    "itemId",
+                    "stars"
+                  ],
+                  "additionalProperties": false
+                }
+              },
               "createdAt": {
                 "type": "string"
               }
@@ -29070,6 +29172,7 @@
               "storeStars",
               "riderStars",
               "comment",
+              "itemStars",
               "createdAt"
             ],
             "additionalProperties": false,
@@ -29759,11 +29862,40 @@
               ],
               "additionalProperties": false
             }
+          },
+          "itemRatings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "itemId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "avg": {
+                  "type": "number"
+                },
+                "count": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "itemId",
+                "avg",
+                "count"
+              ],
+              "additionalProperties": false
+            },
+            "description": "Average stars and count of every rated item (ADR-045)"
           }
         },
         "required": [
           "summary",
-          "items"
+          "items",
+          "itemRatings"
         ],
         "additionalProperties": false
       },

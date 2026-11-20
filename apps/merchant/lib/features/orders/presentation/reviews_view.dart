@@ -5,9 +5,10 @@ import 'package:santha_core/santha_core.dart';
 import 'package:santha_ui/santha_ui.dart';
 
 import '../../../l10n/gen/app_localizations.dart';
+import '../../catalogue/data/catalogue_controller.dart';
 
 final complianceApiProvider = Provider<ComplianceApi>((ref) => ComplianceApi(ref.watch(apiClientProvider)));
-final storeReviewsProvider = FutureProvider.autoDispose<({RatingSummary summary, List<StoreReview> items})>((ref) => ref.watch(complianceApiProvider).merchantReviews());
+final storeReviewsProvider = FutureProvider.autoDispose<({RatingSummary summary, List<StoreReview> items, Map<String, ItemRatingStat> itemRatings})>((ref) => ref.watch(complianceApiProvider).merchantReviews());
 
 /// Below this average a coaching tip is shown (the consumer "4★ & above" filter leaves the store out).
 const _goodRating = 4.0;
@@ -24,6 +25,9 @@ class ReviewsSection extends ConsumerWidget {
     final data = ref.watch(storeReviewsProvider).value;
     final summary = data?.summary ?? RatingSummary.empty;
     final reviews = data?.items ?? const <StoreReview>[];
+    // Rated items with the lowest average first: the ones to look at (ADR-045). The name comes from the catalogue.
+    final names = {for (final i in ref.watch(catalogueProvider).value?.items ?? const <Item>[]) i.id: i.name};
+    final rated = [for (final r in (data?.itemRatings ?? const <String, ItemRatingStat>{}).values) if (names.containsKey(r.itemId)) r]..sort((a, b) => a.avg.compareTo(b.avg) != 0 ? a.avg.compareTo(b.avg) : b.count.compareTo(a.count));
     return Column(key: const ValueKey('reviews'), crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: SanthaSpacing.s4),
       Text(l.storeRatingTitle, style: text.titleMedium),
@@ -50,6 +54,24 @@ class ReviewsSection extends ConsumerWidget {
             Expanded(child: Text(l.ratingLowTip, style: text.bodySmall)),
           ]),
         ),
+      const SizedBox(height: SanthaSpacing.s4),
+      Text(l.itemRatingsTitle, style: text.titleMedium),
+      if (rated.isEmpty)
+        Padding(padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s2), child: Text(l.itemRatingsEmpty, key: const ValueKey('item-ratings-empty'), style: const TextStyle(color: SanthaColors.slate)))
+      else
+        for (final r in rated)
+          ListTile(
+            key: ValueKey('item-stat-${r.itemId}'),
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: Text(names[r.itemId]!, maxLines: 2, overflow: TextOverflow.ellipsis),
+            subtitle: Text(l.ratingsCount(r.count), style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+            trailing: Row(mainAxisSize: MainAxisSize.min, children: [
+              StarRow(value: r.avg, size: 14, semanticLabel: l.ratedOutOf5(r.avg.toStringAsFixed(1))),
+              const SizedBox(width: SanthaSpacing.s1),
+              Text(r.avg.toStringAsFixed(1), style: text.titleSmall),
+            ]),
+          ),
       const SizedBox(height: SanthaSpacing.s4),
       Text(l.reviewsTitle, style: text.titleMedium),
       if (reviews.isEmpty) Padding(padding: const EdgeInsets.symmetric(vertical: SanthaSpacing.s2), child: Text(l.reviewsEmpty, style: const TextStyle(color: SanthaColors.slate))),
