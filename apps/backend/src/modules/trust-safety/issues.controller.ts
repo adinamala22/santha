@@ -5,8 +5,8 @@ import { createZodDto } from '../../common/zod-dto';
 import { z } from 'zod';
 import { type AuthUser, CurrentUser, Roles } from '../../common/auth/decorators';
 import { MerchantsService } from '../merchant-catalogue/merchants.service';
-import type { IssueRecord, RatingRecord } from './issues.repository';
-import { IssuesService } from './issues.service';
+import type { IssueRecord } from './issues.repository';
+import { IssuesService, type RatingWithItems } from './issues.service';
 
 const int = z.number().int();
 const iso = z.string();
@@ -21,7 +21,12 @@ class ReportIssueDto extends createZodDto(
   }),
 ) {}
 class RateDto extends createZodDto(
-  z.object({ storeStars: int.min(1).max(5), riderStars: int.min(1).max(5).optional(), comment: z.string().trim().max(500).optional() }),
+  z.object({
+    storeStars: int.min(1).max(5),
+    riderStars: int.min(1).max(5).optional(),
+    comment: z.string().trim().max(500).optional(),
+    itemStars: z.array(z.object({ itemId: z.uuid(), stars: int.min(1).max(5) })).max(50).optional().describe('Stars for the items you received, one entry per item (ADR-045)'),
+  }),
 ) {}
 
 const IssueSchema = z.object({
@@ -44,7 +49,7 @@ class IssueListDto extends createZodDto(z.object({ items: z.array(IssueSchema) }
 class OpsIssueListDto extends createZodDto(
   z.object({ items: z.array(IssueSchema.extend({ userId: z.uuid(), merchantName: z.string(), trustScore: z.number(), flags: z.array(z.string()) })) }),
 ) {}
-const RatingSchema = z.object({ orderId: z.uuid(), storeStars: int, riderStars: int.nullable(), comment: z.string().nullable(), createdAt: iso });
+const RatingSchema = z.object({ orderId: z.uuid(), storeStars: int, riderStars: int.nullable(), comment: z.string().nullable(), itemStars: z.array(z.object({ itemId: z.uuid(), stars: int })), createdAt: iso });
 class RatingDto extends createZodDto(RatingSchema) {}
 class MyRatingDto extends createZodDto(z.object({ rating: RatingSchema.nullable() })) {}
 
@@ -65,7 +70,7 @@ const toIssueDto = (i: IssueRecord) => {
     decidedAt: i.decidedAt?.toISOString() ?? null,
   };
 };
-const toRatingDto = (r: RatingRecord) => ({ orderId: r.orderId, storeStars: r.storeStars, riderStars: r.riderStars, comment: r.comment, createdAt: r.createdAt.toISOString() });
+const toRatingDto = (r: RatingWithItems) => ({ orderId: r.orderId, storeStars: r.storeStars, riderStars: r.riderStars, comment: r.comment, itemStars: r.itemStars, createdAt: r.createdAt.toISOString() });
 
 /** Customer: report a problem with a delivered order, rate it. */
 @ApiTags('orders')

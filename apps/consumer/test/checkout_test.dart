@@ -329,6 +329,62 @@ void main() {
     expect(h.backend.rating!['riderStars'], 4);
   });
 
+  testWidgets('ADR-045: the items of the order can be rated together with the store, and the stars are shown afterwards', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('rate-items')), 300, scrollable: find.byType(Scrollable).first);
+    expect(find.byKey(const ValueKey('stars-item-40000000-0000-4000-8000-201000000001-1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('stars-item-40000000-0000-4000-8000-201000000003-1')), findsOneWidget);
+    await tapVisible(tester, find.byKey(const ValueKey('stars-store-5')));
+    await tapVisible(tester, find.byKey(const ValueKey('stars-item-40000000-0000-4000-8000-201000000001-4')));
+    await tapVisible(tester, find.byKey(const ValueKey('stars-item-40000000-0000-4000-8000-201000000003-2')));
+    await tapVisible(tester, find.byKey(const ValueKey('stars-item-40000000-0000-4000-8000-201000000003-2'))); // the same star again clears it
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('send-rating')));
+    await settle(tester, 10);
+    expect(h.backend.rating!['storeStars'], 5);
+    expect(h.backend.rating!['itemStars'], [{'itemId': '40000000-0000-4000-8000-201000000001', 'stars': 4}]); // only the item that was rated is sent
+    expect(h.analytics.events.where((e) => e.$1 == 'rating_submitted').last.$2['item_ratings'], 1);
+    // Rated: the item stars are shown with the item name, and cannot be given again.
+    expect(find.byKey(const ValueKey('your-item-40000000-0000-4000-8000-201000000001')), findsOneWidget);
+    expect(find.byKey(const ValueKey('your-item-40000000-0000-4000-8000-201000000003')), findsNothing);
+    expect(find.byKey(const ValueKey('rate-items')), findsNothing);
+  });
+
+  testWidgets('ADR-045: an order can still be rated without rating any item', (tester) async {
+    final realtime = FakeRealtime();
+    final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);
+    await openCheckout(tester);
+    await tester.ensureVisible(find.byKey(const ValueKey('pay-cod')));
+    await tester.tap(find.byKey(const ValueKey('pay-cod')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('place-order')));
+    await settle(tester, 20);
+    final o = fixture('order_placed');
+    h.backend.orderPatch = {'state': 'DELIVERED'};
+    realtime.emit('order.updated', {'orderId': o['id'], 'state': 'DELIVERED'});
+    await settle(tester, 20);
+    await tester.scrollUntilVisible(find.byKey(const ValueKey('stars-store-5')), 300, scrollable: find.byType(Scrollable).first);
+    await tapVisible(tester, find.byKey(const ValueKey('stars-store-5')));
+    await settle(tester, 4);
+    await tapVisible(tester, find.byKey(const ValueKey('send-rating')));
+    await settle(tester, 10);
+    expect(h.backend.rating!['storeStars'], 5);
+    expect(h.backend.rating!['itemStars'], isNull);
+    expect(find.byKey(const ValueKey('your-rating')), findsOneWidget);
+  });
+
   testWidgets('M7: after delivery — rate once, report a missing item and see the wallet refund at once', (tester) async {
     final realtime = FakeRealtime();
     final h = await pumpAtHome(tester, kv: {'santha.cart': _retailCart}, realtime: realtime);

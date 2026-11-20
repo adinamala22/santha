@@ -63,10 +63,13 @@ class FakeBackend implements HttpClientAdapter {
 
   Map<String, dynamic>? _rating() => rating == null
       ? null
-      : {'orderId': _order()['id'], 'storeStars': rating!['storeStars'], 'riderStars': rating!['riderStars'], 'comment': rating!['comment'], 'createdAt': '2026-11-02T08:00:00.000Z'};
+      : {'orderId': _order()['id'], 'storeStars': rating!['storeStars'], 'riderStars': rating!['riderStars'], 'comment': rating!['comment'], 'itemStars': rating!['itemStars'] ?? const [], 'createdAt': '2026-11-02T08:00:00.000Z'};
 
   // Ratings: the kirana's rating on its card/page (null keeps the captured fixture as is).
   ({double avg, int count})? kiranaRating;
+
+  /// Item ratings on the kirana's store page, by item id (ADR-045).
+  Map<String, ({double avg, int count})> itemRatings = {};
 
   /// Fields merged into the kirana's card in the feed and search (e.g. deliverable: false, ADR-021).
   Map<String, dynamic> kiranaCardPatch = {};
@@ -284,6 +287,12 @@ class FakeBackend implements HttpClientAdapter {
           final page = fixture('store_kirana');
           if (kiranaRating case final k?) page['store'] = {...page['store'] as Map<String, dynamic>, 'rating': k.avg, 'ratingCount': k.count};
           page.addAll(kiranaPagePatch);
+          if (itemRatings.isNotEmpty) {
+            page['items'] = [
+              for (final i in (page['items'] as List).cast<Map<String, dynamic>>())
+              if (itemRatings[i['id']] case final r?) {...i, 'rating': r.avg, 'ratingCount': r.count} else i,
+            ];
+          }
           return page;
         })()),
       'GET /v1/stores/$kitchenId' => (200, fixture('store_kitchen')),

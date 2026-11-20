@@ -62,6 +62,15 @@ class _ProductSheetState extends ConsumerState<ProductSheet> {
             Expanded(child: Text(item.card.displayName(l.localeName), style: text.titleLarge)),
           ]),
           if (item.card.brand != null) Text(item.card.brand!, style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+          if (item.rating != null && item.ratingCount > 0)
+            Padding(
+              padding: const EdgeInsets.only(top: SanthaSpacing.s1),
+              child: Row(key: const ValueKey('item-sheet-rating'), children: [
+                StarRow(value: item.rating!, size: 16, semanticLabel: l.ratedOutOf5(item.rating!.toStringAsFixed(1))),
+                const SizedBox(width: SanthaSpacing.s2),
+                Text('${item.rating!.toStringAsFixed(1)} · ${l.ratingsCount(item.ratingCount)}', style: text.bodySmall?.copyWith(color: SanthaColors.slate)),
+              ]),
+            ),
           if (item.special) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s1), child: TrustBadge(label: l.special, positive: false, icon: Icons.star_outline)),
           if (item.description != null) Padding(padding: const EdgeInsets.only(top: SanthaSpacing.s2), child: Text(item.description!, style: text.bodyMedium)),
           const SizedBox(height: SanthaSpacing.s4),

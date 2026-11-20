@@ -408,6 +408,8 @@ class OrderLine {
     this.substituteVariantLabel,
     this.refundPaise = 0,
     this.variantId,
+    this.itemId,
+    this.substituteItemId,
   });
   factory OrderLine.fromJson(Json j) => OrderLine(
         name: j['name'] as String,
@@ -419,6 +421,8 @@ class OrderLine {
         substituteVariantLabel: j['substituteVariantLabel'] as String?,
         refundPaise: j['refundPaise'] as int? ?? 0,
         variantId: j['variantId'] as String?,
+        itemId: j['itemId'] as String?,
+        substituteItemId: j['substituteItemId'] as String?,
       );
   final String name;
   final String variantLabel;
@@ -430,6 +434,9 @@ class OrderLine {
   final String? substituteVariantLabel;
   final int refundPaise;
   final String? variantId;
+  /// The catalogue item (rated by customers, ADR-045) and, for a swapped line, the item the store put in its place.
+  final String? itemId;
+  final String? substituteItemId;
 }
 
 class OrderStep {
@@ -550,19 +557,31 @@ class Wallet {
   final List<WalletEntry> entries;
 }
 
+/// Stars for one item of an order (ADR-045).
+class ItemStar {
+  const ItemStar({required this.itemId, required this.stars});
+  factory ItemStar.fromJson(Json j) => ItemStar(itemId: j['itemId'] as String, stars: j['stars'] as int);
+  final String itemId;
+  final int stars;
+  Json toJson() => {'itemId': itemId, 'stars': stars};
+}
+
 /// The customer's rating of a delivered order (GET/POST /v1/orders/{id}/rating).
 class OrderRating {
-  const OrderRating({required this.orderId, required this.storeStars, required this.createdAt, this.riderStars, this.comment});
+  const OrderRating({required this.orderId, required this.storeStars, required this.createdAt, this.riderStars, this.comment, this.itemStars = const []});
   factory OrderRating.fromJson(Json j) => OrderRating(
         orderId: j['orderId'] as String,
         storeStars: j['storeStars'] as int,
         riderStars: j['riderStars'] as int?,
         comment: j['comment'] as String?,
+        itemStars: _list(j['itemStars'], ItemStar.fromJson),
         createdAt: DateTime.parse(j['createdAt'] as String),
       );
   final String orderId;
   final int storeStars;
   final int? riderStars;
   final String? comment;
+  /// Stars given to the items of the order (ADR-045); empty when none were rated.
+  final List<ItemStar> itemStars;
   final DateTime createdAt;
 }

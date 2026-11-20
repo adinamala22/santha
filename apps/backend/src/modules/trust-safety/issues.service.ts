@@ -7,9 +7,13 @@ import { MerchantsService } from '../merchant-catalogue/merchants.service';
 import { OrdersService } from '../orders/orders.service';
 import { decideRefund, type IssueType, type MerchantKind, trustScore, withinWindow } from '../payments-settlement/settlement/domain/money';
 import { RefundsService } from '../payments-settlement/settlement/refunds.service';
+import { ItemRatings } from '../search-discovery/item-ratings';
 import { StoreRatings } from '../search-discovery/store-ratings';
 import { screenReview } from './domain/review-screen';
-import { type IssueRecord, IssuesRepository, type RatingRecord } from './issues.repository';
+import { type IssueRecord, IssuesRepository, type ItemStar, type RatingRecord } from './issues.repository';
+
+/** A rating with the item stars given along with it (ADR-045). */
+export type RatingWithItems = RatingRecord & { itemStars: ItemStar[] };
 
 const DAY = 86_400_000;
 
@@ -28,12 +32,15 @@ export class IssuesService implements OnModuleInit {
     private readonly dispatch: DispatchService,
     private readonly refunds: RefundsService,
     private readonly storeRatings: StoreRatings,
+    private readonly itemRatings: ItemRatings,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   onModuleInit(): void {
     // Store cards, ranking and the "4★ and above" filter read ratings through search-discovery.
     this.storeRatings.use((merchantId) => this.repo.storeSummary(merchantId));
+    // Item stars on the store page (ADR-045), by the same route.
+    this.itemRatings.use((merchantId) => this.repo.itemRatings(merchantId));
     this.refunds.onSettled(async (r) => {
       if (!r.issueId) return;
       const issue = await this.repo.issue(r.issueId);
@@ -135,8 +142,13 @@ export class IssuesService implements OnModuleInit {
     return this.repo.issues(q);
   }
 
-  async rate(userId: string, orderId: string, input: { storeStars: number; riderStars?: number | undefined; comment?: string | undefined }): Promise<RatingRecord> {
+  async rate(userId: string, orderId: string, input: { storeStars: number; riderStars?: number | undefined; comment?: string | undefined; itemStars?: readonly ItemStar[] | undefined }): Promise<RatingWithItems> {
     const { order, fulfilment } = await this.ownedDelivered(userId, orderId);
+    // Items the customer actually received (ADR-045): kept lines, and the substitute when the store swapped an item. Each item once.
+    const received = new Set(order.lines.flatMap((l) => (l.status === 'removed' ? [] : l.status === 'substituted' && l.substituteItemId ? [l.substituteItemId] : [l.itemId])));
+    const itemStars = input.itemStars ?? [];
+    if (new Set(itemStars.map((i) => i.itemId)).size !== itemStars.length) throw new DomainError('VALIDATION_FAILED', 'Rate each item once.', { field: 'itemStars' });
+    if (itemStars.some((i) => !received.has(i.itemId))) throw new DomainError('VALIDATION_FAILED', 'Those items are not on this order.', { field: 'itemStars' });
     const riderUserId = fulfilment?.mode === 'rider' ? fulfilment.riderUserId : null;
     // Delivery stars (column rider_stars) are taken for a Santha rider and for the store's own staff (ADR-039); only a rider's average is kept.
     const riderStars = fulfilment?.mode === 'rider' || fulfilment?.mode === 'self' ? (input.riderStars ?? null) : null;
@@ -160,27 +172,29 @@ export class IssuesService implements OnModuleInit {
           aggregate: { type: 'order', id: orderId },
           microMarketId: order.microMarketId,
           actor: { type: 'user', id: userId },
-          payload: { order_id: orderId, merchant_id: order.merchantId, rider_user_id: riderUserId, store_stars: input.storeStars, rider_stars: riderStars, has_comment: !!comment, flagged: screened.flagged },
+          payload: { order_id: orderId, merchant_id: order.merchantId, rider_user_id: riderUserId, store_stars: input.storeStars, rider_stars: riderStars, has_comment: !!comment, flagged: screened.flagged, item_ratings: itemStars.length },
         },
       ],
+      itemStars,
     );
     if (!added) throw new DomainError('ALREADY_EXISTS', 'You already rated this order.');
     if (riderUserId && input.riderStars) {
       const avg = await this.repo.averages({ riderUserId });
       if (avg.avg != null) await this.dispatch.setRiderRating(riderUserId, avg.avg);
     }
-    return (await this.repo.rating(orderId))!;
+    return { ...(await this.repo.rating(orderId))!, itemStars: [...itemStars] };
   }
 
   rating(orderId: string) {
     return this.repo.rating(orderId);
   }
 
-  /** The customer's own rating of their order, or null if not rated yet. */
-  async ratingFor(userId: string, orderId: string): Promise<RatingRecord | null> {
+  /** The customer's own rating of their order (with the item stars), or null if not rated yet. */
+  async ratingFor(userId: string, orderId: string): Promise<RatingWithItems | null> {
     const order = await this.orders.get(orderId);
     if (!order || order.userId !== userId) throw new DomainError('NOT_FOUND', 'Order not found');
-    return this.repo.rating(orderId);
+    const r = await this.repo.rating(orderId);
+    return r ? { ...r, itemStars: await this.repo.itemStars(orderId) } : null;
   }
 
   merchantRating(merchantId: string) {

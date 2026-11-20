@@ -13,6 +13,7 @@ import { rankStore, STALE_ITEM_FACTOR } from './domain/ranking';
 import { searchHints } from './domain/synonyms';
 import { EtaService } from './eta.service';
 import { SearchIndex } from './search-index';
+import { ItemRatings } from './item-ratings';
 import { StoreRatings } from './store-ratings';
 
 export const TABS = { stores: 'retail', fashion: 'fashion', home_kitchens: 'home_kitchen', home_businesses: 'home_business' } as const;
@@ -102,6 +103,7 @@ export class DiscoveryService {
     private readonly eta: EtaService,
     private readonly catalogue: CatalogueService,
     private readonly ratings: StoreRatings,
+    private readonly itemRatings: ItemRatings,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
@@ -245,10 +247,14 @@ export class DiscoveryService {
       eta: card!.eta.mode === 'scheduled' ? card!.eta : { mode: 'asap', minMin: eta.minMin, maxMin: eta.maxMin },
     };
     const today = istParts(this.clock());
+    const stars = await this.itemRatings.forStore(id); // item stars (ADR-045)
     const items = snap.items.map((v) => {
       const i = v.item;
+      const star = stars.get(i.id);
       return {
         ...this.itemCard(docs.items.find((d) => d.id === i.id)!),
+        rating: star ? star.avg : null,
+        ratingCount: star ? star.count : 0,
         description: i.description,
         allergens: i.allergens,
         leadTimeMin: i.leadTimeMin,

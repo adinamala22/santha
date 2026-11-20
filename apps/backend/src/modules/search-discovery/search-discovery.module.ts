@@ -10,6 +10,7 @@ import { EtaService } from './eta.service';
 import { InMemorySearchIndex } from './in-memory-search.index';
 import { SearchIndex } from './search-index';
 import { SearchIndexer } from './search-indexer.service';
+import { ItemRatings } from './item-ratings';
 import { StoreRatings } from './store-ratings';
 import { TypesenseSearchIndex } from './typesense-search.index';
 
@@ -28,6 +29,7 @@ import { TypesenseSearchIndex } from './typesense-search.index';
     EtaService,
     SearchIndexer,
     StoreRatings,
+    ItemRatings,
     {
       provide: SearchIndex,
       inject: [ENV],
@@ -41,6 +43,6 @@ import { TypesenseSearchIndex } from './typesense-search.index';
         env.MAPS_PROVIDER === 'google' && env.DATA_STORE !== 'memory' && env.NODE_ENV !== 'test' ? new GoogleRoutesProvider(env.GOOGLE_MAPS_SERVER_KEY!) : new MockMapsProvider(),
     },
   ],
-  exports: [DiscoveryService, SearchIndexer, StoreRatings],
+  exports: [DiscoveryService, SearchIndexer, StoreRatings, ItemRatings],
 })
 export class SearchDiscoveryModule {}

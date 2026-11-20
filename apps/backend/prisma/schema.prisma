@@ -1284,6 +1284,21 @@ model Rating {
   @@map("ratings")
 }
 
+/// A customer's star rating (1 to 5) of one item they received on an order (ADR-045). Taken together with the order rating,
+/// once per order and item. Feeds the item's average on the store page.
+model ItemRating {
+  orderId    String   @map("order_id") @db.Uuid
+  itemId     String   @map("item_id") @db.Uuid
+  merchantId String   @map("merchant_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  stars      Int
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([orderId, itemId])
+  @@index([merchantId, itemId])
+  @@map("item_ratings")
+}
+
 // ───────────── M8: growth leads, grievances, DPDP consents and data requests ─────────────
 
 /// A store, home kitchen or rider who asked to join from the website (/stores, /home-kitchens, /riders).
